@@ -6,6 +6,7 @@ import porCompania from "@/data/por_compania.json";
 import catalogo from "@/data/catalogo.json";
 import { SELLOS, assignSello } from "@/lib/sellos";
 import DrillDown, { Column } from "./components/DrillDown";
+import RankingListeners from "./components/RankingListeners";
 import type { Release } from "@/lib/notion";
 
 const COLORS = ["#e6a94f", "#c9825a", "#7f9bb0", "#5c5140", "#8a7c62"];
@@ -406,9 +407,12 @@ export default function Dashboard() {
           </button>
         </div>
 
+        <RankingListeners />
+
         <p className="footer-note">
           Estados y acuerdos en vivo desde Notion · Catálogo de fonogramas actualizado desde Drive
-          (no en vivo — la app no tiene credenciales de Google Drive).
+          (no en vivo — la app no tiene credenciales de Google Drive) · Oyentes mensuales: pendiente
+          de conexión con Chartmetric.
         </p>
       </div>
 

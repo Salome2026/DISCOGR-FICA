@@ -1,62 +1,5 @@
 [
   {
-    "artist": "1963621776244",
-    "track_count": 2,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Matias Mareco",
-        "isrc": "21/12/2023",
-        "album": "",
-        "company": "",
-        "release_date": "Misaael: II Entre Ríos",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Matias Mareco",
-        "isrc": "ARDL12300036",
-        "album": "",
-        "company": "",
-        "release_date": "Misaael: II Entre Ríos",
-        "upc": "",
-        "type": "video"
-      }
-    ]
-  },
-  {
-    "artist": "2x1",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "TOTI",
-        "isrc": "Virrshi DJ",
-        "album": "Virrshi DJ",
-        "company": "",
-        "release_date": "ARDL12500036",
-        "upc": "2x1",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "3:33",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Candu Domínguez",
-        "isrc": "NachOnTheBeat",
-        "album": "NachOnTheBeat",
-        "company": "",
-        "release_date": "ARDL12500030",
-        "upc": "3:33",
-        "type": "audio"
-      }
-    ]
-  },
-  {
     "artist": "6",
     "track_count": 1,
     "companies": [],
@@ -74,39 +17,12 @@
   },
   {
     "artist": "A Precio de Sangre",
-    "track_count": 22,
+    "track_count": 21,
     "companies": [
       "FUGA",
       "MAWZ Music"
     ],
     "tracks": [
-      {
-        "track": "La Cumbia del Rey",
-        "isrc": "ARDL12400102",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "No Puedo Vivir Sin Ti",
-        "isrc": "ARDL12400115",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Nueva Adoración",
-        "isrc": "ARDL12500040",
-        "album": "Que Ruja el León",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2019 - 31/12/2099",
-        "upc": "",
-        "type": "audio"
-      },
       {
         "track": "Abre los Cielos",
         "isrc": "ARBF32000044",
@@ -189,6 +105,33 @@
         "type": "audio"
       },
       {
+        "track": "No Puedo Vivir Sin Ti",
+        "isrc": "ARDL12400115",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "Estar Contigo",
+        "isrc": "ARDL12300044",
+        "album": "Estar Contigo",
+        "company": "MAWZ Music",
+        "release_date": "21/03/2024",
+        "upc": "1963621998691",
+        "type": "audio"
+      },
+      {
+        "track": "Cumbiuncion",
+        "isrc": "ARDL12400079",
+        "album": "Cumbiuncion",
+        "company": "MAWZ Music",
+        "release_date": "01/01/2019 - 31/12/2099",
+        "upc": "8721093927563",
+        "type": "audio"
+      },
+      {
         "track": "Al Final",
         "isrc": "ARDL12300021",
         "album": "Amigos que Adoran",
@@ -268,15 +211,6 @@
         "release_date": "30/09/2023 - 31/12/2099",
         "upc": "",
         "type": "audio"
-      },
-      {
-        "track": "Estar Contigo",
-        "isrc": "ARDL12300044",
-        "album": "Estar Contigo",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "1963621998691",
-        "type": "audio"
       }
     ]
   },
@@ -333,24 +267,6 @@
     ]
   },
   {
-    "artist": "A Precio de Sangre featuring La Base",
-    "track_count": 1,
-    "companies": [
-      "MAWZ Music"
-    ],
-    "tracks": [
-      {
-        "track": "Cumbiuncion",
-        "isrc": "ARDL12400079",
-        "album": "Cumbiuncion",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2019 - 31/12/2099",
-        "upc": "8721093927563",
-        "type": "audio"
-      }
-    ]
-  },
-  {
     "artist": "A Precio de Sangre featuring Sebastián Mendoza",
     "track_count": 1,
     "companies": [
@@ -369,53 +285,62 @@
     ]
   },
   {
-    "artist": "Abatido",
+    "artist": "A Precio de Sangre|La Cumbia del Rey",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "M Aquí Adonai",
-        "isrc": "Abatido",
-        "album": "Melquisedec Urbano",
+        "track": "Con Fe",
+        "isrc": "ARDL12400102",
+        "album": "",
         "company": "",
-        "release_date": "8721215764281",
-        "upc": "ARDL12500032",
+        "release_date": "",
+        "upc": "",
         "type": "audio"
       }
     ]
   },
   {
-    "artist": "Abusal",
+    "artist": "A Precio de Sangre|Nueva Adoración",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "MAWZ Music"
+    ],
     "tracks": [
       {
-        "track": "Bianca Lif",
-        "isrc": "Vale",
-        "album": "Vale",
-        "company": "",
-        "release_date": "AR5UH2402185",
-        "upc": "Abusal",
+        "track": "Que Ruja el León",
+        "isrc": "ARDL12500040",
+        "album": "Que Ruja el León",
+        "company": "MAWZ Music",
+        "release_date": "01/01/2019 - 31/12/2099",
+        "upc": "8721416028892",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "A Precio de Sangre|Sebastian Mendoza|Walter Encina",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Cuerdas de Amor",
+        "isrc": "ARBF32000013",
+        "album": "Cuerdas de Amor",
+        "company": "FUGA",
+        "release_date": "2021-05-20",
+        "upc": "655857985095",
         "type": "audio"
       }
     ]
   },
   {
     "artist": "ACIT x",
-    "track_count": 3,
-    "companies": [
-      "MAWZ Music"
-    ],
+    "track_count": 2,
+    "companies": [],
     "tracks": [
-      {
-        "track": "BRUSI",
-        "isrc": "ARDL12500042",
-        "album": "CASINO",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2019 - 31/12/2099",
-        "upc": "",
-        "type": "audio"
-      },
       {
         "track": "Fancy",
         "isrc": "ARDL12500074",
@@ -453,17 +378,19 @@
     ]
   },
   {
-    "artist": "ADICTIVA RKT",
+    "artist": "ACIT x|BRUSI",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "MAWZ Music"
+    ],
     "tracks": [
       {
-        "track": "Eze Greco",
-        "isrc": "DIMELO GABBO",
-        "album": "DIMELO GABBO",
-        "company": "",
-        "release_date": "QMFMG2598626",
-        "upc": "ADICTIVA RKT",
+        "track": "CASINO",
+        "isrc": "ARDL12500042",
+        "album": "CASINO",
+        "company": "MAWZ Music",
+        "release_date": "01/01/2019 - 31/12/2099",
+        "upc": "8721416050404",
         "type": "audio"
       }
     ]
@@ -532,17 +459,55 @@
     ]
   },
   {
-    "artist": "Alan SSLk",
+    "artist": "Agus Gomez|Amiel|Neko",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "The Orchard"
+    ],
     "tracks": [
       {
-        "track": "PACORMX",
+        "track": "Whisky Con Pomelo (Remix)",
+        "isrc": "GBSMU7967849",
+        "album": "Whisky Con Pomelo (Remix)",
+        "company": "The Orchard",
+        "release_date": "2019-12-20",
+        "upc": "8445162487788",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Alan Gomez|Lucas Rmx|Matias Mareco",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Raka Taka Taka (fb)",
+        "isrc": "ARHXW2002581",
+        "album": "Raka Taka Taka (fb)",
+        "company": "FUGA",
+        "release_date": "2021-04-27",
+        "upc": "655857944481",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Alan SSLk|PACORMX",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Corazoncito",
         "isrc": "ARDL12500039",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
+        "album": "Corazoncito",
+        "company": "FUGA",
+        "release_date": "20250807",
+        "upc": "8721215398622",
         "type": "audio"
       }
     ]
@@ -697,16 +662,16 @@
         "type": "audio"
       },
       {
-        "track": "Quiero Ser Santo",
-        "isrc": "ARDL12400057",
-        "album": "Quiero Ser Santo",
+        "track": "Santo Por Siempre",
+        "isrc": "ARDL12400039",
+        "album": "Santo Por Siempre",
         "company": "MAWZ Music",
-        "release_date": "01/01/2019 - 31/12/2099",
-        "upc": "8721093631187",
+        "release_date": "29/6/2024",
+        "upc": "8721093407553",
         "type": "audio"
       },
       {
-        "track": "En Intimidad",
+        "track": "En Intimidad&#13;",
         "isrc": "ARDL12400045",
         "album": "En Intimidad",
         "company": "MAWZ Music",
@@ -715,35 +680,19 @@
         "type": "audio"
       },
       {
-        "track": "Santo Por Siempre",
-        "isrc": "ARDL12400039",
-        "album": "Santo Por Siempre",
+        "track": "Quiero Ser Santo",
+        "isrc": "ARDL12400057",
+        "album": "Quiero Ser Santo",
         "company": "MAWZ Music",
         "release_date": "01/01/2019 - 31/12/2099",
-        "upc": "8721093407553",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Amor de Colegio",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Matias Mareco",
-        "isrc": "JOEL RMX",
-        "album": "JOEL RMX",
-        "company": "",
-        "release_date": "QM6MZ2672868",
-        "upc": "Amor de Colegio",
+        "upc": "8721093631187",
         "type": "audio"
       }
     ]
   },
   {
     "artist": "Aneley",
-    "track_count": 14,
+    "track_count": 11,
     "companies": [
       "FUGA"
     ],
@@ -782,33 +731,6 @@
         "company": "FUGA",
         "release_date": "20250612",
         "upc": "8721215619345",
-        "type": "audio"
-      },
-      {
-        "track": "Maxi Espindola",
-        "isrc": "ARDL12500056",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "La Kuppe",
-        "isrc": "ARDL12500069",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Coty Hernández",
-        "isrc": "ARDL12500084",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
         "type": "audio"
       },
       {
@@ -893,6 +815,54 @@
     ]
   },
   {
+    "artist": "Aneley|Coty Hernández",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "Amigos No Por Favor",
+        "isrc": "ARDL12500084",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Aneley|La Kuppe",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "Como Duele Perderte",
+        "isrc": "ARDL12500069",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Aneley|Maxi Espindola|Valen",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "Ese Hombre",
+        "isrc": "ARDL12500056",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      }
+    ]
+  },
+  {
     "artist": "Aprecio de Sangre",
     "track_count": 1,
     "companies": [
@@ -901,7 +871,7 @@
     "tracks": [
       {
         "track": "Hermoso momento",
-        "isrc": "ARdl12300034",
+        "isrc": "ARDL12300034",
         "album": "Single",
         "company": "MAWZ Music",
         "release_date": "01/01/2020 - 31/12/2099",
@@ -1004,17 +974,19 @@
     ]
   },
   {
-    "artist": "ATREVIDA",
+    "artist": "Ariel Casco|Amapola",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "ADA"
+    ],
     "tracks": [
       {
-        "track": "FACUU DJ",
-        "isrc": "Kaleb Di Masi",
-        "album": "Kaleb Di Masi",
-        "company": "",
-        "release_date": "ARDL12500005",
-        "upc": "ATREVIDA",
+        "track": "Sería un Error",
+        "isrc": "ARHXW2002269",
+        "album": "Sería un Error",
+        "company": "ADA",
+        "release_date": "2020-06-20",
+        "upc": "8445162116909",
         "type": "audio"
       }
     ]
@@ -1026,24 +998,6 @@
       "FUGA"
     ],
     "tracks": [
-      {
-        "track": "No Tengo Time",
-        "isrc": "ARDL12500007",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "LAVAGIRL",
-        "isrc": "ARDL12500008",
-        "album": "LAVAGIRL",
-        "company": "FUGA",
-        "release_date": "20250214",
-        "upc": "8721253808190",
-        "type": "audio"
-      },
       {
         "track": "Suggar Babi",
         "isrc": "QZTPX2388267",
@@ -1061,60 +1015,30 @@
         "release_date": "20240803",
         "upc": "8721093580119",
         "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Baila Lento RKT",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
+      },
       {
-        "track": "Tibbass",
-        "isrc": "BRIIAN DJ",
-        "album": "BRIIAN DJ",
+        "track": "No Tengo Time",
+        "isrc": "ARDL12500007",
+        "album": "",
         "company": "",
-        "release_date": "QM7282559501",
-        "upc": "Baila Lento RKT",
+        "release_date": "",
+        "upc": "",
         "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Baile Inolvidable",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
+      },
       {
-        "track": "Matias Mareco",
-        "isrc": "EIRON RMX",
-        "album": "EIRON RMX",
-        "company": "",
-        "release_date": "QMDA72522924",
-        "upc": "Baile Inolvidable",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "BERRETINES DE ARTISTA",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "FederiKita",
-        "isrc": "Baby Cue",
-        "album": "Baby Cue",
-        "company": "",
-        "release_date": "ARDL12500024",
-        "upc": "BERRETINES DE ARTISTA",
+        "track": "LAVAGIRL",
+        "isrc": "ARDL12500008",
+        "album": "LAVAGIRL",
+        "company": "FUGA",
+        "release_date": "20250214",
+        "upc": "8721253808190",
         "type": "audio"
       }
     ]
   },
   {
     "artist": "Bianca Lif",
-    "track_count": 16,
+    "track_count": 14,
     "companies": [
       "FUGA",
       "Mojo Music & Media"
@@ -1127,51 +1051,6 @@
         "company": "Mojo Music & Media",
         "release_date": "2024-10-14",
         "upc": "8721253116042",
-        "type": "audio"
-      },
-      {
-        "track": "1",
-        "isrc": "ARDL12600099",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "2",
-        "isrc": "ARDL12600100",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "3",
-        "isrc": "ARDL12600101",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "4",
-        "isrc": "ARDL12600102",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Vale",
-        "isrc": "ARDL12500012",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
         "type": "audio"
       },
       {
@@ -1247,6 +1126,42 @@
         "type": "audio"
       },
       {
+        "track": "1",
+        "isrc": "ARDL12600099",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "2",
+        "isrc": "ARDL12600100",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "3",
+        "isrc": "ARDL12600101",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "4",
+        "isrc": "ARDL12600102",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
         "track": "Rebolea Remix",
         "isrc": "ARDL12400007",
         "album": "",
@@ -1254,14 +1169,50 @@
         "release_date": "16/05/2024",
         "upc": "1963622207990",
         "type": "audio"
-      },
+      }
+    ]
+  },
+  {
+    "artist": "Bianca Lif|Alan Gomez",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
       {
         "track": "VAI DANZA",
         "isrc": "ARDL12400074",
-        "album": "",
-        "company": "",
-        "release_date": "",
+        "album": "VAI DANZA",
+        "company": "The Orchard",
+        "release_date": "2024-08-24",
         "upc": "8721093809234",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Bianca Lif|Vale",
+    "track_count": 2,
+    "companies": [
+      "Mojo Music & Media"
+    ],
+    "tracks": [
+      {
+        "track": "Abusal",
+        "isrc": "AR5UH2402185",
+        "album": "Abusal",
+        "company": "Mojo Music & Media",
+        "release_date": "2025-03-20",
+        "upc": "8721215030614",
+        "type": "audio"
+      },
+      {
+        "track": "Abusal",
+        "isrc": "ARDL12500012",
+        "album": "",
+        "company": "Mojo Music & Media",
+        "release_date": "",
+        "upc": "",
         "type": "audio"
       }
     ]
@@ -1269,15 +1220,17 @@
   {
     "artist": "Biei, Croniko",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "FUGA"
+    ],
     "tracks": [
       {
         "track": "BLIN",
         "isrc": "ARDL12500015",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
+        "album": "BLIN",
+        "company": "FUGA",
+        "release_date": "20250417",
+        "upc": "8721215163329",
         "type": "audio"
       }
     ]
@@ -1299,60 +1252,37 @@
     ]
   },
   {
-    "artist": "BLIN",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Biei Postiglioni",
-        "isrc": "Croniko",
-        "album": "Croniko",
-        "company": "",
-        "release_date": "ARDL12500015",
-        "upc": "BLIN",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "BUCCI",
-    "track_count": 2,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "El Doc",
-        "isrc": "ARDL12500019",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Fak",
-        "isrc": "Som Som",
-        "album": "Som Som",
-        "company": "",
-        "release_date": "8721093630722",
-        "upc": "ARDL12400056",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "BUCCI, Fak",
+    "artist": "BUCCI |FAK",
     "track_count": 1,
     "companies": [
       "MAWZ Music"
     ],
     "tracks": [
       {
-        "track": "Som Som",
+        "track": "SOM SOM",
         "isrc": "ARDL12400056",
         "album": "Som Som",
         "company": "MAWZ Music",
         "release_date": "01/01/2019 - 31/12/2099",
         "upc": "8721093630722",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "BUCCI|El Doc",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "TIK TAK",
+        "isrc": "ARDL12500019",
+        "album": "TIK TAK",
+        "company": "FUGA",
+        "release_date": "20250515",
+        "upc": "8721215425519",
         "type": "audio"
       }
     ]
@@ -1384,30 +1314,12 @@
   },
   {
     "artist": "Cande Gonzalez",
-    "track_count": 6,
+    "track_count": 4,
     "companies": [],
     "tracks": [
       {
-        "track": "El Joan",
-        "isrc": "ARDL12400104",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
         "track": "Prime",
         "isrc": "ARDL12600114",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Agus Padilla",
-        "isrc": "ARDL12500021",
         "album": "",
         "company": "",
         "release_date": "",
@@ -1444,17 +1356,53 @@
     ]
   },
   {
-    "artist": "Candu Dominguez",
-    "track_count": 7,
+    "artist": "Cande Gonzalez|Agus Padilla|Gusty dj",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Tensión",
+        "isrc": "ARDL12500021",
+        "album": "Tensión",
+        "company": "FUGA",
+        "release_date": "20250521",
+        "upc": "8721215493754",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Cande Gonzalez|El Joan",
+    "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "3:33",
-        "isrc": "ARDL12500030",
+        "track": "Nos Escapamos",
+        "isrc": "ARDL12400104",
         "album": "",
         "company": "",
         "release_date": "",
         "upc": "",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Candu Dominguez",
+    "track_count": 6,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "3:33",
+        "isrc": "ARDL12500030",
+        "album": "3:33",
+        "company": "FUGA",
+        "release_date": "20250617",
+        "upc": "8721215676898",
         "type": "audio"
       },
       {
@@ -1469,15 +1417,6 @@
       {
         "track": "Por Qué Tú",
         "isrc": "ARDL12500059",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Fak",
-        "isrc": "ARDL12500089",
         "album": "",
         "company": "",
         "release_date": "",
@@ -1514,17 +1453,17 @@
     ]
   },
   {
-    "artist": "CASINO",
+    "artist": "Candu Dominguez|Fak",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "ACIT x",
-        "isrc": "good Brusi",
-        "album": "good Brusi",
+        "track": "Qué Ironía",
+        "isrc": "ARDL12500089",
+        "album": "",
         "company": "",
-        "release_date": "ARDL12500042",
-        "upc": "CASINO",
+        "release_date": "",
+        "upc": "",
         "type": "audio"
       }
     ]
@@ -1661,76 +1600,19 @@
     ]
   },
   {
-    "artist": "Claudio Magno",
+    "artist": "Coco Palmer|Joaquin Da Rosa",
     "track_count": 1,
     "companies": [
-      "Altafonte"
+      "FUGA"
     ],
     "tracks": [
       {
-        "track": "No Insistas",
-        "isrc": "ARBF32000035",
-        "album": "Barrio y Corazón",
-        "company": "Altafonte",
-        "release_date": "31/03/2025 - 31/12/2099",
-        "upc": "",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Clima RKT",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Virrshi DJ",
-        "isrc": "Damian Escudero DJ",
-        "album": "Damian Escudero DJ",
-        "company": "",
-        "release_date": "QM6P42581174",
-        "upc": "Clima RKT",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Coco Palmer",
-    "track_count": 2,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Joaquin Da Rosa",
+        "track": "Romantico",
         "isrc": "ARDL12500002",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Turrita",
-        "isrc": "Orce",
-        "album": "FACUU DJ",
-        "company": "",
-        "release_date": "Coco Palmer",
-        "upc": "FACUU DJ",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "CON UNA CUBANA RKT",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Sossa",
-        "isrc": "DJ TRA RKT",
-        "album": "DJ TRA RKT",
-        "company": "",
-        "release_date": "US6R22553422",
-        "upc": "CON UNA CUBANA RKT",
+        "album": "Romántico",
+        "company": "FUGA",
+        "release_date": "20250213",
+        "upc": "8721253660569",
         "type": "audio"
       }
     ]
@@ -1747,7 +1629,7 @@
         "isrc": "ARDL12300037",
         "album": "Mi Ritmo",
         "company": "MAWZ Music",
-        "release_date": "14/12/2023 - 31/12/2099",
+        "release_date": "14/12/2023",
         "upc": "1963621862688",
         "type": "audio"
       }
@@ -1755,11 +1637,20 @@
   },
   {
     "artist": "CORAZON SINCERO",
-    "track_count": 6,
+    "track_count": 4,
     "companies": [
       "MAWZ Music"
     ],
     "tracks": [
+      {
+        "track": "Tan Cerca",
+        "isrc": "ARDL12300039",
+        "album": "Mi Ritmo",
+        "company": "MAWZ Music",
+        "release_date": "25/01/2023",
+        "upc": "",
+        "type": "audio"
+      },
       {
         "track": "Amor Regresa",
         "isrc": "US3DF2431650",
@@ -1779,15 +1670,6 @@
         "type": "audio"
       },
       {
-        "track": "Tan Cerca",
-        "isrc": "ARDL12300039",
-        "album": "Tan Cerca",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "",
-        "type": "audio"
-      },
-      {
         "track": "Ritmo Cachaquero",
         "isrc": "ARDL12300033",
         "album": "Ritmo Cachaquero",
@@ -1795,50 +1677,16 @@
         "release_date": "01/01/2020 - 31/12/2099",
         "upc": "",
         "type": "audio"
-      },
-      {
-        "track": "Toma Mi Corazón",
-        "isrc": "US-3DF-24-31655",
-        "album": "[merged] Mi Ritmo",
-        "company": "MAWZ Music",
-        "release_date": "[merged] 04/04/2024",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Amor Regresa",
-        "isrc": "US-3DF-24-31650",
-        "album": "[merged] Mi Ritmo",
-        "company": "MAWZ Music",
-        "release_date": "[merged] 04/04/2024",
-        "upc": "",
-        "type": "audio"
       }
     ]
   },
   {
-    "artist": "Corazoncito",
+    "artist": "Dai Sanchez|Daniel Cardozo",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "Alan SSLK",
-        "isrc": "PACOREMIX",
-        "album": "PACOREMIX",
-        "company": "",
-        "release_date": "ARDL12500039",
-        "upc": "Corazoncito",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Dai Sanchez",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Daniel Cardozo",
+        "track": "Indiferente",
         "isrc": "ARDL12500088",
         "album": "",
         "company": "",
@@ -1903,65 +1751,19 @@
     ]
   },
   {
-    "artist": "Dale Chispeate",
+    "artist": "Daka|Tiago PZK",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "ADA"
+    ],
     "tracks": [
       {
-        "track": "ManuVe",
-        "isrc": "HDR",
-        "album": "HDR",
-        "company": "",
-        "release_date": "ARDL12400030",
-        "upc": "Dale Chispeate",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "DALE CON LA CORREA",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "DJ Lazerk Rmx",
-        "isrc": "Tomi Rmx",
-        "album": "Tomi Rmx",
-        "company": "",
-        "release_date": "QMDA62568121",
-        "upc": "DALE CON LA CORREA",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Dale Menea Mueveme Esa Cola",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "LAALODJ",
-        "isrc": "Matt Sebastian",
-        "album": "Matt Sebastian",
-        "company": "",
-        "release_date": "ARDL12400040",
-        "upc": "Dale Menea Mueveme Esa Cola",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Diabolica Rkt",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "FACUU DJ",
-        "isrc": "Papu DJ",
-        "album": "Papu DJ",
-        "company": "",
-        "release_date": "ARDL12400066",
-        "upc": "Diabolica Rkt",
+        "track": "Loba",
+        "isrc": "QZHN51934881",
+        "album": "Loba",
+        "company": "ADA",
+        "release_date": "2019-09-28",
+        "upc": "8445162490764",
         "type": "audio"
       }
     ]
@@ -2118,22 +1920,6 @@
     ]
   },
   {
-    "artist": "DJ Bryanflow",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Terremoto (Remix)",
-        "isrc": "Matias Mareco DJ",
-        "album": "Lucas Rmx",
-        "company": "",
-        "release_date": "DJ Bryanflow",
-        "upc": "Lucas Rmx",
-        "type": "audio"
-      }
-    ]
-  },
-  {
     "artist": "DJ Lazerk Rmx",
     "track_count": 1,
     "companies": [
@@ -2152,8 +1938,44 @@
     ]
   },
   {
+    "artist": "DJ Lazerk Rmx|Matias Mareco",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "ESTO ES HASTA ABAJO",
+        "isrc": "QM7282591641",
+        "album": "ESTO ES HASTA ABAJO",
+        "company": "The Orchard",
+        "release_date": "2025-05-28",
+        "upc": "199350827167",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "DJ Lazerk Rmx|Tomi Rmx",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "DALE CON LA CORREA",
+        "isrc": "QMDA62568121",
+        "album": "DALE CON LA CORREA",
+        "company": "The Orchard",
+        "release_date": "2025-06-07",
+        "upc": "199538273465",
+        "type": "audio"
+      }
+    ]
+  },
+  {
     "artist": "Dj Plaga",
-    "track_count": 10,
+    "track_count": 3,
     "companies": [
       "MAWZ Music"
     ],
@@ -2161,51 +1983,6 @@
       {
         "track": "Capaz No Vuelvo",
         "isrc": "ARDL12600021",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Benji Gramitos",
-        "isrc": "ARDL12500027",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Mc Tota",
-        "isrc": "ARDL12500037",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "mamiyosoyelth",
-        "isrc": "ARDL12500058",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "John Eric",
-        "isrc": "ARDL12500061",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Mc Tota",
-        "isrc": "ARDL12500071",
         "album": "",
         "company": "",
         "release_date": "",
@@ -2222,30 +1999,12 @@
         "type": "audio"
       },
       {
-        "track": "Benji Gramitos",
-        "isrc": "ENVUELTO",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
         "track": "Guerra",
         "isrc": "ARDL12300019",
         "album": "Guerra",
         "company": "MAWZ Music",
         "release_date": "26/09/2023 - 31/12/2099",
         "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Sentado En La Esquina - Remix",
-        "isrc": "ARDL12300032",
-        "album": "Sentado En La Esquina - Remix",
-        "company": "MAWZ Music",
-        "release_date": "09/11/2023 - 31/12/2099",
-        "upc": "1963621712952",
         "type": "audio"
       }
     ]
@@ -2315,7 +2074,7 @@
         "album": "Ni Ahi, Ni Aca, Ni Allá",
         "company": "MAWZ Music",
         "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "",
+        "upc": "744553773386",
         "type": "audio"
       },
       {
@@ -2324,7 +2083,25 @@
         "album": "Perreo plaga",
         "company": "MAWZ Music",
         "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "",
+        "upc": "717931908113",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Dj Plaga, La Piedra Urbana, Lira",
+    "track_count": 1,
+    "companies": [
+      "MAWZ Music"
+    ],
+    "tracks": [
+      {
+        "track": "Sentado En La Esquina - Remix",
+        "isrc": "ARDL12300032",
+        "album": "Sentado En La Esquina - Remix",
+        "company": "MAWZ Music",
+        "release_date": "09/11/2023",
+        "upc": "1963621712952",
         "type": "audio"
       }
     ]
@@ -2342,16 +2119,335 @@
         "album": "Chapeo Sessions #1",
         "company": "MAWZ Music",
         "release_date": "01/01/2020 - 31/12/2099",
+        "upc": "711709747287",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Dj Plaga|Benji Gramitos",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "ENVUELTO",
+        "isrc": "ARDL12500027",
+        "album": "ENVUELTO",
+        "company": "FUGA",
+        "release_date": "20250625",
+        "upc": "8721215620686",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Dj Plaga|John Eric|Santiago Berrio",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "Guarache",
+        "isrc": "ARDL12500061",
+        "album": "",
+        "company": "",
+        "release_date": "",
         "upc": "",
         "type": "audio"
       }
     ]
   },
   {
-    "artist": "Dormun",
+    "artist": "Dj Plaga|mamiyosoyelth",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "PERREO TH7",
+        "isrc": "ARDL12500058",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Dj Plaga|Mc Tota|El Turko",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "La Egresada",
+        "isrc": "ARDL12500037",
+        "album": "La Egresada",
+        "company": "FUGA",
+        "release_date": "20250728",
+        "upc": "8721215963585",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Dj Plaga|Mc Tota|El Turko|mamiyosoyelth",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "Tumbalakatumba",
+        "isrc": "ARDL12500071",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "DJSNOWS|Nacho Pereira",
+    "track_count": 12,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "REGGAETON RKT",
+        "isrc": "QMDA72531935",
+        "album": "EP #2",
+        "company": "The Orchard",
+        "release_date": "2025-08-07",
+        "upc": "199538458701",
+        "type": "audio"
+      },
+      {
+        "track": "MOVIMIENTO RKT",
+        "isrc": "QMDA72531936",
+        "album": "EP #2",
+        "company": "The Orchard",
+        "release_date": "2025-08-07",
+        "upc": "199538458701",
+        "type": "audio"
+      },
+      {
+        "track": "LLAMÁNDOME RKT",
+        "isrc": "QMDA72531937",
+        "album": "EP #2",
+        "company": "The Orchard",
+        "release_date": "2025-08-07",
+        "upc": "199538458701",
+        "type": "audio"
+      },
+      {
+        "track": "BAILE INOLVIDABLE RKT",
+        "isrc": "QMDA72531938",
+        "album": "EP #2",
+        "company": "The Orchard",
+        "release_date": "2025-08-07",
+        "upc": "199538458701",
+        "type": "audio"
+      },
+      {
+        "track": "PAPASITO",
+        "isrc": "QMFME2520975",
+        "album": "BONUS TRACK EP #2",
+        "company": "The Orchard",
+        "release_date": "2025-09-04",
+        "upc": "199538687835",
+        "type": "audio"
+      },
+      {
+        "track": "INTRO AY VAMOS RKT",
+        "isrc": "QM4TW2630668",
+        "album": "INTRO AY VAMOS RKT",
+        "company": "The Orchard",
+        "release_date": "2026-01-15",
+        "upc": "199806967171",
+        "type": "audio"
+      },
+      {
+        "track": "PASO SOLITA X RELACION RKT",
+        "isrc": "QM4TW2630608",
+        "album": "PASO SOLITA X RELACION RKT",
+        "company": "The Orchard",
+        "release_date": "2026-01-15",
+        "upc": "199806966884",
+        "type": "audio"
+      },
+      {
+        "track": "TU TA DEMASIADO LOCA RKT",
+        "isrc": "QM4TW2630601",
+        "album": "TU TA DEMASIADO LOCA RKT",
+        "company": "The Orchard",
+        "release_date": "2026-01-15",
+        "upc": "199806967447",
+        "type": "audio"
+      },
+      {
+        "track": "BESOS MOJADOS RKT",
+        "isrc": "QM4TW2628287",
+        "album": "BESOS MOJADOS RKT",
+        "company": "The Orchard",
+        "release_date": "2026-01-15",
+        "upc": "199806947371",
+        "type": "audio"
+      },
+      {
+        "track": "NO PARE RKT",
+        "isrc": "QM4TX2631268",
+        "album": "NO PARE RKT",
+        "company": "The Orchard",
+        "release_date": "2026-02-05",
+        "upc": "820200283702",
+        "type": "audio"
+      },
+      {
+        "track": "MÉTELO SÁCALO RKT",
+        "isrc": "QM4TX2631277",
+        "album": "MÉTELO SÁCALO RKT",
+        "company": "The Orchard",
+        "release_date": "2026-02-05",
+        "upc": "820200222237",
+        "type": "audio"
+      },
+      {
+        "track": "ELLA FUMA RKT",
+        "isrc": "QM4TX2631282",
+        "album": "ELLA FUMA RKT",
+        "company": "The Orchard",
+        "release_date": "2026-02-09",
+        "upc": "820200248749",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "DJSNOWS|Nacho Pereira|Adri Fuentes",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "PIDE LO QUE TU QUIERAS X TIKI TIKI RKT",
+        "isrc": "QM4TW2630591",
+        "album": "PIDE LO QUE TU QUIERAS X TIKI TIKI RKT",
+        "company": "The Orchard",
+        "release_date": "2026-01-15",
+        "upc": "199806985304",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "DJSNOWS|Nacho Pereira|Adriel Garcia",
     "track_count": 2,
     "companies": [
-      "ONErpm"
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "AZOTE EN 4",
+        "isrc": "QMFME2520966",
+        "album": "BONUS TRACK EP #2",
+        "company": "The Orchard",
+        "release_date": "2025-09-04",
+        "upc": "199538687835",
+        "type": "audio"
+      },
+      {
+        "track": "COQUETA",
+        "isrc": "QMFME2520974",
+        "album": "BONUS TRACK EP #2",
+        "company": "The Orchard",
+        "release_date": "2025-09-04",
+        "upc": "199538687835",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "DJSNOWS|Nacho Pereira|DJ Adri Fuentes",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "PIERDO LA CABEZA RKT",
+        "isrc": "QM4TX2632416",
+        "album": "PIERDO LA CABEZA RKT",
+        "company": "The Orchard",
+        "release_date": "2026-02-09",
+        "upc": "820200279910",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "DJSNOWS|Nacho Pereira|LAALODJ",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "la fiesta empezó",
+        "isrc": "QMFMG2520274",
+        "album": "la fiesta empezó",
+        "company": "The Orchard",
+        "release_date": "2025-11-05",
+        "upc": "199806347805",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "DJSNOWS|sheafiell|Nacho Pereira",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "INTRO TU JARDÍN CON ENANITOS RKT",
+        "isrc": "QM4TW2628286",
+        "album": "INTRO TU JARDÍN CON ENANITOS RKT",
+        "company": "The Orchard",
+        "release_date": "2026-01-15",
+        "upc": "199806947562",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "DJSNOWS|TOTI|Nacho Pereira",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "LA LLEVO PA EL ESPACIO RKT",
+        "isrc": "QM4TW2630567",
+        "album": "LA LLEVO PA EL ESPACIO RKT",
+        "company": "The Orchard",
+        "release_date": "2026-01-15",
+        "upc": "199806974391",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Dormun",
+    "track_count": 3,
+    "companies": [
+      "ONErpm",
+      "Warner Music"
     ],
     "tracks": [
       {
@@ -2371,12 +2467,21 @@
         "release_date": "2024-10-30",
         "upc": "734284457792",
         "type": "audio"
+      },
+      {
+        "track": "El Farsante",
+        "isrc": "ARDL12400078",
+        "album": "Somos 3",
+        "company": "Warner Music",
+        "release_date": "10/09/2024 - 31/12/2099",
+        "upc": "8721093907237",
+        "type": "audio"
       }
     ]
   },
   {
     "artist": "Dresscode",
-    "track_count": 2,
+    "track_count": 1,
     "companies": [],
     "tracks": [
       {
@@ -2387,52 +2492,52 @@
         "release_date": "Neutro Shorty",
         "upc": "",
         "type": "audio"
-      },
+      }
+    ]
+  },
+  {
+    "artist": "Dura DJ|Gutti Ezequiel",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
       {
-        "track": "LIT killah",
-        "isrc": "Neutro Shorty",
-        "album": "Neutro Shorty",
-        "company": "",
-        "release_date": "ARDL12500034",
-        "upc": "Dresscode",
+        "track": "Trumpet Club",
+        "isrc": "QMBZ92665832",
+        "album": "Trumpet Club",
+        "company": "The Orchard",
+        "release_date": "2026-07-02",
+        "upc": "820233876650",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Dura DJ|Maate DJ",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Intro Explota tu Joda",
+        "isrc": "QMBZ92691528",
+        "album": "Intro Explota tu Joda",
+        "company": "The Orchard",
+        "release_date": "2026-07-16",
+        "upc": "820233959315",
         "type": "audio"
       }
     ]
   },
   {
     "artist": "EIRON RMX",
-    "track_count": 5,
+    "track_count": 2,
     "companies": [
       "The Orchard"
     ],
     "tracks": [
-      {
-        "track": "Hecho por Nosotros",
-        "isrc": "Para los que Sienten como Nosotros",
-        "album": "JOEL RMX",
-        "company": "",
-        "release_date": "JOEL RMX",
-        "upc": "Matias Mareco",
-        "type": "audio"
-      },
-      {
-        "track": "CHAMAQUITA VEN",
-        "isrc": "Matías Mareco",
-        "album": "JOEL RMX",
-        "company": "",
-        "release_date": "EIRON RMX",
-        "upc": "JOEL RMX",
-        "type": "audio"
-      },
-      {
-        "track": "JOEL RMX",
-        "isrc": "Para Que Lo Bailen De Verdad",
-        "album": "Ventu",
-        "company": "",
-        "release_date": "Ventu",
-        "upc": "Matias Mareco",
-        "type": "audio"
-      },
       {
         "track": "PA LA GATA",
         "isrc": "QMDA62641345",
@@ -2467,6 +2572,105 @@
         "album": "Derrapando",
         "company": "ADA",
         "release_date": "2017-12-22",
+        "upc": "8445162523745",
+        "type": "audio"
+      },
+      {
+        "track": "Bajo Bandera",
+        "isrc": "ARBF32100034",
+        "album": "Derrapando",
+        "company": "The Orchard",
+        "release_date": "20211021",
+        "upc": "8445162523745",
+        "type": "audio"
+      },
+      {
+        "track": "Sobre el Verde (El Hincha)",
+        "isrc": "ARBF32100033",
+        "album": "Derrapando",
+        "company": "The Orchard",
+        "release_date": "20211021",
+        "upc": "8445162523745",
+        "type": "audio"
+      },
+      {
+        "track": "Mi Mujer Me Demanda",
+        "isrc": "ARBF32100032",
+        "album": "Derrapando",
+        "company": "The Orchard",
+        "release_date": "20211021",
+        "upc": "8445162523745",
+        "type": "audio"
+      },
+      {
+        "track": "Casi Lo Normal",
+        "isrc": "ARBF32100031",
+        "album": "Derrapando",
+        "company": "The Orchard",
+        "release_date": "20211021",
+        "upc": "8445162523745",
+        "type": "audio"
+      },
+      {
+        "track": "Ya No Puede Más",
+        "isrc": "ARBF32100030",
+        "album": "Derrapando",
+        "company": "The Orchard",
+        "release_date": "20211021",
+        "upc": "8445162523745",
+        "type": "audio"
+      },
+      {
+        "track": "Ser de Vos",
+        "isrc": "ARBF32100029",
+        "album": "Derrapando",
+        "company": "The Orchard",
+        "release_date": "20211021",
+        "upc": "8445162523745",
+        "type": "audio"
+      },
+      {
+        "track": "Las Monedas Se Van",
+        "isrc": "ARBF32100028",
+        "album": "Derrapando",
+        "company": "The Orchard",
+        "release_date": "20211021",
+        "upc": "8445162523745",
+        "type": "audio"
+      },
+      {
+        "track": "Negra",
+        "isrc": "ARBF32100027",
+        "album": "Derrapando",
+        "company": "The Orchard",
+        "release_date": "20211021",
+        "upc": "8445162523745",
+        "type": "audio"
+      },
+      {
+        "track": "Himno del Separado (Tal Vez)",
+        "isrc": "ARBF32100026",
+        "album": "Derrapando",
+        "company": "The Orchard",
+        "release_date": "20211021",
+        "upc": "8445162523745",
+        "type": "audio"
+      },
+      {
+        "track": "Lunes",
+        "isrc": "ARBF32100025",
+        "album": "Derrapando",
+        "company": "The Orchard",
+        "release_date": "20211021",
+        "upc": "8445162523745",
+        "type": "audio"
+      },
+      {
+        "track": "No Llames (Por Favor)",
+        "isrc": "ARBF32100024",
+        "album": "Derrapando",
+        "company": "The Orchard",
+        "release_date": "20211021",
         "upc": "8445162523745",
         "type": "audio"
       },
@@ -2577,105 +2781,6 @@
         "release_date": "2021-10-21",
         "upc": "",
         "type": "audio"
-      },
-      {
-        "track": "Bajo Bandera",
-        "isrc": "ARBF32100034",
-        "album": "Derrapando",
-        "company": "The Orchard",
-        "release_date": "20211021",
-        "upc": "8445162523745",
-        "type": "audio"
-      },
-      {
-        "track": "Sobre el Verde (El Hincha)",
-        "isrc": "ARBF32100033",
-        "album": "Derrapando",
-        "company": "The Orchard",
-        "release_date": "20211021",
-        "upc": "8445162523745",
-        "type": "audio"
-      },
-      {
-        "track": "Mi Mujer Me Demanda",
-        "isrc": "ARBF32100032",
-        "album": "Derrapando",
-        "company": "The Orchard",
-        "release_date": "20211021",
-        "upc": "8445162523745",
-        "type": "audio"
-      },
-      {
-        "track": "Casi Lo Normal",
-        "isrc": "ARBF32100031",
-        "album": "Derrapando",
-        "company": "The Orchard",
-        "release_date": "20211021",
-        "upc": "8445162523745",
-        "type": "audio"
-      },
-      {
-        "track": "Ya No Puede Más",
-        "isrc": "ARBF32100030",
-        "album": "Derrapando",
-        "company": "The Orchard",
-        "release_date": "20211021",
-        "upc": "8445162523745",
-        "type": "audio"
-      },
-      {
-        "track": "Ser de Vos",
-        "isrc": "ARBF32100029",
-        "album": "Derrapando",
-        "company": "The Orchard",
-        "release_date": "20211021",
-        "upc": "8445162523745",
-        "type": "audio"
-      },
-      {
-        "track": "Las Monedas Se Van",
-        "isrc": "ARBF32100028",
-        "album": "Derrapando",
-        "company": "The Orchard",
-        "release_date": "20211021",
-        "upc": "8445162523745",
-        "type": "audio"
-      },
-      {
-        "track": "Negra",
-        "isrc": "ARBF32100027",
-        "album": "Derrapando",
-        "company": "The Orchard",
-        "release_date": "20211021",
-        "upc": "8445162523745",
-        "type": "audio"
-      },
-      {
-        "track": "Himno del Separado (Tal Vez)",
-        "isrc": "ARBF32100026",
-        "album": "Derrapando",
-        "company": "The Orchard",
-        "release_date": "20211021",
-        "upc": "8445162523745",
-        "type": "audio"
-      },
-      {
-        "track": "Lunes",
-        "isrc": "ARBF32100025",
-        "album": "Derrapando",
-        "company": "The Orchard",
-        "release_date": "20211021",
-        "upc": "8445162523745",
-        "type": "audio"
-      },
-      {
-        "track": "No Llames (Por Favor)",
-        "isrc": "ARBF32100024",
-        "album": "Derrapando",
-        "company": "The Orchard",
-        "release_date": "20211021",
-        "upc": "8445162523745",
-        "type": "audio"
       }
     ]
   },
@@ -2702,33 +2807,6 @@
       "FUGA"
     ],
     "tracks": [
-      {
-        "track": "Therian",
-        "isrc": "ARDL12600046",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Del Barrio Para el Barrio",
-        "isrc": "ARDL12500035",
-        "album": "Del Barrio Para el Barrio - Session 1",
-        "company": "FUGA",
-        "release_date": "20250717",
-        "upc": "8721215858119",
-        "type": "audio"
-      },
-      {
-        "track": "Lo Que Pasó, Pasó",
-        "isrc": "ARDL12500062",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
       {
         "track": "Igual Que Ayer",
         "isrc": "ARBF32100011",
@@ -2890,26 +2968,43 @@
         "release_date": "2021-05-18",
         "upc": "655857944443",
         "type": "audio"
+      },
+      {
+        "track": "Therian",
+        "isrc": "ARDL12600046",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "Del Barrio Para el Barrio",
+        "isrc": "ARDL12500035",
+        "album": "Del Barrio Para el Barrio - Session 1",
+        "company": "FUGA",
+        "release_date": "20250717",
+        "upc": "8721215858119",
+        "type": "audio"
+      },
+      {
+        "track": "Lo Que Pasó, Pasó",
+        "isrc": "ARDL12500062",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
       }
     ]
   },
   {
     "artist": "Elias Tom",
-    "track_count": 11,
+    "track_count": 8,
     "companies": [
-      "Altafonte",
       "FUGA"
     ],
     "tracks": [
-      {
-        "track": "Claudio Magno",
-        "isrc": "No Insistas",
-        "album": "Barrio y Corazón",
-        "company": "",
-        "release_date": "695845169236",
-        "upc": "ARBF32000035",
-        "type": "audio"
-      },
       {
         "track": "Si Te Preguntan",
         "isrc": "ARBF32000034",
@@ -2926,15 +3021,6 @@
         "company": "FUGA",
         "release_date": "2021-06-24",
         "upc": "695845169236",
-        "type": "audio"
-      },
-      {
-        "track": "Mr. Fonsy",
-        "isrc": "Ya Está Bien",
-        "album": "Barrio y Corazón",
-        "company": "",
-        "release_date": "695845169236",
-        "upc": "ARBF32000032",
         "type": "audio"
       },
       {
@@ -2990,48 +3076,50 @@
         "release_date": "20210624",
         "upc": "695845169236",
         "type": "audio"
-      },
+      }
+    ]
+  },
+  {
+    "artist": "Elias Tom|Claudio Magno",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
       {
-        "track": "Ya Está Bien",
-        "isrc": "ARBF32000032",
+        "track": "No Insistas",
+        "isrc": "ARBF32000035",
         "album": "Barrio y Corazón",
-        "company": "Altafonte",
-        "release_date": "31/03/2025 - 31/12/2099",
-        "upc": "",
+        "company": "FUGA",
+        "release_date": "2021-06-24",
+        "upc": "695845169236",
         "type": "audio"
       }
     ]
   },
   {
-    "artist": "Ella Lo Baila RKT",
+    "artist": "Elias Tom|Mr. Fonsy",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "FUGA"
+    ],
     "tracks": [
       {
-        "track": "Virrshi DJ",
-        "isrc": "DJ Kuff",
-        "album": "DJ Kuff",
-        "company": "",
-        "release_date": "QMDA62591912",
-        "upc": "Ella Lo Baila RKT",
+        "track": "Ya Está Bien",
+        "isrc": "ARBF32000032",
+        "album": "Barrio y Corazón",
+        "company": "FUGA",
+        "release_date": "2021-06-24",
+        "upc": "695845169236",
         "type": "audio"
       }
     ]
   },
   {
     "artist": "Emiliano Nahuel",
-    "track_count": 8,
+    "track_count": 6,
     "companies": [],
     "tracks": [
-      {
-        "track": "Benji Gramitos",
-        "isrc": "ARDL12600106",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
       {
         "track": "Pistolas Arriba",
         "isrc": "ARDL12600115",
@@ -3062,15 +3150,6 @@
       {
         "track": "Somos de Barrio",
         "isrc": "ARDL12500049",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "HDR",
-        "isrc": "ARDL12500067",
         "album": "",
         "company": "",
         "release_date": "",
@@ -3114,65 +3193,33 @@
     ]
   },
   {
-    "artist": "Emkier",
+    "artist": "Emiliano Nahuel|Benji Gramitos",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "Nena Percocet",
-        "isrc": "Krom",
-        "album": "Tiago PZK",
+        "track": "LOS QUE ATENTAN",
+        "isrc": "ARDL12600106",
+        "album": "",
         "company": "",
-        "release_date": "Emkier featuring Yung Fran",
-        "upc": "Tiago PZK",
+        "release_date": "",
+        "upc": "",
         "type": "audio"
       }
     ]
   },
   {
-    "artist": "ENVUELTO",
+    "artist": "Emiliano Nahuel|HDR|LCA FLK|kid wazi",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "Dj Plaga",
-        "isrc": "Benji Gramitos",
-        "album": "Benji Gramitos",
+        "track": "Plan B",
+        "isrc": "ARDL12500067",
+        "album": "",
         "company": "",
-        "release_date": "ARDL12500027",
-        "upc": "ENVUELTO",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "EP #2",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "DJSNOWS",
-        "isrc": "Nacho Pereira",
-        "album": "Nacho Pereira",
-        "company": "",
-        "release_date": "QMDA72531935",
-        "upc": "REGGAETON RKT",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "ESTO ES HASTA ABAJO",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "DJ Lazerk Rmx",
-        "isrc": "Matias Mareco",
-        "album": "Matias Mareco",
-        "company": "",
-        "release_date": "QM7282591641",
-        "upc": "ESTO ES HASTA ABAJO",
+        "release_date": "",
+        "upc": "",
         "type": "audio"
       }
     ]
@@ -3191,6 +3238,42 @@
         "company": "The Orchard",
         "release_date": "2026-01-09",
         "upc": "199806903124",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Eze Greco|DIMELO GABBO",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "ADICTIVA RKT",
+        "isrc": "QMFMG2598626",
+        "album": "ADICTIVA RKT",
+        "company": "The Orchard",
+        "release_date": "2025-12-03",
+        "upc": "199806599204",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Eze Greco|Tomi Rmx|Fede Tarifeño|ELAM MIX",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Murda RKT",
+        "isrc": "QMDA62637322",
+        "album": "Murda RKT",
+        "company": "The Orchard",
+        "release_date": "2026-07-24",
+        "upc": "885288133219",
         "type": "audio"
       }
     ]
@@ -3242,7 +3325,7 @@
   },
   {
     "artist": "FACUU DJ",
-    "track_count": 36,
+    "track_count": 21,
     "companies": [
       "FUGA",
       "ONErpm",
@@ -3250,174 +3333,12 @@
     ],
     "tracks": [
       {
-        "track": "Mc Tota",
-        "isrc": "ARDL12600002",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Oro y Platino",
-        "isrc": "ARDL12600076",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "LLegó la 26",
-        "isrc": "ARDL12600095",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Kaleb Di Masi",
-        "isrc": "ARDL12500005",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "El Joan",
-        "isrc": "ARDL12500017",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "mamiyosyoyelth",
-        "isrc": "ARDL12500053",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Paly",
-        "isrc": "ARDL12500092",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "LLEGÓ EL VERANO",
-        "isrc": "ARS8H2600001",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
-      {
-        "track": "SET LIVE 4",
-        "isrc": "ARS8H2600005",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
-      {
-        "track": "Oro y Platino",
-        "isrc": "ARS8H2600014",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
-      {
-        "track": "LLEGO LA 26",
-        "isrc": "ARS8H2600018",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
-      {
-        "track": "Set Live RKT #5 - FACUU DJ",
-        "isrc": "ARS8H2600033",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
-      {
-        "track": "MAMI TE JURO (PERREO TH)",
-        "isrc": "ARS8H2500008",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
-      {
-        "track": "Kaleb Di Masi",
-        "isrc": "ATREVIDA",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Gusty Dj",
-        "isrc": "PERREO DE CHOQUE",
-        "album": "LOS DUEÑOS DEL NUEVO PERREO",
-        "company": "",
-        "release_date": "8721253044475",
-        "upc": "ARDL12400085",
-        "type": "audio"
-      },
-      {
         "track": "Tengo Una Cadena RKT",
         "isrc": "QM6P42598979",
         "album": "Tengo Una Cadena RKT",
         "company": "The Orchard",
         "release_date": "2025-05-10",
         "upc": "199350595394",
-        "type": "audio"
-      },
-      {
-        "track": "LAALODJ",
-        "isrc": "ME PIDE CANDY",
-        "album": "LOS DUEÑOS DEL NUEVO PERREO",
-        "company": "",
-        "release_date": "8721253044475",
-        "upc": "ARDL12400086",
-        "type": "audio"
-      },
-      {
-        "track": "Matt Sebastian",
-        "isrc": "DJ Adri Fuentes",
-        "album": "LOS DUEÑOS DEL NUEVO PERREO",
-        "company": "",
-        "release_date": "ARDL12400087",
-        "upc": "PA TI ESTOY",
-        "type": "audio"
-      },
-      {
-        "track": "NAHU IN THE  MIX",
-        "isrc": "DALE PERREA",
-        "album": "LOS DUEÑOS DEL NUEVO PERREO",
-        "company": "",
-        "release_date": "8721253044475",
-        "upc": "ARDL12400088",
         "type": "audio"
       },
       {
@@ -3463,15 +3384,6 @@
         "company": "FUGA",
         "release_date": "2024-08-15",
         "upc": "8721093655305",
-        "type": "audio"
-      },
-      {
-        "track": "DJ Pirata",
-        "isrc": "Municiones Rkt",
-        "album": "Municiones Rkt",
-        "company": "",
-        "release_date": "8721093647935",
-        "upc": "ARDL12400064",
         "type": "audio"
       },
       {
@@ -3538,67 +3450,267 @@
         "type": "audio"
       },
       {
-        "track": "(IG) Municiones Rkt",
-        "isrc": "ARDL12400064",
+        "track": "Oro y Platino",
+        "isrc": "ARDL12600076",
         "album": "",
         "company": "",
         "release_date": "",
-        "upc": "8721093647935",
+        "upc": "",
         "type": "audio"
       },
       {
-        "track": "(IG) Pegate Para La Pared",
-        "isrc": "ARDL12400065",
+        "track": "LLegó la 26",
+        "isrc": "ARDL12600095",
         "album": "",
         "company": "",
         "release_date": "",
-        "upc": "8721093647928",
+        "upc": "",
         "type": "audio"
       },
       {
-        "track": "(IG) Diabolica Rkt",
-        "isrc": "ARDL12400066",
+        "track": "LLEGÓ EL VERANO",
+        "isrc": "ARS8H2600001",
         "album": "",
         "company": "",
         "release_date": "",
-        "upc": "8721093647966",
-        "type": "audio"
+        "upc": "",
+        "type": "video"
       },
       {
-        "track": "ME PIDE CANDY RKT&#13;",
-        "isrc": "ARDL12400080&#13;",
+        "track": "SET LIVE 4",
+        "isrc": "ARS8H2600005",
         "album": "",
         "company": "",
         "release_date": "",
-        "upc": "8721093910459",
+        "upc": "",
+        "type": "video"
+      },
+      {
+        "track": "Oro y Platino",
+        "isrc": "ARS8H2600014",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "video"
+      },
+      {
+        "track": "LLEGO LA 26",
+        "isrc": "ARS8H2600018",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "video"
+      },
+      {
+        "track": "Set Live RKT #5 - FACUU DJ",
+        "isrc": "ARS8H2600033",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "video"
+      },
+      {
+        "track": "MAMI TE JURO (PERREO TH)",
+        "isrc": "ARS8H2500008",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "video"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|Alaan fonseca DJ",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Yo Tengo Una Gata RKT",
+        "isrc": "ARDL12400043",
+        "album": "Yo Tengo Una Gata RKT",
+        "company": "FUGA",
+        "release_date": "2024-07-05",
+        "upc": "8721093448198",
         "type": "audio"
       }
     ]
   },
   {
-    "artist": "FACUU DJ, Gusty Dj",
+    "artist": "FACUU DJ|Dj Gaby|Tomy Dj",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Sacudime El 38 Rkt",
+        "isrc": "QZW9K2433079",
+        "album": "Sacudime El 38 Rkt",
+        "company": "ONErpm",
+        "release_date": "2022-10-21",
+        "upc": "734284249311",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|DJ Pirata",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Municiones Rkt",
+        "isrc": "ARDL12400064",
+        "album": "Municiones Rkt",
+        "company": "FUGA",
+        "release_date": "2024-08-15",
+        "upc": "8721093647935",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|El Joan",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Pa La Calle",
+        "isrc": "ARDL12500017",
+        "album": "Pa La Calle",
+        "company": "FUGA",
+        "release_date": "20250516",
+        "upc": "8721215285984",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|elaggume",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Toma Chukulum",
+        "isrc": "QZW9K2430311",
+        "album": "Toma Chukulum",
+        "company": "ONErpm",
+        "release_date": "2022-11-23",
+        "upc": "734284230524",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|Gusty Dj",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
     "tracks": [
       {
         "track": "PERREO DE CHOQUE",
         "isrc": "ARDL12400085",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
+        "album": "LOS DUEÑOS DEL NUEVO PERREO",
+        "company": "FUGA",
+        "release_date": "2024-09-18",
+        "upc": "8721253044475",
         "type": "audio"
       }
     ]
   },
   {
-    "artist": "FACUU DJ, LAALODJ",
+    "artist": "FACUU DJ|Gusty Dj|Ventu",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "DONDE TE PILLEMOS TARARA TARARA 2.0",
+        "isrc": "QMBZ92688855",
+        "album": "DONDE TE PILLEMOS TARARA TARARA 2.0",
+        "company": "The Orchard",
+        "release_date": "2026-07-09",
+        "upc": "885288012798",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|Kaleb Di Masi",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "ATREVIDA",
+        "isrc": "ARDL12500005",
+        "album": "ATREVIDA",
+        "company": "FUGA",
+        "release_date": "20250221",
+        "upc": "8721253778936",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|LAALODJ",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
     "tracks": [
       {
         "track": "ME PIDE CANDY",
         "isrc": "ARDL12400086",
+        "album": "LOS DUEÑOS DEL NUEVO PERREO",
+        "company": "FUGA",
+        "release_date": "2024-09-18",
+        "upc": "8721253044475",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|Mambo DJ",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Pegate Para La Pared",
+        "isrc": "ARDL12400065",
+        "album": "Pegate Para La Pared",
+        "company": "FUGA",
+        "release_date": "2024-08-15",
+        "upc": "8721093647928",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|mamiyosyoyelth",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "MAMI TE JURO",
+        "isrc": "ARDL12500053",
         "album": "",
         "company": "",
         "release_date": "",
@@ -3608,13 +3720,31 @@
     ]
   },
   {
-    "artist": "FACUU DJ, Matt Sebastian, DJ Adri Fuentes",
+    "artist": "FACUU DJ|Matt Sebastian|DJ Adri Fuentes",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "FUGA"
+    ],
     "tracks": [
       {
         "track": "PA TI ESTOY",
         "isrc": "ARDL12400087",
+        "album": "LOS DUEÑOS DEL NUEVO PERREO",
+        "company": "FUGA",
+        "release_date": "2024-09-18",
+        "upc": "8721253044475",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|Mc Tota",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "LLEGÓ EL VERANO",
+        "isrc": "ARDL12600002",
         "album": "",
         "company": "",
         "release_date": "",
@@ -3624,17 +3754,89 @@
     ]
   },
   {
-    "artist": "FACUU DJ, NAHU IN THE  MIX",
+    "artist": "FACUU DJ|More Savan",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Las Muñequitas RKT",
+        "isrc": "QM6N22623284",
+        "album": "Las Muñequitas RKT",
+        "company": "The Orchard",
+        "release_date": "2026-03-31",
+        "upc": "820200862242",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|NAHU IN THE  MIX",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
     "tracks": [
       {
         "track": "DALE PERREA",
         "isrc": "ARDL12400088",
+        "album": "LOS DUEÑOS DEL NUEVO PERREO",
+        "company": "FUGA",
+        "release_date": "2024-09-18",
+        "upc": "8721253044475",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|Paly|Mc Tota",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "Ese Cu Tiene Poderes",
+        "isrc": "ARDL12500092",
         "album": "",
         "company": "",
         "release_date": "",
         "upc": "",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|Papu DJ",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Diabolica Rkt",
+        "isrc": "ARDL12400066",
+        "album": "Diabolica Rkt",
+        "company": "FUGA",
+        "release_date": "2024-08-15",
+        "upc": "8721093647966",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FACUU DJ|Tibbass",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Es Con las Bred RKT",
+        "isrc": "US7VG2579599",
+        "album": "Es Con las Bred RKT",
+        "company": "ONErpm",
+        "release_date": "2024-01-24",
+        "upc": "790092512474",
         "type": "audio"
       }
     ]
@@ -3656,67 +3858,8 @@
     ]
   },
   {
-    "artist": "Falcone",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "FUNK: ANTES QUE SALGA EL SOL",
-        "isrc": "TOTI",
-        "album": "sheafiell",
-        "company": "",
-        "release_date": "Falcone",
-        "upc": "sheafiell",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Falcone, Benja Garcia",
-    "track_count": 1,
-    "companies": [
-      "The Orchard"
-    ],
-    "tracks": [
-      {
-        "track": "HEY MAMA FUNK",
-        "isrc": "",
-        "album": "HEY MAMA FUNK",
-        "company": "The Orchard",
-        "release_date": "2026-01-05",
-        "upc": "820200171078",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Fede Tarifeño",
-    "track_count": 2,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Falcone",
-        "isrc": "lolly funk",
-        "album": "DJ Feed",
-        "company": "",
-        "release_date": "DJ Feed",
-        "upc": "Joaquín Arce",
-        "type": "audio"
-      },
-      {
-        "track": "ELAM MIX",
-        "isrc": "Murda RKT",
-        "album": "Tomi Rmx",
-        "company": "",
-        "release_date": "Tomi Rmx",
-        "upc": "Eze Greco",
-        "type": "audio"
-      }
-    ]
-  },
-  {
     "artist": "FederiKita",
-    "track_count": 2,
+    "track_count": 1,
     "companies": [
       "FUGA"
     ],
@@ -3726,15 +3869,6 @@
         "isrc": "ARDL12400112",
         "album": "",
         "company": "FUGA",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Baby Cue",
-        "isrc": "ARDL12500024",
-        "album": "",
-        "company": "",
         "release_date": "",
         "upc": "",
         "type": "audio"
@@ -3759,19 +3893,10 @@
       },
       {
         "track": "Kita Virtual",
-        "isrc": "ARDL12400060",
+        "isrc": "ARDL12400058",
         "album": "Kita Virtual",
         "company": "FUGA",
-        "release_date": "20240814",
-        "upc": "8721093647584",
-        "type": "audio"
-      },
-      {
-        "track": "Kita Virtual",
-        "isrc": "ARDL12400058",
-        "album": "",
-        "company": "FUGA",
-        "release_date": "",
+        "release_date": "20240829",
         "upc": "8721093635611",
         "type": "audio"
       },
@@ -3782,6 +3907,33 @@
         "company": "",
         "release_date": "",
         "upc": "8721093636410",
+        "type": "audio"
+      },
+      {
+        "track": "(TREND) Kita Virtual",
+        "isrc": "ARDL12400060",
+        "album": "Kita Virtual",
+        "company": "FUGA",
+        "release_date": "20240814",
+        "upc": "8721093647584",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "FederiKita|Baby Cue",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "BERRETINES DE ARTISTA",
+        "isrc": "ARDL12500024",
+        "album": "BERRETINES DE ARTISTA",
+        "company": "FUGA",
+        "release_date": "20250612",
+        "upc": "8721215618812",
         "type": "audio"
       }
     ]
@@ -3930,7 +4082,7 @@
   },
   {
     "artist": "G-nabrÿ",
-    "track_count": 13,
+    "track_count": 10,
     "companies": [
       "The Orchard"
     ],
@@ -3981,39 +4133,12 @@
         "type": "audio"
       },
       {
-        "track": "sheafiell",
-        "isrc": "Ibanxo",
-        "album": "Gotham",
-        "company": "",
-        "release_date": "QM6MZ2684026",
-        "upc": "Aprovecha",
-        "type": "audio"
-      },
-      {
-        "track": "DJ Feed",
-        "isrc": "Que no se acabe el perreo",
-        "album": "Gotham",
-        "company": "",
-        "release_date": "820200722966",
-        "upc": "QM6MZ2684027",
-        "type": "audio"
-      },
-      {
         "track": "Bailoteo",
         "isrc": "QM6MZ2684028",
         "album": "Gotham",
         "company": "The Orchard",
         "release_date": "2026-03-18",
         "upc": "820200722966",
-        "type": "audio"
-      },
-      {
-        "track": "Nubrio",
-        "isrc": "Ginza",
-        "album": "Gotham",
-        "company": "",
-        "release_date": "820200722966",
-        "upc": "QM6MZ2684029",
         "type": "audio"
       },
       {
@@ -4055,6 +4180,78 @@
     ]
   },
   {
+    "artist": "G-nabrÿ|DJ Feed",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Que no se acabe el perreo",
+        "isrc": "QM6MZ2684027",
+        "album": "Gotham",
+        "company": "The Orchard",
+        "release_date": "2026-03-18",
+        "upc": "820200722966",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "G-nabrÿ|Nubrio",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Ginza",
+        "isrc": "QM6MZ2684029",
+        "album": "Gotham",
+        "company": "The Orchard",
+        "release_date": "2026-03-18",
+        "upc": "820200722966",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "G-nabrÿ|sheafiell|Ibanxo",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Aprovecha",
+        "isrc": "QM6MZ2684026",
+        "album": "Gotham",
+        "company": "The Orchard",
+        "release_date": "2026-03-18",
+        "upc": "820200722966",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "G-nabrÿ|sheafiell|Ventu",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Me le pego",
+        "isrc": "QM6MZ2684025",
+        "album": "Gotham",
+        "company": "The Orchard",
+        "release_date": "2026-03-18",
+        "upc": "820200722966",
+        "type": "audio"
+      }
+    ]
+  },
+  {
     "artist": "gonza maza",
     "track_count": 1,
     "companies": [],
@@ -4080,26 +4277,10 @@
       {
         "track": "Noche de Pecados",
         "isrc": "ARD3Z2400050",
-        "album": "",
+        "album": "Noche de Pecados",
         "company": "Kilo Music Group",
         "release_date": "31/12/2024 - 31/12/2099",
-        "upc": "",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Grupo Kandombe",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "La Porra Caimanera",
-        "isrc": "Yankee Dj",
-        "album": "El Combo Loco de Mike Rodriguez",
-        "company": "",
-        "release_date": "Grupo Kandombe",
-        "upc": "El Combo Loco de Mike Rodriguez",
+        "upc": "198704523168",
         "type": "audio"
       }
     ]
@@ -4130,12 +4311,12 @@
     ]
   },
   {
-    "artist": "Grupo Red",
+    "artist": "Grupo Red|Lolo OG|Nicole Fernandez",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "Lolo OG",
+        "track": "No Podré Olvidarme De Ti / Amor De Adolescentes",
         "isrc": "ARDL12500051",
         "album": "",
         "company": "",
@@ -4147,40 +4328,13 @@
   },
   {
     "artist": "GUSTY DJ",
-    "track_count": 24,
+    "track_count": 9,
     "companies": [
       "FUGA",
       "MAWZ Music",
       "ONErpm"
     ],
     "tracks": [
-      {
-        "track": "Peipper",
-        "isrc": "ARDL12400113",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Peipper",
-        "isrc": "ARS8H2400054",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
-      {
-        "track": "ALERTA",
-        "isrc": "ARS8H2600027",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
       {
         "track": "Toma 1 Set Live Rkt",
         "isrc": "QZES62106028",
@@ -4209,156 +4363,21 @@
         "type": "audio"
       },
       {
-        "track": "El Super Junte RKT",
-        "isrc": "ARDL12300056",
+        "track": "ALERTA",
+        "isrc": "ARS8H2600027",
         "album": "",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
+        "company": "",
+        "release_date": "",
         "upc": "",
-        "type": "audio"
+        "type": "video"
       },
       {
-        "track": "TUS DULCES ABRAZOS",
-        "isrc": "QZGLS2474714",
-        "album": "TUS DULCES ABRAZOS",
+        "track": "Cuernu",
+        "isrc": "ARDL12300045",
+        "album": "Cuernu",
         "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
+        "release_date": "21/03/2024",
         "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "TUS DULCES ABRAZOS",
-        "isrc": "ARS8H2400020",
-        "album": "TUS DULCES ABRAZOS",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Fak",
-        "isrc": "La Intro",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "790522526248",
-        "upc": "QZGLS2526356",
-        "type": "audio"
-      },
-      {
-        "track": "Picky Lejano Oeste",
-        "isrc": "Mike Sn",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "QZGLS2526357",
-        "upc": "Divina",
-        "type": "audio"
-      },
-      {
-        "track": "_zaymi",
-        "isrc": "Flor Gomez",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "QZGLS2526358",
-        "upc": "Hechizado",
-        "type": "audio"
-      },
-      {
-        "track": "Mc Tota",
-        "isrc": "Que Se Saque Todo",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "790522526248",
-        "upc": "QZGLS2526359",
-        "type": "audio"
-      },
-      {
-        "track": "Alan SSLK",
-        "isrc": "Modelito",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "790522526248",
-        "upc": "QZGLS2526360",
-        "type": "audio"
-      },
-      {
-        "track": "Cande Gonzalez",
-        "isrc": "Provoca",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "790522526248",
-        "upc": "QZGLS2526361",
-        "type": "audio"
-      },
-      {
-        "track": "John Eric",
-        "isrc": "Se Pegó y Lo Sintió",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "790522526248",
-        "upc": "QZGLS2526362",
-        "type": "audio"
-      },
-      {
-        "track": "Nicky HG",
-        "isrc": "Prumm",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "790522526248",
-        "upc": "QZGLS2526363",
-        "type": "audio"
-      },
-      {
-        "track": "DEL40SUENA0",
-        "isrc": "Gárgola",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "790522526248",
-        "upc": "QZGLS2526364",
-        "type": "audio"
-      },
-      {
-        "track": "BUCCI",
-        "isrc": "Markos Possi",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "QZGLS2526365",
-        "upc": "Bobo",
-        "type": "audio"
-      },
-      {
-        "track": "CARMELO 49",
-        "isrc": "Señora",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "790522526248",
-        "upc": "QZGLS2526366",
-        "type": "audio"
-      },
-      {
-        "track": "HERNAN JCP",
-        "isrc": "Matemos las Ganas",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "790522526248",
-        "upc": "QZGLS2526367",
-        "type": "audio"
-      },
-      {
-        "track": "Santy DM",
-        "isrc": "Mi Amor",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "790522526248",
-        "upc": "QZGLS2526368",
-        "type": "audio"
-      },
-      {
-        "track": "Paly",
-        "isrc": "Gustos Caros",
-        "album": "Ascenso",
-        "company": "",
-        "release_date": "790522526248",
-        "upc": "QZGLS2526369",
         "type": "audio"
       },
       {
@@ -4369,59 +4388,41 @@
         "release_date": "21/03/2024",
         "upc": "",
         "type": "video"
+      },
+      {
+        "track": "El Super Junte RKT",
+        "isrc": "ARDL12300056",
+        "album": "",
+        "company": "MAWZ Music",
+        "release_date": "30/10/2024",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "Tus Dulces Abrazos",
+        "isrc": "QZGLS2474714",
+        "album": "TUS DULCES ABRAZOS",
+        "company": "MAWZ Music",
+        "release_date": "19/04/2024",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "Tus Dulces Abrazos",
+        "isrc": "ARS8H2400020",
+        "album": "TUS DULCES ABRAZOS",
+        "company": "MAWZ Music",
+        "release_date": "19/04/2024",
+        "upc": "",
+        "type": "audio"
       }
     ]
   },
   {
     "artist": "Gusty dj",
-    "track_count": 9,
+    "track_count": 2,
     "companies": [],
     "tracks": [
-      {
-        "track": "Candu Dominguez",
-        "isrc": "ARDL12600020",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Lolo og",
-        "isrc": "ARDL12500018",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Ezequiel Matthysse",
-        "isrc": "ARDL12500043",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Ezequiel Matthysse",
-        "isrc": "ARDL12500048",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "R Jota",
-        "isrc": "ARDL12500066",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
       {
         "track": "Dos Corazones",
         "isrc": "ARS8H2600006",
@@ -4430,24 +4431,6 @@
         "release_date": "",
         "upc": "",
         "type": "video"
-      },
-      {
-        "track": "Ezequiel Matthysse",
-        "isrc": "ARS8H2500004",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
-      {
-        "track": "Tensión",
-        "isrc": "Cande Gonzalez",
-        "album": "Agus Padilla",
-        "company": "",
-        "release_date": "Gusty dj",
-        "upc": "Agus Padilla",
-        "type": "audio"
       },
       {
         "track": "Session en el Barrio #14",
@@ -4462,18 +4445,18 @@
   },
   {
     "artist": "Gusty Dj",
-    "track_count": 3,
+    "track_count": 2,
     "companies": [
       "MAWZ Music"
     ],
     "tracks": [
       {
-        "track": "Cuernu",
-        "isrc": "ARDL12300045",
-        "album": "Cuernu",
-        "company": "MAWZ Music",
-        "release_date": "27/03/2024 - 31/12/2099",
-        "upc": "",
+        "track": "Session en el Barrio #13",
+        "isrc": "ARDL12400048",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "752991875357",
         "type": "audio"
       },
       {
@@ -4483,15 +4466,6 @@
         "company": "MAWZ Music",
         "release_date": "27/03/2024 - 31/12/2099",
         "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Session en el Barrio #13",
-        "isrc": "ARDL12400048",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "752991875357",
         "type": "audio"
       }
     ]
@@ -4533,17 +4507,378 @@
     ]
   },
   {
-    "artist": "Intro Explota tu Joda",
+    "artist": "GUSTY DJ|_zaymi|Flor Gomez",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Hechizado",
+        "isrc": "QZGLS2526358",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|Alan SSLK",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Modelito",
+        "isrc": "QZGLS2526360",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|BUCCI|Markos Possi",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Bobo",
+        "isrc": "QZGLS2526365",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|Cande Gonzalez",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Provoca",
+        "isrc": "QZGLS2526361",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Gusty dj|Candu Dominguez|G Sony",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "Dura DJ",
-        "isrc": "Maate DJ",
-        "album": "Maate DJ",
+        "track": "Dos Corazones",
+        "isrc": "ARDL12600020",
+        "album": "",
         "company": "",
-        "release_date": "QMBZ92691528",
-        "upc": "Intro Explota tu Joda",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|CARMELO 49",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Señora",
+        "isrc": "QZGLS2526366",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|DEL40SUENA0",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Gárgola",
+        "isrc": "QZGLS2526364",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Gusty dj|Ezequiel Matthysse",
+    "track_count": 3,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "Diabla",
+        "isrc": "ARDL12500043",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "Session en el Barrio #15",
+        "isrc": "ARDL12500048",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "Diabla + Session en el barrio #15",
+        "isrc": "ARS8H2500004",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "video"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|Fak",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "La Intro",
+        "isrc": "QZGLS2526356",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|HERNAN JCP",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Matemos las Ganas",
+        "isrc": "QZGLS2526367",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|John Eric",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Se Pegó y Lo Sintió",
+        "isrc": "QZGLS2526362",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Gusty dj|Lolo og",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "",
+        "isrc": "ARDL12500018",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|Mc Tota",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Que Se Saque Todo",
+        "isrc": "QZGLS2526359",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|Nicky HG",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Prumm",
+        "isrc": "QZGLS2526363",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|Paly",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Gustos Caros",
+        "isrc": "QZGLS2526369",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|Peipper|Ecko featuring elaggume",
+    "track_count": 2,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "Novio Nuevo",
+        "isrc": "ARDL12400113",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "Novio Nuevo",
+        "isrc": "ARS8H2400054",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "video"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|Picky Lejano Oeste|Mike Sn",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Divina",
+        "isrc": "QZGLS2526357",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Gusty dj|R Jota|Callejero Fino",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "Teníamos Menos",
+        "isrc": "ARDL12500066",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "GUSTY DJ|Santy DM",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "Mi Amor",
+        "isrc": "QZGLS2526368",
+        "album": "Ascenso",
+        "company": "ONErpm",
+        "release_date": "20250313",
+        "upc": "790522526248",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Joaquin Arce|Fede Tarifeño",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "444 X CAILE FUNK",
+        "isrc": "QMBZ92676047",
+        "album": "444 X CAILE FUNK",
+        "company": "The Orchard",
+        "release_date": "2026-07-03",
+        "upc": "820233901512",
         "type": "audio"
       }
     ]
@@ -4580,6 +4915,24 @@
         "company": "The Orchard",
         "release_date": "2026-07-03",
         "upc": "820233901796",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Joaquín Arce|DJ Feed|Fede Tarifeño|Falcone",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "lolly funk",
+        "isrc": "QMFMG2511421",
+        "album": "lolly funk",
+        "company": "The Orchard",
+        "release_date": "2025-11-03",
+        "upc": "199806377017",
         "type": "audio"
       }
     ]
@@ -4739,7 +5092,7 @@
   },
   {
     "artist": "Juanma Girat",
-    "track_count": 7,
+    "track_count": 6,
     "companies": [
       "The Orchard"
     ],
@@ -4769,15 +5122,6 @@
         "company": "The Orchard",
         "release_date": "2025-07-24",
         "upc": "199538363494",
-        "type": "audio"
-      },
-      {
-        "track": "TITAN 13 - Caserio session #1",
-        "isrc": "Titan 13",
-        "album": "Tomi Rmx",
-        "company": "",
-        "release_date": "Juanma Girat",
-        "upc": "Tomi Rmx",
         "type": "audio"
       },
       {
@@ -4889,6 +5233,24 @@
     ],
     "tracks": [
       {
+        "track": "Me Pica La Cabeza",
+        "isrc": "ARDL12400027",
+        "album": "",
+        "company": "",
+        "release_date": "24/05/2024",
+        "upc": "1963622232619",
+        "type": "audio"
+      },
+      {
+        "track": "En Movimiento",
+        "isrc": "ARDL12400028",
+        "album": "",
+        "company": "",
+        "release_date": "25/05/2024",
+        "upc": "1963622234774",
+        "type": "audio"
+      },
+      {
         "track": "Bienvenidos",
         "isrc": "ARDL12300006",
         "album": "A Jugar Cantando",
@@ -4995,30 +5357,12 @@
         "release_date": "08/09/2023 - 31/12/2099",
         "upc": "",
         "type": "audio"
-      },
-      {
-        "track": "Me Pica La Cabeza",
-        "isrc": "ARDL12400027",
-        "album": "",
-        "company": "",
-        "release_date": "24/05/2024",
-        "upc": "1963622232619",
-        "type": "audio"
-      },
-      {
-        "track": "En Movimiento",
-        "isrc": "ARDL12400028",
-        "album": "",
-        "company": "",
-        "release_date": "25/05/2024",
-        "upc": "1963622234774",
-        "type": "audio"
       }
     ]
   },
   {
     "artist": "Juli Savioli",
-    "track_count": 32,
+    "track_count": 28,
     "companies": [
       "ADA",
       "DashGo",
@@ -5034,6 +5378,33 @@
         "release_date": "20250424",
         "upc": "8721215142676",
         "type": "audio"
+      },
+      {
+        "track": "Lúcete",
+        "isrc": "ARDL12300040",
+        "album": "Lúcete",
+        "company": "MAWZ Music",
+        "release_date": "25/02/2024",
+        "upc": "1963621912529",
+        "type": "audio"
+      },
+      {
+        "track": "Lúcete",
+        "isrc": "ARS8H2400010",
+        "album": "Lúcete",
+        "company": "MAWZ Music",
+        "release_date": "25/02/2024",
+        "upc": "1963621912529",
+        "type": "audio"
+      },
+      {
+        "track": "Mismo Aire",
+        "isrc": "ARS8H2400022",
+        "album": "",
+        "company": "MAWZ Music",
+        "release_date": "09/05/2024",
+        "upc": "1963622124556",
+        "type": "video"
       },
       {
         "track": "Exijo En Mi",
@@ -5126,30 +5497,21 @@
         "type": "audio"
       },
       {
-        "track": "Lúcete",
-        "isrc": "ARDL12300040",
-        "album": "Lúcete",
-        "company": "MAWZ Music",
-        "release_date": "07/03/2024 - 31/12/2099",
-        "upc": "1963621912529",
-        "type": "audio"
-      },
-      {
-        "track": "Lúcete",
-        "isrc": "ARS8H2400010",
-        "album": "Lúcete",
-        "company": "MAWZ Music",
-        "release_date": "07/03/2024 - 31/12/2099",
-        "upc": "1963621912529",
-        "type": "audio"
-      },
-      {
         "track": "Mismo Aire",
         "isrc": "ARDL12300058",
         "album": "Mismo Aire",
         "company": "MAWZ Music",
         "release_date": "01/01/2020 - 31/12/2099",
         "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "Te Escondes",
+        "isrc": "USANG2401082",
+        "album": "Te Escondes",
+        "company": "DashGo",
+        "release_date": "20241219",
+        "upc": "1963622336065",
         "type": "audio"
       },
       {
@@ -5259,60 +5621,6 @@
         "release_date": "2025-04-24",
         "upc": "",
         "type": "audio"
-      },
-      {
-        "track": "Te Escondes",
-        "isrc": "USANG2401082",
-        "album": "Te Escondes",
-        "company": "DashGo",
-        "release_date": "20241219",
-        "upc": "1963622336065",
-        "type": "audio"
-      },
-      {
-        "track": "Mismo Aire",
-        "isrc": "AR-DL1-23-00058",
-        "album": "",
-        "company": "MAWZ Music",
-        "release_date": "09/05/2024",
-        "upc": "1963622124556",
-        "type": "audio"
-      },
-      {
-        "track": "Mismo Aire",
-        "isrc": "ARS8H2400022",
-        "album": "",
-        "company": "MAWZ Music",
-        "release_date": "09/05/2024",
-        "upc": "1963622124556",
-        "type": "video"
-      },
-      {
-        "track": "Espinas",
-        "isrc": "US-3DF-24-97785",
-        "album": "",
-        "company": "ADA",
-        "release_date": "25/07/2024",
-        "upc": "1963622326233",
-        "type": "audio"
-      },
-      {
-        "track": "Te Prestaria Mis Ojos",
-        "isrc": "US-ANG-24-02075",
-        "album": "",
-        "company": "ADA",
-        "release_date": "15/08/2024",
-        "upc": "1963622336041",
-        "type": "audio"
-      },
-      {
-        "track": "Te Escondes",
-        "isrc": "US-ANG-24-01082",
-        "album": "",
-        "company": "ADA",
-        "release_date": "19/09/2024",
-        "upc": "1963622336065",
-        "type": "audio"
       }
     ]
   },
@@ -5365,22 +5673,6 @@
     ]
   },
   {
-    "artist": "Kita Virtual",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Federikita",
-        "isrc": "Roxxee",
-        "album": "Roxxee",
-        "company": "",
-        "release_date": "ARDL12400058",
-        "upc": "Kita Virtual",
-        "type": "audio"
-      }
-    ]
-  },
-  {
     "artist": "Krom",
     "track_count": 4,
     "companies": [
@@ -5421,6 +5713,24 @@
         "company": "ADA",
         "release_date": "2019-02-20",
         "upc": "",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Krom|Tiago PZK|Emkier featuring Yung Fran",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Nena Percocet",
+        "isrc": "QZFYX1981245",
+        "album": "Nena Percocet",
+        "company": "The Orchard",
+        "release_date": "2019-06-08",
+        "upc": "8445162487856",
         "type": "audio"
       }
     ]
@@ -6050,22 +6360,6 @@
         "company": "FUGA",
         "release_date": "2020-07-13",
         "upc": "8445162160155",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "LA DEL CONTROL FUNK",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "TOTI",
-        "isrc": "Facu Infante Ar",
-        "album": "Facu Infante Ar",
-        "company": "",
-        "release_date": "",
-        "upc": "LA DEL CONTROL FUNK",
         "type": "audio"
       }
     ]
@@ -7222,29 +7516,31 @@
     ]
   },
   {
-    "artist": "La Paso Cabron RKT",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Virrshi DJ",
-        "isrc": "Tibbass",
-        "album": "Tibbass",
-        "company": "",
-        "release_date": "ARHXW2500258",
-        "upc": "La Paso Cabron RKT",
-        "type": "audio"
-      }
-    ]
-  },
-  {
     "artist": "LAALODJ",
-    "track_count": 13,
+    "track_count": 9,
     "companies": [
       "FUGA",
       "The Orchard"
     ],
     "tracks": [
+      {
+        "track": "Ponte En 4 Que Yo Te Aviso",
+        "isrc": "ARDL12400035",
+        "album": "Ponte En 4 Que Yo Te Aviso",
+        "company": "FUGA",
+        "release_date": "2024-06-13",
+        "upc": "8721093344797",
+        "type": "audio"
+      },
+      {
+        "track": "HACELA CORTA MOROCHO",
+        "isrc": "QMFME2547127",
+        "album": "HACELA CORTA MOROCHO",
+        "company": "The Orchard",
+        "release_date": "2025-09-12",
+        "upc": "199538806328",
+        "type": "audio"
+      },
       {
         "track": "KANDELA RKT",
         "isrc": "ARDL12600018",
@@ -7300,60 +7596,6 @@
         "type": "video"
       },
       {
-        "track": "Los Anormales",
-        "isrc": "ARS8H2500012",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
-      {
-        "track": "FACUU DJ",
-        "isrc": "Tengo Una Notita RKT",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Ponte En 4 Que Yo Te Aviso",
-        "isrc": "ARDL12400035",
-        "album": "Ponte En 4 Que Yo Te Aviso",
-        "company": "FUGA",
-        "release_date": "2024-06-13",
-        "upc": "8721093344797",
-        "type": "audio"
-      },
-      {
-        "track": "HACELA CORTA MOROCHO",
-        "isrc": "QMFME2547127",
-        "album": "HACELA CORTA MOROCHO",
-        "company": "The Orchard",
-        "release_date": "2025-09-12",
-        "upc": "199538806328",
-        "type": "audio"
-      },
-      {
-        "track": "la fiesta empezó",
-        "isrc": "DJSNOWS",
-        "album": "Nacho Pereira",
-        "company": "",
-        "release_date": "LAALODJ",
-        "upc": "Nacho Pereira",
-        "type": "audio"
-      },
-      {
-        "track": "Dale Menea Mueveme Esa Cola",
-        "isrc": "ARDL12400040",
-        "album": "",
-        "company": "",
-        "release_date": "04/07/2024",
-        "upc": "8721093442424",
-        "type": "audio"
-      },
-      {
         "track": "INGRATAAA (TikTok)",
         "isrc": "ARDL12400047",
         "album": "",
@@ -7365,23 +7607,7 @@
     ]
   },
   {
-    "artist": "LAALODJ, FACUU DJ",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Tengo Una Notita RKT",
-        "isrc": "ARDL12400037",
-        "album": "",
-        "company": "",
-        "release_date": "21/06/2024",
-        "upc": "8721093379041",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "LAALODJ, PACOREMIX, Alan SSLK",
+    "artist": "LAALODJ |PACOREMIX |Alan SSLK",
     "track_count": 1,
     "companies": [
       "MAWZ Music"
@@ -7399,17 +7625,154 @@
     ]
   },
   {
-    "artist": "Las Muñequitas RKT",
+    "artist": "LAALODJ|Cesar B",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "The Orchard"
+    ],
     "tracks": [
       {
-        "track": "FACUU DJ",
-        "isrc": "More Savan",
-        "album": "More Savan",
-        "company": "",
-        "release_date": "QM6N22623284",
-        "upc": "Las Muñequitas RKT",
+        "track": "Secreto RKT",
+        "isrc": "QMDA62530410",
+        "album": "Secreto RKT",
+        "company": "The Orchard",
+        "release_date": "2025-07-06",
+        "upc": "199538233667",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "LAALODJ|ELAM MIX",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Que Lo Que Pide Esa Gata",
+        "isrc": "QMFMF2584345",
+        "album": "Que Lo Que Pide Esa Gata",
+        "company": "The Orchard",
+        "release_date": "2025-10-24",
+        "upc": "199806239476",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "LAALODJ|ELAM MXI|Simo Viani",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "PROBLEMON REMIX",
+        "isrc": "QM6P42649228",
+        "album": "PROBLEMON REMIX",
+        "company": "The Orchard",
+        "release_date": "2026-04-24",
+        "upc": "820233141253",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "LAALODJ|FACUU DJ",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Tengo Una Notita RKT",
+        "isrc": "ARDL12400037",
+        "album": "Tengo Una Notita RKT",
+        "company": "FUGA",
+        "release_date": "2024-06-21",
+        "upc": "8721093379041",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "LAALODJ|Fede Tarifeño",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "LA CALLE ME LLAMA RKT",
+        "isrc": "QMBZ92656367",
+        "album": "LA CALLE ME LLAMA RKT",
+        "company": "The Orchard",
+        "release_date": "2026-06-23",
+        "upc": "820233827928",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "LAALODJ|Gusty dj",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Tu Piloto",
+        "isrc": "QMBZ92510677",
+        "album": "Tu Piloto",
+        "company": "The Orchard",
+        "release_date": "2025-05-29",
+        "upc": "199350813795",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "LAALODJ|Los Anormales",
+    "track_count": 2,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Todo Ke Ver",
+        "isrc": "QMFMF2558509",
+        "album": "Todo Ke Ver",
+        "company": "The Orchard",
+        "release_date": "2025-10-16",
+        "upc": "199806159088",
+        "type": "audio"
+      },
+      {
+        "track": "Todo Ke Ver",
+        "isrc": "ARS8H2500012",
+        "album": "",
+        "company": "The Orchard",
+        "release_date": "",
+        "upc": "",
+        "type": "video"
+      }
+    ]
+  },
+  {
+    "artist": "LAALODJ|Matt Sebastian",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Dale Menea Mueveme Esa Cola",
+        "isrc": "ARDL12400040",
+        "album": "Dale Menea Mueveme Esa Cola",
+        "company": "FUGA",
+        "release_date": "2024-07-04",
+        "upc": "8721093442424",
         "type": "audio"
       }
     ]
@@ -7433,22 +7796,6 @@
     ]
   },
   {
-    "artist": "Linda Mujer Techengue",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "More Savan",
-        "isrc": "Sergio Ponce",
-        "album": "Sergio Ponce",
-        "company": "",
-        "release_date": "QMDA62537862",
-        "upc": "Linda Mujer Techengue",
-        "type": "audio"
-      }
-    ]
-  },
-  {
     "artist": "LIT  killah",
     "track_count": 1,
     "companies": [],
@@ -7465,150 +7812,23 @@
     ]
   },
   {
-    "artist": "Lit Killah",
-    "track_count": 10,
-    "companies": [
-      "ADA",
-      "MAWZ Music"
-    ],
-    "tracks": [
-      {
-        "track": "Kustom",
-        "isrc": "ARDL12400089",
-        "album": "",
-        "company": "MAWZ Music",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "LA ELITE",
-        "isrc": "ARDL12400090",
-        "album": "",
-        "company": "ADA",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "MALA SUERTE",
-        "isrc": "ARDL12400091",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "DAME Q",
-        "isrc": "ARDL12400092",
-        "album": "",
-        "company": "ADA",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "NO LOS VI",
-        "isrc": "ARDL12400093",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "ALL INCLUSIVE",
-        "isrc": "ARDL12400094",
-        "album": "",
-        "company": "ADA",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "DAMN GIRL",
-        "isrc": "ARDL12400095",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "BPM",
-        "isrc": "ARDL12400096",
-        "album": "",
-        "company": "ADA",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "NADA DE NADA",
-        "isrc": "ARDL12400097",
-        "album": "",
-        "company": "ADA",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Nicki Nicole",
-        "isrc": "ARS8H2400002",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      }
-    ]
-  },
-  {
-    "artist": "LIT Killah",
-    "track_count": 3,
-    "companies": [
-      "MAWZ Music"
-    ],
-    "tracks": [
-      {
-        "track": "Paulo Londra",
-        "isrc": "ARDL12400109",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Si Te Vas Remix",
-        "isrc": "ARDL12600078",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Carta de Despedida",
-        "isrc": "",
-        "album": "",
-        "company": "MAWZ Music",
-        "release_date": "27/03/2024",
-        "upc": "",
-        "type": "audio"
-      }
-    ]
-  },
-  {
     "artist": "LIT killah",
-    "track_count": 53,
+    "track_count": 46,
     "companies": [
       "ADA",
       "FUGA",
       "MAWZ Music"
     ],
     "tracks": [
+      {
+        "track": "Una Vez Mas",
+        "isrc": "QZ22B1937106",
+        "album": "Una Vez Mas",
+        "company": "FUGA",
+        "release_date": "2021-02-26",
+        "upc": "645875535730",
+        "type": "audio"
+      },
       {
         "track": "Me Dejaste Sola",
         "isrc": "ARDL12600133",
@@ -7625,24 +7845,6 @@
         "company": "MAWZ Music",
         "release_date": "01/01/2019 - 31/12/2099",
         "upc": "5034644636207",
-        "type": "audio"
-      },
-      {
-        "track": "Neutro Shorty",
-        "isrc": "ARDL12500034",
-        "album": "Dresscode",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Gera MX",
-        "isrc": "ARDL12500055",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
         "type": "audio"
       },
       {
@@ -7721,7 +7923,7 @@
         "track": "Carta de Despedida",
         "isrc": "ARS8H2400041",
         "album": "",
-        "company": "MAWZ Music",
+        "company": "",
         "release_date": "",
         "upc": "",
         "type": "video"
@@ -7826,46 +8028,10 @@
         "type": "video"
       },
       {
-        "track": "Paulo Londra feat. Big One",
-        "isrc": "ARS8H2400053",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
-      {
         "track": "FIAMORE",
         "isrc": "ARS8H2500001",
         "album": "",
         "company": "MAWZ Music",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
-      {
-        "track": "Neutro Shorty",
-        "isrc": "ARS8H2500002",
-        "album": "",
-        "company": "MAWZ Music",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
-      {
-        "track": "Nanpa Básico",
-        "isrc": "ARS8H2500003",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "video"
-      },
-      {
-        "track": "Gera MX",
-        "isrc": "ARS8H2500010",
-        "album": "",
-        "company": "",
         "release_date": "",
         "upc": "",
         "type": "video"
@@ -7934,20 +8100,11 @@
         "type": "video"
       },
       {
-        "track": "Una Vez Mas",
-        "isrc": "QZ22B1937106",
-        "album": "Una Vez Mas",
-        "company": "FUGA",
-        "release_date": "2021-02-26",
-        "upc": "645875535730",
-        "type": "audio"
-      },
-      {
-        "track": "Carta de Despedida",
-        "isrc": "ARS8H2400001",
-        "album": "Carta de Despedida",
-        "company": "MAWZ Music",
-        "release_date": "27/03/2024 - 31/12/2099",
+        "track": "Dreams & Love",
+        "isrc": "ARDL12400031",
+        "album": "",
+        "company": "ADA",
+        "release_date": "",
         "upc": "",
         "type": "audio"
       },
@@ -8076,10 +8233,92 @@
         "release_date": "2025-12-04",
         "upc": "",
         "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Lit Killah",
+    "track_count": 9,
+    "companies": [
+      "ADA",
+      "MAWZ Music"
+    ],
+    "tracks": [
+      {
+        "track": "Kustom",
+        "isrc": "ARDL12400089",
+        "album": "",
+        "company": "MAWZ Music",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
       },
       {
-        "track": "Dreams & Love",
-        "isrc": "ARDL12400031",
+        "track": "LA ELITE",
+        "isrc": "ARDL12400090",
+        "album": "",
+        "company": "ADA",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "MALA SUERTE",
+        "isrc": "ARDL12400091",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "DAME Q",
+        "isrc": "ARDL12400092",
+        "album": "",
+        "company": "ADA",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "NO LOS VI",
+        "isrc": "ARDL12400093",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "ALL INCLUSIVE",
+        "isrc": "ARDL12400094",
+        "album": "",
+        "company": "ADA",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "DAMN GIRL",
+        "isrc": "ARDL12400095",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "BPM",
+        "isrc": "ARDL12400096",
+        "album": "",
+        "company": "ADA",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "NADA DE NADA",
+        "isrc": "ARDL12400097",
         "album": "",
         "company": "ADA",
         "release_date": "",
@@ -8089,16 +8328,16 @@
     ]
   },
   {
-    "artist": "LIT KILLAH",
+    "artist": "LIT Killah",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "MI CLAN",
-        "isrc": "US-3DF-24-08987",
+        "track": "Si Te Vas Remix",
+        "isrc": "ARDL12600078",
         "album": "",
         "company": "",
-        "release_date": "10/4/2024",
+        "release_date": "",
         "upc": "",
         "type": "audio"
       }
@@ -8117,21 +8356,32 @@
         "album": "No se me Olvida",
         "company": "MAWZ Music",
         "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "",
+        "upc": "5034644889474",
         "type": "audio"
       }
     ]
   },
   {
     "artist": "LIT KILLAH X MILO J",
-    "track_count": 1,
-    "companies": [],
+    "track_count": 2,
+    "companies": [
+      "MAWZ Music"
+    ],
     "tracks": [
       {
         "track": "Carta de Despedida",
         "isrc": "BK4DA2407453",
         "album": "",
-        "company": "",
+        "company": "MAWZ Music",
+        "release_date": "28/03/2024",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "Carta de Despedida",
+        "isrc": "ARS8H2400001",
+        "album": "Carta de Despedida",
+        "company": "MAWZ Music",
         "release_date": "28/03/2024",
         "upc": "",
         "type": "audio"
@@ -8139,37 +8389,126 @@
     ]
   },
   {
-    "artist": "LIT killah, Nicki Nicole",
+    "artist": "LIT killah|Gera MX",
+    "track_count": 2,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "Despedida",
+        "isrc": "ARDL12500055",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "La Despedida",
+        "isrc": "ARS8H2500010",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "video"
+      }
+    ]
+  },
+  {
+    "artist": "LIT killah|Nanpa Básico",
     "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "No se me Olvida",
+        "isrc": "ARS8H2500003",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "video"
+      }
+    ]
+  },
+  {
+    "artist": "LIT killah|Neutro Shorty",
+    "track_count": 2,
     "companies": [
-      "Warner Music"
+      "MAWZ Music"
     ],
     "tracks": [
       {
+        "track": "Dresscode",
+        "isrc": "ARDL12500034",
+        "album": "Dresscode",
+        "company": "MAWZ Music",
+        "release_date": "01/01/2020 - 31/12/2099",
+        "upc": "5034644834818",
+        "type": "audio"
+      },
+      {
+        "track": "Dresscode",
+        "isrc": "ARS8H2500002",
+        "album": "",
+        "company": "MAWZ Music",
+        "release_date": "",
+        "upc": "",
+        "type": "video"
+      }
+    ]
+  },
+  {
+    "artist": "Lit Killah|Nicki Nicole",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
         "track": "Somos 3",
-        "isrc": "ARDL12400078",
-        "album": "Somos 3",
-        "company": "Warner Music",
-        "release_date": "10/09/2024 - 31/12/2099",
-        "upc": "8721093907237",
+        "isrc": "ARS8H2400002",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "video"
+      }
+    ]
+  },
+  {
+    "artist": "LIT Killah|Paulo Londra",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "Protagonista",
+        "isrc": "ARDL12400109",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
         "type": "audio"
       }
     ]
   },
   {
-    "artist": "Loba",
-    "track_count": 2,
+    "artist": "LIT killah|Paulo Londra feat. Big One",
+    "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "Daka",
-        "isrc": "Tiago PZK",
-        "album": "Tiago PZK",
+        "track": "Protagonista",
+        "isrc": "ARS8H2400053",
+        "album": "",
         "company": "",
-        "release_date": "QZHN51934881",
-        "upc": "Loba",
-        "type": "audio"
-      },
+        "release_date": "",
+        "upc": "",
+        "type": "video"
+      }
+    ]
+  },
+  {
+    "artist": "Loba",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
       {
         "track": "Daka",
         "isrc": "",
@@ -8575,27 +8914,19 @@
   },
   {
     "artist": "M Aqui Adonai",
-    "track_count": 3,
+    "track_count": 8,
     "companies": [
+      "FUGA",
       "MAWZ Music"
     ],
     "tracks": [
       {
-        "track": "Viru Kumbieron",
-        "isrc": "ARDL12400105",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
         "track": "Abatido",
         "isrc": "ARDL12500032",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
+        "album": "Abatido",
+        "company": "FUGA",
+        "release_date": "20250706",
+        "upc": "8721215764281",
         "type": "audio"
       },
       {
@@ -8606,23 +8937,14 @@
         "release_date": "01/01/2019 - 31/12/2099",
         "upc": "8721416043857",
         "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "M AQUI ADONAI",
-    "track_count": 15,
-    "companies": [
-      "MAWZ Music"
-    ],
-    "tracks": [
+      },
       {
-        "track": "Re Ganado",
-        "isrc": "ARDL12400002",
-        "album": "Re Ganado",
+        "track": "Si Tu Supieras",
+        "isrc": "ARDL12300038",
+        "album": "",
         "company": "MAWZ Music",
-        "release_date": "14/09/2023 - 31/12/2099",
-        "upc": "",
+        "release_date": "12/30/2023",
+        "upc": "1963621862688",
         "type": "audio"
       },
       {
@@ -8630,10 +8952,55 @@
         "isrc": "ARDL12300041",
         "album": "Todo Pago",
         "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
+        "release_date": "10/02/2024",
         "upc": "1963621932312",
         "type": "audio"
       },
+      {
+        "track": "Vamo a Romper",
+        "isrc": "ARDL12400001",
+        "album": "Supergirl",
+        "company": "MAWZ Music",
+        "release_date": "01/05/2024",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "Re Ganado",
+        "isrc": "ARDL12400002",
+        "album": "Re Ganado",
+        "company": "MAWZ Music",
+        "release_date": "21/05/2024",
+        "upc": "",
+        "type": "audio"
+      },
+      {
+        "track": "Danzando",
+        "isrc": "ARDL12400033",
+        "album": "Danzando",
+        "company": "MAWZ Music",
+        "release_date": "28/06/2024",
+        "upc": "8721093339281",
+        "type": "audio"
+      },
+      {
+        "track": "Tierra Santa",
+        "isrc": "ARDL12400050",
+        "album": "Tierra Santa",
+        "company": "MAWZ Music",
+        "release_date": "01/01/2019 - 31/12/2099",
+        "upc": "8721093547211",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "M AQUI ADONAI",
+    "track_count": 13,
+    "companies": [
+      "MAWZ Music"
+    ],
+    "tracks": [
       {
         "track": "Los Muros Caen",
         "isrc": "ARDL12300035",
@@ -8754,8 +9121,44 @@
     ]
   },
   {
+    "artist": "M Aqui Adonai - David Prince DJ",
+    "track_count": 1,
+    "companies": [
+      "MAWZ Music"
+    ],
+    "tracks": [
+      {
+        "track": "The Pogo",
+        "isrc": "ARDL12300030",
+        "album": "",
+        "company": "MAWZ Music",
+        "release_date": "21/10/2023",
+        "upc": "1963621672133",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "M Aqui Adonai|Viru Kumbieron",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Santa Fe",
+        "isrc": "ARDL12400105",
+        "album": "Santa Fe",
+        "company": "FUGA",
+        "release_date": "20241207",
+        "upc": "8721253202530",
+        "type": "audio"
+      }
+    ]
+  },
+  {
     "artist": "M Aquí Adonai",
-    "track_count": 7,
+    "track_count": 3,
     "companies": [
       "MAWZ Music"
     ],
@@ -8770,33 +9173,6 @@
         "type": "audio"
       },
       {
-        "track": "Te Necesito Más",
-        "isrc": "ARDL12300020",
-        "album": "Te Necesito Mas",
-        "company": "MAWZ Music",
-        "release_date": "21/09/2023 - 31/12/2099",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "The Pogo",
-        "isrc": "ARDL12300030",
-        "album": "",
-        "company": "MAWZ Music",
-        "release_date": "21/10/2023 - 31/12/2099",
-        "upc": "1963621672133",
-        "type": "audio"
-      },
-      {
-        "track": "Si Tu Supieras",
-        "isrc": "ARDL12300038",
-        "album": "",
-        "company": "MAWZ Music",
-        "release_date": "30/12/2023 - 31/12/2099",
-        "upc": "1963621862688",
-        "type": "audio"
-      },
-      {
         "track": "Jezabel",
         "isrc": "ARDL12400077",
         "album": "Jezabel",
@@ -8806,21 +9182,12 @@
         "type": "audio"
       },
       {
-        "track": "Tierra Santa",
-        "isrc": "ARDL12400050",
-        "album": "Tierra Santa",
+        "track": "Te Necesito Más",
+        "isrc": "ARDL12300020",
+        "album": "Te Necesito Mas",
         "company": "MAWZ Music",
-        "release_date": "01/01/2019 - 31/12/2099",
-        "upc": "8721093547211",
-        "type": "audio"
-      },
-      {
-        "track": "Danzando",
-        "isrc": "ARDL12400033",
-        "album": "Danzando",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2019 - 31/12/2099",
-        "upc": "8721093339281",
+        "release_date": "21/09/2023 - 31/12/2099",
+        "upc": "",
         "type": "audio"
       }
     ]
@@ -8973,12 +9340,12 @@
     ]
   },
   {
-    "artist": "Mandale Flow",
+    "artist": "Mandale Flow|GABI SRB|Tirri La Roca",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "GABI SRB",
+        "track": "BLAN BLAN",
         "isrc": "ARDL12500060",
         "album": "",
         "company": "",
@@ -8991,22 +9358,6 @@
   {
     "artist": "ManuVe",
     "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "HERNAN JCP",
-        "isrc": "ARDL12400110",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "ManuVe, HDR",
-    "track_count": 1,
     "companies": [
       "MAWZ Music"
     ],
@@ -9016,8 +9367,24 @@
         "isrc": "ARDL12400030",
         "album": "Dale Chispeate",
         "company": "MAWZ Music",
-        "release_date": "01/01/2019 - 31/12/2099",
+        "release_date": "30/05/2024",
         "upc": "8721093272380",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "ManuVe|HERNAN JCP",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "TE DA O NO",
+        "isrc": "ARDL12400110",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
         "type": "audio"
       }
     ]
@@ -9067,15 +9434,6 @@
         "type": "audio"
       },
       {
-        "track": "Raka Taka Taka (fb)",
-        "isrc": "Alan Gomez",
-        "album": "Lucas Rmx",
-        "company": "",
-        "release_date": "Matias Mareco",
-        "upc": "Lucas Rmx",
-        "type": "audio"
-      },
-      {
         "track": "AHORA EN EL BAILE EMPIEZA EL PERREO",
         "isrc": "ARDL12400055",
         "album": "AHORA EN EL BAILE EMPIEZA EL PERREO",
@@ -9118,6 +9476,15 @@
         "company": "FUGA",
         "release_date": "2021-06-21",
         "upc": "695845124334",
+        "type": "audio"
+      },
+      {
+        "track": "Sobrepasando los Niveles Musicales",
+        "isrc": "ARBF32000014",
+        "album": "Sobrepasando los Niveles Musicales",
+        "company": "FUGA",
+        "release_date": "2021-06-24",
+        "upc": "695845175961",
         "type": "audio"
       },
       {
@@ -9195,6 +9562,24 @@
     ]
   },
   {
+    "artist": "Matias Mareco DJ|Lucas Rmx|DJ Bryanflow",
+    "track_count": 1,
+    "companies": [
+      "Altafonte"
+    ],
+    "tracks": [
+      {
+        "track": "Terremoto (Remix)",
+        "isrc": "ARBF32000004",
+        "album": "Terremoto (Remix)",
+        "company": "Altafonte",
+        "release_date": "20200724",
+        "upc": "8445162156264",
+        "type": "audio"
+      }
+    ]
+  },
+  {
     "artist": "Matias Mareco, Alan SSLK",
     "track_count": 1,
     "companies": [],
@@ -9211,33 +9596,227 @@
     ]
   },
   {
-    "artist": "Matias Mareco, Lucas Rmx, DJ Bryanflow",
+    "artist": "Matias Mareco, Gonzai",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "MAWZ Music"
+    ],
     "tracks": [
       {
-        "track": "Terremoto",
-        "isrc": "ARBF32000004",
-        "album": "-",
-        "company": "",
-        "release_date": "25/06/2021",
-        "upc": "",
+        "track": "Matías Mareco | Gonzai: I Buenos Aires",
+        "isrc": "QZNJY2387583",
+        "album": "Matías Mareco | Gonzai: I Buenos Aires",
+        "company": "MAWZ Music",
+        "release_date": "01/01/2020 - 31/12/2099",
+        "upc": "711709607512",
         "type": "audio"
       }
     ]
   },
   {
-    "artist": "Matías Mareco",
+    "artist": "Matias Mareco, Misaael",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "MAWZ Music"
+    ],
     "tracks": [
       {
-        "track": "Matías Mareco",
-        "isrc": "Gonzai: I Buenos Aires",
-        "album": "Gonzai: I Buenos Aires",
-        "company": "",
-        "release_date": "MAWZ MUSIC S.R.L",
-        "upc": "",
+        "track": "Matias Mareco |Misaael: II Entre Ríos",
+        "isrc": "ARDL12300036",
+        "album": "",
+        "company": "MAWZ Music",
+        "release_date": "21/12/2023",
+        "upc": "1963621776244",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Matias Mareco|EIRON RMX",
+    "track_count": 3,
+    "companies": [
+      "ONErpm",
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Baile Inolvidable",
+        "isrc": "QMDA72522924",
+        "album": "Baile Inolvidable",
+        "company": "The Orchard",
+        "release_date": "2025-07-30",
+        "upc": "199538433630",
+        "type": "audio"
+      },
+      {
+        "track": "Luna al Perreo",
+        "isrc": "QZW9K2433070",
+        "album": "Luna al Perreo",
+        "company": "ONErpm",
+        "release_date": "2024-08-08",
+        "upc": "734284249250",
+        "type": "audio"
+      },
+      {
+        "track": "La Gerencia",
+        "isrc": "QM6P42688088",
+        "album": "La Gerencia",
+        "company": "The Orchard",
+        "release_date": "2026-05-07",
+        "upc": "820233335133",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Matias Mareco|EIRON RMX|Joel RMX",
+    "track_count": 1,
+    "companies": [
+      "ONErpm"
+    ],
+    "tracks": [
+      {
+        "track": "La Mano en la Tet*",
+        "isrc": "QZW9K2461984",
+        "album": "La Mano en la Tet*",
+        "company": "ONErpm",
+        "release_date": "2024-10-31",
+        "upc": "734284469061",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Matias Mareco|JOEL RMX",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Amor de Colegio",
+        "isrc": "QM6MZ2672868",
+        "album": "Amor de Colegio",
+        "company": "The Orchard",
+        "release_date": "2026-03-15",
+        "upc": "820200753687",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Matias Mareco|JOEL RMX|EIRON RMX",
+    "track_count": 5,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "TENGO LA GLOPE",
+        "isrc": "QM6P42547411",
+        "album": "Hecho por Nosotros|Para los que Sienten como Nosotros",
+        "company": "The Orchard",
+        "release_date": "2025-04-30",
+        "upc": "199350551581",
+        "type": "audio"
+      },
+      {
+        "track": "PA LAS GIRLAS",
+        "isrc": "QM6P42547412",
+        "album": "Hecho por Nosotros|Para los que Sienten como Nosotros",
+        "company": "The Orchard",
+        "release_date": "2025-04-30",
+        "upc": "199350551581",
+        "type": "audio"
+      },
+      {
+        "track": "EL BAJO RETUMBA",
+        "isrc": "QM6P42547413",
+        "album": "Hecho por Nosotros|Para los que Sienten como Nosotros",
+        "company": "The Orchard",
+        "release_date": "2025-04-30",
+        "upc": "199350551581",
+        "type": "audio"
+      },
+      {
+        "track": "QUE LAS PUTAS HAGAN",
+        "isrc": "QM6P42547414",
+        "album": "Hecho por Nosotros|Para los que Sienten como Nosotros",
+        "company": "The Orchard",
+        "release_date": "2025-04-30",
+        "upc": "199350551581",
+        "type": "audio"
+      },
+      {
+        "track": "TE CANTO BAJITO",
+        "isrc": "QM6P42547415",
+        "album": "Hecho por Nosotros|Para los que Sienten como Nosotros",
+        "company": "The Orchard",
+        "release_date": "2025-04-30",
+        "upc": "199350551581",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Matias Mareco|Ventu|EIRON RMX|JOEL RMX",
+    "track_count": 3,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "EGOISTA RKT",
+        "isrc": "QM6P42619024",
+        "album": "Para Que Lo Bailen De Verdad",
+        "company": "The Orchard",
+        "release_date": "2026-04-17",
+        "upc": "820233134316",
+        "type": "audio"
+      },
+      {
+        "track": "LA PREGUNTA RKT",
+        "isrc": "QM6P42619025",
+        "album": "Para Que Lo Bailen De Verdad",
+        "company": "The Orchard",
+        "release_date": "2026-04-17",
+        "upc": "820233134316",
+        "type": "audio"
+      },
+      {
+        "track": "SI TU CUERPO ME PIDE RKT",
+        "isrc": "QM6P42619026",
+        "album": "Para Que Lo Bailen De Verdad",
+        "company": "The Orchard",
+        "release_date": "2026-04-17",
+        "upc": "820233134316",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Matías Mareco|JOEL RMX|EIRON RMX",
+    "track_count": 2,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "CHAMAQUITA VEN",
+        "isrc": "QM4TW2658292",
+        "album": "CHAMAQUITA VEN",
+        "company": "The Orchard",
+        "release_date": "2026-01-17",
+        "upc": "820200037565",
+        "type": "audio"
+      },
+      {
+        "track": "TREMENDA SATA",
+        "isrc": "QM4TW2658290",
+        "album": "TREMENDA SATA",
+        "company": "The Orchard",
+        "release_date": "2026-01-17",
+        "upc": "820200055316",
         "type": "audio"
       }
     ]
@@ -9645,8 +10224,35 @@
         "isrc": "ARDL12400036",
         "album": "Fe",
         "company": "FUGA",
-        "release_date": "20240619",
+        "release_date": "19/06/2024",
         "upc": "8721093366034",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "More Savan|Sergio Ponce",
+    "track_count": 2,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Linda Mujer Techengue",
+        "isrc": "QMDA62537862",
+        "album": "Linda Mujer Techengue",
+        "company": "The Orchard",
+        "release_date": "2025-07-10",
+        "upc": "199538208078",
+        "type": "audio"
+      },
+      {
+        "track": "Me Pongo Bonito Afro",
+        "isrc": "QMDA62537856",
+        "album": "Me Pongo Bonito Afro",
+        "company": "The Orchard",
+        "release_date": "2025-07-10",
+        "upc": "199538203806",
         "type": "audio"
       }
     ]
@@ -9654,13 +10260,15 @@
   {
     "artist": "Mr. Fonsy, Claudio Magno",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "FUGA"
+    ],
     "tracks": [
       {
         "track": "Vine a Bendecir",
         "isrc": "ARBF32000019",
         "album": "-",
-        "company": "",
+        "company": "FUGA",
         "release_date": "14/07/2021",
         "upc": "695845150111",
         "type": "audio"
@@ -9669,7 +10277,7 @@
   },
   {
     "artist": "Natalia Soledad",
-    "track_count": 14,
+    "track_count": 13,
     "companies": [
       "MAWZ Music"
     ],
@@ -9702,101 +10310,92 @@
         "type": "audio"
       },
       {
-        "track": "Pide lo que quieras",
-        "isrc": "ARDL12300053",
-        "album": "Pide lo que quieras",
+        "track": "El Que Ama Mi Alma",
+        "isrc": "ARDL12300047",
+        "album": "[merged] Espera el Tiempo de Dios",
         "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "[merged] 1963622145216",
-        "type": "audio"
-      },
-      {
-        "track": "Siempre Camine",
-        "isrc": "ARDL12300055",
-        "album": "Siempre Camine",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "[merged] 1963622145216",
-        "type": "audio"
-      },
-      {
-        "track": "Rendida A Tus Pies Jesus",
-        "isrc": "ARDL12300054",
-        "album": "Rendida A Tus Pies Jesus",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "[merged] 1963622145216",
-        "type": "audio"
-      },
-      {
-        "track": "Mi Mayor Necesidad",
-        "isrc": "ARDL12300052",
-        "album": "Mi Mayor Necesidad",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "[merged] 1963622145216",
-        "type": "audio"
-      },
-      {
-        "track": "Lo Tienes Todo",
-        "isrc": "ARDL12300051",
-        "album": "Lo Tienes Todo",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "[merged] 1963622145216",
-        "type": "audio"
-      },
-      {
-        "track": "La Razon de mi Cantar",
-        "isrc": "ARDL12300050",
-        "album": "La Razon de mi Cantar",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "[merged] 1963622145216",
-        "type": "audio"
-      },
-      {
-        "track": "La Fe",
-        "isrc": "ARDL12300049",
-        "album": "La Fe",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
+        "release_date": "[merged] 11/04/2024",
         "upc": "[merged] 1963622145216",
         "type": "audio"
       },
       {
         "track": "Espera el Tiempo de Dios",
         "isrc": "ARDL12300048",
-        "album": "Espera el Tiempo de Dios",
+        "album": "[merged] Espera el Tiempo de Dios",
         "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
+        "release_date": "[merged] 11/04/2024",
         "upc": "[merged] 1963622145216",
         "type": "audio"
       },
       {
-        "track": "El Que Ama Mi Alma",
-        "isrc": "ARDL12300047",
-        "album": "El Que Ama Mi Alma",
+        "track": "La Fe",
+        "isrc": "ARDL12300049",
+        "album": "[merged] Espera el Tiempo de Dios",
         "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
+        "release_date": "[merged] 11/04/2024",
         "upc": "[merged] 1963622145216",
         "type": "audio"
       },
       {
-        "track": "Fluye en Mí (feat. A Precio de Sangre)",
-        "isrc": "ARDL12300046",
-        "album": "Fluye en Mí (feat. A Precio de Sangre)",
+        "track": "La Razon de mi Cantar",
+        "isrc": "ARDL12300050",
+        "album": "[merged] Espera el Tiempo de Dios",
         "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
+        "release_date": "[merged] 11/04/2024",
         "upc": "[merged] 1963622145216",
         "type": "audio"
       },
       {
-        "track": "Fluye en mi",
+        "track": "Lo Tienes Todo",
+        "isrc": "ARDL12300051",
+        "album": "[merged] Espera el Tiempo de Dios",
+        "company": "MAWZ Music",
+        "release_date": "[merged] 11/04/2024",
+        "upc": "[merged] 1963622145216",
+        "type": "audio"
+      },
+      {
+        "track": "Mi Mayor Necesidad",
+        "isrc": "ARDL12300052",
+        "album": "[merged] Espera el Tiempo de Dios",
+        "company": "MAWZ Music",
+        "release_date": "[merged] 11/04/2024",
+        "upc": "[merged] 1963622145216",
+        "type": "audio"
+      },
+      {
+        "track": "Pide Lo Que Quieras",
+        "isrc": "ARDL12300053",
+        "album": "[merged] Espera el Tiempo de Dios",
+        "company": "MAWZ Music",
+        "release_date": "[merged] 11/04/2024",
+        "upc": "[merged] 1963622145216",
+        "type": "audio"
+      },
+      {
+        "track": "Rendida A Tus Pies Jesus",
+        "isrc": "ARDL12300054",
+        "album": "[merged] Espera el Tiempo de Dios",
+        "company": "MAWZ Music",
+        "release_date": "[merged] 11/04/2024",
+        "upc": "[merged] 1963622145216",
+        "type": "audio"
+      },
+      {
+        "track": "Siempre Camine",
+        "isrc": "ARDL12300055",
+        "album": "[merged] Espera el Tiempo de Dios",
+        "company": "MAWZ Music",
+        "release_date": "[merged] 11/04/2024",
+        "upc": "[merged] 1963622145216",
+        "type": "audio"
+      },
+      {
+        "track": "Fluye en Mi",
         "isrc": "ARDL12300057",
-        "album": "Fluye en mi",
+        "album": "[merged] Espera el Tiempo de Dios",
         "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
+        "release_date": "[merged] 11/04/2024",
         "upc": "[merged] 1963622145216",
         "type": "audio"
       }
@@ -9821,17 +10420,19 @@
     ]
   },
   {
-    "artist": "Neko",
+    "artist": "Natalia Soledad, A Precio de Sangre",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "MAWZ Music"
+    ],
     "tracks": [
       {
-        "track": "Whisky Con Pomelo (Remix)",
-        "isrc": "Agus Gomez",
-        "album": "Amiel",
-        "company": "",
-        "release_date": "Neko",
-        "upc": "Amiel",
+        "track": "Fluye en Mí (feat. A Precio de Sangre)",
+        "isrc": "ARDL12300046",
+        "album": "[merged] Espera el Tiempo de Dios",
+        "company": "MAWZ Music",
+        "release_date": "[merged] 11/04/2024",
+        "upc": "[merged] 1963622145216",
         "type": "audio"
       }
     ]
@@ -9919,7 +10520,7 @@
   },
   {
     "artist": "No se me Olvida",
-    "track_count": 2,
+    "track_count": 1,
     "companies": [],
     "tracks": [
       {
@@ -9929,15 +10530,6 @@
         "company": "",
         "release_date": "Nanpa Básico",
         "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "LIT killah",
-        "isrc": "Nanpa Básico",
-        "album": "Nanpa Básico",
-        "company": "",
-        "release_date": "BK4DA2539081",
-        "upc": "No se me Olvida",
         "type": "audio"
       }
     ]
@@ -9959,76 +10551,51 @@
     ]
   },
   {
-    "artist": "Orce",
-    "track_count": 4,
+    "artist": "Orce|Dj Plaga|Ciganda",
+    "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "FACUU DJ",
-        "isrc": "ARDL12500033",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Dj Plaga",
-        "isrc": "ARDL12500064",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Dj Plaga",
+        "track": "Los Hombres No Lloran",
         "isrc": "ARDL12500086",
         "album": "",
         "company": "",
         "release_date": "",
         "upc": "",
         "type": "audio"
-      },
+      }
+    ]
+  },
+  {
+    "artist": "Orce|Dj Plaga|Mc Tota featuring Paly|Lit White",
+    "track_count": 1,
+    "companies": [],
+    "tracks": [
       {
-        "track": "FACUU DJ",
-        "isrc": "Coco Palmer",
-        "album": "Coco Palmer",
+        "track": "Eu Voce",
+        "isrc": "ARDL12500064",
+        "album": "",
         "company": "",
-        "release_date": "ARDL12500016",
-        "upc": "Todo Lo Que Tenga Que Ver Con Vos",
+        "release_date": "",
+        "upc": "",
         "type": "audio"
       }
     ]
   },
   {
-    "artist": "ORNAH",
+    "artist": "Orce|FACUU DJ|Coco Palmer",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "FUGA"
+    ],
     "tracks": [
       {
-        "track": "Tibbass",
-        "isrc": "Gio Deejay",
-        "album": "Gio Deejay",
-        "company": "",
-        "release_date": "QM6P42643306",
-        "upc": "ORNAH",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Pa La Calle",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "FACUU DJ",
-        "isrc": "El Joan",
-        "album": "El Joan",
-        "company": "",
-        "release_date": "ARDL12500017",
-        "upc": "Pa La Calle",
+        "track": "Turrita",
+        "isrc": "ARDL12500033",
+        "album": "Turrita",
+        "company": "FUGA",
+        "release_date": "20250710",
+        "upc": "8721215850717",
         "type": "audio"
       }
     ]
@@ -10044,22 +10611,6 @@
         "album": "Salastkbron",
         "company": "",
         "release_date": "LIT killah",
-        "upc": "",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "PACOREMIX",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "TOTI",
-        "isrc": "ARDL12500013",
-        "album": "",
-        "company": "",
-        "release_date": "",
         "upc": "",
         "type": "audio"
       }
@@ -10082,12 +10633,30 @@
     ]
   },
   {
-    "artist": "Paly",
+    "artist": "PACOREMIX|TOTI|Alan SSLK featuring LAALO DJ",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Cuatro y Pico",
+        "isrc": "ARDL12500013",
+        "album": "Cuatro y Pico",
+        "company": "FUGA",
+        "release_date": "20250410",
+        "upc": "8721215065487",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Paly|Juan Rmx",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "Juan Rmx",
+        "track": "Perreo Rebota",
         "isrc": "ARDL12500073",
         "album": "",
         "company": "",
@@ -10098,49 +10667,19 @@
     ]
   },
   {
-    "artist": "Panky Desalineado and Nikillo Yb featuring Alan SSLK",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "ManuVe",
-        "isrc": "Dr Moceton and PACOREMIX",
-        "album": "PA LA PLAYA",
-        "company": "",
-        "release_date": "ARDL12500001",
-        "upc": "PA LA PLAYA",
-        "type": "audio"
-      }
-    ]
-  },
-  {
     "artist": "Panky Desalineado and Nikillo Yb featuring Alan SSLK, ManuVe, Dr Moceton and PACOREMIX",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "FUGA"
+    ],
     "tracks": [
       {
         "track": "PA LA PLAYA",
         "isrc": "ARDL12500001",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Pegate Para La Pared",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "FACUU DJ",
-        "isrc": "Mambo DJ",
-        "album": "Mambo DJ",
-        "company": "",
-        "release_date": "ARDL12400065",
-        "upc": "Pegate Para La Pared",
+        "album": "PA LA PLAYA",
+        "company": "FUGA",
+        "release_date": "20250131",
+        "upc": "8721253623595",
         "type": "audio"
       }
     ]
@@ -10207,38 +10746,6 @@
     ]
   },
   {
-    "artist": "Ponteme Agresiva RKT",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Tibbass",
-        "isrc": "BLITO RMX",
-        "album": "BLITO RMX",
-        "company": "",
-        "release_date": "QMDA72531963",
-        "upc": "Ponteme Agresiva RKT",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "POR ATRAS",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Sossa",
-        "isrc": "Ventu",
-        "album": "Ventu",
-        "company": "",
-        "release_date": "QM4TW2684704",
-        "upc": "POR ATRAS",
-        "type": "audio"
-      }
-    ]
-  },
-  {
     "artist": "Protagonista",
     "track_count": 1,
     "companies": [],
@@ -10271,38 +10778,6 @@
     ]
   },
   {
-    "artist": "Que Lo Que Pide Esa Gata",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "LAALODJ",
-        "isrc": "ELAM MIX",
-        "album": "ELAM MIX",
-        "company": "",
-        "release_date": "QMFMF2584345",
-        "upc": "Que Lo Que Pide Esa Gata",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Que Ruja el León",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "A Precio de Sangre",
-        "isrc": "Nueva Adoración",
-        "album": "Nueva Adoración",
-        "company": "",
-        "release_date": "ARDL12500040",
-        "upc": "Que Ruja el León",
-        "type": "audio"
-      }
-    ]
-  },
-  {
     "artist": "RODRIGO TAPARI / Enganchado En Vivo en LA JUNTADA DE LOS ARTISTAS",
     "track_count": 1,
     "companies": [],
@@ -10314,22 +10789,6 @@
         "company": "",
         "release_date": "Rodrigo Tapari",
         "upc": "",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Romántico",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Coco Palmer",
-        "isrc": "Joaquin Da Rosa",
-        "album": "Joaquin Da Rosa",
-        "company": "",
-        "release_date": "ARDL12500002",
-        "upc": "Romántico",
         "type": "audio"
       }
     ]
@@ -10382,38 +10841,6 @@
         "company": "FUGA",
         "release_date": "20250609",
         "upc": "8721215586685",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Santa Fe",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "M Aqui Adonai",
-        "isrc": "Viru Kumbieron",
-        "album": "Viru Kumbieron",
-        "company": "",
-        "release_date": "ARDL12400105",
-        "upc": "Santa Fe",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Secreto RKT",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "LAALODJ",
-        "isrc": "Cesar B",
-        "album": "Cesar B",
-        "company": "",
-        "release_date": "QMDA62530410",
-        "upc": "Secreto RKT",
         "type": "audio"
       }
     ]
@@ -11021,18 +11448,9 @@
   },
   {
     "artist": "Sería un Error",
-    "track_count": 2,
+    "track_count": 1,
     "companies": [],
     "tracks": [
-      {
-        "track": "Ariel Casco",
-        "isrc": "Amapola",
-        "album": "Amapola",
-        "company": "",
-        "release_date": "ARHXW2002269",
-        "upc": "Sería un Error",
-        "type": "audio"
-      },
       {
         "track": "Ariel Casco",
         "isrc": "",
@@ -11046,7 +11464,7 @@
   },
   {
     "artist": "Simo Viani",
-    "track_count": 6,
+    "track_count": 3,
     "companies": [
       "FUGA"
     ],
@@ -11058,15 +11476,6 @@
         "company": "FUGA",
         "release_date": "20241212",
         "upc": "8721253404804",
-        "type": "audio"
-      },
-      {
-        "track": "Coco Palmer",
-        "isrc": "ARDL12500016",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
         "type": "audio"
       },
       {
@@ -11086,30 +11495,30 @@
         "release_date": "",
         "upc": "",
         "type": "video"
-      },
+      }
+    ]
+  },
+  {
+    "artist": "Simo Viani|Coco Palmer",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
       {
-        "track": "Coco Palmer",
-        "isrc": "Todo Lo Que Tenga Que Ver Con Vos",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "PROBLEMON REMIX",
-        "isrc": "LAALODJ",
-        "album": "ELAM MXI",
-        "company": "",
-        "release_date": "Simo Viani",
-        "upc": "ELAM MXI",
+        "track": "Como Loca",
+        "isrc": "ARDL12500016",
+        "album": "Todo Lo Que Tenga Que Ver Con Vos",
+        "company": "FUGA",
+        "release_date": "20250508",
+        "upc": "8721215285465",
         "type": "audio"
       }
     ]
   },
   {
     "artist": "Sin artista",
-    "track_count": 25,
+    "track_count": 24,
     "companies": [],
     "tracks": [
       {
@@ -11320,46 +11729,12 @@
         "type": "video"
       },
       {
-        "track": "Matias Mareco",
-        "isrc": "Matias Mareco, Misaael",
-        "album": "Misaael: II Entre Ríos",
-        "company": "",
-        "release_date": "MAWZ MUSIC S.R.L (100%)",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Yo Tengo Una Gata RKT (TikTok)",
-        "isrc": "ARDL12400043",
+        "track": "",
+        "isrc": "ARDL12400072",
         "album": "",
         "company": "",
         "release_date": "",
-        "upc": "8721093448198",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Sobrepasando los Niveles Musicales",
-    "track_count": 2,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Matias Mareco",
-        "isrc": "Sobrepasando los Niveles Musicales",
-        "album": "Joel RMX",
-        "company": "",
-        "release_date": "695845175961",
-        "upc": "ARBF32000014",
-        "type": "audio"
-      },
-      {
-        "track": "Matias Mareco DJ",
-        "isrc": "DJ JOEL RMX",
-        "album": "DJ JOEL RMX",
-        "company": "",
-        "release_date": "ARBF32000014",
-        "upc": "Sobrepasando los Niveles Musicales",
+        "upc": "",
         "type": "audio"
       }
     ]
@@ -11460,6 +11835,114 @@
     ]
   },
   {
+    "artist": "Sossa|DJ TRA RKT",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "CON UNA CUBANA RKT",
+        "isrc": "US6R22553422",
+        "album": "CON UNA CUBANA RKT",
+        "company": "The Orchard",
+        "release_date": "2025-12-13",
+        "upc": "199806720486",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Sossa|Fede Tarifeño",
+    "track_count": 5,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Tú me piensas RKT",
+        "isrc": "QM6P42693902",
+        "album": "Tú me piensas RKT",
+        "company": "The Orchard",
+        "release_date": "2025-04-24",
+        "upc": "820233338271",
+        "type": "audio"
+      },
+      {
+        "track": "Forni VIP",
+        "isrc": "QM6P42693810",
+        "album": "Forni VIP",
+        "company": "The Orchard",
+        "release_date": "2025-04-24",
+        "upc": "820233335638",
+        "type": "audio"
+      },
+      {
+        "track": "Cuatro K RKT",
+        "isrc": "QM6P42693790",
+        "album": "Cuatro K RKT",
+        "company": "The Orchard",
+        "release_date": "2025-04-24",
+        "upc": "820233334655",
+        "type": "audio"
+      },
+      {
+        "track": "Sábanas mojadas RKT",
+        "isrc": "QM6P42693686",
+        "album": "Sábanas mojadas RKT",
+        "company": "The Orchard",
+        "release_date": "2025-04-24",
+        "upc": "820233334525",
+        "type": "audio"
+      },
+      {
+        "track": "Scandic RKT",
+        "isrc": "QM6P42693668",
+        "album": "Scandic RKT",
+        "company": "The Orchard",
+        "release_date": "2025-04-24",
+        "upc": "820233334532",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Sossa|Fede Tarifeño|Ventu|ZALO DJ",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "TA KBRON RKT",
+        "isrc": "QMDA62637314",
+        "album": "TA KBRON RKT",
+        "company": "The Orchard",
+        "release_date": "2026-07-24",
+        "upc": "885288115758",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Sossa|Ventu",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "POR ATRAS",
+        "isrc": "QM4TW2684704",
+        "album": "POR ATRAS",
+        "company": "The Orchard",
+        "release_date": "2026-01-29",
+        "upc": "820200176370",
+        "type": "audio"
+      }
+    ]
+  },
+  {
     "artist": "Soy Lulu",
     "track_count": 1,
     "companies": [
@@ -11479,7 +11962,7 @@
   },
   {
     "artist": "SoyTiara",
-    "track_count": 5,
+    "track_count": 4,
     "companies": [
       "FUGA"
     ],
@@ -11503,15 +11986,6 @@
         "type": "audio"
       },
       {
-        "track": "Luz Eluney",
-        "isrc": "ARDL12500038",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
         "track": "Berretines al 0800",
         "isrc": "ARS8H2600023",
         "album": "",
@@ -11532,17 +12006,19 @@
     ]
   },
   {
-    "artist": "TAN DOLIDOS",
+    "artist": "SoyTiara|Luz Eluney",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "FUGA"
+    ],
     "tracks": [
       {
-        "track": "SoyTiara",
-        "isrc": "Luz Eluney",
-        "album": "Luz Eluney",
-        "company": "",
-        "release_date": "ARDL12500038",
-        "upc": "TAN DOLIDOS",
+        "track": "TAN DOLIDOS",
+        "isrc": "ARDL12500038",
+        "album": "TAN DOLIDOS",
+        "company": "FUGA",
+        "release_date": "20250806",
+        "upc": "8721215618812",
         "type": "audio"
       }
     ]
@@ -11580,22 +12056,6 @@
         "release_date": "",
         "upc": "",
         "type": "video"
-      }
-    ]
-  },
-  {
-    "artist": "Teø",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Noche de Pecados",
-        "isrc": "ACIT x",
-        "album": "Gordo Larvo",
-        "company": "",
-        "release_date": "Teø",
-        "upc": "Gordo Larvo",
-        "type": "audio"
       }
     ]
   },
@@ -11715,17 +12175,163 @@
     ]
   },
   {
-    "artist": "TIK TAK",
+    "artist": "Tibbass|BENJA RODRIGUEZ DJ",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "The Orchard"
+    ],
     "tracks": [
       {
-        "track": "BUCCI",
-        "isrc": "El Doc",
-        "album": "El Doc",
-        "company": "",
-        "release_date": "ARDL12500019",
-        "upc": "TIK TAK",
+        "track": "Webcam RKT",
+        "isrc": "QMFMF2541488",
+        "album": "Webcam RKT",
+        "company": "The Orchard",
+        "release_date": "2025-10-13",
+        "upc": "199806128831",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Tibbass|BLITO RMX",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Ponteme Agresiva RKT",
+        "isrc": "QMDA72531963",
+        "album": "Ponteme Agresiva RKT",
+        "company": "The Orchard",
+        "release_date": "2025-08-02",
+        "upc": "199538433302",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Tibbass|BRIIAN DJ",
+    "track_count": 3,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Baila Lento RKT",
+        "isrc": "QM7282559501",
+        "album": "Baila Lento RKT",
+        "company": "The Orchard",
+        "release_date": "2025-05-23",
+        "upc": "199350739477",
+        "type": "audio"
+      },
+      {
+        "track": "DE DIA Y DE NOCHE RKT",
+        "isrc": "QM4TW2662442",
+        "album": "DE DIA Y DE NOCHE RKT",
+        "company": "The Orchard",
+        "release_date": "2026-01-22",
+        "upc": "820200082268",
+        "type": "audio"
+      },
+      {
+        "track": "MEGA RD RKT",
+        "isrc": "QMBZ92665824",
+        "album": "MEGA RD RKT",
+        "company": "The Orchard",
+        "release_date": "2026-06-27",
+        "upc": "820233876643",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Tibbass|DJ JERE CIAN|COSTA DJ",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "LAKESISHI RKT",
+        "isrc": "QMBZ92613309",
+        "album": "LAKESISHI RKT",
+        "company": "The Orchard",
+        "release_date": "2026-06-05",
+        "upc": "820233710374",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Tibbass|Emi Gavirondo|Mateo Giuricich",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "BAILALO RKSXX",
+        "isrc": "QMDA62637271",
+        "album": "BAILALO RKSXX",
+        "company": "The Orchard",
+        "release_date": "2026-07-30",
+        "upc": "885288101980",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Tibbass|Gio Deejay",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "ORNAH",
+        "isrc": "QM6P42643306",
+        "album": "ORNAH",
+        "company": "The Orchard",
+        "release_date": "2026-04-25",
+        "upc": "820233141680",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Tibbass|JuanmaDj",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Yo Soy El Único RKT",
+        "isrc": "QMDA72559621",
+        "album": "Yo Soy El Único RKT",
+        "company": "The Orchard",
+        "release_date": "2025-08-09",
+        "upc": "199538510560",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Tibbass|UZI RMX|Sketchy RMX",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Esta Noche Rksxx",
+        "isrc": "QM4TW2684738",
+        "album": "Esta Noche Rksxx",
+        "company": "The Orchard",
+        "release_date": "2026-01-30",
+        "upc": "820200103451",
         "type": "audio"
       }
     ]
@@ -11747,49 +12353,35 @@
     ]
   },
   {
-    "artist": "Titan13",
+    "artist": "Titan 13|Tomi Rmx|Juanma Girat",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "TITAN 13 - Caserio session #1",
+        "isrc": "QM4TW2628257",
+        "album": "TITAN 13 - Caserio session #1",
+        "company": "The Orchard",
+        "release_date": "2026-01-14",
+        "upc": "199806947036",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Titan13|Klan",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "Klan",
+        "track": "Q Pasó",
         "isrc": "ARDL12500054",
         "album": "",
         "company": "",
         "release_date": "",
         "upc": "",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Todo Ke Ver",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "LAALODJ",
-        "isrc": "Los Anormales",
-        "album": "Los Anormales",
-        "company": "",
-        "release_date": "QMFMF2558509",
-        "upc": "Todo Ke Ver",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Toma Chukulum",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "FACUU DJ",
-        "isrc": "elaggume",
-        "album": "elaggume",
-        "company": "",
-        "release_date": "QZW9K2430311",
-        "upc": "Toma Chukulum",
         "type": "audio"
       }
     ]
@@ -11813,76 +12405,37 @@
     ]
   },
   {
-    "artist": "Tomy Dj",
+    "artist": "Tomi Rmx|Bruno Chavez Dj|NAHU IN THE MIX",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "The Orchard"
+    ],
     "tracks": [
       {
-        "track": "Sacudime El 38 Rkt",
-        "isrc": "FACUU DJ",
-        "album": "Dj Gaby",
-        "company": "",
-        "release_date": "Tomy Dj",
-        "upc": "Dj Gaby",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Tone Brz",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Dj Plaga Chapeo Sessions #1",
-        "isrc": "Dj Plaga",
-        "album": "Tone BRZ",
-        "company": "",
-        "release_date": "Tone Brz",
-        "upc": "Tone BRZ",
+        "track": "TE LO DOY RKT",
+        "isrc": "QM4TW2669527",
+        "album": "TE LO DOY RKT",
+        "company": "The Orchard",
+        "release_date": "2026-01-16",
+        "upc": "820200077585",
         "type": "audio"
       }
     ]
   },
   {
     "artist": "TOTI",
-    "track_count": 6,
-    "companies": [],
+    "track_count": 2,
+    "companies": [
+      "FUGA"
+    ],
     "tracks": [
-      {
-        "track": "Preciau",
-        "isrc": "ARDL12400103",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "Coco Palmer",
-        "isrc": "ARDL12500009",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
       {
         "track": "2X1",
         "isrc": "ARDL12500036",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
-        "type": "audio"
-      },
-      {
-        "track": "FACUU DJ",
-        "isrc": "ARDL12500072",
-        "album": "",
-        "company": "",
-        "release_date": "",
-        "upc": "",
+        "album": "2x1",
+        "company": "FUGA",
+        "release_date": "20250725",
+        "upc": "8721215882855",
         "type": "audio"
       },
       {
@@ -11893,9 +12446,61 @@
         "release_date": "",
         "upc": "",
         "type": "video"
+      }
+    ]
+  },
+  {
+    "artist": "TOTI|Befo|Falcone",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "Filho Do Funk",
+        "isrc": "QM6N22631264",
+        "album": "Filho Do Funk",
+        "company": "The Orchard",
+        "release_date": "2026-04-02",
+        "upc": "820200949325",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "TOTI|Coco Palmer",
+    "track_count": 1,
+    "companies": [
+      "FUGA"
+    ],
+    "tracks": [
+      {
+        "track": "Garota",
+        "isrc": "ARDL12500009",
+        "album": "Garota",
+        "company": "FUGA",
+        "release_date": "20250307",
+        "upc": "8721253847472",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "TOTI|FACUU DJ",
+    "track_count": 2,
+    "companies": [],
+    "tracks": [
+      {
+        "track": "Session Funk - TOTI x FACUU DJ",
+        "isrc": "ARDL12500072",
+        "album": "",
+        "company": "",
+        "release_date": "",
+        "upc": "",
+        "type": "audio"
       },
       {
-        "track": "FACUU DJ",
+        "track": "Session Funk",
         "isrc": "ARS8H2500015",
         "album": "",
         "company": "",
@@ -11906,101 +12511,71 @@
     ]
   },
   {
-    "artist": "TOTI, Falcone, Benja Garcia",
+    "artist": "TOTI|Falcone|Benja Garcia",
     "track_count": 1,
     "companies": [
       "The Orchard"
     ],
     "tracks": [
       {
-        "track": "GASOLINA",
-        "isrc": "",
-        "album": "GASOLINA",
+        "track": "LEAN ON FUNK",
+        "isrc": "QM4TX2613905",
+        "album": "LEAN ON FUNK",
         "company": "The Orchard",
         "release_date": "2026-01-05",
-        "upc": "820200264862",
+        "upc": "820200177049",
         "type": "audio"
       }
     ]
   },
   {
-    "artist": "TOTI, LuisinhoDJ, Falcone, Benja Garcia",
-    "track_count": 1,
-    "companies": [
-      "The Orchard"
-    ],
-    "tracks": [
-      {
-        "track": "MORENA JOGANDO",
-        "isrc": "",
-        "album": "MORENA JOGANDO",
-        "company": "The Orchard",
-        "release_date": "2026-01-05",
-        "upc": "820200264435",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Trumpet Club",
+    "artist": "TOTI|Preciau",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "Dura DJ",
-        "isrc": "Gutti Ezequiel",
-        "album": "Gutti Ezequiel",
-        "company": "",
-        "release_date": "QMBZ92665832",
-        "upc": "Trumpet Club",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Tu Piloto",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "LAALODJ",
-        "isrc": "Gusty dj",
-        "album": "Gusty dj",
-        "company": "",
-        "release_date": "QMBZ92510677",
-        "upc": "Tu Piloto",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Tú me piensas RKT",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Sossa",
-        "isrc": "Fede Tarifeño",
-        "album": "Fede Tarifeño",
-        "company": "",
-        "release_date": "QM6P42693902",
-        "upc": "Tú me piensas RKT",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Valen",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Rocío Quiroz",
-        "isrc": "ARDL12500090",
+        "track": "PING-PONG",
+        "isrc": "ARDL12400103",
         "album": "",
         "company": "",
         "release_date": "",
         "upc": "",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "TOTI|sheafiell|Falcone",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "FUNK: ANTES QUE SALGA EL SOL",
+        "isrc": "QM4TX2613931",
+        "album": "FUNK: ANTES QUE SALGA EL SOL",
+        "company": "The Orchard",
+        "release_date": "2026-01-05",
+        "upc": "820200192899",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "TOTI|Tomi Rmx",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "MOVEMENTO BR",
+        "isrc": "QM4TX2613398",
+        "album": "MOVEMENTO BR",
+        "company": "The Orchard",
+        "release_date": "2026-01-05",
+        "upc": "820200226211",
         "type": "audio"
       }
     ]
@@ -12022,54 +12597,28 @@
     ]
   },
   {
-    "artist": "Ventu",
+    "artist": "Valen|Rocío Quiroz|Los Nocheros|Nicole Fernandez",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "ZALO DJ",
-        "isrc": "TA KBRON RKT",
-        "album": "Fede Tarifeño",
+        "track": "Procuro Olvidarte",
+        "isrc": "ARDL12500090",
+        "album": "",
         "company": "",
-        "release_date": "Fede Tarifeño",
-        "upc": "Sossa",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Vine a Bendecir",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "Mr. Fonsy",
-        "isrc": "Claudio Magno",
-        "album": "Claudio Magno",
-        "company": "",
-        "release_date": "ARBF32000019",
-        "upc": "Vine a Bendecir",
+        "release_date": "",
+        "upc": "",
         "type": "audio"
       }
     ]
   },
   {
     "artist": "Virrshi DJ",
-    "track_count": 3,
+    "track_count": 2,
     "companies": [
-      "ONErpm",
-      "The Orchard"
+      "ONErpm"
     ],
     "tracks": [
-      {
-        "track": "Mix Rkt #2",
-        "isrc": "",
-        "album": "Mix Rkt #2",
-        "company": "The Orchard",
-        "release_date": "2025-02-28",
-        "upc": "8447053331989",
-        "type": "audio"
-      },
       {
         "track": "Parte y Choke RKT",
         "isrc": "QZW9M2467411",
@@ -12091,33 +12640,55 @@
     ]
   },
   {
-    "artist": "Walter Encina",
+    "artist": "Virrshi DJ|Damian Escudero DJ",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "The Orchard"
+    ],
     "tracks": [
       {
-        "track": "Cuerdas de Amor",
-        "isrc": "A Precio de Sangre",
-        "album": "Sebastian Mendoza",
-        "company": "",
-        "release_date": "Walter Encina",
-        "upc": "Sebastian Mendoza",
+        "track": "Clima RKT",
+        "isrc": "QM6P42581174",
+        "album": "Clima RKT",
+        "company": "The Orchard",
+        "release_date": "2025-05-07",
+        "upc": "199350583926",
         "type": "audio"
       }
     ]
   },
   {
-    "artist": "Webcam RKT",
+    "artist": "Virrshi DJ|DJ Kuff",
     "track_count": 1,
-    "companies": [],
+    "companies": [
+      "The Orchard"
+    ],
     "tracks": [
       {
-        "track": "Tibbass",
-        "isrc": "BENJA RODRIGUEZ DJ",
-        "album": "BENJA RODRIGUEZ DJ",
-        "company": "",
-        "release_date": "QMFMF2541488",
-        "upc": "Webcam RKT",
+        "track": "Ella Lo Baila RKT",
+        "isrc": "QMDA62591912",
+        "album": "Ella Lo Baila RKT",
+        "company": "The Orchard",
+        "release_date": "2025-07-22",
+        "upc": "199538337082",
+        "type": "audio"
+      }
+    ]
+  },
+  {
+    "artist": "Virrshi DJ|Tibbass",
+    "track_count": 1,
+    "companies": [
+      "The Orchard"
+    ],
+    "tracks": [
+      {
+        "track": "La Paso Cabron RKT",
+        "isrc": "ARHXW2500258",
+        "album": "La Paso Cabron RKT",
+        "company": "The Orchard",
+        "release_date": "2025-02-28",
+        "upc": "8447053331125",
         "type": "audio"
       }
     ]
@@ -12185,8 +12756,9 @@
   },
   {
     "artist": "Yankee Dj",
-    "track_count": 2,
+    "track_count": 3,
     "companies": [
+      "MAWZ Music",
       "ONErpm"
     ],
     "tracks": [
@@ -12207,16 +12779,7 @@
         "release_date": "",
         "upc": "",
         "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Yankee Dj, El Combo Loco de Mike Rodriguez, Grupo Kandombe",
-    "track_count": 1,
-    "companies": [
-      "MAWZ Music"
-    ],
-    "tracks": [
+      },
       {
         "track": "La Porra Caimanera",
         "isrc": "ARDL12400041",
@@ -12229,44 +12792,12 @@
     ]
   },
   {
-    "artist": "Yo Soy El Único RKT",
+    "artist": "Yosoyemii|El Turko",
     "track_count": 1,
     "companies": [],
     "tracks": [
       {
-        "track": "Tibbass",
-        "isrc": "JuanmaDj",
-        "album": "JuanmaDj",
-        "company": "",
-        "release_date": "QMDA72559621",
-        "upc": "Yo Soy El Único RKT",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Yo Tengo Una Gata RKT",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "FACUU DJ",
-        "isrc": "Alaan fonseca DJ",
-        "album": "Alaan fonseca DJ",
-        "company": "",
-        "release_date": "ARDL12400043",
-        "upc": "Yo Tengo Una Gata RKT",
-        "type": "audio"
-      }
-    ]
-  },
-  {
-    "artist": "Yosoyemii",
-    "track_count": 1,
-    "companies": [],
-    "tracks": [
-      {
-        "track": "El Turko",
+        "track": "Prestado",
         "isrc": "ARDL12500070",
         "album": "",
         "company": "",
@@ -12278,7 +12809,7 @@
   },
   {
     "artist": "Young Las",
-    "track_count": 8,
+    "track_count": 6,
     "companies": [
       "MAWZ Music"
     ],
@@ -12288,17 +12819,8 @@
         "isrc": "ARDL12300031",
         "album": "",
         "company": "MAWZ Music",
-        "release_date": "01/02/2024 - 31/12/2099",
+        "release_date": "02/11/2023",
         "upc": "1963621688530",
-        "type": "audio"
-      },
-      {
-        "track": "Supergirl",
-        "isrc": "ARDL12400001",
-        "album": "Supergirl",
-        "company": "MAWZ Music",
-        "release_date": "21/03/2024 - 31/12/2099",
-        "upc": "",
         "type": "audio"
       },
       {
@@ -12306,26 +12828,8 @@
         "isrc": "ARS8H2400007",
         "album": "Pick It Up",
         "company": "MAWZ Music",
-        "release_date": "01/02/2024 - 31/12/2099",
+        "release_date": "02/11/2023",
         "upc": "1963621688530",
-        "type": "audio"
-      },
-      {
-        "track": "Supergirl",
-        "isrc": "ARS8H2400008",
-        "album": "Supergirl",
-        "company": "MAWZ Music",
-        "release_date": "21/03/2024 - 31/12/2099",
-        "upc": "1963621947156",
-        "type": "audio"
-      },
-      {
-        "track": "No Estás",
-        "isrc": "ARDL12300043",
-        "album": "No Estás",
-        "company": "MAWZ Music",
-        "release_date": "01/01/2020 - 31/12/2099",
-        "upc": "",
         "type": "audio"
       },
       {
@@ -12338,12 +12842,12 @@
         "type": "audio"
       },
       {
-        "track": "No Estás",
-        "isrc": "US-3DF-24-21191 - ARDL12300043",
-        "album": "",
+        "track": "Supergirl",
+        "isrc": "ARS8H2400008",
+        "album": "Supergirl",
         "company": "MAWZ Music",
-        "release_date": "25/04/2024",
-        "upc": "1963622010453",
+        "release_date": "14/03/2024",
+        "upc": "1963621947156",
         "type": "audio"
       },
       {
@@ -12354,6 +12858,15 @@
         "release_date": "25/04/2024",
         "upc": "1963622010453",
         "type": "video"
+      },
+      {
+        "track": "No Estás",
+        "isrc": "ARDL12300043",
+        "album": "No Estás",
+        "company": "MAWZ Music",
+        "release_date": "01/01/2020 - 31/12/2099",
+        "upc": "",
+        "type": "audio"
       }
     ]
   },

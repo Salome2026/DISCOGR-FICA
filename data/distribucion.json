@@ -1,49 +1,49 @@
 {
-  "total": 1144,
+  "total": 1129,
   "companies": [
     {
       "company": "Sin datos",
-      "count": 506,
-      "pct": 44.2
+      "count": 358,
+      "pct": 31.7
     },
     {
       "company": "FUGA",
-      "count": 190,
-      "pct": 16.6
-    },
-    {
-      "company": "ADA",
-      "count": 144,
-      "pct": 12.6
+      "count": 226,
+      "pct": 20.0
     },
     {
       "company": "The Orchard",
-      "count": 135,
-      "pct": 11.8
+      "count": 216,
+      "pct": 19.1
+    },
+    {
+      "company": "ADA",
+      "count": 143,
+      "pct": 12.7
     },
     {
       "company": "MAWZ Music",
-      "count": 124,
-      "pct": 10.8
+      "count": 121,
+      "pct": 10.7
+    },
+    {
+      "company": "ONErpm",
+      "count": 29,
+      "pct": 2.6
     },
     {
       "company": "DashGo",
       "count": 21,
-      "pct": 1.8
+      "pct": 1.9
     },
     {
-      "company": "ONErpm",
+      "company": "Mojo Music & Media",
       "count": 10,
       "pct": 0.9
     },
     {
-      "company": "Mojo Music & Media",
-      "count": 8,
-      "pct": 0.7
-    },
-    {
       "company": "Altafonte",
-      "count": 4,
+      "count": 3,
       "pct": 0.3
     },
     {

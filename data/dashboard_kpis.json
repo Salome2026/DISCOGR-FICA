@@ -1,0 +1,558 @@
+{
+  "total_tracks": 1129,
+  "total_artists": 322,
+  "acuerdos_total": 112,
+  "firmados": 42,
+  "firmados_pct": 37.5,
+  "sin_audio": 59,
+  "sin_portada": 57,
+  "top_companies": [
+    {
+      "company": "Sin datos",
+      "count": 358,
+      "pct": 31.7
+    },
+    {
+      "company": "FUGA",
+      "count": 226,
+      "pct": 20.0
+    },
+    {
+      "company": "The Orchard",
+      "count": 216,
+      "pct": 19.1
+    },
+    {
+      "company": "ADA",
+      "count": 143,
+      "pct": 12.7
+    },
+    {
+      "company": "MAWZ Music",
+      "count": 121,
+      "pct": 10.7
+    }
+  ],
+  "estados": [
+    {
+      "label": "Firmado",
+      "count": 42,
+      "pct": 37.5,
+      "acuerdos": [
+        {
+          "nombre": "Alexis Lopez",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Amigo de Artistas",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Antonio Rios",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Axel Fernando",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Camila Mercado",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Cumbia Rocha",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Desakta2",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "El Mago y La Nueva",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "El Negro Tecla",
+          "compania": "FUGA - ADA"
+        },
+        {
+          "nombre": "Ezequiel y la Clave",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Gaspar Gigena",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Gaston Baez",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "La Roca",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Leo RV",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Lucia Lecina",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Mel Ruiz - La bella y La Bestia",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Meli Gimenez",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Meli Gimenez 28/05",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Micaela Barreto",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Milu Almeida",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Morena Guillen",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Nico Mattioli",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Onda Sabanera C Art Media",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Orquesta Kaluqueña",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Pedro Monardi",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Peipper",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Pinky SD - Zapada / La Bella y La Bestia",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Rodrigo Tapari",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Sabor colombiano",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Salas T- Kbron",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Sasha",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Sebastian Ruiz",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Simon Aguirre",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Sofia B",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Sofia Pavon",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Sofia Pavon 25/06",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Toly Fu",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Trio Sierra Maestra",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Valentina Olguin",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Valentino Merlo",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Willy Campero",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "ZHAE",
+          "compania": "ADA"
+        }
+      ],
+      "label_short": "Firmado",
+      "label_full": "Firmado"
+    },
+    {
+      "label": "Contactado",
+      "count": 19,
+      "pct": 17.0,
+      "acuerdos": [
+        {
+          "nombre": "Alegre Cuevas - La Bandeja",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Dalila",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "El Turko",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Grupo Sombras",
+          "compania": "ELLOS"
+        },
+        {
+          "nombre": "Jacinta 25/06",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Jairo Vera",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Juliet C Art Media",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "La Kuppe",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Los Lirios",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Los Roze",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Maxi Espindola",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Meta Guacha",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Migrantes",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Miguel Angel",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "R-jota",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Rafaga",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Roman El Original",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Soffia - Onda Sabanera C Art Media",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Soffia Philo C Art Media",
+          "compania": "ADA"
+        }
+      ],
+      "label_short": "Contactado",
+      "label_full": "Contactado"
+    },
+    {
+      "label": "NO SACAR",
+      "count": 12,
+      "pct": 10.7,
+      "acuerdos": [
+        {
+          "nombre": "18 Kilates",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Agustin Bernasconi",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Alkla",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Aneley - Valen Vargas - Dami Bravo C Art Media",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Benja Sstars",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "BM",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Doble P 02/07",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Kaleb di Masi",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Luqiano 02/07",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Maxi 18 kilates 02/07",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Uriel Lozano",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Uriel Lozano C Art Media",
+          "compania": "ADA"
+        }
+      ],
+      "label_short": "NO SACAR",
+      "label_full": "NO SACAR"
+    },
+    {
+      "label": "Sin estado",
+      "count": 12,
+      "pct": 10.7,
+      "acuerdos": [
+        {
+          "nombre": "Azul Castello - 02/07",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Christian Herrera",
+          "compania": ""
+        },
+        {
+          "nombre": "Dani el Bombazo",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Ecko",
+          "compania": ""
+        },
+        {
+          "nombre": "El Mago Man",
+          "compania": ""
+        },
+        {
+          "nombre": "El pastor",
+          "compania": ""
+        },
+        {
+          "nombre": "El Reja",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Jean Carlos",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Ludmila Solemaini 09/07",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Luqiano 09/07",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Papichamp",
+          "compania": ""
+        },
+        {
+          "nombre": "Poca Plata",
+          "compania": "FUGA"
+        }
+      ],
+      "label_short": "Sin estado",
+      "label_full": "Sin estado"
+    },
+    {
+      "label": "Aprobado",
+      "count": 11,
+      "pct": 9.8,
+      "acuerdos": [
+        {
+          "nombre": "Agrupacion Marilyn",
+          "compania": "ELLOS"
+        },
+        {
+          "nombre": "Aneley  C Art Media",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Candu Dominguez - Aneley",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Candu Dominguez - G-Sony en C Art Media",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "G-Sony",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "G-Sony - Y dale Leonel",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "G-Sony C Art Media",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Nhay Viera",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Nicole Fernandez",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Sofi B 28/5",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Sofi B C Art Media",
+          "compania": "ADA"
+        }
+      ],
+      "label_short": "Aprobado",
+      "label_full": "Aprobado"
+    },
+    {
+      "label": "En negociación",
+      "count": 6,
+      "pct": 5.4,
+      "acuerdos": [
+        {
+          "nombre": "El Pibe Delivery",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "El Villano",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Magenta",
+          "compania": "ELLOS O FUGA"
+        },
+        {
+          "nombre": "Pone la Premier",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "The la planta",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "The la planta C Art Media",
+          "compania": "ADA"
+        }
+      ],
+      "label_short": "En negociación",
+      "label_full": "En negociación"
+    },
+    {
+      "label": "Enviado (WhatsApp/Correo/Firma)",
+      "count": 7,
+      "pct": 6.2,
+      "acuerdos": [
+        {
+          "nombre": "2 Mileros",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Banda XXI",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Damaris C Art Media",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "El Apache Ness",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "La Sonora Dinamita",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Lauta",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Valentin Vargas - streaming",
+          "compania": "ADA"
+        }
+      ],
+      "label_short": "Enviado",
+      "label_full": "Enviado (WhatsApp/Correo/Firma)"
+    },
+    {
+      "label": "Sin Empezar",
+      "count": 3,
+      "pct": 2.7,
+      "acuerdos": [
+        {
+          "nombre": "C. Montalvo",
+          "compania": "FUGA"
+        },
+        {
+          "nombre": "Combo Loco",
+          "compania": "ADA"
+        },
+        {
+          "nombre": "Simba",
+          "compania": "FUGA"
+        }
+      ],
+      "label_short": "Sin Empezar",
+      "label_full": "Sin Empezar"
+    }
+  ]
+}

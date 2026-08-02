@@ -1,40 +1,194 @@
+"use client";
+
 import Link from "next/link";
-import kpis from "@/data/dashboard_kpis.json";
+import { useEffect, useMemo, useState } from "react";
+import porCompania from "@/data/por_compania.json";
+import catalogo from "@/data/catalogo.json";
+import { SELLOS, assignSello } from "@/lib/sellos";
+import DrillDown, { Column } from "./components/DrillDown";
+import type { Release } from "@/lib/notion";
 
 const COLORS = ["#e6a94f", "#c9825a", "#7f9bb0", "#5c5140", "#8a7c62"];
 
-function donutSegments() {
-  const top = kpis.top_companies;
-  const total = kpis.total_tracks;
-  let offset = 0;
-  const circumference = 2 * Math.PI * 96;
-  const segs = top.map((c, i) => {
-    const frac = c.count / total;
-    const len = frac * circumference;
-    const seg = { color: COLORS[i % COLORS.length], len, offset };
-    offset += len;
-    return seg;
-  });
-  const rest = circumference - offset;
-  segs.push({ color: "#4a4131", len: rest, offset });
-  return { segs, circumference };
+type Track = {
+  id?: string | number;
+  artist: string;
+  track: string;
+  isrc: string;
+  album: string;
+  release_date: string;
+  upc: string;
+  type: string;
+};
+
+type ArtistEntry = {
+  artist: string;
+  track_count: number;
+  companies: string[];
+  tracks: { track: string; isrc: string; company: string }[];
+};
+
+const catalogoData = catalogo as ArtistEntry[];
+const porCompaniaData = porCompania as {
+  total: number;
+  companies: { company: string; count: number; pct: number; tracks: Track[] }[];
+};
+
+const estadoColor: Record<string, string> = {
+  Firmado: "#7fae6f",
+  Contactado: "#8aa0c9",
+  "NO SACAR": "#c96a5a",
+  "Sin estado": "#8a7c62",
+  Aprobado: "#e6a94f",
+  "En negociacion": "#d99a4e",
+  "Enviado a la firma": "#a894c9",
+  "Enviado Whatsapp": "#a894c9",
+  "Enviado Draft por Correo": "#a894c9",
+  "Sin Empezar": "#6b6152",
+};
+
+function estadoBucket(estado: string[]): string {
+  if (!estado || estado.length === 0) return "Sin estado";
+  if (estado.includes("Firmado")) return "Firmado";
+  if (estado.includes("NO SACAR")) return "NO SACAR";
+  if (estado.includes("Aprobado")) return "Aprobado";
+  if (estado.includes("Sin Empezar")) return "Sin Empezar";
+  if (
+    estado.includes("Enviado Whatsapp") ||
+    estado.includes("Enviado Draft por Correo") ||
+    estado.includes("Enviado a la firma")
+  )
+    return "Enviado";
+  if (estado.includes("En negociacion")) return "En negociación";
+  if (estado.includes("Contactado")) return "Contactado";
+  return "Sin estado";
 }
 
-export default function Dashboard() {
-  const { segs, circumference } = donutSegments();
-  const estados = kpis.estados;
-  const maxEstado = Math.max(...estados.map((e) => e.count));
+function norm(s: string): string {
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+}
 
-  const estadoColor: Record<string, string> = {
-    Firmado: "#7fae6f",
-    Contactado: "#8aa0c9",
-    "NO SACAR": "#c96a5a",
-    "Sin estado": "#8a7c62",
-    Aprobado: "#e6a94f",
-    "En negociación": "#d99a4e",
-    "Enviado (WhatsApp/Correo/Firma)": "#a894c9",
-    "Sin Empezar": "#6b6152",
-  };
+type DrillState =
+  | { kind: "company"; company: string; rows: Track[] }
+  | { kind: "estado"; estado: string; rows: Release[] }
+  | { kind: "firmados" | "sinAudio" | "sinPortada"; rows: Release[] }
+  | { kind: "artistas" }
+  | null;
+
+export default function Dashboard() {
+  const [acuerdos, setAcuerdos] = useState<Release[] | null>(null);
+  const [acuerdosError, setAcuerdosError] = useState<string | null>(null);
+  const [drill, setDrill] = useState<DrillState>(null);
+
+  useEffect(() => {
+    fetch("/api/acuerdos")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) setAcuerdosError(d.error);
+        else setAcuerdos(d.acuerdos);
+      })
+      .catch((e) => setAcuerdosError(String(e)));
+  }, []);
+
+  const estadoCounts = useMemo(() => {
+    if (!acuerdos) return null;
+    const buckets: Record<string, number> = {};
+    for (const a of acuerdos) {
+      const b = estadoBucket(a.estado);
+      buckets[b] = (buckets[b] || 0) + 1;
+    }
+    return buckets;
+  }, [acuerdos]);
+
+  const artistaAcuerdoCount = useMemo(() => {
+    if (!acuerdos) return new Map<string, Release[]>();
+    const map = new Map<string, Release[]>();
+    for (const a of acuerdos) {
+      const key = norm(a.nombre);
+      if (!key) continue;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(a);
+    }
+    return map;
+  }, [acuerdos]);
+
+  const donutSegs = useMemo(() => {
+    const top = porCompaniaData.companies.slice(0, 5);
+    const circumference = 2 * Math.PI * 96;
+    let offset = 0;
+    const segs = top.map((c, i) => {
+      const frac = c.count / porCompaniaData.total;
+      const len = frac * circumference;
+      const seg = { color: COLORS[i % COLORS.length], len, offset, company: c.company, count: c.count, pct: c.pct };
+      offset += len;
+      return seg;
+    });
+    return { segs, circumference, rest: circumference - offset };
+  }, []);
+
+  const maxEstado = estadoCounts ? Math.max(1, ...Object.values(estadoCounts)) : 1;
+  const estadoOrder = [
+    "Firmado",
+    "Contactado",
+    "NO SACAR",
+    "Sin estado",
+    "Aprobado",
+    "En negociación",
+    "Enviado",
+    "Sin Empezar",
+  ];
+
+  const firmados = acuerdos?.filter((a) => a.estado.includes("Firmado")) ?? [];
+  const sinAudio = acuerdos?.filter((a) => !a.audio) ?? [];
+  const sinPortada = acuerdos?.filter((a) => !a.portada) ?? [];
+
+  function openCompany(company: string) {
+    const c = porCompaniaData.companies.find((x) => x.company === company);
+    if (c) setDrill({ kind: "company", company, rows: c.tracks });
+  }
+
+  function openEstado(estado: string) {
+    if (!acuerdos) return;
+    const rows = acuerdos.filter((a) => estadoBucket(a.estado) === estado);
+    setDrill({ kind: "estado", estado, rows });
+  }
+
+  const acuerdoColumns: Column<Release>[] = [
+    { key: "nombre", label: "Artista / acuerdo" },
+    { key: "compania", label: "Distribuidora" },
+    { key: "estado", label: "Estado", render: (r) => r.estado.join(", ") || "—" },
+    { key: "responsable", label: "Responsable" },
+    { key: "audio", label: "Audio", render: (r) => (r.audio ? "✓" : "✗") },
+    { key: "portada", label: "Portada", render: (r) => (r.portada ? "✓" : "✗") },
+    { key: "comentario", label: "Observaciones" },
+  ];
+
+  const trackColumns: Column<Track>[] = [
+    { key: "artist", label: "Artista" },
+    { key: "track", label: "Fonograma" },
+    { key: "album", label: "Álbum" },
+    { key: "isrc", label: "ISRC" },
+    { key: "release_date", label: "Fecha" },
+  ];
+
+  const artistColumns: Column<ArtistEntry & { acuerdosVinculados: number; sello: string }>[] = [
+    { key: "artist", label: "Artista" },
+    { key: "track_count", label: "Fonogramas" },
+    { key: "companies", label: "Distribuidora", render: (r) => r.companies.join(", ") || "—" },
+    { key: "sello", label: "Sello" },
+    { key: "acuerdosVinculados", label: "Acuerdos vinculados" },
+  ];
+
+  const artistRows = useMemo(
+    () =>
+      catalogoData.map((a) => ({
+        ...a,
+        id: a.artist,
+        acuerdosVinculados: artistaAcuerdoCount.get(norm(a.artist))?.length ?? 0,
+        sello: assignSello(a.artist) ?? "Sin asignar",
+      })),
+    [artistaAcuerdoCount]
+  );
 
   return (
     <div className="dash-root">
@@ -55,7 +209,7 @@ export default function Dashboard() {
           padding-bottom:5rem;
         }
         .dash-inner{max-width:1120px;margin:0 auto;padding:2.5rem 2rem 0;}
-        .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2.25rem;flex-wrap:wrap;gap:1rem;}
+        .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
         .brand{display:flex;align-items:center;gap:10px;}
         .brand-mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(155deg,#e6a94f,#c98f3a);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#241a08;}
         .brand-name{font-size:14px;font-weight:600;letter-spacing:-.01em;}
@@ -64,26 +218,32 @@ export default function Dashboard() {
         .nav-pill{font-size:12.5px;padding:7px 13px;border-radius:100px;color:var(--text-2);border:1px solid transparent;text-decoration:none;}
         .nav-pill.active{background:var(--bg-2);color:var(--text-1);border-color:var(--line);}
         .nav-pill:hover:not(.active){background:var(--bg-1);}
+        .sello-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:1.5rem;}
+        .sello-btn{aspect-ratio:1.4;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12.5px;font-weight:600;border:1px solid var(--line-soft);border-radius:var(--radius-md);background:var(--bg-1);color:var(--text-1);cursor:pointer;padding:.5rem;}
+        .sello-btn:hover{background:var(--bg-2);border-color:var(--line);}
         .card{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:var(--radius-lg);padding:1.75rem;}
         .card-label{font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;}
         .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:1.25rem;margin-bottom:1.25rem;}
         .donut-card{display:flex;align-items:center;gap:2rem;flex-wrap:wrap;}
-        .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+        .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
         .donut-center .n{font-size:44px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
         .donut-center .l{font-size:12px;color:var(--text-3);margin-top:2px;}
-        .donut-legend{display:flex;flex-direction:column;gap:10px;flex:1;min-width:180px;}
-        .leg-row{display:flex;align-items:center;gap:10px;font-size:13px;}
+        .donut-legend{display:flex;flex-direction:column;gap:6px;flex:1;min-width:180px;}
+        .leg-row{display:flex;align-items:center;gap:10px;font-size:13px;background:transparent;border:none;padding:5px 6px;border-radius:8px;cursor:pointer;text-align:left;color:inherit;font:inherit;width:100%;}
+        .leg-row:hover{background:var(--bg-2);}
         .leg-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
         .leg-name{color:var(--text-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .leg-val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-1);}
-        .estado-bars{display:flex;flex-direction:column;gap:12px;margin-top:1rem;}
-        .ebar-row{display:grid;grid-template-columns:120px 1fr 56px;align-items:center;gap:10px;}
+        .estado-bars{display:flex;flex-direction:column;gap:10px;margin-top:1rem;}
+        .ebar-row{display:grid;grid-template-columns:120px 1fr 40px;align-items:center;gap:10px;background:transparent;border:none;padding:4px 4px;border-radius:8px;cursor:pointer;text-align:left;color:inherit;font:inherit;}
+        .ebar-row:hover{background:var(--bg-2);}
         .ebar-name{font-size:12px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .ebar-track{height:18px;background:var(--bg-2);border-radius:6px;overflow:hidden;}
         .ebar-fill{height:100%;border-radius:6px;}
         .ebar-val{font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-1);font-weight:600;}
         .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:1.25rem;}
-        .kpi{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:var(--radius-lg);padding:1.5rem;}
+        .kpi{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:var(--radius-lg);padding:1.5rem;cursor:pointer;text-align:left;color:inherit;font:inherit;}
+        .kpi:hover{border-color:var(--line);background:var(--bg-2);}
         .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
         .kpi-label{font-size:12.5px;color:var(--text-3);}
         .kpi-chip{font-size:11px;padding:3px 8px;border-radius:100px;font-weight:600;}
@@ -113,29 +273,56 @@ export default function Dashboard() {
           </div>
         </div>
 
+        <div className="sello-row">
+          {SELLOS.map((s) => (
+            <Link key={s} href={`/sellos/${encodeURIComponent(s)}`} className="sello-btn">
+              {s}
+            </Link>
+          ))}
+        </div>
+
+        {acuerdosError && (
+          <div
+            style={{
+              background: "var(--crit-bg)",
+              color: "var(--crit-ink)",
+              padding: "10px 16px",
+              borderRadius: 10,
+              fontSize: 13,
+              marginBottom: 16,
+            }}
+          >
+            No se pudo conectar con Notion: {acuerdosError}
+          </div>
+        )}
+
         <div className="hero-grid">
           <div className="card donut-card">
             <div style={{ position: "relative", width: 224, height: 224, flexShrink: 0 }}>
               <svg width="224" height="224" viewBox="0 0 224 224">
                 <circle cx="112" cy="112" r="96" fill="none" stroke="var(--bg-2)" strokeWidth="26" />
-                {segs.map((s, i) => (
+                {donutSegs.segs.map((s) => (
                   <circle
-                    key={i}
+                    key={s.company}
                     cx="112"
                     cy="112"
                     r="96"
                     fill="none"
                     stroke={s.color}
                     strokeWidth="26"
-                    strokeDasharray={`${s.len} ${circumference}`}
+                    strokeDasharray={`${s.len} ${donutSegs.circumference}`}
                     strokeDashoffset={-s.offset}
                     strokeLinecap="round"
                     transform="rotate(-90 112 112)"
-                  />
+                    style={{ cursor: "pointer" }}
+                    onClick={() => openCompany(s.company)}
+                  >
+                    <title>{`${s.company}: ${s.count} (${s.pct}%)`}</title>
+                  </circle>
                 ))}
               </svg>
               <div className="donut-center">
-                <div className="n">{kpis.total_tracks.toLocaleString("es-AR")}</div>
+                <div className="n">{porCompaniaData.total.toLocaleString("es-AR")}</div>
                 <div className="l">fonogramas</div>
               </div>
             </div>
@@ -143,14 +330,14 @@ export default function Dashboard() {
               <div className="card-label" style={{ marginBottom: 2 }}>
                 Distribución por discográfica
               </div>
-              {kpis.top_companies.map((c, i) => (
-                <div className="leg-row" key={c.company}>
-                  <span className="leg-dot" style={{ background: COLORS[i % COLORS.length] }} />
-                  <span className="leg-name">{c.company}</span>
+              {donutSegs.segs.map((s) => (
+                <button className="leg-row" key={s.company} onClick={() => openCompany(s.company)}>
+                  <span className="leg-dot" style={{ background: s.color }} />
+                  <span className="leg-name">{s.company}</span>
                   <span className="leg-val">
-                    {c.count} · {c.pct}%
+                    {s.count} · {s.pct}%
                   </span>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -158,67 +345,117 @@ export default function Dashboard() {
           <div className="card">
             <div className="card-label">Estado de los acuerdos</div>
             <div style={{ fontSize: 16, fontWeight: 600, marginTop: 2 }}>
-              {kpis.acuerdos_total} acuerdos activos
+              {acuerdos ? `${acuerdos.length} acuerdos activos` : "Cargando..."}
             </div>
             <div className="estado-bars">
-              {estados.map((e) => (
-                <div className="ebar-row" key={e.label}>
-                  <span className="ebar-name">{e.label_short}</span>
-                  <div className="ebar-track">
-                    <div
-                      className="ebar-fill"
-                      style={{
-                        width: `${(e.count / maxEstado) * 100}%`,
-                        background: estadoColor[e.label] || "var(--gold)",
-                      }}
-                    />
-                  </div>
-                  <span className="ebar-val">{e.count}</span>
-                </div>
-              ))}
+              {estadoOrder.map((label) => {
+                const count = estadoCounts?.[label] ?? 0;
+                return (
+                  <button className="ebar-row" key={label} onClick={() => openEstado(label)}>
+                    <span className="ebar-name">{label}</span>
+                    <div className="ebar-track">
+                      <div
+                        className="ebar-fill"
+                        style={{
+                          width: `${(count / maxEstado) * 100}%`,
+                          background: estadoColor[label] || "var(--gold)",
+                        }}
+                      />
+                    </div>
+                    <span className="ebar-val">{count}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
         <div className="kpi-grid">
-          <div className="kpi">
+          <button className="kpi" onClick={() => setDrill({ kind: "firmados", rows: firmados })}>
             <div className="kpi-top">
               <span className="kpi-label">Firmados</span>
-              <span className="kpi-chip good">{kpis.firmados_pct}%</span>
+              <span className="kpi-chip good">
+                {acuerdos ? Math.round((firmados.length / acuerdos.length) * 100) : 0}%
+              </span>
             </div>
-            <div className="kpi-num">{kpis.firmados}</div>
-            <div className="kpi-sub">de {kpis.acuerdos_total} acuerdos</div>
-          </div>
-          <div className="kpi">
+            <div className="kpi-num">{firmados.length}</div>
+            <div className="kpi-sub">de {acuerdos?.length ?? "—"} acuerdos</div>
+          </button>
+          <button className="kpi" onClick={() => setDrill({ kind: "sinAudio", rows: sinAudio })}>
             <div className="kpi-top">
               <span className="kpi-label">Sin audio</span>
               <span className="kpi-chip crit">Atención</span>
             </div>
-            <div className="kpi-num">{kpis.sin_audio}</div>
+            <div className="kpi-num">{sinAudio.length}</div>
             <div className="kpi-sub">bloquean el release</div>
-          </div>
-          <div className="kpi">
+          </button>
+          <button className="kpi" onClick={() => setDrill({ kind: "sinPortada", rows: sinPortada })}>
             <div className="kpi-top">
               <span className="kpi-label">Sin portada</span>
               <span className="kpi-chip warn">Revisar</span>
             </div>
-            <div className="kpi-num">{kpis.sin_portada}</div>
+            <div className="kpi-num">{sinPortada.length}</div>
             <div className="kpi-sub">bloquean el release</div>
-          </div>
-          <div className="kpi">
+          </button>
+          <button className="kpi" onClick={() => setDrill({ kind: "artistas" })}>
             <div className="kpi-top">
               <span className="kpi-label">Artistas en catálogo</span>
             </div>
-            <div className="kpi-num">{kpis.total_artists}</div>
+            <div className="kpi-num">{catalogoData.length}</div>
             <div className="kpi-sub">con fonogramas cargados</div>
-          </div>
+          </button>
         </div>
 
         <p className="footer-note">
-          Diseño en construcción — datos reales de Notion y Drive. Próximo paso: drill-down por
-          estado y ficha de artista.
+          Estados y acuerdos en vivo desde Notion · Catálogo de fonogramas actualizado desde Drive
+          (no en vivo — la app no tiene credenciales de Google Drive).
         </p>
       </div>
+
+      {drill?.kind === "company" && (
+        <DrillDown
+          open
+          onClose={() => setDrill(null)}
+          title={drill.company}
+          subtitle={`${drill.rows.length} fonogramas`}
+          rows={drill.rows.map((r, i) => ({ ...r, id: r.isrc || i }))}
+          columns={trackColumns}
+        />
+      )}
+      {drill?.kind === "estado" && (
+        <DrillDown
+          open
+          onClose={() => setDrill(null)}
+          title={drill.estado}
+          subtitle={`${drill.rows.length} acuerdos`}
+          rows={drill.rows.map((r) => ({ ...r, id: r.id }))}
+          columns={acuerdoColumns}
+          urlKey="url"
+        />
+      )}
+      {(drill?.kind === "firmados" || drill?.kind === "sinAudio" || drill?.kind === "sinPortada") && (
+        <DrillDown
+          open
+          onClose={() => setDrill(null)}
+          title={
+            drill.kind === "firmados" ? "Firmados" : drill.kind === "sinAudio" ? "Sin audio" : "Sin portada"
+          }
+          subtitle={`${drill.rows.length} acuerdos`}
+          rows={drill.rows.map((r) => ({ ...r, id: r.id }))}
+          columns={acuerdoColumns}
+          urlKey="url"
+        />
+      )}
+      {drill?.kind === "artistas" && (
+        <DrillDown
+          open
+          onClose={() => setDrill(null)}
+          title="Artistas en catálogo"
+          subtitle={`${artistRows.length} artistas`}
+          rows={artistRows}
+          columns={artistColumns}
+        />
+      )}
     </div>
   );
 }

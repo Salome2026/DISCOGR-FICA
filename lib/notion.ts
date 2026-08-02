@@ -38,6 +38,12 @@ export type Release = {
   estado: string[];
   prioridad: string | null;
   porcentaje: number | null;
+  audio: boolean;
+  portada: boolean;
+  acuerdo: boolean;
+  responsable: string | null;
+  comentario: string | null;
+  url: string;
 };
 
 function extractText(richText: unknown): string {
@@ -61,6 +67,7 @@ export async function listReleases(): Promise<Release[]> {
 
     for (const page of data.results) {
       const props = page.properties;
+      const responsablePeople = props["Responsable"]?.people ?? [];
       results.push({
         id: page.id,
         nombre: extractText(props["Nombre Acuerdo "]?.title),
@@ -72,6 +79,20 @@ export async function listReleases(): Promise<Release[]> {
         ),
         prioridad: props["Prioridad"]?.select?.name ?? null,
         porcentaje: props["%"]?.number ?? null,
+        audio: props["AUDIO "]?.checkbox ?? false,
+        portada: props["PORTADA"]?.checkbox ?? false,
+        acuerdo: props["ACUERDO "]?.checkbox ?? false,
+        responsable: responsablePeople.length
+          ? responsablePeople.map((p: { name?: string }) => p.name ?? "").join(", ")
+          : null,
+        comentario: props["Comentario Estado (Negociacion - Enviado a la Firma)  )"]
+          ?.rich_text
+          ? extractText(
+              props["Comentario Estado (Negociacion - Enviado a la Firma)  )"]
+                .rich_text
+            )
+          : null,
+        url: `https://notion.so/${page.id.replace(/-/g, "")}`,
       });
     }
 

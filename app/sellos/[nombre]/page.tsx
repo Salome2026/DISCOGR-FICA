@@ -1,0 +1,138 @@
+"use client";
+
+import Link from "next/link";
+import { use, useMemo } from "react";
+import catalogo from "@/data/catalogo.json";
+import { assignSello, SELLOS } from "@/lib/sellos";
+
+type ArtistEntry = {
+  artist: string;
+  track_count: number;
+  companies: string[];
+  tracks: { track: string; isrc: string; company: string }[];
+};
+
+const catalogoData = catalogo as ArtistEntry[];
+
+export default function SelloPage({ params }: { params: Promise<{ nombre: string }> }) {
+  const { nombre } = use(params);
+  const selloName = decodeURIComponent(nombre);
+
+  const artists = useMemo(
+    () => catalogoData.filter((a) => assignSello(a.artist) === selloName),
+    [selloName]
+  );
+  const totalTracks = artists.reduce((sum, a) => sum + a.track_count, 0);
+
+  const companyBreakdown = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const a of artists) {
+      for (const t of a.tracks) {
+        const c = t.company || "Sin datos";
+        m.set(c, (m.get(c) || 0) + 1);
+      }
+    }
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
+  }, [artists]);
+
+  const isKnownSello = (SELLOS as readonly string[]).includes(selloName);
+
+  return (
+    <div className="dash-root">
+      <style>{`
+        .dash-root {
+          --bg-0:#2a241c; --bg-0b:#3a3226; --bg-1:#332c22; --bg-2:#3d3427;
+          --line:#544831; --line-soft:#403627;
+          --text-1:#f4ede1; --text-2:#c2b39a; --text-3:#8f8267;
+          --gold:#e6a94f;
+          font-family:-apple-system,"SF Pro Display",ui-sans-serif,"Segoe UI",Helvetica,Arial,sans-serif;
+          background:linear-gradient(180deg,var(--bg-0) 0%,var(--bg-0b) 55%,var(--bg-0) 100%);
+          color:var(--text-1);
+          min-height:100vh;
+          padding-bottom:5rem;
+        }
+        .inner{max-width:1120px;margin:0 auto;padding:2.5rem 2rem 0;}
+        .crumb{font-size:13px;color:var(--text-3);margin-bottom:1.25rem;}
+        .crumb a{color:var(--text-2);text-decoration:none;}
+        .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;}
+        .kpi{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:16px;padding:1.25rem;}
+        .kpi-label{font-size:12px;color:var(--text-3);}
+        .kpi-num{font-size:30px;font-weight:700;margin-top:6px;}
+        .card{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:16px;padding:1.5rem;margin-bottom:1rem;}
+        table{width:100%;border-collapse:collapse;font-size:13px;}
+        th{text-align:left;color:var(--text-3);font-weight:500;padding:8px 10px;border-bottom:1px solid var(--line-soft);}
+        td{padding:8px 10px;border-bottom:1px solid var(--line-soft);}
+        .empty{color:var(--text-3);font-size:13.5px;padding:1rem 0;}
+      `}</style>
+      <div className="inner">
+        <div className="crumb">
+          <Link href="/">Dashboard</Link> › {selloName}
+        </div>
+        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>{selloName}</h1>
+
+        {!isKnownSello && (
+          <p className="empty">Este sello no está en la lista configurada (VPO CORP).</p>
+        )}
+
+        {artists.length === 0 ? (
+          <div className="card">
+            <p className="empty">
+              Todavía no hay artistas asignados a este sello en el mapeo (`lib/sellos.ts`). Pasame
+              qué artistas pertenecen a {selloName} y lo agrego.
+            </p>
+          </div>
+        ) : (
+          <>
+            <div className="kpi-grid">
+              <div className="kpi">
+                <div className="kpi-label">Artistas</div>
+                <div className="kpi-num">{artists.length}</div>
+              </div>
+              <div className="kpi">
+                <div className="kpi-label">Fonogramas</div>
+                <div className="kpi-num">{totalTracks}</div>
+              </div>
+              <div className="kpi">
+                <div className="kpi-label">Distribuidoras</div>
+                <div className="kpi-num">{companyBreakdown.length}</div>
+              </div>
+            </div>
+
+            <div className="card">
+              <p style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 10 }}>
+                Distribución por discográfica
+              </p>
+              {companyBreakdown.map(([c, n]) => (
+                <div key={c} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "4px 0" }}>
+                  <span style={{ color: "var(--text-2)" }}>{c}</span>
+                  <span style={{ fontWeight: 600 }}>{n}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="card">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Artista</th>
+                    <th>Fonogramas</th>
+                    <th>Distribuidora</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {artists.map((a) => (
+                    <tr key={a.artist}>
+                      <td>{a.artist}</td>
+                      <td>{a.track_count}</td>
+                      <td>{a.companies.join(", ") || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

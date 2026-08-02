@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Fecha inválida." }, { status: 400 });
   }
 
-  if (role === "project_manager") {
+  if (role === "project_manager" || role === "artista" || role === "representante") {
     const assigned = await getAssignedArtists(email);
     if (!assigned.map((a) => a.toLowerCase()).includes(String(artist).toLowerCase())) {
       return NextResponse.json(

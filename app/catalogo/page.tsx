@@ -1,4 +1,5 @@
 import catalogo from "@/data/catalogo.json";
+import DistribucionChart from "./DistribucionChart";
 
 type Track = {
   track: string;
@@ -26,6 +27,8 @@ export default function Catalogo() {
         {data.length} artistas · {data.reduce((a, e) => a + e.track_count, 0)} tracks
         (importado desde Drive)
       </p>
+
+      <DistribucionChart />
 
       <div className="flex flex-col gap-3">
         {data.map((entry) => (

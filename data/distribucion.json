@@ -1,0 +1,60 @@
+{
+  "total": 1144,
+  "companies": [
+    {
+      "company": "Sin datos",
+      "count": 506,
+      "pct": 44.2
+    },
+    {
+      "company": "FUGA",
+      "count": 190,
+      "pct": 16.6
+    },
+    {
+      "company": "ADA",
+      "count": 144,
+      "pct": 12.6
+    },
+    {
+      "company": "The Orchard",
+      "count": 135,
+      "pct": 11.8
+    },
+    {
+      "company": "MAWZ Music",
+      "count": 124,
+      "pct": 10.8
+    },
+    {
+      "company": "DashGo",
+      "count": 21,
+      "pct": 1.8
+    },
+    {
+      "company": "ONErpm",
+      "count": 10,
+      "pct": 0.9
+    },
+    {
+      "company": "Mojo Music & Media",
+      "count": 8,
+      "pct": 0.7
+    },
+    {
+      "company": "Altafonte",
+      "count": 4,
+      "pct": 0.3
+    },
+    {
+      "company": "Warner Music",
+      "count": 1,
+      "pct": 0.1
+    },
+    {
+      "company": "Kilo Music Group",
+      "count": 1,
+      "pct": 0.1
+    }
+  ]
+}

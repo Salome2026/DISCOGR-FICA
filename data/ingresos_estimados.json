@@ -1,0 +1,236 @@
+{
+  "rate_per_stream_usd": 0.004,
+  "total_tracks": 1042,
+  "total_est_streams": 65331000,
+  "total_est_revenue_usd": 261324.0,
+  "artist_ranking": [
+    {
+      "artist": "La Banda Al Rojo Vivo",
+      "tracks": 48,
+      "est_revenue_usd": 33600.0,
+      "est_streams": 8400000
+    },
+    {
+      "artist": "La Milonga",
+      "tracks": 24,
+      "est_revenue_usd": 19200.0,
+      "est_streams": 4800000
+    },
+    {
+      "artist": "Los Totora",
+      "tracks": 35,
+      "est_revenue_usd": 16800.0,
+      "est_streams": 4200000
+    },
+    {
+      "artist": "Maxi y La Champions Liga",
+      "tracks": 24,
+      "est_revenue_usd": 16000.0,
+      "est_streams": 4000000
+    },
+    {
+      "artist": "Juani Cumbia Base",
+      "tracks": 16,
+      "est_revenue_usd": 12800.0,
+      "est_streams": 3200000
+    },
+    {
+      "artist": "El Desborde Criollo",
+      "tracks": 24,
+      "est_revenue_usd": 12160.0,
+      "est_streams": 3040000
+    },
+    {
+      "artist": "El Retutu",
+      "tracks": 21,
+      "est_revenue_usd": 8804.0,
+      "est_streams": 2201000
+    },
+    {
+      "artist": "Kumbia Melody",
+      "tracks": 18,
+      "est_revenue_usd": 8640.0,
+      "est_streams": 2160000
+    },
+    {
+      "artist": "A Precio de Sangre",
+      "tracks": 21,
+      "est_revenue_usd": 7792.0,
+      "est_streams": 1948000
+    },
+    {
+      "artist": "M AQUI ADONAI",
+      "tracks": 13,
+      "est_revenue_usd": 6240.0,
+      "est_streams": 1560000
+    },
+    {
+      "artist": "Juli Savioli",
+      "tracks": 27,
+      "est_revenue_usd": 5880.0,
+      "est_streams": 1470000
+    },
+    {
+      "artist": "Agus Gomez",
+      "tracks": 6,
+      "est_revenue_usd": 4800.0,
+      "est_streams": 1200000
+    },
+    {
+      "artist": "Ciuffi",
+      "tracks": 10,
+      "est_revenue_usd": 4800.0,
+      "est_streams": 1200000
+    },
+    {
+      "artist": "Ariel Casco",
+      "tracks": 9,
+      "est_revenue_usd": 4320.0,
+      "est_streams": 1080000
+    },
+    {
+      "artist": "Alexander Caniggia",
+      "tracks": 6,
+      "est_revenue_usd": 4160.0,
+      "est_streams": 1040000
+    }
+  ],
+  "top_tracks": [
+    {
+      "artist": "A Precio de Sangre",
+      "track": "Cumbiuncion",
+      "isrc": "ARDL12400079",
+      "company": "MAWZ Music",
+      "release_date": "01/01/2019 - 31/12/2099",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "A Precio de Sangre|Nueva Adoración",
+      "track": "Que Ruja el León",
+      "isrc": "ARDL12500040",
+      "company": "MAWZ Music",
+      "release_date": "01/01/2019 - 31/12/2099",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "ACIT x|BRUSI",
+      "track": "CASINO",
+      "isrc": "ARDL12500042",
+      "company": "MAWZ Music",
+      "release_date": "01/01/2019 - 31/12/2099",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "Agus Gomez",
+      "track": "Siempre",
+      "isrc": "GBSMU6063708",
+      "company": "ADA",
+      "release_date": "2019-01-11",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "Agus Gomez",
+      "track": "Whisky Con Pomelo",
+      "isrc": "GBSMU6357781",
+      "company": "ADA",
+      "release_date": "2019-04-12",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "Agus Gomez",
+      "track": "Sin Tiempo",
+      "isrc": "GBSMU6489842",
+      "company": "ADA",
+      "release_date": "2019-05-28",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "Agus Gomez",
+      "track": "Siempre",
+      "isrc": "",
+      "company": "ADA",
+      "release_date": "2019-01-11",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "Agus Gomez",
+      "track": "Whisky Con Pomelo",
+      "isrc": "",
+      "company": "ADA",
+      "release_date": "2019-04-12",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "Agus Gomez",
+      "track": "Sin Tiempo",
+      "isrc": "",
+      "company": "ADA",
+      "release_date": "2019-05-28",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "Alexander Caniggia",
+      "track": "Congelé Mi Corazón",
+      "isrc": "QZ22B1849842",
+      "company": "ADA",
+      "release_date": "2017-10-24",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "Alexander Caniggia",
+      "track": "Barats",
+      "isrc": "ES71G1926497",
+      "company": "ADA",
+      "release_date": "2018-10-14",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "Alexander Caniggia",
+      "track": "Congelé Mi Corazón",
+      "isrc": "",
+      "company": "ADA",
+      "release_date": "2017-10-24",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "Alexander Caniggia",
+      "track": "Barats",
+      "isrc": "",
+      "company": "ADA",
+      "release_date": "2018-10-14",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "Alexander Caniggia featuring Charlotte Caniggia",
+      "track": "Siempre al Top",
+      "isrc": "QZ22B1744730",
+      "company": "ADA",
+      "release_date": "2017-01-21",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    },
+    {
+      "artist": "Alexander Caniggia featuring Charlotte Caniggia",
+      "track": "Siempre al Top",
+      "isrc": "",
+      "company": "ADA",
+      "release_date": "2017-01-21",
+      "est_streams": 200000,
+      "est_revenue_usd": 800.0
+    }
+  ],
+  "disclaimer": "Proyección ilustrativa basada en tasas promedio de industria por stream (no en reproducciones reales — la API pública de Spotify no expone ese dato). No usar para decisiones financieras."
+}

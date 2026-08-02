@@ -1,5 +1,11 @@
 import catalogo from "@/data/catalogo.json";
 import DistribucionChart from "./DistribucionChart";
+import EstadoDonut from "./EstadoDonut";
+import CompanyList from "./CompanyList";
+import SellosGrid from "./SellosGrid";
+import ArtistRanking from "./ArtistRanking";
+import RegaliasCalc from "./RegaliasCalc";
+import IngresosEstimados from "./IngresosEstimados";
 
 type Track = {
   track: string;
@@ -28,58 +34,21 @@ export default function Catalogo() {
         (importado desde Drive)
       </p>
 
-      <DistribucionChart />
+      <SellosGrid />
 
-      <div className="flex flex-col gap-3">
-        {data.map((entry) => (
-          <details
-            key={entry.artist}
-            className="border rounded-lg px-4 py-3 group"
-          >
-            <summary className="flex items-center justify-between cursor-pointer list-none">
-              <span className="font-medium">{entry.artist}</span>
-              <span className="text-xs text-gray-500 flex gap-2 items-center">
-                {entry.companies.map((c) => (
-                  <span
-                    key={c}
-                    className="rounded-full bg-gray-100 px-2 py-0.5"
-                  >
-                    {c}
-                  </span>
-                ))}
-                <span>{entry.track_count} tracks</span>
-              </span>
-            </summary>
-
-            <div className="mt-3 overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead className="text-left text-gray-500">
-                  <tr>
-                    <th className="pr-4 py-1 font-normal">Track</th>
-                    <th className="pr-4 py-1 font-normal">Álbum</th>
-                    <th className="pr-4 py-1 font-normal">ISRC</th>
-                    <th className="pr-4 py-1 font-normal">Compañía</th>
-                    <th className="pr-4 py-1 font-normal">Fecha</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {entry.tracks.map((t, i) => (
-                    <tr key={i}>
-                      <td className="pr-4 py-1">{t.track}</td>
-                      <td className="pr-4 py-1">{t.album || "—"}</td>
-                      <td className="pr-4 py-1 font-mono text-xs">
-                        {t.isrc || "—"}
-                      </td>
-                      <td className="pr-4 py-1">{t.company || "—"}</td>
-                      <td className="pr-4 py-1">{t.release_date || "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </details>
-        ))}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <DistribucionChart />
+        <EstadoDonut />
       </div>
+
+      <ArtistRanking />
+
+      <RegaliasCalc />
+
+      <IngresosEstimados />
+
+      <h2 className="text-base font-semibold mb-3">Tracks por compañía</h2>
+      <CompanyList />
     </main>
   );
 }

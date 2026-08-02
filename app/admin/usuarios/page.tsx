@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequireRole from "@/app/components/RequireRole";
+import QuickAccessPanel from "./QuickAccessPanel";
 import { ROLES_BY_ACCOUNT_TYPE, type AccountType, type Role } from "@/lib/permissions";
 
 type AppUser = {
@@ -119,6 +120,8 @@ function AdminUsuariosInner() {
             {error}
           </div>
         )}
+
+        <QuickAccessPanel onChanged={load} />
 
         <div className="card">
           {!users ? (

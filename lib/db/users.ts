@@ -1,6 +1,7 @@
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcryptjs";
 import type { AccountType, Permission, Role } from "@/lib/permissions";
+import { getSharedPasswordHash } from "@/lib/db/settings";
 
 let ready: Promise<void> | null = null;
 
@@ -11,7 +12,8 @@ export function ensureUsersSchema(): Promise<void> {
         CREATE TABLE IF NOT EXISTS app_users (
           email TEXT PRIMARY KEY,
           name TEXT NOT NULL,
-          password_hash TEXT NOT NULL,
+          password_hash TEXT,
+          uses_shared_password BOOLEAN NOT NULL DEFAULT false,
           account_type TEXT NOT NULL DEFAULT 'empresa',
           role TEXT NOT NULL DEFAULT 'invitado',
           extra_permissions TEXT[] NOT NULL DEFAULT '{}',
@@ -23,6 +25,8 @@ export function ensureUsersSchema(): Promise<void> {
           created_by TEXT
         )
       `;
+      await sql`ALTER TABLE app_users ALTER COLUMN password_hash DROP NOT NULL`;
+      await sql`ALTER TABLE app_users ADD COLUMN IF NOT EXISTS uses_shared_password BOOLEAN NOT NULL DEFAULT false`;
       await sql`
         CREATE TABLE IF NOT EXISTS pm_artist_assignments (
           id BIGSERIAL PRIMARY KEY,
@@ -55,6 +59,7 @@ export type AppUser = {
   active: boolean;
   session_version: number;
   last_login: string | null;
+  uses_shared_password: boolean;
 };
 
 export async function verifyCredentials(email: string, password: string): Promise<AppUser | null> {
@@ -62,8 +67,16 @@ export async function verifyCredentials(email: string, password: string): Promis
   const { rows } = await sql`SELECT * FROM app_users WHERE email = ${email}`;
   const user = rows[0];
   if (!user || !user.active) return null;
-  const ok = await bcrypt.compare(password, user.password_hash);
+
+  let ok = false;
+  if (user.uses_shared_password) {
+    const sharedHash = await getSharedPasswordHash();
+    ok = !!sharedHash && (await bcrypt.compare(password, sharedHash));
+  } else if (user.password_hash) {
+    ok = await bcrypt.compare(password, user.password_hash);
+  }
   if (!ok) return null;
+
   await sql`UPDATE app_users SET last_login = now() WHERE email = ${email}`;
   await logActivity(email, "login");
   return toAppUser(user);
@@ -86,6 +99,7 @@ function toAppUser(row: Record<string, unknown>): AppUser {
     active: row.active as boolean,
     session_version: row.session_version as number,
     last_login: row.last_login as string | null,
+    uses_shared_password: row.uses_shared_password as boolean,
   };
 }
 
@@ -100,10 +114,29 @@ export async function createUser(input: {
   await ensureUsersSchema();
   const hash = await bcrypt.hash(input.password, 10);
   await sql`
-    INSERT INTO app_users (email, name, password_hash, account_type, role, created_by)
-    VALUES (${input.email}, ${input.name}, ${hash}, ${input.accountType}, ${input.role}, ${input.createdBy})
+    INSERT INTO app_users (email, name, password_hash, uses_shared_password, account_type, role, created_by)
+    VALUES (${input.email}, ${input.name}, ${hash}, false, ${input.accountType}, ${input.role}, ${input.createdBy})
   `;
   await logActivity(input.createdBy, "user_created", input.email);
+}
+
+// Quick-add: no individual password — the person logs in with their email +
+// whatever the admin has set as the shared/common password.
+export async function createUserWithSharedPassword(input: {
+  email: string;
+  name: string;
+  accountType: AccountType;
+  role: Role;
+  createdBy: string;
+}) {
+  await ensureUsersSchema();
+  await sql`
+    INSERT INTO app_users (email, name, password_hash, uses_shared_password, account_type, role, created_by)
+    VALUES (${input.email}, ${input.name}, NULL, true, ${input.accountType}, ${input.role}, ${input.createdBy})
+    ON CONFLICT (email) DO UPDATE SET
+      uses_shared_password = true, role = ${input.role}, account_type = ${input.accountType}, active = true
+  `;
+  await logActivity(input.createdBy, "user_quick_added", input.email);
 }
 
 export async function listUsers(): Promise<AppUser[]> {
@@ -145,7 +178,7 @@ export async function setUserActive(email: string, active: boolean, actorEmail: 
 export async function resetPassword(email: string, newPassword: string, actorEmail: string) {
   await ensureUsersSchema();
   const hash = await bcrypt.hash(newPassword, 10);
-  await sql`UPDATE app_users SET password_hash = ${hash} WHERE email = ${email}`;
+  await sql`UPDATE app_users SET password_hash = ${hash}, uses_shared_password = false WHERE email = ${email}`;
   await logActivity(actorEmail, "password_reset", email);
 }
 

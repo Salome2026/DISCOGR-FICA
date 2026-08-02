@@ -14,6 +14,9 @@ type Release = {
   estado: string;
   distribuidora: string | null;
   fecha_lanzamiento: string | null;
+  autores_compositores: string | null;
+  audio_url: string | null;
+  portada_url: string | null;
   created_by: string;
   created_at: string;
 };
@@ -132,6 +135,9 @@ function PMModuleInner() {
                   <th>Estado</th>
                   <th>Distribuidora</th>
                   <th>Fecha</th>
+                  <th>Autores/compositores</th>
+                  <th>Audio</th>
+                  <th>Portada</th>
                   {role === "admin" && <th>Cargado por</th>}
                 </tr>
               </thead>
@@ -151,6 +157,25 @@ function PMModuleInner() {
                     </td>
                     <td>{r.distribuidora ?? "—"}</td>
                     <td>{r.fecha_lanzamiento ?? "—"}</td>
+                    <td>{r.autores_compositores ?? "—"}</td>
+                    <td>
+                      {r.audio_url ? (
+                        <a href={r.audio_url} target="_blank" rel="noopener noreferrer" style={{ color: "#e6a94f" }}>
+                          ✓ Escuchar
+                        </a>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td>
+                      {r.portada_url ? (
+                        <a href={r.portada_url} target="_blank" rel="noopener noreferrer" style={{ color: "#e6a94f" }}>
+                          ✓ Ver
+                        </a>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                     {role === "admin" && <td>{r.created_by}</td>}
                   </tr>
                 ))}

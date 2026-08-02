@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { upload } from "@vercel/blob/client";
 import catalogo from "@/data/catalogo.json";
 import porCompania from "@/data/por_compania.json";
-import { assignSello } from "@/lib/sellos";
+import { assignSello, SELLOS } from "@/lib/sellos";
 
 type ArtistEntry = { artist: string };
 const catalogoData = catalogo as ArtistEntry[];
@@ -15,6 +16,7 @@ const distribuidoras = [
 ];
 
 const ESTADOS = ["Contactado", "Firmado", "Necesito ayuda"] as const;
+const PORTADA_SIZE = 3000;
 
 type Props = {
   role: "admin" | "project_manager";
@@ -23,14 +25,37 @@ type Props = {
   onCreated: () => void;
 };
 
+function imageDimensions(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("No se pudo leer la imagen."));
+    };
+    img.src = url;
+  });
+}
+
 export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, onCreated }: Props) {
   const [artistQuery, setArtistQuery] = useState("");
   const [artist, setArtist] = useState<string | null>(null);
+  const [sello, setSello] = useState("");
+  const [selloTouched, setSelloTouched] = useState(false);
   const [fonograma, setFonograma] = useState("");
+  const [autores, setAutores] = useState("");
   const [estado, setEstado] = useState<(typeof ESTADOS)[number]>("Contactado");
   const [distribuidora, setDistribuidora] = useState("");
   const [fecha, setFecha] = useState("");
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [portadaFile, setPortadaFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [uploadStep, setUploadStep] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
@@ -47,11 +72,53 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
     return artistPool.filter((a) => a.toLowerCase().includes(q)).slice(0, 8);
   }, [artistQuery, artistPool]);
 
-  const sello = artist ? assignSello(artist) : null;
-
   function selectArtist(a: string) {
     setArtist(a);
     setArtistQuery(a);
+    if (!selloTouched) {
+      const suggested = assignSello(a);
+      if (suggested) setSello(suggested);
+    }
+  }
+
+  async function handleAudioChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setFileError(null);
+    const f = e.target.files?.[0] ?? null;
+    if (!f) {
+      setAudioFile(null);
+      return;
+    }
+    const isWav = f.type === "audio/wav" || f.type === "audio/x-wav" || /\.wav$/i.test(f.name);
+    if (!isWav) {
+      setFileError("El audio tiene que ser un archivo .wav.");
+      e.target.value = "";
+      setAudioFile(null);
+      return;
+    }
+    setAudioFile(f);
+  }
+
+  async function handlePortadaChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setFileError(null);
+    const f = e.target.files?.[0] ?? null;
+    if (!f) {
+      setPortadaFile(null);
+      return;
+    }
+    try {
+      const { width, height } = await imageDimensions(f);
+      if (width !== PORTADA_SIZE || height !== PORTADA_SIZE) {
+        setFileError(`La portada tiene que ser exactamente ${PORTADA_SIZE}x${PORTADA_SIZE}px (subiste ${width}x${height}px).`);
+        e.target.value = "";
+        setPortadaFile(null);
+        return;
+      }
+      setPortadaFile(f);
+    } catch {
+      setFileError("No se pudo leer la imagen. Probá con otro archivo.");
+      e.target.value = "";
+      setPortadaFile(null);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -66,9 +133,36 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
       setError("El nombre del fonograma es obligatorio.");
       return;
     }
+    if (!sello) {
+      setError("Elegí el sello / unidad de negocio.");
+      return;
+    }
 
     setSaving(true);
     try {
+      let audioUrl: string | null = null;
+      let portadaUrl: string | null = null;
+
+      if (audioFile) {
+        setUploadStep("Subiendo audio...");
+        const blob = await upload(audioFile.name, audioFile, {
+          access: "public",
+          handleUploadUrl: "/api/pm/upload",
+          clientPayload: "audio",
+        });
+        audioUrl = blob.url;
+      }
+      if (portadaFile) {
+        setUploadStep("Subiendo portada...");
+        const blob = await upload(portadaFile.name, portadaFile, {
+          access: "public",
+          handleUploadUrl: "/api/pm/upload",
+          clientPayload: "portada",
+        });
+        portadaUrl = blob.url;
+      }
+      setUploadStep(null);
+
       const res = await fetch("/api/pm/releases", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -79,6 +173,9 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
           estado,
           distribuidora: distribuidora || null,
           fecha: fecha || null,
+          autoresCompositores: autores || null,
+          audioUrl,
+          portadaUrl,
         }),
       });
       const data = await res.json();
@@ -93,6 +190,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setSaving(false);
+      setUploadStep(null);
     }
   }
 
@@ -107,6 +205,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
         alignItems: "center",
         justifyContent: "center",
         padding: "2rem",
+        overflowY: "auto",
       }}
       onClick={onClose}
     >
@@ -124,6 +223,8 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
           display: "flex",
           flexDirection: "column",
           gap: 14,
+          maxHeight: "90vh",
+          overflowY: "auto",
         }}
       >
         <div style={{ fontSize: 17, fontWeight: 600 }}>+ Nuevo lanzamiento</div>
@@ -176,7 +277,21 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
 
         <div>
           <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Sello / unidad de negocio</label>
-          <input value={sello ?? "Sin asignar"} disabled style={{ ...inputStyle, opacity: 0.6 }} />
+          <select
+            value={sello}
+            onChange={(e) => {
+              setSello(e.target.value);
+              setSelloTouched(true);
+            }}
+            style={inputStyle}
+          >
+            <option value="">Elegir...</option>
+            {SELLOS.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
         </div>
 
         <div>
@@ -185,6 +300,16 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
             value={fonograma}
             onChange={(e) => setFonograma(e.target.value)}
             placeholder="Nombre del single / EP / álbum"
+            style={inputStyle}
+          />
+        </div>
+
+        <div>
+          <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Autores y compositores</label>
+          <input
+            value={autores}
+            onChange={(e) => setAutores(e.target.value)}
+            placeholder="Nombre y apellido de cada uno, separados por coma"
             style={inputStyle}
           />
         </div>
@@ -221,6 +346,29 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
           <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} style={inputStyle} />
         </div>
 
+        <div>
+          <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Audio (.wav)</label>
+          <input type="file" accept=".wav,audio/wav" onChange={handleAudioChange} style={fileInputStyle} />
+          {audioFile && (
+            <p style={{ fontSize: 11.5, color: "#7fae6f", marginTop: 4 }}>✓ {audioFile.name}</p>
+          )}
+        </div>
+
+        <div>
+          <label style={{ fontSize: 12.5, color: "#c2b39a" }}>
+            Portada ({PORTADA_SIZE}x{PORTADA_SIZE}px, para Spotify)
+          </label>
+          <input type="file" accept="image/png,image/jpeg" onChange={handlePortadaChange} style={fileInputStyle} />
+          {portadaFile && (
+            <p style={{ fontSize: 11.5, color: "#7fae6f", marginTop: 4 }}>✓ {portadaFile.name}</p>
+          )}
+        </div>
+
+        {fileError && (
+          <div style={{ background: "#3d2a24", color: "#eab3a8", padding: "8px 12px", borderRadius: 8, fontSize: 12.5 }}>
+            {fileError}
+          </div>
+        )}
         {error && (
           <div style={{ background: "#3d2a24", color: "#eab3a8", padding: "8px 12px", borderRadius: 8, fontSize: 13 }}>
             {error}
@@ -263,7 +411,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
               opacity: saving ? 0.6 : 1,
             }}
           >
-            {saving ? "Guardando..." : "Guardar lanzamiento"}
+            {saving ? uploadStep ?? "Guardando..." : "Guardar lanzamiento"}
           </button>
         </div>
       </form>
@@ -280,4 +428,9 @@ const inputStyle: React.CSSProperties = {
   color: "#f4ede1",
   fontSize: 13,
   marginTop: 4,
+};
+
+const fileInputStyle: React.CSSProperties = {
+  ...inputStyle,
+  padding: "6px 8px",
 };

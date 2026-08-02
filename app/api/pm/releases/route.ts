@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { artist, sello, fonograma, estado, distribuidora, fecha } = body;
+  const { artist, sello, fonograma, estado, distribuidora, fecha, autoresCompositores, audioUrl, portadaUrl } = body;
 
   if (!artist || !fonograma || !estado) {
     return NextResponse.json(
@@ -70,6 +70,9 @@ export async function POST(req: NextRequest) {
     estado,
     distribuidora: distribuidora || null,
     fecha: fecha || null,
+    autoresCompositores: autoresCompositores || null,
+    audioUrl: audioUrl || null,
+    portadaUrl: portadaUrl || null,
     createdBy: email,
   });
 

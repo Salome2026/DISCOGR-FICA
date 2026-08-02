@@ -66,7 +66,7 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
       `}</style>
       <div className="inner">
         <div className="crumb">
-          <Link href="/">Dashboard</Link> › {selloName}
+          <Link href="/dashboard">Dashboard</Link> › {selloName}
         </div>
         <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>{selloName}</h1>
 

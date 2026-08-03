@@ -7,12 +7,12 @@ import CatalogTracksPanel from "@/app/components/CatalogTracksPanel";
 import type { Release } from "@/lib/notion";
 
 const ESTADO_BADGE: Record<string, string> = {
-  Firmado: "#7fae6f",
-  "En negociacion": "#d99a4e",
+  Firmado: "#8fb98a",
+  "En negociacion": "#c9a86a",
   Contactado: "#8aa0c9",
-  Aprobado: "#e6a94f",
-  "NO SACAR": "#c96a5a",
-  "Enviado a la firma": "#8f8267",
+  Aprobado: "#dcdde2",
+  "NO SACAR": "#c98a86",
+  "Enviado a la firma": "#71737d",
 };
 
 export default function StreamingProjectPage({
@@ -40,15 +40,10 @@ export default function StreamingProjectPage({
 
   return (
     <RequireRole allow={["admin"]}>
-      <div className="dash-root">
+      <div className="dash-root bg-atmosphere">
         <style>{`
           .dash-root {
-            --bg-0:#2a241c; --bg-0b:#3a3226; --bg-1:#332c22; --bg-2:#3d3427;
-            --line:#544831; --line-soft:#403627;
-            --text-1:#f4ede1; --text-2:#c2b39a; --text-3:#8f8267;
-            --gold:#e6a94f;
-            font-family:-apple-system,"SF Pro Display",ui-sans-serif,"Segoe UI",Helvetica,Arial,sans-serif;
-            background:linear-gradient(180deg,var(--bg-0) 0%,var(--bg-0b) 55%,var(--bg-0) 100%);
+            font-family: var(--font-display);
             color:var(--text-1);
             min-height:100vh;
             padding-bottom:5rem;
@@ -56,15 +51,15 @@ export default function StreamingProjectPage({
           .inner{max-width:1120px;margin:0 auto;padding:2.5rem 2rem 0;}
           .crumb{font-size:13px;color:var(--text-3);margin-bottom:1.25rem;}
           .crumb a{color:var(--text-2);text-decoration:none;}
-          .kpi{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:16px;padding:1.25rem;}
+          .kpi{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:1.25rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);}
           .kpi-label{font-size:12px;color:var(--text-3);}
           .kpi-num{font-size:26px;font-weight:700;margin-top:6px;}
-          .card{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:16px;padding:1.5rem;margin-bottom:1rem;}
+          .card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);}
           .card-label{font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;}
           table{width:100%;border-collapse:collapse;font-size:13px;}
           th{text-align:left;color:var(--text-3);font-weight:500;padding:8px 10px;border-bottom:1px solid var(--line-soft);}
           td{padding:8px 10px;border-bottom:1px solid var(--line-soft);}
-          td a{color:var(--gold);text-decoration:none;}
+          td a{color:var(--accent-color);text-decoration:none;}
           .empty{color:var(--text-3);font-size:13.5px;padding:1rem 0;}
           .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
           .donut-center .n{font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
@@ -80,7 +75,7 @@ export default function StreamingProjectPage({
           <div className="crumb">
             <Link href="/dashboard">Dashboard</Link> › <Link href="/streamings">Streamings</Link> › {proyectoName}
           </div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>{proyectoName}</h1>
+          <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 4, letterSpacing: "-.02em" }}>{proyectoName}</h1>
 
           <CatalogTracksPanel
             apiUrl={`/api/catalog/tracks?project=${encodeURIComponent(proyectoName)}`}
@@ -95,7 +90,7 @@ export default function StreamingProjectPage({
               </p>
 
               {acuerdosError && (
-                <p style={{ color: "#eab3a8", fontSize: 13 }}>
+                <p style={{ color: "var(--crit-ink)", fontSize: 13 }}>
                   No se pudo conectar con Notion: {acuerdosError}
                 </p>
               )}
@@ -135,8 +130,8 @@ export default function StreamingProjectPage({
                                   padding: "2px 8px",
                                   borderRadius: 100,
                                   fontWeight: 600,
-                                  background: ESTADO_BADGE[e] ?? "#8a7c62",
-                                  color: "#1c1712",
+                                  background: ESTADO_BADGE[e] ?? "#71737d",
+                                  color: "var(--bg-0)",
                                 }}
                               >
                                 {e}

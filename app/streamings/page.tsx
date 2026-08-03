@@ -72,15 +72,10 @@ export default function StreamingsIndex() {
 
   return (
     <RequireRole allow={["admin"]}>
-      <div className="dash-root">
+      <div className="dash-root bg-atmosphere">
         <style>{`
           .dash-root {
-            --bg-0:#2a241c; --bg-0b:#3a3226; --bg-1:#332c22; --bg-2:#3d3427;
-            --line:#544831; --line-soft:#403627;
-            --text-1:#f4ede1; --text-2:#c2b39a; --text-3:#8f8267;
-            --gold:#e6a94f;
-            font-family:-apple-system,"SF Pro Display",ui-sans-serif,"Segoe UI",Helvetica,Arial,sans-serif;
-            background:linear-gradient(180deg,var(--bg-0) 0%,var(--bg-0b) 55%,var(--bg-0) 100%);
+            font-family: var(--font-display);
             color:var(--text-1);
             min-height:100vh;
             padding-bottom:5rem;
@@ -89,24 +84,24 @@ export default function StreamingsIndex() {
           .crumb{font-size:13px;color:var(--text-3);margin-bottom:1.25rem;}
           .crumb a{color:var(--text-2);text-decoration:none;}
           .proj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:1.5rem;}
-          .proj-card{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:16px;padding:1.5rem;position:relative;}
+          .proj-card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:1.5rem;position:relative;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
           .proj-card.inactive{opacity:.5;}
           .proj-card a{text-decoration:none;color:var(--text-1);display:block;}
-          .proj-card:hover{background:var(--bg-2);border-color:var(--line);}
+          .proj-card:hover{background:var(--glass-bg-strong);border-color:var(--accent-color-glow);transform:translateY(-2px);}
           .proj-name{font-size:16px;font-weight:700;margin-bottom:6px;}
           .proj-sub{font-size:12.5px;color:var(--text-3);}
-          .proj-toggle{position:absolute;top:10px;right:10px;font-size:10.5px;padding:3px 8px;border-radius:100px;border:1px solid var(--line-soft);background:var(--bg-2);color:var(--text-2);cursor:pointer;}
-          .card{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:16px;padding:1.5rem;margin-top:1.5rem;}
+          .proj-toggle{position:absolute;top:10px;right:10px;font-size:10.5px;padding:3px 8px;border-radius:100px;border:1px solid var(--glass-border);background:var(--glass-bg-strong);color:var(--text-2);cursor:pointer;}
+          .card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:1.5rem;margin-top:1.5rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);}
           .card-label{font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;margin-bottom:10px;}
           .add-row{display:flex;gap:8px;}
           .add-row input{flex:1;background:var(--bg-2);border:1px solid var(--line-soft);border-radius:8px;padding:8px 12px;color:var(--text-1);font-size:13px;}
-          .add-row button{background:var(--gold);border:none;border-radius:8px;padding:8px 16px;color:#3a2b0f;font-weight:600;font-size:13px;cursor:pointer;}
+          .add-row button{background:var(--accent-glass-bg);border:1px solid var(--accent-glass-border);border-radius:8px;padding:8px 16px;color:var(--text-1);font-weight:600;font-size:13px;cursor:pointer;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);}
         `}</style>
         <div className="inner">
           <div className="crumb">
             <Link href="/dashboard">Dashboard</Link> › Streamings
           </div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Streamings</h1>
+          <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 4, letterSpacing: "-.02em" }}>Streamings</h1>
           <p style={{ fontSize: 13, color: "var(--text-3)" }}>
             Proyectos de streaming de VPO. Cada uno tiene su propio dashboard, igual que un sello.
           </p>
@@ -140,7 +135,7 @@ export default function StreamingsIndex() {
                 {saving ? "Guardando..." : "+ Agregar"}
               </button>
             </form>
-            {msg && <p style={{ fontSize: 12, color: "#eab3a8", marginTop: 8 }}>{msg}</p>}
+            {msg && <p style={{ fontSize: 12, color: "var(--crit-ink)", marginTop: 8 }}>{msg}</p>}
           </div>
         </div>
       </div>

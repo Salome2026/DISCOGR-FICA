@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
@@ -15,6 +15,18 @@ export default function Landing() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Reaching the login panel means scrolling past the full-height hero, so
+  // whoever clicks "Ingresar" is already deep into the page — bring the
+  // panel to a comfortable position instead of leaving it wherever it
+  // happens to land relative to their current scroll.
+  useEffect(() => {
+    if (active && panelRef.current) {
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      panelRef.current.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+    }
+  }, [active]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -109,7 +121,7 @@ export default function Landing() {
         )}
 
         {active !== null && (
-          <div className="login-panel">
+          <div className="login-panel" ref={panelRef}>
             <button className="back-link" onClick={() => setActive(null)}>
               ← Volver
             </button>

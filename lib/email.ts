@@ -1,20 +1,11 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
 const NOTIFY_TO = ["operaciones@indyanarecords.com", "salome@mawzrecords.com"];
 
-// Resend caps total attachment size at 40MB per email. Leave headroom for
-// the HTML body and Resend's own overhead rather than sending right up to
-// the limit.
-const ATTACHMENT_BUDGET_BYTES = 35 * 1024 * 1024;
-
-function fromAddress(): string {
-  // mawzrecords.com isn't DNS-verified in Resend yet, so we send from Resend's
-  // shared test address for now. That sandbox address can only deliver to the
-  // Resend account's own verified email — sending to operaciones@indyanarecords.com
-  // will likely fail with a 403 until a real sending domain is verified in
-  // Resend. Once verified, switch this to `notificaciones@${process.env.RESEND_EMAIL_DOMAIN}`.
-  return "Discográfica <onboarding@resend.dev>";
-}
+// Gmail caps total message size (headers + body + attachments, after
+// base64 encoding) at 25MB. Base64 inflates raw bytes by ~37%, so keep the
+// raw-bytes budget well under that ceiling.
+const ATTACHMENT_BUDGET_BYTES = 17 * 1024 * 1024;
 
 type NotifyTrack = {
   trackNumber?: number;
@@ -132,12 +123,16 @@ async function fetchFile(url: string): Promise<{ buffer: Buffer; size: number } 
 }
 
 export async function notifyNewLanzamiento(input: NotifyInput) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    console.warn("RESEND_API_KEY no configurado — no se envió el mail de notificación.");
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+  if (!gmailUser || !gmailPass) {
+    console.warn("GMAIL_USER / GMAIL_APP_PASSWORD no configurados — no se envió el mail de notificación.");
     return { sent: false, reason: "not_configured" as const };
   }
-  const resend = new Resend(apiKey);
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user: gmailUser, pass: gmailPass },
+  });
 
   const { rows, files } = buildContent(input);
 
@@ -145,7 +140,7 @@ export async function notifyNewLanzamiento(input: NotifyInput) {
   // runs out — whatever doesn't fit stays as a download link instead of
   // failing the whole send.
   const fetched = await Promise.all(files.map((f) => fetchFile(f.url)));
-  const attachments: { filename: string; content: string }[] = [];
+  const attachments: { filename: string; content: Buffer }[] = [];
   const attachedLabels: string[] = [];
   const linkedFiles: FileToFetch[] = [];
   let runningSize = 0;
@@ -157,14 +152,11 @@ export async function notifyNewLanzamiento(input: NotifyInput) {
       return;
     }
     if (runningSize + result.size > ATTACHMENT_BUDGET_BYTES) {
-      linkedFiles.push(f); // would exceed Resend's 40MB cap — link instead
+      linkedFiles.push(f); // would exceed Gmail's 25MB message cap — link instead
       return;
     }
     runningSize += result.size;
-    // Resend's SDK JSON.stringifies the request body, and a raw Node Buffer
-    // serializes as {type:"Buffer",data:[...]} instead of base64 — send the
-    // base64 string explicitly so the API actually receives file bytes.
-    attachments.push({ filename: f.filename, content: result.buffer.toString("base64") });
+    attachments.push({ filename: f.filename, content: result.buffer });
     attachedLabels.push(f.label);
   });
 
@@ -200,17 +192,13 @@ export async function notifyNewLanzamiento(input: NotifyInput) {
   `;
 
   try {
-    const result = await resend.emails.send({
-      from: fromAddress(),
+    await transporter.sendMail({
+      from: `Discográfica <${gmailUser}>`,
       to: NOTIFY_TO,
       subject: `Nuevo lanzamiento: ${title}`,
       html,
       attachments: attachments.length > 0 ? attachments : undefined,
     });
-    if (result.error) {
-      console.error("Resend error enviando notificación de lanzamiento:", result.error);
-      return { sent: false, reason: result.error.message };
-    }
     console.log(
       `Notificación de lanzamiento enviada a ${NOTIFY_TO.join(", ")} — adjuntos: ${attachedLabels.length}, por link: ${linkedFiles.length}`
     );

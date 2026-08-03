@@ -1,21 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useMemo, useState } from "react";
-import catalogo from "@/data/catalogo.json";
-import { assignSello, SELLOS, type Sello } from "@/lib/sellos";
+import { use, useEffect, useState } from "react";
+import { SELLOS, type Sello } from "@/lib/sellos";
 import { SELLO_ROSTERS } from "@/lib/roster";
 import type { Release } from "@/lib/notion";
 import RosterSelloView from "./RosterSelloView";
-
-type ArtistEntry = {
-  artist: string;
-  track_count: number;
-  companies: string[];
-  tracks: { track: string; isrc: string; company: string }[];
-};
-
-const catalogoData = catalogo as ArtistEntry[];
+import CatalogTracksPanel from "@/app/components/CatalogTracksPanel";
 
 const ESTADO_BADGE: Record<string, string> = {
   Firmado: "#7fae6f",
@@ -47,23 +38,6 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
       })
       .catch((e) => setAcuerdosError(String(e)));
   }, [isLaJuntada]);
-
-  const artists = useMemo(
-    () => catalogoData.filter((a) => assignSello(a.artist) === selloName),
-    [selloName]
-  );
-  const totalTracks = artists.reduce((sum, a) => sum + a.track_count, 0);
-
-  const companyBreakdown = useMemo(() => {
-    const m = new Map<string, number>();
-    for (const a of artists) {
-      for (const t of a.tracks) {
-        const c = t.company || "Sin datos";
-        m.set(c, (m.get(c) || 0) + 1);
-      }
-    }
-    return [...m.entries()].sort((a, b) => b[1] - a[1]);
-  }, [artists]);
 
   return (
     <div className="dash-root">
@@ -114,64 +88,12 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
 
         {hasRoster ? (
           <RosterSelloView sello={selloName as Sello} />
-        ) : artists.length === 0 ? (
-          <div className="card">
-            <p className="empty">
-              Todavía no hay artistas asignados a este sello en el mapeo (`lib/sellos.ts`). Pasame
-              qué artistas pertenecen a {selloName} y lo agrego.
-            </p>
-          </div>
-        ) : (
-          <>
-            <div className="kpi-grid">
-              <div className="kpi">
-                <div className="kpi-label">Artistas</div>
-                <div className="kpi-num">{artists.length}</div>
-              </div>
-              <div className="kpi">
-                <div className="kpi-label">Fonogramas</div>
-                <div className="kpi-num">{totalTracks}</div>
-              </div>
-              <div className="kpi">
-                <div className="kpi-label">Distribuidoras</div>
-                <div className="kpi-num">{companyBreakdown.length}</div>
-              </div>
-            </div>
-
-            <div className="card">
-              <p style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 10 }}>
-                Distribución por discográfica
-              </p>
-              {companyBreakdown.map(([c, n]) => (
-                <div key={c} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, padding: "4px 0" }}>
-                  <span style={{ color: "var(--text-2)" }}>{c}</span>
-                  <span style={{ fontWeight: 600 }}>{n}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="card">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Artista</th>
-                    <th>Fonogramas</th>
-                    <th>Distribuidora</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {artists.map((a) => (
-                    <tr key={a.artist}>
-                      <td>{a.artist}</td>
-                      <td>{a.track_count}</td>
-                      <td>{a.companies.join(", ") || "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
-        )}
+        ) : isKnownSello ? (
+          <CatalogTracksPanel
+            apiUrl={`/api/catalog/tracks?sello=${encodeURIComponent(selloName)}`}
+            emptyMessage={`Todavía no hay fonogramas asignados a ${selloName}. Asignalos desde la ficha de cada fonograma en Catálogo Distribuido.`}
+          />
+        ) : null}
 
         {isLaJuntada && (
           <div className="card">

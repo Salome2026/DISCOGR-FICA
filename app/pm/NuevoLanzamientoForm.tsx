@@ -14,6 +14,7 @@ const distribuidoras = [
 
 const ESTADOS = ["Contactado", "Firmado", "Necesito ayuda"] as const;
 const PORTADA_SIZE = 3000;
+const HORAS = Array.from({ length: 24 }, (_, h) => String(h).padStart(2, "0"));
 const TIPOS = [
   { value: "single", label: "Single" },
   { value: "ep", label: "EP" },
@@ -683,7 +684,12 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
               </div>
               <div style={{ flex: 1 }}>
                 <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Hora (ART)</label>
-                <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} style={inputStyle} placeholder="00:00" />
+                <select value={hora} onChange={(e) => setHora(e.target.value)} style={inputStyle}>
+                  <option value="">00 (por defecto)</option>
+                  {HORAS.map((h) => (
+                    <option key={h} value={`${h}:00`}>{h}</option>
+                  ))}
+                </select>
               </div>
             </div>
 

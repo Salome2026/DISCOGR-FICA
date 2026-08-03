@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import VPOScrollHero from "./components/VPOScrollHero";
 
-type Card = "empresa" | "artista" | null;
+type Card = "label" | "pm" | null;
 
 export default function Landing() {
   const router = useRouter();
@@ -71,7 +71,6 @@ export default function Landing() {
         .cards{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
         @media (max-width:640px){ .cards{grid-template-columns:1fr;} }
         .access-card{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:20px;padding:2rem;text-align:center;}
-        .access-card .emoji{font-size:32px;margin-bottom:12px;}
         .access-card h2{font-size:17px;font-weight:600;margin:0 0 8px;}
         .access-card p{font-size:13px;color:var(--text-2);line-height:1.5;margin:0 0 20px;min-height:40px;}
         .access-btn{width:100%;background:var(--gold);border:none;border-radius:10px;padding:11px;color:#3a2b0f;font-weight:600;cursor:pointer;font-size:13.5px;}
@@ -95,18 +94,16 @@ export default function Landing() {
         {active === null && (
           <div className="cards">
             <div className="access-card">
-              <div className="emoji">👔</div>
-              <h2>Empresa</h2>
-              <p>Acceso para administradores, project managers y personal interno.</p>
-              <button className="access-btn" onClick={() => setActive("empresa")}>
+              <h2>Label Management</h2>
+              <p>Acceso para administradores y gestión de sellos.</p>
+              <button className="access-btn" onClick={() => setActive("label")}>
                 Ingresar
               </button>
             </div>
             <div className="access-card">
-              <div className="emoji">🎤</div>
-              <h2>Artista</h2>
-              <p>Acceso exclusivo para artistas y representantes.</p>
-              <button className="access-btn" onClick={() => setActive("artista")}>
+              <h2>Project Managers</h2>
+              <p>Acceso para project managers y seguimiento de releases.</p>
+              <button className="access-btn" onClick={() => setActive("pm")}>
                 Ingresar
               </button>
             </div>
@@ -119,7 +116,7 @@ export default function Landing() {
               ← Volver
             </button>
             <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
-              {active === "empresa" ? "Acceso Empresa" : "Acceso Artista"}
+              {active === "label" ? "Acceso Label Management" : "Acceso Project Managers"}
             </h2>
             <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>

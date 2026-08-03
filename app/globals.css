@@ -1,44 +1,51 @@
 @import "tailwindcss";
 
 :root {
-  /* Base surfaces — neutral near-black, just a whisper of warmth (not the
-     saturated brown the app used before). Apple-dark-mode-style depth via
-     small luminance steps rather than color shifts. */
-  --bg-0: #121110;
-  --bg-0b: #171512;
-  --bg-1: #1c1a17;
-  --bg-2: #242220;
-  --bg-3: #2c2925;
-  --line: #3a3631;
-  --line-soft: #2a2723;
+  /* Base surfaces — true monochrome scale: black -> graphite -> smoke ->
+     silver -> white. No warm tint. Depth comes from luminance steps, blur
+     and light, not from color. */
+  --bg-0: #08080a;
+  --bg-0b: #0d0d10;
+  --bg-1: #17171a;
+  --bg-2: #1f1f23;
+  --bg-3: #28282d;
+  --line: #38383e;
+  --line-soft: #232327;
 
-  --text-1: #f5f2ec;
-  --text-2: #b8b2a6;
-  --text-3: #837c6e;
+  --text-1: #f5f5f7;
+  --text-2: #a9a9b0;
+  --text-3: #6f6f77;
 
-  /* Brand accent — unchanged, this is the one color that should stay
-     saturated and identifiable across every screen. */
-  --gold: #e6a94f;
-  --gold-ink: #241a08;
+  /* Primary accent — silver/platinum, replaces the old gold. This is the
+     one place brightness lives: CTAs, active nav state, key numbers, chart
+     highlight, focus rings. --gold/--gold-ink are kept as aliases so pages
+     not yet migrated (landing, /nuevo) still resolve to the new color
+     without per-file edits. */
+  --accent: #dcdde2;
+  --accent-ink: #131316;
+  --accent-gradient: linear-gradient(155deg, #f2f2f5, #c3c4cb);
+  --gold: var(--accent);
+  --gold-ink: var(--accent-ink);
 
-  /* Semantic status colors: bg variants are translucent so they read as
-     tinted glass rather than flat colored chips. */
-  --good: #7fae6f;
-  --good-bg: rgba(127, 174, 111, 0.14);
-  --good-ink: #bfe0ae;
-  --warn: #d99a4e;
-  --warn-bg: rgba(217, 154, 78, 0.14);
-  --warn-ink: #f0cfa0;
-  --crit: #d97862;
-  --crit-bg: rgba(217, 120, 98, 0.16);
-  --crit-ink: #f2b8a8;
+  /* Semantic status colors — kept as a thin, muted functional layer (these
+     communicate real state: signed/pending/blocked) rather than decoration.
+     Desaturated so they sit quietly inside an otherwise monochrome UI. */
+  --good: #8fb98a;
+  --good-bg: rgba(143, 185, 138, 0.13);
+  --good-ink: #c3e0be;
+  --warn: #c9a86a;
+  --warn-bg: rgba(201, 168, 106, 0.13);
+  --warn-ink: #e8d3a4;
+  --crit: #c98a86;
+  --crit-bg: rgba(201, 138, 134, 0.15);
+  --crit-ink: #edbab6;
 
   /* Glass surfaces — reserved for chrome/elevated layers (nav, cards,
      modals, hero). Dense data surfaces should stay closer to --bg-1/--bg-2
-     solid so text keeps contrast; see how app/dashboard/page.tsx uses these. */
-  --glass-bg: rgba(245, 240, 230, 0.045);
-  --glass-bg-strong: rgba(245, 240, 230, 0.08);
-  --glass-border: rgba(245, 240, 230, 0.09);
+     solid so text keeps contrast. */
+  --glass-bg: rgba(245, 245, 247, 0.045);
+  --glass-bg-strong: rgba(245, 245, 247, 0.08);
+  --glass-border: rgba(245, 245, 247, 0.1);
   --glass-blur: 22px;
   --glass-blur-strong: 34px;
 
@@ -48,10 +55,10 @@
   --radius-xl: 28px;
   --radius-pill: 999px;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 12px 32px -12px rgba(0, 0, 0, 0.55);
-  --shadow-lg: 0 28px 70px -24px rgba(0, 0, 0, 0.6);
-  --shadow-gold: 0 20px 50px -20px rgba(230, 169, 79, 0.35);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 28px 70px -24px rgba(0, 0, 0, 0.65);
+  --shadow-accent: 0 20px 50px -20px rgba(220, 221, 226, 0.22);
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-fast: 150ms;
@@ -94,4 +101,14 @@ body {
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(var(--glass-blur-strong)) saturate(1.4);
   -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(1.4);
+}
+
+/* Atmospheric backdrop — soft off-screen light sources instead of a flat
+   dark fill, for the layered/"has depth" feel. Apply to a full-height root
+   wrapper. */
+.bg-atmosphere {
+  background: radial-gradient(ellipse 900px 560px at 12% -8%, rgba(255, 255, 255, 0.05), transparent 60%),
+    radial-gradient(ellipse 1000px 700px at 100% 0%, rgba(200, 202, 210, 0.035), transparent 55%),
+    radial-gradient(ellipse 800px 500px at 50% 110%, rgba(180, 182, 190, 0.03), transparent 60%),
+    linear-gradient(180deg, var(--bg-0b) 0%, var(--bg-0) 45%);
 }

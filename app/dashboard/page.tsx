@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
-import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { motion, useReducedMotion, animate, type Variants } from "framer-motion";
 import porCompania from "@/data/por_compania.json";
 import catalogo from "@/data/catalogo.json";
 import { SELLOS, assignSello } from "@/lib/sellos";
@@ -79,6 +79,25 @@ type DrillState =
   | { kind: "artistas" }
   | null;
 
+// Counts up from 0 on mount instead of just appearing — small touch that
+// makes the headline numbers feel alive rather than static text.
+function CountUp({ value, reduceMotion }: { value: number; reduceMotion: boolean }) {
+  const [display, setDisplay] = useState(reduceMotion ? value : 0);
+  useEffect(() => {
+    if (reduceMotion) {
+      setDisplay(value);
+      return;
+    }
+    const controls = animate(0, value, {
+      duration: 1,
+      ease: [0.16, 1, 0.3, 1],
+      onUpdate: (v) => setDisplay(Math.round(v)),
+    });
+    return () => controls.stop();
+  }, [value, reduceMotion]);
+  return <>{display.toLocaleString("es-AR")}</>;
+}
+
 export default function Dashboard() {
   return (
     <RequireRole allow={["admin"]}>
@@ -91,7 +110,7 @@ function DashboardInner() {
   const [acuerdos, setAcuerdos] = useState<Release[] | null>(null);
   const [acuerdosError, setAcuerdosError] = useState<string | null>(null);
   const [drill, setDrill] = useState<DrillState>(null);
-  const reduceMotion = useReducedMotion();
+  const reduceMotion = !!useReducedMotion();
   const fadeUp: Variants = {
     hidden: { opacity: 0, y: reduceMotion ? 0 : 14 },
     show: (i: number = 0) => ({
@@ -100,6 +119,21 @@ function DashboardInner() {
       transition: { duration: reduceMotion ? 0 : 0.5, delay: reduceMotion ? 0 : i * 0.08, ease: [0.16, 1, 0.3, 1] },
     }),
   };
+
+  const [drawProgress, setDrawProgress] = useState(reduceMotion ? 1 : 0);
+  useEffect(() => {
+    if (reduceMotion) {
+      setDrawProgress(1);
+      return;
+    }
+    const controls = animate(0, 1, {
+      duration: 1.1,
+      delay: 0.15,
+      ease: [0.16, 1, 0.3, 1],
+      onUpdate: setDrawProgress,
+    });
+    return () => controls.stop();
+  }, [reduceMotion]);
 
   useEffect(() => {
     fetch("/api/acuerdos")
@@ -212,61 +246,70 @@ function DashboardInner() {
   );
 
   return (
-    <div className="dash-root">
+    <div className="dash-root bg-atmosphere">
       <style>{`
         .dash-root {
           font-family: var(--font-display);
-          background:radial-gradient(ellipse 1200px 600px at 50% -10%, var(--bg-0b) 0%, var(--bg-0) 60%);
           color:var(--text-1);
           min-height:100vh;
           padding-bottom:5rem;
         }
-        .dash-inner{max-width:1120px;margin:0 auto;padding:2.5rem 2rem 0;}
-        .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+        .dash-inner{max-width:1220px;margin:0 auto;padding:2.5rem 2rem 0;}
+        .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2.25rem;flex-wrap:wrap;gap:1rem;}
         .brand{display:flex;align-items:center;gap:10px;}
-        .brand-mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(155deg,#e6a94f,#c98f3a);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--gold-ink);}
+        .brand-mark{width:30px;height:30px;border-radius:9px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--accent-ink);}
         .brand-name{font-size:14px;font-weight:600;letter-spacing:-.01em;}
         .brand-sub{font-size:11px;color:var(--text-3);}
         .nav-pills{display:flex;gap:4px;flex-wrap:wrap;background:var(--glass-bg);border:1px solid var(--glass-border);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border-radius:var(--radius-pill);padding:5px;}
         .nav-pill{font-size:12.5px;padding:7px 13px;border-radius:var(--radius-pill);color:var(--text-2);border:1px solid transparent;text-decoration:none;transition:background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);}
-        .nav-pill.active{background:var(--gold);color:var(--gold-ink);font-weight:600;}
+        .nav-pill.active{background:var(--accent);color:var(--accent-ink);font-weight:600;}
         .nav-pill:hover:not(.active){background:var(--glass-bg-strong);color:var(--text-1);}
+        .page-title{font-size:42px;font-weight:700;letter-spacing:-.03em;margin:0;background:linear-gradient(180deg,var(--text-1) 30%,var(--text-2) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+        .page-subtitle{font-size:14.5px;color:var(--text-3);margin-top:6px;}
         .sello-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:1.5rem;}
         .sello-btn{aspect-ratio:1.4;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12.5px;font-weight:600;border:1px solid var(--glass-border);border-radius:var(--radius-md);background:var(--glass-bg);color:var(--text-1);cursor:pointer;padding:.5rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
         .sello-btn:hover{background:var(--glass-bg-strong);border-color:var(--line);transform:translateY(-2px);}
-        .card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:1.75rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);box-shadow:var(--shadow-md);}
+        .card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:1.75rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);box-shadow:var(--shadow-md);}
         .card-label{font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;}
-        .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:1.25rem;margin-bottom:1.25rem;}
-        .donut-card{display:flex;align-items:center;gap:2rem;flex-wrap:wrap;}
+        .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:1.1rem;margin-bottom:1.25rem;}
+        .bento-donut{grid-column:span 3;grid-row:span 2;}
+        .bento-estado{grid-column:span 3;grid-row:span 2;}
+        .bento-kpi-firmados{grid-column:span 4;}
+        .bento-kpi-artistas{grid-column:span 2;}
+        .bento-kpi-sm{grid-column:span 3;}
+        @media (max-width:860px){ .bento{grid-template-columns:1fr;} .bento-donut,.bento-estado,.bento-kpi-firmados,.bento-kpi-artistas,.bento-kpi-sm{grid-column:span 1;grid-row:auto;} }
+        .donut-card{display:flex;flex-direction:column;height:100%;}
+        .donut-wrap{display:flex;align-items:center;gap:2rem;flex-wrap:wrap;margin-top:1rem;flex:1;}
+        .donut-seg{cursor:pointer;transition:filter var(--dur-fast) var(--ease-out);}
+        .donut-seg:hover{filter:drop-shadow(0 0 10px rgba(255,255,255,0.4));}
         .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
-        .donut-center .n{font-size:44px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+        .donut-center .n{font-size:52px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
         .donut-center .l{font-size:12px;color:var(--text-3);margin-top:2px;}
         .donut-legend{display:flex;flex-direction:column;gap:6px;flex:1;min-width:180px;}
-        .leg-row{display:flex;align-items:center;gap:10px;font-size:13px;background:transparent;border:none;padding:5px 6px;border-radius:8px;cursor:pointer;text-align:left;color:inherit;font:inherit;width:100%;}
+        .leg-row{display:flex;align-items:center;gap:10px;font-size:13px;background:transparent;border:none;padding:5px 6px;border-radius:8px;cursor:pointer;text-align:left;color:inherit;font:inherit;width:100%;transition:background var(--dur-fast) var(--ease-out);}
         .leg-row:hover{background:var(--bg-2);}
         .leg-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
         .leg-name{color:var(--text-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .leg-val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-1);}
-        .estado-bars{display:flex;flex-direction:column;gap:10px;margin-top:1rem;}
+        .estado-bars{display:flex;flex-direction:column;gap:10px;margin-top:1.25rem;}
         .ebar-row{display:grid;grid-template-columns:120px 1fr 40px;align-items:center;gap:10px;background:transparent;border:none;padding:4px 4px;border-radius:8px;cursor:pointer;text-align:left;color:inherit;font:inherit;}
         .ebar-row:hover{background:var(--bg-2);}
         .ebar-name{font-size:12px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .ebar-track{height:18px;background:var(--bg-2);border-radius:6px;overflow:hidden;}
-        .ebar-fill{height:100%;border-radius:6px;}
+        .ebar-fill{height:100%;border-radius:6px;transition:width var(--dur-slow) var(--ease-out);}
         .ebar-val{font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-1);font-weight:600;}
-        .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:1.25rem;}
-        .kpi{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:1.5rem;cursor:pointer;text-align:left;color:inherit;font:inherit;backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);box-shadow:var(--shadow-md);transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);}
+        .kpi{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:1.5rem;cursor:pointer;text-align:left;color:inherit;font:inherit;backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);box-shadow:var(--shadow-md);transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);display:flex;flex-direction:column;}
         .kpi:hover{border-color:var(--line);background:var(--glass-bg-strong);transform:translateY(-3px);}
-        .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
+        .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
         .kpi-label{font-size:12.5px;color:var(--text-3);}
         .kpi-chip{font-size:11px;padding:3px 8px;border-radius:100px;font-weight:600;}
         .kpi-chip.good{background:var(--good-bg);color:var(--good-ink);}
         .kpi-chip.warn{background:var(--warn-bg);color:var(--warn-ink);}
         .kpi-chip.crit{background:var(--crit-bg);color:var(--crit-ink);}
-        .kpi-num{font-size:38px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+        .kpi-num{font-size:42px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:auto;}
+        .kpi-num-xl{font-size:72px;}
         .kpi-sub{font-size:12.5px;color:var(--text-3);margin-top:6px;}
         .footer-note{font-size:12px;color:var(--text-3);text-align:center;margin-top:2.5rem;}
-        @media (max-width:860px){ .hero-grid{grid-template-columns:1fr;} .kpi-grid{grid-template-columns:repeat(2,1fr);} }
       `}</style>
 
       <div className="dash-inner">
@@ -296,7 +339,12 @@ function DashboardInner() {
           </div>
         </div>
 
-        <motion.div className="sello-row" variants={fadeUp} custom={0} initial="hidden" animate="show">
+        <motion.div variants={fadeUp} custom={0} initial="hidden" animate="show" style={{ marginBottom: "2rem" }}>
+          <h1 className="page-title">Dashboard</h1>
+          <p className="page-subtitle">Pulso general de sellos, acuerdos y catálogo.</p>
+        </motion.div>
+
+        <motion.div className="sello-row" variants={fadeUp} custom={1} initial="hidden" animate="show">
           {SELLOS.filter((s) => s !== "Streamings").map((s) => (
             <Link key={s} href={`/sellos/${encodeURIComponent(s)}`} className="sello-btn">
               {s}
@@ -325,53 +373,55 @@ function DashboardInner() {
           </div>
         )}
 
-        <motion.div className="hero-grid" variants={fadeUp} custom={1} initial="hidden" animate="show">
-          <div className="card donut-card">
-            <div style={{ position: "relative", width: 224, height: 224, flexShrink: 0 }}>
-              <svg width="224" height="224" viewBox="0 0 224 224">
-                <circle cx="112" cy="112" r="96" fill="none" stroke="var(--bg-2)" strokeWidth="26" />
+        <motion.div className="bento" variants={fadeUp} custom={2} initial="hidden" animate="show">
+          <div className="card bento-donut donut-card">
+            <div className="card-label">Distribución por discográfica</div>
+            <div className="donut-wrap">
+              <div style={{ position: "relative", width: 200, height: 200, flexShrink: 0 }}>
+                <svg width="200" height="200" viewBox="0 0 224 224">
+                  <circle cx="112" cy="112" r="96" fill="none" stroke="var(--bg-2)" strokeWidth="26" />
+                  {donutSegs.segs.map((s) => (
+                    <circle
+                      key={s.company}
+                      className="donut-seg"
+                      cx="112"
+                      cy="112"
+                      r="96"
+                      fill="none"
+                      stroke={s.color}
+                      strokeWidth="26"
+                      strokeDasharray={`${s.len * drawProgress} ${donutSegs.circumference}`}
+                      strokeDashoffset={-s.offset}
+                      strokeLinecap="round"
+                      transform="rotate(-90 112 112)"
+                      onClick={() => openCompany(s.company)}
+                    >
+                      <title>{`${s.company}: ${s.count} (${s.pct}%)`}</title>
+                    </circle>
+                  ))}
+                </svg>
+                <div className="donut-center">
+                  <div className="n">
+                    <CountUp value={porCompaniaData.total} reduceMotion={reduceMotion} />
+                  </div>
+                  <div className="l">fonogramas</div>
+                </div>
+              </div>
+              <div className="donut-legend">
                 {donutSegs.segs.map((s) => (
-                  <circle
-                    key={s.company}
-                    cx="112"
-                    cy="112"
-                    r="96"
-                    fill="none"
-                    stroke={s.color}
-                    strokeWidth="26"
-                    strokeDasharray={`${s.len} ${donutSegs.circumference}`}
-                    strokeDashoffset={-s.offset}
-                    strokeLinecap="round"
-                    transform="rotate(-90 112 112)"
-                    style={{ cursor: "pointer" }}
-                    onClick={() => openCompany(s.company)}
-                  >
-                    <title>{`${s.company}: ${s.count} (${s.pct}%)`}</title>
-                  </circle>
+                  <button className="leg-row" key={s.company} onClick={() => openCompany(s.company)}>
+                    <span className="leg-dot" style={{ background: s.color }} />
+                    <span className="leg-name">{s.company}</span>
+                    <span className="leg-val">
+                      {s.count} · {s.pct}%
+                    </span>
+                  </button>
                 ))}
-              </svg>
-              <div className="donut-center">
-                <div className="n">{porCompaniaData.total.toLocaleString("es-AR")}</div>
-                <div className="l">fonogramas</div>
               </div>
-            </div>
-            <div className="donut-legend">
-              <div className="card-label" style={{ marginBottom: 2 }}>
-                Distribución por discográfica
-              </div>
-              {donutSegs.segs.map((s) => (
-                <button className="leg-row" key={s.company} onClick={() => openCompany(s.company)}>
-                  <span className="leg-dot" style={{ background: s.color }} />
-                  <span className="leg-name">{s.company}</span>
-                  <span className="leg-val">
-                    {s.count} · {s.pct}%
-                  </span>
-                </button>
-              ))}
             </div>
           </div>
 
-          <div className="card">
+          <div className="card bento-estado">
             <div className="card-label">Estado de los acuerdos</div>
             <div style={{ fontSize: 16, fontWeight: 600, marginTop: 2 }}>
               {acuerdos ? `${acuerdos.length} acuerdos activos` : "Cargando..."}
@@ -387,7 +437,7 @@ function DashboardInner() {
                         className="ebar-fill"
                         style={{
                           width: `${(count / maxEstado) * 100}%`,
-                          background: estadoColor[label] || "var(--gold)",
+                          background: estadoColor[label] || "var(--accent)",
                         }}
                       />
                     </div>
@@ -397,41 +447,49 @@ function DashboardInner() {
               })}
             </div>
           </div>
-        </motion.div>
 
-        <motion.div className="kpi-grid" variants={fadeUp} custom={2} initial="hidden" animate="show">
-          <button className="kpi" onClick={() => setDrill({ kind: "firmados", rows: firmados })}>
+          <button className="kpi bento-kpi-firmados" onClick={() => setDrill({ kind: "firmados", rows: firmados })}>
             <div className="kpi-top">
               <span className="kpi-label">Firmados</span>
               <span className="kpi-chip good">
                 {acuerdos ? Math.round((firmados.length / acuerdos.length) * 100) : 0}%
               </span>
             </div>
-            <div className="kpi-num">{firmados.length}</div>
+            <div className="kpi-num kpi-num-xl">
+              <CountUp value={firmados.length} reduceMotion={reduceMotion} />
+            </div>
             <div className="kpi-sub">de {acuerdos?.length ?? "—"} acuerdos</div>
           </button>
-          <button className="kpi" onClick={() => setDrill({ kind: "sinAudio", rows: sinAudio })}>
+
+          <button className="kpi bento-kpi-artistas" onClick={() => setDrill({ kind: "artistas" })}>
+            <div className="kpi-top">
+              <span className="kpi-label">Artistas en catálogo</span>
+            </div>
+            <div className="kpi-num">
+              <CountUp value={catalogoData.length} reduceMotion={reduceMotion} />
+            </div>
+            <div className="kpi-sub">con fonogramas cargados</div>
+          </button>
+
+          <button className="kpi bento-kpi-sm" onClick={() => setDrill({ kind: "sinAudio", rows: sinAudio })}>
             <div className="kpi-top">
               <span className="kpi-label">Sin audio</span>
               <span className="kpi-chip crit">Atención</span>
             </div>
-            <div className="kpi-num">{sinAudio.length}</div>
+            <div className="kpi-num">
+              <CountUp value={sinAudio.length} reduceMotion={reduceMotion} />
+            </div>
             <div className="kpi-sub">bloquean el release</div>
           </button>
-          <button className="kpi" onClick={() => setDrill({ kind: "sinPortada", rows: sinPortada })}>
+          <button className="kpi bento-kpi-sm" onClick={() => setDrill({ kind: "sinPortada", rows: sinPortada })}>
             <div className="kpi-top">
               <span className="kpi-label">Sin portada</span>
               <span className="kpi-chip warn">Revisar</span>
             </div>
-            <div className="kpi-num">{sinPortada.length}</div>
-            <div className="kpi-sub">bloquean el release</div>
-          </button>
-          <button className="kpi" onClick={() => setDrill({ kind: "artistas" })}>
-            <div className="kpi-top">
-              <span className="kpi-label">Artistas en catálogo</span>
+            <div className="kpi-num">
+              <CountUp value={sinPortada.length} reduceMotion={reduceMotion} />
             </div>
-            <div className="kpi-num">{catalogoData.length}</div>
-            <div className="kpi-sub">con fonogramas cargados</div>
+            <div className="kpi-sub">bloquean el release</div>
           </button>
         </motion.div>
 

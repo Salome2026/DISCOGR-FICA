@@ -278,6 +278,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
         access: "public",
         handleUploadUrl: "/api/pm/upload",
         clientPayload: "audio",
+        multipart: true,
         onUploadProgress: (p) => setUploadStep(`Subiendo audio ${idx + 1}/${total}... ${Math.round(p.percentage)}%`),
       });
       audioUrl = blob.url;
@@ -332,6 +333,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             access: "public",
             handleUploadUrl: "/api/pm/upload",
             clientPayload: "audio",
+            multipart: true,
             onUploadProgress: (p) => setUploadStep(`Subiendo audio... ${Math.round(p.percentage)}%`),
           });
           audioUrl = blob.url;

@@ -142,7 +142,7 @@ export async function notifyNewLanzamiento(input: NotifyInput) {
   // runs out — whatever doesn't fit stays as a download link instead of
   // failing the whole send.
   const fetched = await Promise.all(files.map((f) => fetchFile(f.url)));
-  const attachments: { filename: string; content: Buffer }[] = [];
+  const attachments: { filename: string; content: string }[] = [];
   const attachedLabels: string[] = [];
   const linkedFiles: FileToFetch[] = [];
   let runningSize = 0;
@@ -158,7 +158,10 @@ export async function notifyNewLanzamiento(input: NotifyInput) {
       return;
     }
     runningSize += result.size;
-    attachments.push({ filename: f.filename, content: result.buffer });
+    // Resend's SDK JSON.stringifies the request body, and a raw Node Buffer
+    // serializes as {type:"Buffer",data:[...]} instead of base64 — send the
+    // base64 string explicitly so the API actually receives file bytes.
+    attachments.push({ filename: f.filename, content: result.buffer.toString("base64") });
     attachedLabels.push(f.label);
   });
 

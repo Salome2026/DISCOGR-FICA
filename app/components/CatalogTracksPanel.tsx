@@ -19,24 +19,24 @@ type Track = {
 
 const COMPANY_ORDER = ["ADA", "FUGA", "ONErpm", "DashGo", "The Orchard", "SoundOn", "Sin distribuidora"];
 const COMPANY_COLOR: Record<string, string> = {
-  ADA: "#c9825a",
-  FUGA: "#e6a94f",
-  ONErpm: "#7f9bb0",
-  DashGo: "#5c5140",
-  "The Orchard": "#8a7c62",
-  SoundOn: "#a894c9",
-  "Sin distribuidora": "#544831",
+  ADA: "#3fc6d1",
+  FUGA: "#eef0f4",
+  ONErpm: "#9a9da8",
+  DashGo: "#71737d",
+  "The Orchard": "#4d4f57",
+  SoundOn: "#c3c6cf",
+  "Sin distribuidora": "#2f3036",
 };
 
 const estadoColor: Record<string, string> = {
-  Firmado: "#7fae6f",
+  Firmado: "#8fb98a",
   Contactado: "#8aa0c9",
-  "NO SACAR": "#c96a5a",
-  "Sin estado": "#8a7c62",
-  Aprobado: "#e6a94f",
-  "En negociación": "#d99a4e",
+  "NO SACAR": "#c98a86",
+  "Sin estado": "#71737d",
+  Aprobado: "#dcdde2",
+  "En negociación": "#c9a86a",
   Enviado: "#a894c9",
-  "Sin Empezar": "#6b6152",
+  "Sin Empezar": "#4d4f57",
 };
 
 function estadoBucket(estado: string[]): string {
@@ -194,7 +194,7 @@ export default function CatalogTracksPanel({ apiUrl, emptyMessage }: { apiUrl: s
       `}</style>
 
       {tracksError && (
-        <div style={{ background: "#3d2a24", color: "#eab3a8", padding: "10px 16px", borderRadius: 10, fontSize: 13, marginBottom: 16 }}>
+        <div style={{ background: "var(--crit-bg)", color: "var(--crit-ink)", padding: "10px 16px", borderRadius: 10, fontSize: 13, marginBottom: 16 }}>
           Error cargando el catálogo: {tracksError}
         </div>
       )}

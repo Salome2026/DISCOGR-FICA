@@ -21,13 +21,13 @@ const tracks = tracksData as Track[];
 
 const COMPANY_ORDER = ["ADA", "FUGA", "ONErpm", "DashGo", "The Orchard", "SoundOn", "Sin distribuidora"];
 const COMPANY_COLOR: Record<string, string> = {
-  ADA: "#c9825a",
-  FUGA: "#e6a94f",
-  ONErpm: "#7f9bb0",
-  DashGo: "#5c5140",
-  "The Orchard": "#8a7c62",
-  SoundOn: "#a894c9",
-  "Sin distribuidora": "#544831",
+  ADA: "#3fc6d1",
+  FUGA: "#eef0f4",
+  ONErpm: "#9a9da8",
+  DashGo: "#71737d",
+  "The Orchard": "#4d4f57",
+  SoundOn: "#c3c6cf",
+  "Sin distribuidora": "#2f3036",
 };
 
 function companyBreakdown(list: Track[]) {

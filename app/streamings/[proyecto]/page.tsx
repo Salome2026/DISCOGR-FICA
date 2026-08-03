@@ -4,7 +4,6 @@ import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import RequireRole from "@/app/components/RequireRole";
 import CatalogTracksPanel from "@/app/components/CatalogTracksPanel";
-import { STREAMING_PROJECTS } from "@/lib/sellos";
 import type { Release } from "@/lib/notion";
 
 const ESTADO_BADGE: Record<string, string> = {
@@ -23,7 +22,6 @@ export default function StreamingProjectPage({
 }) {
   const { proyecto } = use(params);
   const proyectoName = decodeURIComponent(proyecto);
-  const isKnownProject = (STREAMING_PROJECTS as readonly string[]).includes(proyectoName);
   const isLaJuntada = proyectoName === "La Juntada de los Artistas";
 
   const [acuerdos, setAcuerdos] = useState<Release[] | null>(null);
@@ -84,16 +82,10 @@ export default function StreamingProjectPage({
           </div>
           <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>{proyectoName}</h1>
 
-          {!isKnownProject && (
-            <p className="empty">Este proyecto no está en la lista configurada (VPO CORP).</p>
-          )}
-
-          {isKnownProject && (
-            <CatalogTracksPanel
-              apiUrl={`/api/catalog/tracks?project=${encodeURIComponent(proyectoName)}`}
-              emptyMessage={`Todavía no hay fonogramas asignados a ${proyectoName}. Asignalos desde la ficha de cada fonograma en Catálogo Distribuido.`}
-            />
-          )}
+          <CatalogTracksPanel
+            apiUrl={`/api/catalog/tracks?project=${encodeURIComponent(proyectoName)}`}
+            emptyMessage={`Todavía no hay fonogramas asignados a ${proyectoName}. Cargalos desde "+ Nuevo lanzamiento" eligiendo Streamings, o asignalos desde la ficha de cada fonograma en Catálogo Distribuido.`}
+          />
 
           {isLaJuntada && (
             <div className="card">

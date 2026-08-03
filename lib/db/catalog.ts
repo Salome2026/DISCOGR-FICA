@@ -86,6 +86,41 @@ export async function getTrack(id: string): Promise<CatalogTrack | null> {
   return (rows[0] as CatalogTrack) ?? null;
 }
 
+// Mirrors a pm_releases row (single or one EP/álbum canción) into the
+// general catalog so it shows up everywhere sello/streaming pages, fichas
+// and rankings already read from — same table, not a parallel copy. Keyed
+// by a stable synthetic id (pm-<release id>) so re-saving the same release
+// (e.g. after an estado edit) updates in place instead of duplicating.
+export async function upsertTrackFromRelease(t: {
+  id: string;
+  track: string;
+  album: string | null;
+  releaseDate: string | null;
+  company: string | null;
+  artistDisplay: string;
+  participants: string[];
+  sello: string | null;
+  streamingProject: string | null;
+}): Promise<void> {
+  await ensureCatalogSchema();
+  await sql`
+    INSERT INTO catalog_tracks
+      (id, isrc, track, album, release_date, upc, company, artist_display, participants, sello, streaming_project)
+    VALUES
+      (${t.id}, NULL, ${t.track}, ${t.album}, ${t.releaseDate}, NULL, ${t.company}, ${t.artistDisplay},
+       ${JSON.stringify(t.participants)}::jsonb, ${t.sello}, ${t.streamingProject})
+    ON CONFLICT (id) DO UPDATE SET
+      track = EXCLUDED.track,
+      album = EXCLUDED.album,
+      release_date = EXCLUDED.release_date,
+      company = EXCLUDED.company,
+      artist_display = EXCLUDED.artist_display,
+      participants = EXCLUDED.participants,
+      sello = EXCLUDED.sello,
+      streaming_project = EXCLUDED.streaming_project
+  `;
+}
+
 export async function updateTrackClassification(
   id: string,
   classification: { sello: string | null; streamingProject: string | null },

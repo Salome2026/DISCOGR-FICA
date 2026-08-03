@@ -22,6 +22,7 @@ type Release = {
   track_number: number | null;
   group_tipo: string | null;
   group_nombre: string | null;
+  streaming_project: string | null;
 };
 
 function formatFecha(v: string | null): string {
@@ -162,7 +163,14 @@ function PMModuleInner() {
                         </div>
                       )}
                     </td>
-                    <td>{r.sello ?? "—"}</td>
+                    <td>
+                      {r.sello ?? "—"}
+                      {r.sello === "Streamings" && r.streaming_project && (
+                        <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2 }}>
+                          › {r.streaming_project}
+                        </div>
+                      )}
+                    </td>
                     <td>
                       <span
                         className="badge"

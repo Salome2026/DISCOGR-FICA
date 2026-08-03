@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { getTrack, updateTrackClassification } from "@/lib/db/catalog";
-import { SELLOS, STREAMING_PROJECTS } from "@/lib/sellos";
+import { SELLOS } from "@/lib/sellos";
+import { isActiveStreamingProjectName } from "@/lib/db/streamingProjects";
 
 export async function GET(
   _req: NextRequest,
@@ -43,7 +44,7 @@ export async function PATCH(
   if (
     sello === "Streamings" &&
     streamingProject !== null &&
-    !(STREAMING_PROJECTS as readonly string[]).includes(streamingProject)
+    !(await isActiveStreamingProjectName(streamingProject))
   ) {
     return NextResponse.json({ error: "Proyecto de streaming inválido." }, { status: 400 });
   }

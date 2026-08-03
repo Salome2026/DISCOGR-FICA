@@ -90,6 +90,8 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   const [artist, setArtist] = useState("");
   const [sello, setSello] = useState("");
   const [selloTouched, setSelloTouched] = useState(false);
+  const [streamingProjects, setStreamingProjects] = useState<string[]>([]);
+  const [streamingProject, setStreamingProject] = useState("");
   const [estado, setEstado] = useState<(typeof ESTADOS)[number]>("Contactado");
   const [distribuidora, setDistribuidora] = useState("");
   const [fecha, setFecha] = useState("");
@@ -119,6 +121,19 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isGrouped]);
+
+  useEffect(() => {
+    fetch("/api/streaming-projects")
+      .then((r) => r.json())
+      .then((d) => !d.error && setStreamingProjects(d.projects.map((p: { name: string }) => p.name)))
+      .catch(() => {});
+  }, []);
+
+  function onSelloChange(v: string) {
+    setSello(v);
+    setSelloTouched(true);
+    if (v !== "Streamings") setStreamingProject("");
+  }
 
   function onArtistChange(v: string) {
     setArtist(v);
@@ -294,6 +309,10 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
       setError("Elegí el sello / unidad de negocio.");
       return;
     }
+    if (sello === "Streamings" && !streamingProject) {
+      setError("Elegí el proyecto de streaming.");
+      return;
+    }
 
     if (tipo === "single") {
       if (!fonograma.trim()) {
@@ -332,6 +351,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             tipo: "single",
             artist,
             sello,
+            streamingProject: sello === "Streamings" ? streamingProject : null,
             fonograma,
             estado,
             distribuidora: distribuidora || null,
@@ -385,6 +405,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
           tipo,
           artist,
           sello,
+          streamingProject: sello === "Streamings" ? streamingProject : null,
           nombre: groupNombre,
           estado,
           distribuidora: distribuidora || null,
@@ -493,10 +514,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
               <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Sello / unidad de negocio</label>
               <select
                 value={sello}
-                onChange={(e) => {
-                  setSello(e.target.value);
-                  setSelloTouched(true);
-                }}
+                onChange={(e) => onSelloChange(e.target.value)}
                 style={inputStyle}
               >
                 <option value="">Elegir...</option>
@@ -505,6 +523,22 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                 ))}
               </select>
             </div>
+
+            {sello === "Streamings" && (
+              <div>
+                <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Seleccionar streaming</label>
+                <select
+                  value={streamingProject}
+                  onChange={(e) => setStreamingProject(e.target.value)}
+                  style={inputStyle}
+                >
+                  <option value="">Elegir...</option>
+                  {streamingProjects.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {tipo === "single" ? (
               <div>
@@ -753,7 +787,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
         )}
         {success && (
           <div style={{ background: "#3a4032", color: "#d3e6c9", padding: "8px 12px", borderRadius: 8, fontSize: 13 }}>
-            Lanzamiento guardado correctamente.
+            Lanzamiento guardado y actualizado en el catálogo correctamente.
           </div>
         )}
 

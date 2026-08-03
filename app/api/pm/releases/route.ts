@@ -8,6 +8,8 @@ import {
   type EstadoRelease,
 } from "@/lib/db/releases";
 import { getAssignedArtists } from "@/lib/db/users";
+import { upsertTrackFromRelease } from "@/lib/db/catalog";
+import { isActiveStreamingProjectName } from "@/lib/db/streamingProjects";
 import { notifyNewLanzamiento } from "@/lib/email";
 
 const ESTADOS: EstadoRelease[] = ["Contactado", "Firmado", "Necesito ayuda"];
@@ -29,6 +31,22 @@ async function checkArtistAssignment(role: string, email: string, artist: string
   return assigned.map((a) => a.toLowerCase()).includes(String(artist).toLowerCase());
 }
 
+function canonicalCompany(distribuidora: string | null | undefined): string | null {
+  if (!distribuidora || distribuidora === "Sin definir") return null;
+  return distribuidora;
+}
+
+function buildParticipants(mainArtist: string, colaboradores: string | null): string[] {
+  const names = [mainArtist];
+  if (colaboradores) {
+    for (const c of colaboradores.split(",")) {
+      const n = c.trim();
+      if (n) names.push(n);
+    }
+  }
+  return names;
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth();
   const role = (session?.user as { role?: string } | undefined)?.role;
@@ -40,19 +58,34 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const tipo = body.tipo === "ep" || body.tipo === "album" ? body.tipo : "single";
 
-  if (tipo === "ep" || tipo === "album") {
-    return handleGroupedCreate(body, tipo, role, email);
+  const sello: string | undefined = body.sello || undefined;
+  let streamingProject: string | null = body.streamingProject || null;
+  if (sello === "Streamings") {
+    if (!streamingProject) {
+      return NextResponse.json({ error: "Elegí el proyecto de streaming." }, { status: 400 });
+    }
+    if (!(await isActiveStreamingProjectName(streamingProject))) {
+      return NextResponse.json({ error: "Proyecto de streaming inválido." }, { status: 400 });
+    }
+  } else {
+    streamingProject = null;
   }
-  return handleSingleCreate(body, role, email);
+
+  if (tipo === "ep" || tipo === "album") {
+    return handleGroupedCreate(body, tipo, role, email, sello ?? null, streamingProject);
+  }
+  return handleSingleCreate(body, role, email, sello ?? null, streamingProject);
 }
 
 async function handleSingleCreate(
   body: Record<string, unknown>,
   role: string,
-  email: string
+  email: string,
+  sello: string | null,
+  streamingProject: string | null
 ) {
-  const { artist, sello, fonograma, estado, distribuidora, fecha, autoresCompositores, audioUrl, portadaUrl } = body as {
-    artist?: string; sello?: string; fonograma?: string; estado?: string; distribuidora?: string;
+  const { artist, fonograma, estado, distribuidora, fecha, autoresCompositores, audioUrl, portadaUrl } = body as {
+    artist?: string; fonograma?: string; estado?: string; distribuidora?: string;
     fecha?: string; autoresCompositores?: string; audioUrl?: string; portadaUrl?: string;
   };
 
@@ -82,7 +115,8 @@ async function handleSingleCreate(
 
   const release = await createRelease({
     artist,
-    sello: sello || null,
+    sello,
+    streamingProject,
     fonograma,
     estado: estado as EstadoRelease,
     distribuidora: distribuidora || null,
@@ -93,10 +127,22 @@ async function handleSingleCreate(
     createdBy: email,
   });
 
+  await upsertTrackFromRelease({
+    id: `pm-${release.id}`,
+    track: fonograma,
+    album: null,
+    releaseDate: fecha || null,
+    company: canonicalCompany(distribuidora),
+    artistDisplay: artist,
+    participants: [artist],
+    sello,
+    streamingProject,
+  });
+
   notifyNewLanzamiento({
     artist,
     fonograma,
-    sello: sello || null,
+    sello,
     estado: estado as EstadoRelease,
     distribuidora: distribuidora || null,
     fecha: fecha || null,
@@ -125,10 +171,12 @@ async function handleGroupedCreate(
   body: Record<string, unknown>,
   tipo: "ep" | "album",
   role: string,
-  email: string
+  email: string,
+  sello: string | null,
+  streamingProject: string | null
 ) {
-  const { artist, sello, nombre, estado, distribuidora, fecha, comentarios, tracks } = body as {
-    artist?: string; sello?: string; nombre?: string; estado?: string; distribuidora?: string;
+  const { artist, nombre, estado, distribuidora, fecha, comentarios, tracks } = body as {
+    artist?: string; nombre?: string; estado?: string; distribuidora?: string;
     fecha?: string; comentarios?: string; tracks?: TrackInput[];
   };
 
@@ -168,6 +216,13 @@ async function handleGroupedCreate(
         { status: 400 }
       );
     }
+    const dup = await findDuplicateRelease(t.artist, t.fonograma, fecha || null);
+    if (dup) {
+      return NextResponse.json(
+        { error: `Ya existe un lanzamiento de "${t.artist}" llamado "${t.fonograma}" en esa fecha.` },
+        { status: 409 }
+      );
+    }
     cleanTracks.push({
       trackNumber: t.trackNumber ?? i + 1,
       fonograma: t.fonograma.trim(),
@@ -185,7 +240,8 @@ async function handleGroupedCreate(
     {
       tipo,
       artist,
-      sello: sello || null,
+      sello,
+      streamingProject,
       nombre,
       estado: estado as EstadoRelease,
       distribuidora: distribuidora || null,
@@ -196,10 +252,27 @@ async function handleGroupedCreate(
     cleanTracks
   );
 
+  const company = canonicalCompany(distribuidora);
+  for (let i = 0; i < savedTracks.length; i++) {
+    const saved = savedTracks[i];
+    const input = cleanTracks[i];
+    await upsertTrackFromRelease({
+      id: `pm-${saved.id}`,
+      track: input.fonograma,
+      album: nombre,
+      releaseDate: fecha || null,
+      company,
+      artistDisplay: [input.artist, ...(input.colaboradores ? [input.colaboradores] : [])].join("|"),
+      participants: buildParticipants(input.artist, input.colaboradores),
+      sello,
+      streamingProject,
+    });
+  }
+
   notifyNewLanzamiento({
     artist,
     fonograma: `${tipo === "ep" ? "EP" : "Álbum"} "${nombre}" (${savedTracks.length} canciones)`,
-    sello: sello || null,
+    sello,
     estado: estado as EstadoRelease,
     distribuidora: distribuidora || null,
     fecha: fecha || null,

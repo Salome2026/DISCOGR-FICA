@@ -56,6 +56,8 @@ export function ensureReleasesSchema(): Promise<void> {
       await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS productor TEXT`;
       await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS isrc TEXT`;
       await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS comentario TEXT`;
+      await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS streaming_project TEXT`;
+      await sql`ALTER TABLE pm_release_groups ADD COLUMN IF NOT EXISTS streaming_project TEXT`;
       await sql`CREATE INDEX IF NOT EXISTS pm_releases_group_idx ON pm_releases (group_id)`;
 
       await sql`
@@ -76,6 +78,7 @@ export function ensureReleasesSchema(): Promise<void> {
 export type NewRelease = {
   artist: string;
   sello: string | null;
+  streamingProject: string | null;
   fonograma: string;
   estado: EstadoRelease;
   distribuidora: string | null;
@@ -102,10 +105,10 @@ export async function createRelease(r: NewRelease) {
   await ensureReleasesSchema();
   const { rows } = await sql`
     INSERT INTO pm_releases
-      (artist_name, sello, fonograma_nombre, estado, distribuidora, fecha_lanzamiento,
+      (artist_name, sello, streaming_project, fonograma_nombre, estado, distribuidora, fecha_lanzamiento,
        autores_compositores, audio_url, portada_url, created_by)
     VALUES
-      (${r.artist}, ${r.sello}, ${r.fonograma}, ${r.estado}, ${r.distribuidora}, ${r.fecha},
+      (${r.artist}, ${r.sello}, ${r.streamingProject}, ${r.fonograma}, ${r.estado}, ${r.distribuidora}, ${r.fecha},
        ${r.autoresCompositores}, ${r.audioUrl}, ${r.portadaUrl}, ${r.createdBy})
     RETURNING *
   `;
@@ -121,6 +124,7 @@ export type NewReleaseGroup = {
   tipo: Extract<TipoLanzamiento, "ep" | "album">;
   artist: string;
   sello: string | null;
+  streamingProject: string | null;
   nombre: string;
   estado: EstadoRelease;
   distribuidora: string | null;
@@ -145,9 +149,9 @@ export async function createGroupedRelease(group: NewReleaseGroup, tracks: NewGr
   await ensureReleasesSchema();
   const { rows: groupRows } = await sql`
     INSERT INTO pm_release_groups
-      (tipo, artist_name, sello, nombre, estado, distribuidora, fecha_lanzamiento, comentarios, created_by)
+      (tipo, artist_name, sello, streaming_project, nombre, estado, distribuidora, fecha_lanzamiento, comentarios, created_by)
     VALUES
-      (${group.tipo}, ${group.artist}, ${group.sello}, ${group.nombre}, ${group.estado},
+      (${group.tipo}, ${group.artist}, ${group.sello}, ${group.streamingProject}, ${group.nombre}, ${group.estado},
        ${group.distribuidora}, ${group.fecha}, ${group.comentarios}, ${group.createdBy})
     RETURNING *
   `;
@@ -157,10 +161,10 @@ export async function createGroupedRelease(group: NewReleaseGroup, tracks: NewGr
   for (const t of tracks) {
     const { rows } = await sql`
       INSERT INTO pm_releases
-        (artist_name, sello, fonograma_nombre, estado, distribuidora, fecha_lanzamiento,
+        (artist_name, sello, streaming_project, fonograma_nombre, estado, distribuidora, fecha_lanzamiento,
          audio_url, portada_url, group_id, track_number, colaboradores, productor, isrc, comentario, created_by)
       VALUES
-        (${t.artist}, ${group.sello}, ${t.fonograma}, ${group.estado}, ${group.distribuidora}, ${group.fecha},
+        (${t.artist}, ${group.sello}, ${group.streamingProject}, ${t.fonograma}, ${group.estado}, ${group.distribuidora}, ${group.fecha},
          ${t.audioUrl}, ${t.portadaUrl}, ${groupRow.id}, ${t.trackNumber}, ${t.colaboradores},
          ${t.productor}, ${t.isrc}, ${t.comentario}, ${group.createdBy})
       RETURNING *

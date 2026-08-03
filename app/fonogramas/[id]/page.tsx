@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import RequireRole from "@/app/components/RequireRole";
-import { SELLOS, STREAMING_PROJECTS } from "@/lib/sellos";
+import { SELLOS } from "@/lib/sellos";
 
 type Track = {
   id: string;
@@ -25,6 +25,7 @@ export default function FonogramaFicha({ params }: { params: Promise<{ id: strin
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [streamingProjects, setStreamingProjects] = useState<string[]>([]);
 
   useEffect(() => {
     fetch(`/api/catalog/tracks/${encodeURIComponent(id)}`)
@@ -34,6 +35,10 @@ export default function FonogramaFicha({ params }: { params: Promise<{ id: strin
         else setTrack(d.track);
       })
       .catch((e) => setError(String(e)));
+    fetch("/api/streaming-projects")
+      .then((r) => r.json())
+      .then((d) => !d.error && setStreamingProjects(d.projects.map((p: { name: string }) => p.name)))
+      .catch(() => {});
   }, [id]);
 
   async function saveClassification(sello: string, streamingProject: string | null) {
@@ -66,7 +71,7 @@ export default function FonogramaFicha({ params }: { params: Promise<{ id: strin
   }
 
   function onSelloChange(sello: string) {
-    saveClassification(sello, sello === "Streamings" ? STREAMING_PROJECTS[0] : null);
+    saveClassification(sello, sello === "Streamings" ? streamingProjects[0] ?? null : null);
   }
 
   function onProjectChange(project: string) {
@@ -167,7 +172,7 @@ export default function FonogramaFicha({ params }: { params: Promise<{ id: strin
                       disabled={saving}
                       onChange={(e) => onProjectChange(e.target.value)}
                     >
-                      {STREAMING_PROJECTS.map((p) => (
+                      {streamingProjects.map((p) => (
                         <option key={p} value={p}>{p}</option>
                       ))}
                     </select>

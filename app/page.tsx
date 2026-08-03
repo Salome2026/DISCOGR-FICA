@@ -61,10 +61,6 @@ export default function Landing() {
         .landing-content{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:2rem 2rem 6rem;}
         .landing-watermark{position:absolute;top:0;right:0;width:min(65vw, 820px);height:auto;opacity:.05;filter:grayscale(1) brightness(1.4);pointer-events:none;z-index:0;transform:translate(20%, -15%);}
         .landing-inner{position:relative;z-index:1;width:100%;max-width:760px;}
-        .landing-brand{text-align:center;margin-bottom:2.5rem;}
-        .landing-brand .mark{width:44px;height:44px;border-radius:12px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:var(--accent-ink);margin:0 auto 12px;}
-        .landing-brand h1{font-size:20px;font-weight:700;margin:0;letter-spacing:-.01em;}
-        .landing-brand p{font-size:13px;color:var(--text-3);margin:4px 0 0;}
         .cards{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;}
         @media (max-width:640px){ .cards{grid-template-columns:1fr;} }
         .access-card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:2rem;text-align:center;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);transition:border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);}
@@ -93,12 +89,6 @@ export default function Landing() {
         priority={false}
       />
       <div className="landing-inner">
-        <div className="landing-brand">
-          <div className="mark">V</div>
-          <h1>VPO Corp</h1>
-          <p>Centro de control · acceso interno</p>
-        </div>
-
         {active === null && (
           <div className="cards">
             <div className="access-card">
@@ -148,7 +138,7 @@ export default function Landing() {
                 />
               </div>
               {error && (
-                <div style={{ color: "#eab3a8", fontSize: 12.5 }}>{error}</div>
+                <div style={{ color: "var(--crit-ink)", fontSize: 12.5 }}>{error}</div>
               )}
               <button className="access-btn" type="submit" disabled={loading}>
                 {loading ? "Ingresando..." : "Ingresar"}

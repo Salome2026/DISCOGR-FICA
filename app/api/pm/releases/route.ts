@@ -92,9 +92,9 @@ async function handleSingleCreate(
   sello: string | null,
   streamingProject: string | null
 ) {
-  const { artist, fonograma, estado, distribuidora, fecha, hora, autoresCompositores, audioUrl, portadaUrl } = body as {
+  const { artist, fonograma, estado, distribuidora, fecha, hora, autoresCompositores, colaboradores, audioUrl, portadaUrl } = body as {
     artist?: string; fonograma?: string; estado?: string; distribuidora?: string;
-    fecha?: string; hora?: string; autoresCompositores?: string; audioUrl?: string; portadaUrl?: string;
+    fecha?: string; hora?: string; autoresCompositores?: string; colaboradores?: string; audioUrl?: string; portadaUrl?: string;
   };
   const horaNorm = normalizeHora(hora);
 
@@ -132,6 +132,7 @@ async function handleSingleCreate(
     fecha: fecha || null,
     hora: horaNorm,
     autoresCompositores: autoresCompositores || null,
+    colaboradores: colaboradores || null,
     audioUrl: audioUrl || null,
     portadaUrl: portadaUrl || null,
     createdBy: email,
@@ -144,7 +145,7 @@ async function handleSingleCreate(
     releaseDate: fecha || null,
     company: canonicalCompany(distribuidora),
     artistDisplay: artist,
-    participants: [artist],
+    participants: buildParticipants(artist, colaboradores || null),
     sello,
     streamingProject,
   });
@@ -164,6 +165,7 @@ async function handleSingleCreate(
       fecha: fecha || null,
       hora: horaNorm,
       autoresCompositores: autoresCompositores || null,
+      colaboradores: colaboradores || null,
       audioUrl: audioUrl || null,
       portadaUrl: portadaUrl || null,
       createdBy: email,

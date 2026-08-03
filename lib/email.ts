@@ -32,6 +32,7 @@ type NotifyInput = {
   // Single only
   fonograma?: string;
   autoresCompositores?: string | null;
+  colaboradores?: string | null;
   audioUrl?: string | null;
   portadaUrl?: string | null;
   // EP/álbum only
@@ -72,6 +73,7 @@ function buildContent(input: NotifyInput): { rows: [string, string][]; files: Fi
   if (input.tipo === "single") {
     rows.push(["Nombre del fonograma", input.fonograma ?? "—"]);
     rows.push(["Autores y compositores", input.autoresCompositores ?? "—"]);
+    rows.push(["Featuring / artistas invitados", input.colaboradores ?? "—"]);
     rows.push(["Estado del release", input.estado]);
     rows.push(["Distribuidora", input.distribuidora ?? "—"]);
     rows.push(["Fecha de lanzamiento", input.fecha ?? "—"]);

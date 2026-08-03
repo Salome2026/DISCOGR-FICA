@@ -101,6 +101,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   // Single-only
   const [fonograma, setFonograma] = useState("");
   const [autores, setAutores] = useState("");
+  const [featuring, setFeaturing] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [portadaFile, setPortadaFile] = useState<File | null>(null);
 
@@ -365,6 +366,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             fecha: fecha || null,
             hora: hora || null,
             autoresCompositores: autores || null,
+            colaboradores: featuring || null,
             audioUrl,
             portadaUrl,
           }),
@@ -653,6 +655,18 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                   value={autores}
                   onChange={(e) => setAutores(e.target.value)}
                   placeholder="Nombre y apellido de cada uno, separados por coma"
+                  style={inputStyle}
+                />
+              </div>
+            )}
+
+            {tipo === "single" && (
+              <div>
+                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Featuring / artistas invitados</label>
+                <input
+                  value={featuring}
+                  onChange={(e) => setFeaturing(e.target.value)}
+                  placeholder="Nombres separados por coma (dejar vacío si no hay)"
                   style={inputStyle}
                 />
               </div>

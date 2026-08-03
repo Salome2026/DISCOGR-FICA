@@ -99,6 +99,7 @@ export type NewRelease = {
   fecha: string | null;
   hora: string | null;
   autoresCompositores: string | null;
+  colaboradores: string | null;
   audioUrl: string | null;
   portadaUrl: string | null;
   createdBy: string;
@@ -121,10 +122,10 @@ export async function createRelease(r: NewRelease) {
   const { rows } = await sql`
     INSERT INTO pm_releases
       (artist_name, sello, streaming_project, fonograma_nombre, estado, distribuidora, fecha_lanzamiento,
-       hora_lanzamiento, autores_compositores, audio_url, portada_url, created_by)
+       hora_lanzamiento, autores_compositores, colaboradores, audio_url, portada_url, created_by)
     VALUES
       (${r.artist}, ${r.sello}, ${r.streamingProject}, ${r.fonograma}, ${r.estado}, ${r.distribuidora}, ${r.fecha},
-       ${r.hora}, ${r.autoresCompositores}, ${r.audioUrl}, ${r.portadaUrl}, ${r.createdBy})
+       ${r.hora}, ${r.autoresCompositores}, ${r.colaboradores}, ${r.audioUrl}, ${r.portadaUrl}, ${r.createdBy})
     RETURNING *
   `;
   const release = rows[0];

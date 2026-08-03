@@ -19,7 +19,15 @@ type Release = {
   portada_url: string | null;
   created_by: string;
   created_at: string;
+  track_number: number | null;
+  group_tipo: string | null;
+  group_nombre: string | null;
 };
+
+function formatFecha(v: string | null): string {
+  if (!v) return "—";
+  return v.slice(0, 10);
+}
 
 const estadoColor: Record<string, string> = {
   Firmado: "#7fae6f",
@@ -145,7 +153,15 @@ function PMModuleInner() {
                 {releases.map((r) => (
                   <tr key={r.id}>
                     <td>{r.artist_name}</td>
-                    <td>{r.fonograma_nombre}</td>
+                    <td>
+                      {r.fonograma_nombre}
+                      {r.group_tipo && (
+                        <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2 }}>
+                          {r.group_tipo === "ep" ? "EP" : "Álbum"} · {r.group_nombre}
+                          {r.track_number ? ` · #${r.track_number}` : ""}
+                        </div>
+                      )}
+                    </td>
                     <td>{r.sello ?? "—"}</td>
                     <td>
                       <span
@@ -156,7 +172,7 @@ function PMModuleInner() {
                       </span>
                     </td>
                     <td>{r.distribuidora ?? "—"}</td>
-                    <td>{r.fecha_lanzamiento ?? "—"}</td>
+                    <td>{formatFecha(r.fecha_lanzamiento)}</td>
                     <td>{r.autores_compositores ?? "—"}</td>
                     <td>
                       {r.audio_url ? (

@@ -7,6 +7,7 @@ import {
   type EstadoRelease,
 } from "@/lib/db/releases";
 import { getAssignedArtists } from "@/lib/db/users";
+import { notifyNewLanzamiento } from "@/lib/email";
 
 const ESTADOS: EstadoRelease[] = ["Contactado", "Firmado", "Necesito ayuda"];
 
@@ -75,6 +76,19 @@ export async function POST(req: NextRequest) {
     portadaUrl: portadaUrl || null,
     createdBy: email,
   });
+
+  notifyNewLanzamiento({
+    artist,
+    fonograma,
+    sello: sello || null,
+    estado,
+    distribuidora: distribuidora || null,
+    fecha: fecha || null,
+    autoresCompositores: autoresCompositores || null,
+    audioUrl: audioUrl || null,
+    portadaUrl: portadaUrl || null,
+    createdBy: email,
+  }).catch((err) => console.error("notifyNewLanzamiento failed:", err));
 
   return NextResponse.json({ release }, { status: 201 });
 }

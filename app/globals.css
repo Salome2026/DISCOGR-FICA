@@ -27,6 +27,15 @@
   --gold: var(--accent);
   --gold-ink: var(--accent-ink);
 
+  /* Color accent — sampled from the actual VPO mark's teal brushed-metal
+     tone (not an arbitrary pick), brightened for UI use. Used sparingly and
+     on purpose: ambient background glow, focus states, one chart segment,
+     interactive hover glow — enough for the platform to feel like it
+     belongs to a music brand, not a recolor of every surface. */
+  --accent-color: #3fc6d1;
+  --accent-color-ink: #062326;
+  --accent-color-glow: rgba(63, 198, 209, 0.35);
+
   /* Glass buttons: silver-tinted translucent glass, NOT a solid metal
      fill. Used for every actual button/CTA so "transparent + gradient +
      glass" is unmistakable on the most prominent elements, not just
@@ -140,7 +149,7 @@ body {
    wrapper. */
 .bg-atmosphere {
   background: radial-gradient(ellipse 900px 560px at 12% -8%, rgba(255, 255, 255, 0.05), transparent 60%),
-    radial-gradient(ellipse 1000px 700px at 100% 0%, rgba(200, 202, 210, 0.035), transparent 55%),
-    radial-gradient(ellipse 800px 500px at 50% 110%, rgba(180, 182, 190, 0.03), transparent 60%),
+    radial-gradient(ellipse 1000px 700px at 100% 0%, rgba(63, 198, 209, 0.07), transparent 55%),
+    radial-gradient(ellipse 800px 500px at 50% 110%, rgba(63, 198, 209, 0.045), transparent 60%),
     linear-gradient(180deg, var(--bg-0b) 0%, var(--bg-0) 45%);
 }

@@ -198,15 +198,17 @@ export default function RegaliasNetas() {
                   onClick={save}
                   disabled={saving || splits.length === 0}
                   style={{
-                    background: "var(--gold)",
-                    border: "none",
+                    background: "var(--accent-glass-bg)",
+                    border: "1px solid var(--accent-glass-border)",
                     borderRadius: 8,
                     padding: "8px 18px",
-                    color: "#241a08",
+                    color: "var(--text-1)",
                     fontWeight: 600,
                     fontSize: 12.5,
                     cursor: splits.length === 0 ? "default" : "pointer",
                     opacity: splits.length === 0 ? 0.5 : 1,
+                    backdropFilter: "blur(20px) saturate(1.7)",
+                    WebkitBackdropFilter: "blur(20px) saturate(1.7)",
                   }}
                 >
                   Guardar reparto

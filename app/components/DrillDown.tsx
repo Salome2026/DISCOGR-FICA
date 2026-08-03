@@ -96,8 +96,8 @@ export default function DrillDown<T extends { id?: string | number }>({
         onClick={(e) => e.stopPropagation()}
         style={{
           background: "var(--glass-bg-strong, #1c1712)",
-          backdropFilter: "blur(34px) saturate(1.4)",
-          WebkitBackdropFilter: "blur(34px) saturate(1.4)",
+          backdropFilter: "blur(34px) saturate(1.7)",
+          WebkitBackdropFilter: "blur(34px) saturate(1.7)",
           color: "var(--text-1, #f4ede1)",
           borderRadius: "var(--radius-lg, 20px)",
           border: "1px solid var(--glass-border, #403627)",

@@ -16,6 +16,7 @@ export default function RequireRole({
   const router = useRouter();
   const role = (session?.user as { role?: Role | null } | undefined)?.role ?? null;
   const invalid = (session?.user as { invalid?: boolean } | undefined)?.invalid;
+  const authorized = status === "authenticated" && !invalid && !!role && allow.includes(role);
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/");
@@ -23,6 +24,13 @@ export default function RequireRole({
       signOut({ redirect: false }).then(() => router.replace("/"));
     }
   }, [status, invalid, role, router]);
+
+  // The landing page's scroll position (deep into the scroll-hero) otherwise
+  // carries over into whatever page router.push lands on after login, so
+  // the destination can open scrolled past its own top content.
+  useEffect(() => {
+    if (authorized) window.scrollTo(0, 0);
+  }, [authorized]);
 
   if (status === "loading" || status === "unauthenticated") {
     return <FullPageMessage text="Cargando..." />;

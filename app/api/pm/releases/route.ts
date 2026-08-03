@@ -13,6 +13,11 @@ import { isActiveStreamingProjectName } from "@/lib/db/streamingProjects";
 import { notifyNewLanzamiento } from "@/lib/email";
 
 const ESTADOS: EstadoRelease[] = ["Contactado", "Firmado", "Necesito ayuda"];
+const HORA_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+function normalizeHora(hora: unknown): string {
+  return typeof hora === "string" && HORA_RE.test(hora) ? hora : "00:00";
+}
 
 export async function GET() {
   const session = await auth();
@@ -86,10 +91,11 @@ async function handleSingleCreate(
   sello: string | null,
   streamingProject: string | null
 ) {
-  const { artist, fonograma, estado, distribuidora, fecha, autoresCompositores, audioUrl, portadaUrl } = body as {
+  const { artist, fonograma, estado, distribuidora, fecha, hora, autoresCompositores, audioUrl, portadaUrl } = body as {
     artist?: string; fonograma?: string; estado?: string; distribuidora?: string;
-    fecha?: string; autoresCompositores?: string; audioUrl?: string; portadaUrl?: string;
+    fecha?: string; hora?: string; autoresCompositores?: string; audioUrl?: string; portadaUrl?: string;
   };
+  const horaNorm = normalizeHora(hora);
 
   if (!artist || !fonograma || !estado) {
     return NextResponse.json(
@@ -123,6 +129,7 @@ async function handleSingleCreate(
     estado: estado as EstadoRelease,
     distribuidora: distribuidora || null,
     fecha: fecha || null,
+    hora: horaNorm,
     autoresCompositores: autoresCompositores || null,
     audioUrl: audioUrl || null,
     portadaUrl: portadaUrl || null,
@@ -150,6 +157,7 @@ async function handleSingleCreate(
     estado: estado as EstadoRelease,
     distribuidora: distribuidora || null,
     fecha: fecha || null,
+    hora: horaNorm,
     autoresCompositores: autoresCompositores || null,
     audioUrl: audioUrl || null,
     portadaUrl: portadaUrl || null,
@@ -179,10 +187,11 @@ async function handleGroupedCreate(
   sello: string | null,
   streamingProject: string | null
 ) {
-  const { artist, nombre, estado, distribuidora, fecha, comentarios, tracks } = body as {
+  const { artist, nombre, estado, distribuidora, fecha, hora, comentarios, tracks } = body as {
     artist?: string; nombre?: string; estado?: string; distribuidora?: string;
-    fecha?: string; comentarios?: string; tracks?: TrackInput[];
+    fecha?: string; hora?: string; comentarios?: string; tracks?: TrackInput[];
   };
+  const horaNorm = normalizeHora(hora);
 
   if (!artist || !nombre || !estado) {
     return NextResponse.json(
@@ -250,6 +259,7 @@ async function handleGroupedCreate(
       estado: estado as EstadoRelease,
       distribuidora: distribuidora || null,
       fecha: fecha || null,
+      hora: horaNorm,
       comentarios: comentarios || null,
       createdBy: email,
     },
@@ -282,6 +292,7 @@ async function handleGroupedCreate(
     estado: estado as EstadoRelease,
     distribuidora: distribuidora || null,
     fecha: fecha || null,
+    hora: horaNorm,
     comentarios: comentarios || null,
     tracks: cleanTracks.map((t, i) => ({
       trackNumber: t.trackNumber ?? i + 1,

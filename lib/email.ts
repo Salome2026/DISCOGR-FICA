@@ -36,6 +36,7 @@ type NotifyInput = {
   estado: string;
   distribuidora: string | null;
   fecha: string | null;
+  hora: string | null;
   createdBy: string;
   // Single only
   fonograma?: string;
@@ -83,6 +84,7 @@ function buildContent(input: NotifyInput): { rows: [string, string][]; files: Fi
     rows.push(["Estado del release", input.estado]);
     rows.push(["Distribuidora", input.distribuidora ?? "—"]);
     rows.push(["Fecha de lanzamiento", input.fecha ?? "—"]);
+    rows.push(["Hora de lanzamiento (ART)", input.hora ?? "00:00"]);
     if (input.audioUrl) {
       files.push({ label: "Audio", url: input.audioUrl, filename: safeFilename(input.fonograma ?? input.artist, extFromUrl(input.audioUrl, "wav")) });
     }
@@ -94,6 +96,7 @@ function buildContent(input: NotifyInput): { rows: [string, string][]; files: Fi
     rows.push(["Estado del release", input.estado]);
     rows.push(["Distribuidora", input.distribuidora ?? "—"]);
     rows.push(["Fecha de lanzamiento", input.fecha ?? "—"]);
+    rows.push(["Hora de lanzamiento (ART)", input.hora ?? "00:00"]);
     rows.push(["Comentarios u observaciones", input.comentarios ?? "—"]);
     for (const t of input.tracks ?? []) {
       const n = t.trackNumber ? `#${t.trackNumber} — ` : "";

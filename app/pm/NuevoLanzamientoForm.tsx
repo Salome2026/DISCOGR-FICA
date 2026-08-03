@@ -95,6 +95,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   const [estado, setEstado] = useState<(typeof ESTADOS)[number]>("Contactado");
   const [distribuidora, setDistribuidora] = useState("");
   const [fecha, setFecha] = useState("");
+  const [hora, setHora] = useState("");
 
   // Single-only
   const [fonograma, setFonograma] = useState("");
@@ -273,11 +274,11 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
     let audioUrl: string | null = null;
     let portadaUrl: string | null = null;
     if (t.audioFile) {
-      setUploadStep(`Subiendo audio ${idx + 1}/${total}...`);
       const blob = await upload(t.audioFile.name, t.audioFile, {
         access: "public",
         handleUploadUrl: "/api/pm/upload",
         clientPayload: "audio",
+        onUploadProgress: (p) => setUploadStep(`Subiendo audio ${idx + 1}/${total}... ${Math.round(p.percentage)}%`),
       });
       audioUrl = blob.url;
     }
@@ -287,6 +288,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
         access: "public",
         handleUploadUrl: "/api/pm/upload",
         clientPayload: "portada",
+        onUploadProgress: (p) => setUploadStep(`Subiendo portada ${idx + 1}/${total}... ${Math.round(p.percentage)}%`),
       });
       portadaUrl = blob.url;
     }
@@ -325,20 +327,22 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
         let audioUrl: string | null = null;
         let portadaUrl: string | null = null;
         if (audioFile) {
-          setUploadStep("Subiendo audio...");
+          setUploadStep("Subiendo audio... 0%");
           const blob = await upload(audioFile.name, audioFile, {
             access: "public",
             handleUploadUrl: "/api/pm/upload",
             clientPayload: "audio",
+            onUploadProgress: (p) => setUploadStep(`Subiendo audio... ${Math.round(p.percentage)}%`),
           });
           audioUrl = blob.url;
         }
         if (portadaFile) {
-          setUploadStep("Subiendo portada...");
+          setUploadStep("Subiendo portada... 0%");
           const blob = await upload(portadaFile.name, portadaFile, {
             access: "public",
             handleUploadUrl: "/api/pm/upload",
             clientPayload: "portada",
+            onUploadProgress: (p) => setUploadStep(`Subiendo portada... ${Math.round(p.percentage)}%`),
           });
           portadaUrl = blob.url;
         }
@@ -356,6 +360,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             estado,
             distribuidora: distribuidora || null,
             fecha: fecha || null,
+            hora: hora || null,
             autoresCompositores: autores || null,
             audioUrl,
             portadaUrl,
@@ -410,6 +415,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
           estado,
           distribuidora: distribuidora || null,
           fecha: fecha || null,
+          hora: hora || null,
           comentarios: comentariosGrupo || null,
           tracks: tracks.map((t, i) => ({
             trackNumber: i + 1,
@@ -436,6 +442,74 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   }
 
   const modalWidth = isGrouped ? 720 : 480;
+
+  if (success) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.55)",
+          backdropFilter: "blur(6px)",
+          WebkitBackdropFilter: "blur(6px)",
+          zIndex: 100,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "2rem",
+        }}
+      >
+        <div
+          style={{
+            background: "var(--glass-bg-strong)",
+            backdropFilter: "blur(40px) saturate(1.7)",
+            WebkitBackdropFilter: "blur(40px) saturate(1.7)",
+            color: "var(--text-1)",
+            borderRadius: 20,
+            border: "1px solid var(--glass-border)",
+            boxShadow: "var(--shadow-glass-lg)",
+            width: "100%",
+            maxWidth: 380,
+            padding: "3rem 2rem",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 16,
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 88,
+              height: 88,
+              borderRadius: "50%",
+              background: "var(--good-bg)",
+              color: "var(--good-ink)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 48,
+              fontWeight: 700,
+              animation: "pm-check-pop .35s var(--ease-out)",
+            }}
+          >
+            ✓
+          </div>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>¡Lanzamiento guardado!</div>
+          <div style={{ fontSize: 13, color: "var(--text-3)" }}>
+            Se actualizó el catálogo y se envió la notificación por correo.
+          </div>
+          <style>{`
+            @keyframes pm-check-pop {
+              0% { transform: scale(0); opacity: 0; }
+              70% { transform: scale(1.15); opacity: 1; }
+              100% { transform: scale(1); }
+            }
+          `}</style>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -600,9 +674,15 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
               </select>
             </div>
 
-            <div>
-              <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Fecha de lanzamiento</label>
-              <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} style={inputStyle} />
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Fecha de lanzamiento</label>
+                <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} style={inputStyle} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Hora (ART)</label>
+                <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} style={inputStyle} placeholder="00:00" />
+              </div>
             </div>
 
             {tipo === "single" ? (
@@ -790,12 +870,6 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             {error}
           </div>
         )}
-        {success && (
-          <div style={{ background: "var(--good-bg)", color: "var(--good-ink)", padding: "8px 12px", borderRadius: 8, fontSize: 13 }}>
-            Lanzamiento guardado y actualizado en el catálogo correctamente.
-          </div>
-        )}
-
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
           <button
             type="button"

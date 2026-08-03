@@ -68,6 +68,12 @@ export function ensureReleasesSchema(): Promise<void> {
       await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS marketing_plan_detalle TEXT`;
       await sql`CREATE INDEX IF NOT EXISTS pm_releases_fecha_idx ON pm_releases (fecha_lanzamiento)`;
 
+      // Hora del lanzamiento, en formato "HH:MM" hora de Argentina (ART,
+      // UTC-3). NULL significa "no seleccionada" — se interpreta como 00:00
+      // en cada lugar donde se muestra.
+      await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS hora_lanzamiento TEXT`;
+      await sql`ALTER TABLE pm_release_groups ADD COLUMN IF NOT EXISTS hora_lanzamiento TEXT`;
+
       await sql`
         CREATE TABLE IF NOT EXISTS pm_release_history (
           id BIGSERIAL PRIMARY KEY,
@@ -91,6 +97,7 @@ export type NewRelease = {
   estado: EstadoRelease;
   distribuidora: string | null;
   fecha: string | null;
+  hora: string | null;
   autoresCompositores: string | null;
   audioUrl: string | null;
   portadaUrl: string | null;
@@ -114,10 +121,10 @@ export async function createRelease(r: NewRelease) {
   const { rows } = await sql`
     INSERT INTO pm_releases
       (artist_name, sello, streaming_project, fonograma_nombre, estado, distribuidora, fecha_lanzamiento,
-       autores_compositores, audio_url, portada_url, created_by)
+       hora_lanzamiento, autores_compositores, audio_url, portada_url, created_by)
     VALUES
       (${r.artist}, ${r.sello}, ${r.streamingProject}, ${r.fonograma}, ${r.estado}, ${r.distribuidora}, ${r.fecha},
-       ${r.autoresCompositores}, ${r.audioUrl}, ${r.portadaUrl}, ${r.createdBy})
+       ${r.hora}, ${r.autoresCompositores}, ${r.audioUrl}, ${r.portadaUrl}, ${r.createdBy})
     RETURNING *
   `;
   const release = rows[0];
@@ -137,6 +144,7 @@ export type NewReleaseGroup = {
   estado: EstadoRelease;
   distribuidora: string | null;
   fecha: string | null;
+  hora: string | null;
   comentarios: string | null;
   createdBy: string;
 };
@@ -157,10 +165,10 @@ export async function createGroupedRelease(group: NewReleaseGroup, tracks: NewGr
   await ensureReleasesSchema();
   const { rows: groupRows } = await sql`
     INSERT INTO pm_release_groups
-      (tipo, artist_name, sello, streaming_project, nombre, estado, distribuidora, fecha_lanzamiento, comentarios, created_by)
+      (tipo, artist_name, sello, streaming_project, nombre, estado, distribuidora, fecha_lanzamiento, hora_lanzamiento, comentarios, created_by)
     VALUES
       (${group.tipo}, ${group.artist}, ${group.sello}, ${group.streamingProject}, ${group.nombre}, ${group.estado},
-       ${group.distribuidora}, ${group.fecha}, ${group.comentarios}, ${group.createdBy})
+       ${group.distribuidora}, ${group.fecha}, ${group.hora}, ${group.comentarios}, ${group.createdBy})
     RETURNING *
   `;
   const groupRow = groupRows[0];
@@ -169,10 +177,10 @@ export async function createGroupedRelease(group: NewReleaseGroup, tracks: NewGr
   for (const t of tracks) {
     const { rows } = await sql`
       INSERT INTO pm_releases
-        (artist_name, sello, streaming_project, fonograma_nombre, estado, distribuidora, fecha_lanzamiento,
+        (artist_name, sello, streaming_project, fonograma_nombre, estado, distribuidora, fecha_lanzamiento, hora_lanzamiento,
          audio_url, portada_url, group_id, track_number, colaboradores, productor, isrc, comentario, created_by)
       VALUES
-        (${t.artist}, ${group.sello}, ${group.streamingProject}, ${t.fonograma}, ${group.estado}, ${group.distribuidora}, ${group.fecha},
+        (${t.artist}, ${group.sello}, ${group.streamingProject}, ${t.fonograma}, ${group.estado}, ${group.distribuidora}, ${group.fecha}, ${group.hora},
          ${t.audioUrl}, ${t.portadaUrl}, ${groupRow.id}, ${t.trackNumber}, ${t.colaboradores},
          ${t.productor}, ${t.isrc}, ${t.comentario}, ${group.createdBy})
       RETURNING *

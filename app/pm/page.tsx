@@ -14,6 +14,7 @@ type Release = {
   estado: string;
   distribuidora: string | null;
   fecha_lanzamiento: string | null;
+  hora_lanzamiento: string | null;
   autores_compositores: string | null;
   audio_url: string | null;
   portada_url: string | null;
@@ -160,6 +161,7 @@ function PMModuleInner() {
                   <th>Estado</th>
                   <th>Distribuidora</th>
                   <th>Fecha</th>
+                  <th>Hora</th>
                   <th>Autores/compositores</th>
                   <th>Audio</th>
                   <th>Portada</th>
@@ -198,6 +200,7 @@ function PMModuleInner() {
                     </td>
                     <td>{r.distribuidora ?? "—"}</td>
                     <td>{formatFecha(r.fecha_lanzamiento)}</td>
+                    <td>{r.hora_lanzamiento || "00:00"}</td>
                     <td>{r.autores_compositores ?? "—"}</td>
                     <td>
                       {r.audio_url ? (

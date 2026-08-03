@@ -10,6 +10,7 @@ type PmReleaseRow = {
   estado: string;
   distribuidora: string | null;
   fecha_lanzamiento: string | null;
+  hora_lanzamiento: string | null;
   colaboradores: string | null;
   group_id: number | null;
   group_tipo: string | null;
@@ -23,6 +24,7 @@ type CalendarEvent = {
   ids: number[];
   groupId: number | null;
   fecha: string;
+  hora: string;
   titulo: string;
   artista: string;
   participantes: string[];
@@ -116,6 +118,7 @@ export default function ReleaseCalendar({ className = "" }: { className?: string
         ids: group.map((g) => g.id),
         groupId: first.group_id,
         fecha: String(first.fecha_lanzamiento).slice(0, 10),
+        hora: first.hora_lanzamiento || "00:00",
         titulo: first.group_nombre || first.fonograma_nombre,
         artista: first.artist_name,
         participantes: [...participantes],
@@ -411,7 +414,10 @@ function EventDetail({
           <span className="kpi-chip" style={{ background: "var(--bg-2)", color: "var(--text-2)" }}>{event.estado}</span>
         </div>
 
-        <Field label="Fecha de lanzamiento" value={new Date(event.fecha + "T00:00:00").toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })} />
+        <Field
+          label="Fecha y hora de lanzamiento"
+          value={`${new Date(event.fecha + "T00:00:00").toLocaleDateString("es-AR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })} · ${event.hora} hs (ART)`}
+        />
         <Field label="Artista principal" value={event.artista} />
         <Field label="Participantes / featurings" value={event.participantes.length ? event.participantes.join(", ") : "—"} />
         <Field label="Distribuidora" value={event.distribuidora ?? "—"} />

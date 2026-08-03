@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import tracksData from "@/data/tracks.json";
 import { SELLO_ROSTERS, matchRosterArtist, type RosterArtist } from "@/lib/roster";
+import type { Sello } from "@/lib/sellos";
 import DrillDown, { Column } from "@/app/components/DrillDown";
 
 type Track = {
@@ -17,7 +18,6 @@ type Track = {
 };
 
 const tracks = tracksData as Track[];
-const ROSTER = SELLO_ROSTERS["MAWZ Records"]!;
 
 const COMPANY_ORDER = ["ADA", "FUGA", "ONErpm", "DashGo", "The Orchard", "SoundOn", "Sin distribuidora"];
 const COMPANY_COLOR: Record<string, string> = {
@@ -61,18 +61,19 @@ type DrillState =
   | { kind: "artist"; title: string; rows: Track[] }
   | null;
 
-export default function MawzRecordsView() {
+export default function RosterSelloView({ sello }: { sello: Sello }) {
+  const roster = SELLO_ROSTERS[sello] ?? [];
   const [drill, setDrill] = useState<DrillState>(null);
 
   const { perArtist, unionTracks, breakdown } = useMemo(() => {
     const perArtist = new Map<string, Track[]>();
-    for (const a of ROSTER) perArtist.set(a.id, []);
+    for (const a of roster) perArtist.set(a.id, []);
     const unionMap = new Map<string, Track>();
 
     for (const t of tracks) {
       const matched = new Set<RosterArtist>();
       for (const p of t.participants) {
-        const m = matchRosterArtist(p, ROSTER);
+        const m = matchRosterArtist(p, roster);
         if (m) matched.add(m);
       }
       if (matched.size === 0) continue;
@@ -82,7 +83,8 @@ export default function MawzRecordsView() {
 
     const unionTracks = [...unionMap.values()];
     return { perArtist, unionTracks, breakdown: companyBreakdown(unionTracks) };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sello]);
 
   const circumference = 2 * Math.PI * 80;
   let offset = 0;
@@ -93,12 +95,23 @@ export default function MawzRecordsView() {
     return seg;
   });
 
+  if (roster.length === 0) {
+    return (
+      <div className="card">
+        <p className="empty">
+          Todavía no tengo la lista real de artistas de {sello}. Pasame los nombres y lo agrego a
+          `lib/roster.ts`.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="kpi-grid" style={{ gridTemplateColumns: "repeat(3,1fr)" }}>
         <div className="kpi">
           <div className="kpi-label">Artistas</div>
-          <div className="kpi-num">{ROSTER.length}</div>
+          <div className="kpi-num">{roster.length}</div>
         </div>
         <div className="kpi">
           <div className="kpi-label">Fonogramas</div>
@@ -168,7 +181,7 @@ export default function MawzRecordsView() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 14, marginBottom: 16 }}>
-        {ROSTER.map((a) => {
+        {roster.map((a) => {
           const list = perArtist.get(a.id) ?? [];
           const bd = companyBreakdown(list);
           return (

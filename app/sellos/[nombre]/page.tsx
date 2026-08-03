@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { use, useEffect, useMemo, useState } from "react";
 import catalogo from "@/data/catalogo.json";
-import { assignSello, SELLOS } from "@/lib/sellos";
+import { assignSello, SELLOS, type Sello } from "@/lib/sellos";
+import { SELLO_ROSTERS } from "@/lib/roster";
 import type { Release } from "@/lib/notion";
-import MawzRecordsView from "./MawzRecordsView";
+import RosterSelloView from "./RosterSelloView";
 
 type ArtistEntry = {
   artist: string;
@@ -29,7 +30,9 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
   const { nombre } = use(params);
   const selloName = decodeURIComponent(nombre);
   const isLaJuntada = selloName === "La Juntada de los Artistas";
-  const isMAWZ = selloName === "MAWZ Records";
+  const isKnownSello = (SELLOS as readonly string[]).includes(selloName);
+  const roster = isKnownSello ? SELLO_ROSTERS[selloName as Sello] : undefined;
+  const hasRoster = !!roster && roster.length > 0;
 
   const [acuerdos, setAcuerdos] = useState<Release[] | null>(null);
   const [acuerdosError, setAcuerdosError] = useState<string | null>(null);
@@ -61,8 +64,6 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
     }
     return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [artists]);
-
-  const isKnownSello = (SELLOS as readonly string[]).includes(selloName);
 
   return (
     <div className="dash-root">
@@ -111,8 +112,8 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
           <p className="empty">Este sello no está en la lista configurada (VPO CORP).</p>
         )}
 
-        {isMAWZ ? (
-          <MawzRecordsView />
+        {hasRoster ? (
+          <RosterSelloView sello={selloName as Sello} />
         ) : artists.length === 0 ? (
           <div className="card">
             <p className="empty">

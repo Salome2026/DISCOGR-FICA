@@ -18,6 +18,28 @@ export const SELLO_ROSTERS: Partial<Record<Sello, RosterArtist[]>> = {
     { id: "gusty-dj", name: "Gusty DJ", aliases: ["gusty dj", "gusty djz"] },
     { id: "seven-kayne", name: "Seven Kayne", aliases: ["seven kayne"] },
   ],
+  // From the artist dropdown in the Finanzas Artista app. "Gusty DJ" also
+  // appeared there, but he's kept exclusively on MAWZ Records' roster above —
+  // same precedent the old substring-based assignSello() used.
+  "Indyana Records": [
+    { id: "aneley", name: "Aneley", aliases: ["aneley"] },
+    { id: "baby-cue", name: "Baby Cue", aliases: ["baby cue"] },
+    { id: "bianca-lif", name: "Bianca Lif", aliases: ["bianca lif"] },
+    { id: "cande-gonzalez", name: "Cande Gonzalez", aliases: ["cande gonzalez"] },
+    { id: "candu-dominguez", name: "Candu Dominguez", aliases: ["candu dominguez"] },
+    { id: "dj-plaga", name: "DJ Plaga", aliases: ["dj plaga"] },
+    { id: "dormun", name: "Dormun", aliases: ["dormun"] },
+    { id: "facuu-dj", name: "Facuu DJ", aliases: ["facuu dj"] },
+    { id: "g-sony", name: "G Sony", aliases: ["g sony"] },
+    { id: "laalo-dj", name: "Laalo DJ", aliases: ["laalo dj"] },
+    { id: "lazer-k", name: "Lazer K", aliases: ["lazer k"] },
+    { id: "more-savan", name: "More Savan", aliases: ["more savan"] },
+    { id: "nicole-fernandez", name: "Nicole Fernandez", aliases: ["nicole fernandez"] },
+    { id: "simo-viani", name: "Simo Viani", aliases: ["simo viani"] },
+    { id: "sofi-b", name: "Sofi B", aliases: ["sofi b"] },
+    { id: "toti", name: "Toti", aliases: ["toti"] },
+    { id: "virrshi-dj", name: "Virrshi DJ", aliases: ["virrshi dj"] },
+  ],
 };
 
 export function matchRosterArtist(

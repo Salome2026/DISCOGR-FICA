@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import { auth } from "@/auth";
 import {
   createRelease,
@@ -148,21 +149,26 @@ async function handleSingleCreate(
     streamingProject,
   });
 
-  notifyNewLanzamiento({
-    tipo: "single",
-    artist,
-    sello,
-    streamingProject,
-    fonograma,
-    estado: estado as EstadoRelease,
-    distribuidora: distribuidora || null,
-    fecha: fecha || null,
-    hora: horaNorm,
-    autoresCompositores: autoresCompositores || null,
-    audioUrl: audioUrl || null,
-    portadaUrl: portadaUrl || null,
-    createdBy: email,
-  }).catch((err) => console.error("notifyNewLanzamiento failed:", err));
+  // Fire-and-forget after the response is sent would get killed mid-flight
+  // once the serverless invocation freezes — waitUntil keeps this function
+  // alive in the background until the email actually finishes sending.
+  waitUntil(
+    notifyNewLanzamiento({
+      tipo: "single",
+      artist,
+      sello,
+      streamingProject,
+      fonograma,
+      estado: estado as EstadoRelease,
+      distribuidora: distribuidora || null,
+      fecha: fecha || null,
+      hora: horaNorm,
+      autoresCompositores: autoresCompositores || null,
+      audioUrl: audioUrl || null,
+      portadaUrl: portadaUrl || null,
+      createdBy: email,
+    }).catch((err) => console.error("notifyNewLanzamiento failed:", err))
+  );
 
   return NextResponse.json({ release }, { status: 201 });
 }
@@ -283,30 +289,32 @@ async function handleGroupedCreate(
     });
   }
 
-  notifyNewLanzamiento({
-    tipo,
-    artist,
-    sello,
-    streamingProject,
-    nombre,
-    estado: estado as EstadoRelease,
-    distribuidora: distribuidora || null,
-    fecha: fecha || null,
-    hora: horaNorm,
-    comentarios: comentarios || null,
-    tracks: cleanTracks.map((t, i) => ({
-      trackNumber: t.trackNumber ?? i + 1,
-      fonograma: t.fonograma,
-      artist: t.artist,
-      colaboradores: t.colaboradores,
-      productor: t.productor,
-      isrc: t.isrc,
-      comentario: t.comentario,
-      audioUrl: t.audioUrl,
-      portadaUrl: t.portadaUrl,
-    })),
-    createdBy: email,
-  }).catch((err) => console.error("notifyNewLanzamiento failed:", err));
+  waitUntil(
+    notifyNewLanzamiento({
+      tipo,
+      artist,
+      sello,
+      streamingProject,
+      nombre,
+      estado: estado as EstadoRelease,
+      distribuidora: distribuidora || null,
+      fecha: fecha || null,
+      hora: horaNorm,
+      comentarios: comentarios || null,
+      tracks: cleanTracks.map((t, i) => ({
+        trackNumber: t.trackNumber ?? i + 1,
+        fonograma: t.fonograma,
+        artist: t.artist,
+        colaboradores: t.colaboradores,
+        productor: t.productor,
+        isrc: t.isrc,
+        comentario: t.comentario,
+        audioUrl: t.audioUrl,
+        portadaUrl: t.portadaUrl,
+      })),
+      createdBy: email,
+    }).catch((err) => console.error("notifyNewLanzamiento failed:", err))
+  );
 
   return NextResponse.json({ group, tracks: savedTracks }, { status: 201 });
 }

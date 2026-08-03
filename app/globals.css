@@ -42,10 +42,13 @@
 
   /* Glass surfaces — reserved for chrome/elevated layers (nav, cards,
      modals, hero). Dense data surfaces should stay closer to --bg-1/--bg-2
-     solid so text keeps contrast. */
-  --glass-bg: rgba(245, 245, 247, 0.045);
-  --glass-bg-strong: rgba(245, 245, 247, 0.08);
-  --glass-border: rgba(245, 245, 247, 0.1);
+     solid so text keeps contrast. These are gradients, not flat tints —
+     a flat 4-5% white overlay barely reads as "glass" against a plain
+     dark background; the diagonal sheen plus the inset top-highlight in
+     --shadow-glass is what actually sells the material. */
+  --glass-bg: linear-gradient(155deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.025) 100%);
+  --glass-bg-strong: linear-gradient(155deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%);
+  --glass-border: rgba(255, 255, 255, 0.16);
   --glass-blur: 22px;
   --glass-blur-strong: 34px;
 
@@ -59,6 +62,10 @@
   --shadow-md: 0 12px 32px -12px rgba(0, 0, 0, 0.6);
   --shadow-lg: 0 28px 70px -24px rgba(0, 0, 0, 0.65);
   --shadow-accent: 0 20px 50px -20px rgba(220, 221, 226, 0.22);
+  /* Glass variants: inset top edge catches implied light from above,
+     the classic glassmorphism "this is a pane, not a flat panel" tell. */
+  --shadow-glass: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+  --shadow-glass-lg: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 28px 70px -24px rgba(0, 0, 0, 0.65);
 
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-fast: 150ms;
@@ -94,6 +101,7 @@ body {
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  box-shadow: var(--shadow-glass);
 }
 
 .glass-strong {
@@ -101,6 +109,7 @@ body {
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(var(--glass-blur-strong)) saturate(1.4);
   -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(1.4);
+  box-shadow: var(--shadow-glass-lg);
 }
 
 /* Atmospheric backdrop — soft off-screen light sources instead of a flat

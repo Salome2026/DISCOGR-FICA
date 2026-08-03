@@ -101,7 +101,7 @@ export default function DrillDown<T extends { id?: string | number }>({
           color: "var(--text-1, #f4ede1)",
           borderRadius: "var(--radius-lg, 20px)",
           border: "1px solid var(--glass-border, #403627)",
-          boxShadow: "var(--shadow-lg, 0 28px 70px -24px rgba(0,0,0,0.6))",
+          boxShadow: "var(--shadow-glass-lg, 0 28px 70px -24px rgba(0,0,0,0.6))",
           width: "100%",
           maxWidth: 1000,
           maxHeight: "85vh",

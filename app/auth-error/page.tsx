@@ -22,11 +22,11 @@ export default function AuthError() {
           padding:2.5rem 2rem;
           backdrop-filter:blur(var(--glass-blur-strong)) saturate(1.4);
           -webkit-backdrop-filter:blur(var(--glass-blur-strong)) saturate(1.4);
-          box-shadow:var(--shadow-lg);
+          box-shadow:var(--shadow-glass-lg);
         }
         .ae-title{font-size:20px;font-weight:700;letter-spacing:-.01em;margin:0 0 8px;}
         .ae-body{font-size:13.5px;color:var(--text-3);line-height:1.6;margin:0 0 24px;}
-        .ae-link{display:inline-block;background:var(--accent);color:var(--accent-ink);border-radius:10px;padding:10px 20px;font-weight:600;font-size:13.5px;text-decoration:none;}
+        .ae-link{display:inline-block;background:var(--accent-gradient);color:var(--accent-ink);border-radius:10px;padding:10px 20px;font-weight:600;font-size:13.5px;text-decoration:none;}
       `}</style>
       <div className="ae-panel">
         <h1 className="ae-title">No se pudo iniciar sesión</h1>

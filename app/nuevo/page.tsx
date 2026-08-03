@@ -51,12 +51,12 @@ export default function NuevoAcuerdo() {
           padding:4rem 1.5rem;
         }
         .nuevo-inner{width:100%;max-width:480px;}
-        .nuevo-panel{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:2rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);box-shadow:var(--shadow-md);}
+        .nuevo-panel{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:2rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);box-shadow:var(--shadow-glass);}
         .nuevo-field{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--text-2);margin-bottom:14px;}
         .nuevo-field input, .nuevo-field select, .nuevo-field textarea{background:var(--bg-2);border:1px solid var(--line-soft);border-radius:8px;padding:10px 12px;color:var(--text-1);font-size:13.5px;font-family:inherit;}
         .nuevo-field input:focus, .nuevo-field select:focus, .nuevo-field textarea:focus{outline:none;border-color:var(--gold);}
         .nuevo-error{color:var(--crit-ink);background:var(--crit-bg);border:1px solid var(--glass-border);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:14px;}
-        .nuevo-submit{width:100%;background:var(--gold);border:none;border-radius:10px;padding:11px;color:var(--gold-ink);font-weight:600;cursor:pointer;font-size:13.5px;transition:filter var(--dur-fast) var(--ease-out);}
+        .nuevo-submit{width:100%;background:var(--accent-gradient);border:none;border-radius:10px;padding:11px;color:var(--accent-ink);font-weight:600;cursor:pointer;font-size:13.5px;transition:filter var(--dur-fast) var(--ease-out);}
         .nuevo-submit:hover:not(:disabled){filter:brightness(1.08);}
         .nuevo-submit:disabled{opacity:.5;cursor:default;}
       `}</style>

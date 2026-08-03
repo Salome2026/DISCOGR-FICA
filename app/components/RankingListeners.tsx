@@ -59,7 +59,7 @@ export default function RankingListeners() {
     <div className="card" style={{ marginBottom: "1.25rem" }}>
       <style>{`
         .rk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:1.25rem;}
-        .rk-card{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:var(--radius-md);border:1px solid var(--glass-border);background:var(--glass-bg);text-decoration:none;color:inherit;transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
+        .rk-card{display:flex;flex-direction:column;gap:10px;padding:14px;border-radius:var(--radius-md);border:1px solid var(--glass-border);background:var(--glass-bg);box-shadow:var(--shadow-glass);text-decoration:none;color:inherit;transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
         .rk-card:hover{transform:translateY(-3px);background:var(--glass-bg-strong);border-color:var(--line);}
         .rk-card-top{display:flex;align-items:center;justify-content:space-between;}
         .rk-avatar{width:38px;height:38px;border-radius:11px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent-ink);}

@@ -2,12 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { upload } from "@vercel/blob/client";
-import catalogo from "@/data/catalogo.json";
 import porCompania from "@/data/por_compania.json";
 import { assignSello, SELLOS } from "@/lib/sellos";
 
-type ArtistEntry = { artist: string };
-const catalogoData = catalogo as ArtistEntry[];
 const distribuidoras = [
   ...(porCompania as { companies: { company: string }[] }).companies
     .map((c) => c.company)
@@ -37,7 +34,6 @@ type TrackDraft = {
   artistaPrincipal: string;
   colaboradores: string;
   productor: string;
-  isrc: string;
   comentario: string;
   audioFile: File | null;
   portadaFile: File | null;
@@ -57,7 +53,6 @@ function emptyTrack(artistaPrincipal: string): TrackDraft {
     artistaPrincipal,
     colaboradores: "",
     productor: "",
-    isrc: "",
     comentario: "",
     audioFile: null,
     portadaFile: null,
@@ -89,11 +84,10 @@ function cancionPlural(n: number): string {
   return n === 1 ? "canción" : "canciones";
 }
 
-export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, onCreated }: Props) {
+export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   const [tipo, setTipo] = useState<Tipo>("");
 
-  const [artistQuery, setArtistQuery] = useState("");
-  const [artist, setArtist] = useState<string | null>(null);
+  const [artist, setArtist] = useState("");
   const [sello, setSello] = useState("");
   const [selloTouched, setSelloTouched] = useState(false);
   const [estado, setEstado] = useState<(typeof ESTADOS)[number]>("Contactado");
@@ -121,29 +115,15 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
 
   useEffect(() => {
     if (isGrouped && tracks.length === 0) {
-      setTracks([emptyTrack(artist ?? "")]);
+      setTracks([emptyTrack(artist)]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isGrouped]);
 
-  const artistPool = useMemo(() => {
-    const names = catalogoData.map((a) => a.artist).filter((a) => a && a !== "Sin artista");
-    if (role === "admin" || !assignedArtists) return names;
-    const allowed = new Set(assignedArtists.map((a) => a.toLowerCase()));
-    return names.filter((n) => allowed.has(n.toLowerCase()));
-  }, [role, assignedArtists]);
-
-  const suggestions = useMemo(() => {
-    if (!artistQuery.trim()) return [];
-    const q = artistQuery.toLowerCase();
-    return artistPool.filter((a) => a.toLowerCase().includes(q)).slice(0, 8);
-  }, [artistQuery, artistPool]);
-
-  function selectArtist(a: string) {
-    setArtist(a);
-    setArtistQuery(a);
+  function onArtistChange(v: string) {
+    setArtist(v);
     if (!selloTouched) {
-      const suggested = assignSello(a);
+      const suggested = assignSello(v);
       if (suggested) setSello(suggested);
     }
   }
@@ -193,7 +173,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
   }
 
   function addTrack() {
-    setTracks((prev) => [...prev, emptyTrack(artist ?? "")]);
+    setTracks((prev) => [...prev, emptyTrack(artist)]);
   }
 
   function duplicateTrack(key: string) {
@@ -306,8 +286,8 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
       setError("Elegí el tipo de lanzamiento.");
       return;
     }
-    if (!artist) {
-      setError("Elegí un artista de la lista (buscá y hacé click en una sugerencia).");
+    if (!artist.trim()) {
+      setError("Completá el nombre del artista.");
       return;
     }
     if (!sello) {
@@ -416,7 +396,6 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
             artist: t.artistaPrincipal,
             colaboradores: t.colaboradores || null,
             productor: t.productor || null,
-            isrc: t.isrc || null,
             comentario: t.comentario || null,
             audioUrl: uploaded[i].audioUrl,
             portadaUrl: uploaded[i].portadaUrl,
@@ -500,50 +479,14 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
 
         {tipo && (
           <>
-            <div style={{ position: "relative" }}>
+            <div>
               <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Artista</label>
               <input
-                value={artistQuery}
-                onChange={(e) => {
-                  setArtistQuery(e.target.value);
-                  setArtist(null);
-                }}
-                placeholder="Buscar artista..."
+                value={artist}
+                onChange={(e) => onArtistChange(e.target.value)}
+                placeholder="Nombre del artista"
                 style={inputStyle}
               />
-              {suggestions.length > 0 && !artist && (
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "100%",
-                    left: 0,
-                    right: 0,
-                    background: "#242019",
-                    border: "1px solid #403627",
-                    borderRadius: 8,
-                    marginTop: 4,
-                    maxHeight: 180,
-                    overflowY: "auto",
-                    zIndex: 10,
-                  }}
-                >
-                  {suggestions.map((s) => (
-                    <div
-                      key={s}
-                      onClick={() => selectArtist(s)}
-                      style={{ padding: "8px 12px", fontSize: 13, cursor: "pointer" }}
-                      onMouseDown={(e) => e.preventDefault()}
-                    >
-                      {s}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {artistQuery && suggestions.length === 0 && !artist && (
-                <p style={{ fontSize: 12, color: "#8f8267", marginTop: 4 }}>
-                  Sin coincidencias entre tus artistas asignados.
-                </p>
-              )}
             </div>
 
             <div>
@@ -725,14 +668,6 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
                               <input
                                 value={t.productor}
                                 onChange={(e) => updateTrack(t.key, { productor: e.target.value })}
-                                style={inputStyle}
-                              />
-                            </div>
-                            <div>
-                              <label style={smallLabel}>ISRC (cuando esté disponible)</label>
-                              <input
-                                value={t.isrc}
-                                onChange={(e) => updateTrack(t.key, { isrc: e.target.value })}
                                 style={inputStyle}
                               />
                             </div>

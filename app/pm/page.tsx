@@ -117,8 +117,33 @@ function PMModuleInner() {
       `}</style>
 
       <div className="inner">
-        <div className="crumb">
-          <Link href="/dashboard">Dashboard</Link> › Project Managers
+        <div className="crumb" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span><Link href="/dashboard">Dashboard</Link> › Project Managers</span>
+          <button className="btn-ghost" onClick={() => signOut({ callbackUrl: "/" })}>
+            Cerrar sesión
+          </button>
+        </div>
+
+        <div
+          className="card"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            flexWrap: "wrap",
+            marginBottom: "1.5rem",
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-.01em" }}>¿Nuevo lanzamiento?</div>
+            <p style={{ fontSize: 12.5, color: "var(--text-3)", margin: "4px 0 0" }}>
+              Cargá un single, EP o álbum nuevo directamente desde acá.
+            </p>
+          </div>
+          <button className="btn-primary" style={{ fontSize: 15, padding: "12px 22px" }} onClick={() => setShowForm(true)}>
+            + Nuevo lanzamiento
+          </button>
         </div>
 
         <div className="topbar">
@@ -129,14 +154,6 @@ function PMModuleInner() {
             <p style={{ fontSize: 12.5, color: "var(--text-3)", margin: "4px 0 0" }}>
               {session?.user?.email} · {role === "admin" ? "Administrador" : "Project Manager"}
             </p>
-          </div>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button className="btn-ghost" onClick={() => signOut({ callbackUrl: "/" })}>
-              Cerrar sesión
-            </button>
-            <button className="btn-primary" onClick={() => setShowForm(true)}>
-              + Nuevo lanzamiento
-            </button>
           </div>
         </div>
 

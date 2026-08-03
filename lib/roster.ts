@@ -42,17 +42,13 @@ export const SELLO_ROSTERS: Partial<Record<Sello, RosterArtist[]>> = {
     { id: "juana-vincent", name: "Juana Vincent", aliases: ["juana vincent"] },
     { id: "tibbas", name: "Tibbas", aliases: ["tibbas"] },
   ],
-  "Caserio Records": [
-    { id: "eze-remix", name: "Eze Remix", aliases: ["eze remix"] },
-    { id: "juanma-girat", name: "Juanma Girat", aliases: ["juanma girat"] },
-    { id: "gnabry", name: "Gnabry", aliases: ["gnabry"] },
-    { id: "los-anormales", name: "Los Anormales", aliases: ["los anormales"] },
-    { id: "joaquin-arce", name: "Joaquín Arce", aliases: ["joaquin arce"] },
-    { id: "eze-greco", name: "Eze Greco", aliases: ["eze greco"] },
-    { id: "dura-dj", name: "Dura DJ", aliases: ["dura dj"] },
-    { id: "tomi-rmx", name: "Tomi Rmx", aliases: ["tomi rmx"] },
-    { id: "sossa", name: "Sossa", aliases: ["sossa"] },
-  ],
+  // Caserio Records intentionally has no entry here. This roster only
+  // classifies tracks in the static data/tracks.json snapshot (an old
+  // distributor export) for RosterSelloView — Caserio has no history in
+  // that file. Giving it a roster would flip its sello page over to
+  // RosterSelloView (see app/sellos/[nombre]/page.tsx's `hasRoster` check)
+  // and away from CatalogTracksPanel, which is the one that reads live from
+  // the catalog_tracks DB table where PM-loaded releases actually land.
 };
 
 export function matchRosterArtist(

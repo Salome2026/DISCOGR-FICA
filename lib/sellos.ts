@@ -11,7 +11,29 @@ export const SELLOS = [
 export type Sello = (typeof SELLOS)[number];
 
 const MAWZ_ARTISTS = ["lit killah", "gusty dj", "gusty djz"];
-const INDYANA_ARTISTS = ["bianca lif", "nicole fernandez", "nicole fernández", "dsp"];
+// Full Indyana Records roster, from the artist dropdown in the Finanzas Artista app.
+// Note: "gusty dj" is checked against MAWZ first (see assignSello order below), so it
+// resolves to MAWZ Records even though it also appears on Indyana's own roster.
+const INDYANA_ARTISTS = [
+  "aneley",
+  "baby cue",
+  "bianca lif",
+  "cande gonzalez",
+  "candu dominguez",
+  "dj plaga",
+  "dormun",
+  "facuu dj",
+  "g sony",
+  "gusty dj",
+  "laalo dj",
+  "lazer k",
+  "more savan",
+  "nicole fernandez",
+  "simo viani",
+  "sofi b",
+  "toti",
+  "virrshi dj",
+];
 
 function norm(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();

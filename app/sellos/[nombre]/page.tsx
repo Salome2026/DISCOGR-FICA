@@ -47,14 +47,7 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
     () => catalogoData.filter((a) => assignSello(a.artist) === selloName),
     [selloName]
   );
-  // Verified count from the full album_artist column (Drive), 2026-08-02: 249
-  // rows contain "La Juntada de los Artistas" — the catalog pipeline had only
-  // picked up 9 of them. Real number used here until the catalog rebuild
-  // captures every row (needs the full column set, not just album_artist).
-  const JUNTADA_FONOGRAMAS_REAL = 249;
-  const totalTracks = isLaJuntada
-    ? JUNTADA_FONOGRAMAS_REAL
-    : artists.reduce((sum, a) => sum + a.track_count, 0);
+  const totalTracks = artists.reduce((sum, a) => sum + a.track_count, 0);
 
   const companyBreakdown = useMemo(() => {
     const m = new Map<string, number>();
@@ -129,14 +122,6 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
                 <div className="kpi-num">{companyBreakdown.length}</div>
               </div>
             </div>
-
-            {isLaJuntada && (
-              <p style={{ fontSize: 11.5, color: "var(--text-3)", marginBottom: 16, marginTop: -8 }}>
-                El total de fonogramas (249) está verificado contra la planilla de Drive; el listado
-                de artistas de abajo todavía no refleja todas esas filas — falta reconstruir el
-                catálogo completo con las demás columnas (track, ISRC, fecha).
-              </p>
-            )}
 
             <div className="card">
               <p style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 10 }}>

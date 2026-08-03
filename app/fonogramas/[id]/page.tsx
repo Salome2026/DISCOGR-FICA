@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import RequireRole from "@/app/components/RequireRole";
-import { SELLOS } from "@/lib/sellos";
+import { SELLOS, STREAMING_PROJECTS } from "@/lib/sellos";
 
 type Track = {
   id: string;
@@ -16,6 +16,7 @@ type Track = {
   artist_display: string;
   participants: string[];
   sello: string | null;
+  streaming_project: string | null;
 };
 
 export default function FonogramaFicha({ params }: { params: Promise<{ id: string }> }) {
@@ -35,27 +36,41 @@ export default function FonogramaFicha({ params }: { params: Promise<{ id: strin
       .catch((e) => setError(String(e)));
   }, [id]);
 
-  async function assignSello(sello: string) {
+  async function saveClassification(sello: string, streamingProject: string | null) {
     setSaving(true);
     setSaveMsg(null);
     try {
       const res = await fetch(`/api/catalog/tracks/${encodeURIComponent(id)}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sello: sello || null }),
+        body: JSON.stringify({ sello: sello || null, streamingProject }),
       });
       const d = await res.json();
       if (d.error) {
         setSaveMsg(`Error: ${d.error}`);
       } else {
         setTrack(d.track);
-        setSaveMsg(sello ? `Asignado a ${sello}.` : "Movido a Catálogo Distribuido.");
+        setSaveMsg(
+          !sello
+            ? "Movido a Catálogo Distribuido."
+            : sello === "Streamings" && streamingProject
+            ? `Asignado a Streamings › ${streamingProject}.`
+            : `Asignado a ${sello}.`
+        );
       }
     } catch (e) {
       setSaveMsg(`Error: ${String(e)}`);
     } finally {
       setSaving(false);
     }
+  }
+
+  function onSelloChange(sello: string) {
+    saveClassification(sello, sello === "Streamings" ? STREAMING_PROJECTS[0] : null);
+  }
+
+  function onProjectChange(project: string) {
+    saveClassification("Streamings", project);
   }
 
   return (
@@ -126,18 +141,39 @@ export default function FonogramaFicha({ params }: { params: Promise<{ id: strin
               <div className="card">
                 <p style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>Pertenece al sello</p>
                 <p style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 12 }}>
-                  Actual: {track.sello ?? "Sin asignar (Catálogo Distribuido)"}
+                  Actual:{" "}
+                  {track.sello === "Streamings"
+                    ? `Streamings › ${track.streaming_project ?? "sin proyecto"}`
+                    : track.sello ?? "Sin asignar (Catálogo Distribuido)"}
                 </p>
                 <select
                   value={track.sello ?? ""}
                   disabled={saving}
-                  onChange={(e) => assignSello(e.target.value)}
+                  onChange={(e) => onSelloChange(e.target.value)}
                 >
                   <option value="">Sin asignar (Catálogo Distribuido)</option>
                   {SELLOS.map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
+
+                {track.sello === "Streamings" && (
+                  <>
+                    <p style={{ fontSize: 12, color: "var(--text-3)", margin: "12px 0 6px" }}>
+                      Proyecto de streaming
+                    </p>
+                    <select
+                      value={track.streaming_project ?? ""}
+                      disabled={saving}
+                      onChange={(e) => onProjectChange(e.target.value)}
+                    >
+                      {STREAMING_PROJECTS.map((p) => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                  </>
+                )}
+
                 {saveMsg && (
                   <p style={{ fontSize: 12, color: "var(--gold)", marginTop: 10 }}>{saveMsg}</p>
                 )}

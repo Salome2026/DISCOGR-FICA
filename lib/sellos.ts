@@ -4,11 +4,23 @@ export const SELLOS = [
   "Caserio Records",
   "Rizzvor",
   "Cach House",
-  "La Juntada de los Artistas",
   "Streamings",
 ] as const;
 
 export type Sello = (typeof SELLOS)[number];
+
+// Streamings is a container: these are its individual projects, not top-level
+// sellos. A track "belongs to" Streamings (sello field) and, within that, to
+// one of these projects (streaming_project field) — same two-level split as
+// sello vs distribuidora.
+export const STREAMING_PROJECTS = [
+  "La Juntada de los Artistas",
+  "Sin Guion",
+  "Para el Mundo",
+  "Rock & Show",
+] as const;
+
+export type StreamingProject = (typeof STREAMING_PROJECTS)[number];
 
 const MAWZ_ARTISTS = ["lit killah", "gusty dj", "gusty djz"];
 // Full Indyana Records roster, from the artist dropdown in the Finanzas Artista app.
@@ -42,7 +54,7 @@ function norm(s: string): string {
 export function assignSello(artist: string): Sello | null {
   const a = norm(artist);
   if (!a) return null;
-  if (a.includes("la juntada")) return "La Juntada de los Artistas";
+  if (a.includes("la juntada")) return "Streamings";
   if (MAWZ_ARTISTS.some((n) => a.includes(n))) return "MAWZ Records";
   if (INDYANA_ARTISTS.some((n) => a.includes(n))) return "Indyana Records";
   return null;

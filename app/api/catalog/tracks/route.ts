@@ -12,9 +12,16 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const unassigned = searchParams.get("unassigned");
   const sello = searchParams.get("sello");
+  const project = searchParams.get("project");
 
   const tracks = await listTracks(
-    unassigned === "1" ? { sello: null } : sello ? { sello } : undefined
+    project
+      ? { streamingProject: project }
+      : unassigned === "1"
+      ? { sello: null }
+      : sello
+      ? { sello }
+      : undefined
   );
   return NextResponse.json({ tracks });
 }

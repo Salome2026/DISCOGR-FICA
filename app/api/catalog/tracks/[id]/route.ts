@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getTrack, assignTrackSello } from "@/lib/db/catalog";
-import { SELLOS } from "@/lib/sellos";
+import { getTrack, updateTrackClassification } from "@/lib/db/catalog";
+import { SELLOS, STREAMING_PROJECTS } from "@/lib/sellos";
 
 export async function GET(
   _req: NextRequest,
@@ -31,13 +31,24 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await req.json();
-  const sello = body.sello === null ? null : String(body.sello ?? "");
+  const sello = body.sello === null || body.sello === "" ? null : String(body.sello);
+  const streamingProject =
+    body.streamingProject === null || body.streamingProject === undefined || body.streamingProject === ""
+      ? null
+      : String(body.streamingProject);
 
   if (sello !== null && !(SELLOS as readonly string[]).includes(sello)) {
     return NextResponse.json({ error: "Sello inválido." }, { status: 400 });
   }
+  if (
+    sello === "Streamings" &&
+    streamingProject !== null &&
+    !(STREAMING_PROJECTS as readonly string[]).includes(streamingProject)
+  ) {
+    return NextResponse.json({ error: "Proyecto de streaming inválido." }, { status: 400 });
+  }
 
-  const track = await assignTrackSello(id, sello, email);
+  const track = await updateTrackClassification(id, { sello, streamingProject }, email);
   if (!track) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
   return NextResponse.json({ track });
 }

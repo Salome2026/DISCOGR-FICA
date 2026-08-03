@@ -278,7 +278,7 @@ function DashboardInner() {
           </div>
           <div className="nav-pills">
             <span className="nav-pill active">Dashboard</span>
-            <Link href="/sellos/La%20Juntada%20de%20los%20Artistas" className="nav-pill">Acuerdos</Link>
+            <Link href="/streamings/La%20Juntada%20de%20los%20Artistas" className="nav-pill">Acuerdos</Link>
             <Link href="/catalogo" className="nav-pill">Catálogo</Link>
             <Link href="/nuevo" className="nav-pill">+ Nuevo acuerdo</Link>
             <Link href="/pm" className="nav-pill">Project Managers</Link>
@@ -295,13 +295,16 @@ function DashboardInner() {
         </div>
 
         <div className="sello-row">
-          {SELLOS.map((s) => (
+          {SELLOS.filter((s) => s !== "Streamings").map((s) => (
             <Link key={s} href={`/sellos/${encodeURIComponent(s)}`} className="sello-btn">
               {s}
             </Link>
           ))}
           <Link href="/catalogo-distribuido" className="sello-btn" style={{ borderStyle: "dashed" }}>
             Catálogo Distribuido
+          </Link>
+          <Link href="/streamings" className="sello-btn">
+            Streamings
           </Link>
         </div>
 

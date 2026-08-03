@@ -1,43 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { use, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { use, useEffect } from "react";
 import { SELLOS, type Sello } from "@/lib/sellos";
 import { SELLO_ROSTERS } from "@/lib/roster";
-import type { Release } from "@/lib/notion";
 import RosterSelloView from "./RosterSelloView";
 import CatalogTracksPanel from "@/app/components/CatalogTracksPanel";
-
-const ESTADO_BADGE: Record<string, string> = {
-  Firmado: "#7fae6f",
-  "En negociacion": "#d99a4e",
-  Contactado: "#8aa0c9",
-  Aprobado: "#e6a94f",
-  "NO SACAR": "#c96a5a",
-  "Enviado a la firma": "#8f8267",
-};
 
 export default function SelloPage({ params }: { params: Promise<{ nombre: string }> }) {
   const { nombre } = use(params);
   const selloName = decodeURIComponent(nombre);
-  const isLaJuntada = selloName === "La Juntada de los Artistas";
+  const router = useRouter();
+
+  // Streamings became a container of projects (/streamings) and La Juntada de
+  // los Artistas moved inside it as one of those projects — keep old links working.
+  const redirectTo =
+    selloName === "Streamings"
+      ? "/streamings"
+      : selloName === "La Juntada de los Artistas"
+      ? "/streamings/La%20Juntada%20de%20los%20Artistas"
+      : null;
+
+  useEffect(() => {
+    if (redirectTo) router.replace(redirectTo);
+  }, [redirectTo, router]);
+
   const isKnownSello = (SELLOS as readonly string[]).includes(selloName);
   const roster = isKnownSello ? SELLO_ROSTERS[selloName as Sello] : undefined;
   const hasRoster = !!roster && roster.length > 0;
 
-  const [acuerdos, setAcuerdos] = useState<Release[] | null>(null);
-  const [acuerdosError, setAcuerdosError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!isLaJuntada) return;
-    fetch("/api/acuerdos")
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) setAcuerdosError(d.error);
-        else setAcuerdos(d.acuerdos);
-      })
-      .catch((e) => setAcuerdosError(String(e)));
-  }, [isLaJuntada]);
+  if (redirectTo) return null;
 
   return (
     <div className="dash-root">
@@ -94,77 +87,6 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
             emptyMessage={`Todavía no hay fonogramas asignados a ${selloName}. Asignalos desde la ficha de cada fonograma en Catálogo Distribuido.`}
           />
         ) : null}
-
-        {isLaJuntada && (
-          <div className="card">
-            <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 2 }}>Acuerdos</p>
-            <p style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 14 }}>
-              En vivo desde Notion
-            </p>
-
-            {acuerdosError && (
-              <p style={{ color: "#eab3a8", fontSize: 13 }}>
-                No se pudo conectar con Notion: {acuerdosError}
-              </p>
-            )}
-
-            {!acuerdosError && !acuerdos && (
-              <p className="empty">Cargando...</p>
-            )}
-
-            {acuerdos && acuerdos.length === 0 && (
-              <p className="empty">No hay acuerdos todavía.</p>
-            )}
-
-            {acuerdos && acuerdos.length > 0 && (
-              <table>
-                <thead>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Compañía</th>
-                    <th>Estado</th>
-                    <th>Prioridad</th>
-                    <th>%</th>
-                    <th>Audio</th>
-                    <th>Portada</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {acuerdos.map((a) => (
-                    <tr key={a.id}>
-                      <td>{a.nombre || "—"}</td>
-                      <td>{a.compania || "—"}</td>
-                      <td>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                          {a.estado.length === 0 && "—"}
-                          {a.estado.map((e) => (
-                            <span
-                              key={e}
-                              style={{
-                                fontSize: 11,
-                                padding: "2px 8px",
-                                borderRadius: 100,
-                                fontWeight: 600,
-                                background: ESTADO_BADGE[e] ?? "#8a7c62",
-                                color: "#1c1712",
-                              }}
-                            >
-                              {e}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td>{a.prioridad || "—"}</td>
-                      <td>{a.porcentaje != null ? `${a.porcentaje}%` : "—"}</td>
-                      <td>{a.audio ? "✓" : "—"}</td>
-                      <td>{a.portada ? "✓" : "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

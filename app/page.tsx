@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import VPOScrollHero from "./components/VPOScrollHero";
 
 type Card = "empresa" | "artista" | null;
 
@@ -43,12 +44,25 @@ export default function Landing() {
           font-family:-apple-system,"SF Pro Display",ui-sans-serif,"Segoe UI",Helvetica,Arial,sans-serif;
           background:linear-gradient(180deg,var(--bg-0) 0%,var(--bg-0b) 55%,var(--bg-0) 100%);
           color:var(--text-1);
-          min-height:100vh;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          padding:2rem;
+          min-height:100dvh;
         }
+        .vpo-hero{height:200dvh;position:relative;}
+        .vpo-hero-sticky{
+          position:sticky; top:0; height:100dvh;
+          display:flex; flex-direction:column; align-items:center; justify-content:center;
+          gap:18px;
+        }
+        .vpo-hero-logo{
+          width:min(420px, 62vw); height:auto; display:block;
+          filter:drop-shadow(0 24px 60px rgba(230,169,79,0.25));
+        }
+        .vpo-hero-text{text-align:center;}
+        .vpo-hero-text p{font-size:14px;color:var(--text-3);margin:0;letter-spacing:.01em;}
+        .vpo-hero-scrollhint{position:absolute;bottom:48px;left:0;right:0;text-align:center;font-size:12px;color:var(--text-3);letter-spacing:.02em;}
+        .vpo-hero-static{text-align:center;padding:3rem 2rem 1rem;display:flex;flex-direction:column;align-items:center;gap:10px;}
+        .vpo-hero-static .vpo-hero-logo{width:min(280px, 60vw);}
+        .vpo-hero-static p{font-size:13px;color:var(--text-3);margin:0;}
+        .landing-content{display:flex;align-items:center;justify-content:center;padding:2rem 2rem 6rem;}
         .landing-inner{width:100%;max-width:760px;}
         .landing-brand{text-align:center;margin-bottom:2.5rem;}
         .landing-brand .mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(155deg,#e6a94f,#c98f3a);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:#241a08;margin:0 auto 12px;}
@@ -68,6 +82,9 @@ export default function Landing() {
         .back-link{background:none;border:none;color:var(--text-3);font-size:12.5px;cursor:pointer;margin-bottom:16px;padding:0;}
       `}</style>
 
+      <VPOScrollHero />
+
+      <div className="landing-content">
       <div className="landing-inner">
         <div className="landing-brand">
           <div className="mark">V</div>
@@ -137,6 +154,7 @@ export default function Landing() {
             </p>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

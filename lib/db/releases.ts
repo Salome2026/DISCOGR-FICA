@@ -254,9 +254,19 @@ export async function setMarketingPlan(
   `;
 }
 
-export async function archiveRelease(id: number, actorEmail: string) {
+export async function getReleaseOwner(id: number) {
   await ensureReleasesSchema();
-  await sql`UPDATE pm_releases SET archived = true WHERE id = ${id}`;
+  const { rows } = await sql`SELECT created_by, group_id FROM pm_releases WHERE id = ${id}`;
+  return (rows[0] as { created_by: string; group_id: number | null } | undefined) ?? null;
+}
+
+export async function archiveRelease(id: number, groupId: number | null, actorEmail: string) {
+  await ensureReleasesSchema();
+  if (groupId != null) {
+    await sql`UPDATE pm_releases SET archived = true WHERE group_id = ${groupId}`;
+  } else {
+    await sql`UPDATE pm_releases SET archived = true WHERE id = ${id}`;
+  }
   await sql`
     INSERT INTO pm_release_history (release_id, action, actor_email, detail)
     VALUES (${id}, 'archived', ${actorEmail}, NULL)

@@ -20,6 +20,7 @@ type Release = {
   created_by: string;
   created_at: string;
   track_number: number | null;
+  group_id: number | null;
   group_tipo: string | null;
   group_nombre: string | null;
   streaming_project: string | null;
@@ -50,8 +51,10 @@ function PMModuleInner() {
   const [error, setError] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [assignedArtists, setAssignedArtists] = useState<string[]>([]);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const role = (session?.user as { role?: string } | undefined)?.role;
+  const email = session?.user?.email;
 
   const loadReleases = useCallback(() => {
     fetch("/api/pm/releases")
@@ -62,6 +65,24 @@ function PMModuleInner() {
       })
       .catch((e) => setError(String(e)));
   }, []);
+
+  async function handleDelete(r: Release) {
+    const label = r.group_tipo
+      ? `todo el ${r.group_tipo === "ep" ? "EP" : "álbum"} "${r.group_nombre}" y sus canciones`
+      : `"${r.fonograma_nombre}"`;
+    if (!window.confirm(`¿Eliminar ${label}? Esta acción no se puede deshacer.`)) return;
+    setDeletingId(r.id);
+    try {
+      const res = await fetch(`/api/pm/releases/${r.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo eliminar.");
+      loadReleases();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   useEffect(() => {
     loadReleases();
@@ -143,6 +164,7 @@ function PMModuleInner() {
                   <th>Audio</th>
                   <th>Portada</th>
                   {role === "admin" && <th>Cargado por</th>}
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -196,6 +218,26 @@ function PMModuleInner() {
                       )}
                     </td>
                     {role === "admin" && <td>{r.created_by}</td>}
+                    <td>
+                      {(role === "admin" || r.created_by === email) && (
+                        <button
+                          onClick={() => handleDelete(r)}
+                          disabled={deletingId === r.id}
+                          style={{
+                            background: "transparent",
+                            border: "1px solid var(--crit-ink)",
+                            color: "var(--crit-ink)",
+                            borderRadius: 6,
+                            padding: "4px 10px",
+                            fontSize: 12,
+                            cursor: deletingId === r.id ? "default" : "pointer",
+                            opacity: deletingId === r.id ? 0.5 : 1,
+                          }}
+                        >
+                          {deletingId === r.id ? "Eliminando..." : "Eliminar"}
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { updateReleaseEstado, setMarketingPlan, archiveRelease, type EstadoRelease } from "@/lib/db/releases";
+import { updateReleaseEstado, setMarketingPlan, archiveRelease, getReleaseOwner, type EstadoRelease } from "@/lib/db/releases";
 
 const ESTADOS: EstadoRelease[] = ["Contactado", "Firmado", "Necesito ayuda"];
 
@@ -31,13 +31,20 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const session = await auth();
   const role = (session?.user as { role?: string } | undefined)?.role;
   const email = session?.user?.email;
-  if (role !== "admin" || !email) {
+  if (!email || role === "sin_acceso" || !role) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+  const { id } = await params;
+  const owner = await getReleaseOwner(Number(id));
+  if (!owner) {
+    return NextResponse.json({ error: "Lanzamiento no encontrado." }, { status: 404 });
+  }
+  if (role !== "admin" && owner.created_by !== email) {
     return NextResponse.json(
-      { error: "Solo un administrador puede archivar lanzamientos." },
+      { error: "Solo podés eliminar los lanzamientos que vos cargaste." },
       { status: 403 }
     );
   }
-  const { id } = await params;
-  await archiveRelease(Number(id), email);
+  await archiveRelease(Number(id), owner.group_id, email);
   return NextResponse.json({ ok: true });
 }

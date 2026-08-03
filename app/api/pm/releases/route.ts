@@ -26,7 +26,9 @@ export async function GET() {
 }
 
 async function checkArtistAssignment(role: string, email: string, artist: string) {
-  if (role !== "project_manager" && role !== "artista" && role !== "representante") return true;
+  // Artist assignment for project_manager isn't set up yet — don't block
+  // release creation on it. artista/representante still enforce it.
+  if (role !== "artista" && role !== "representante") return true;
   const assigned = await getAssignedArtists(email);
   return assigned.map((a) => a.toLowerCase()).includes(String(artist).toLowerCase());
 }

@@ -10,6 +10,7 @@ import catalogo from "@/data/catalogo.json";
 import { SELLOS, assignSello } from "@/lib/sellos";
 import DrillDown, { Column } from "@/app/components/DrillDown";
 import RankingListeners from "@/app/components/RankingListeners";
+import ReleaseCalendar from "./ReleaseCalendar";
 import RequireRole from "@/app/components/RequireRole";
 import type { Release } from "@/lib/notion";
 
@@ -370,6 +371,10 @@ function DashboardInner() {
           </Link>
         </motion.div>
 
+        <motion.div variants={fadeUp} custom={2} initial="hidden" animate="show">
+          <ReleaseCalendar />
+        </motion.div>
+
         {acuerdosError && (
           <div
             style={{
@@ -385,7 +390,7 @@ function DashboardInner() {
           </div>
         )}
 
-        <motion.div className="bento" variants={fadeUp} custom={2} initial="hidden" animate="show">
+        <motion.div className="bento" variants={fadeUp} custom={3} initial="hidden" animate="show">
           <div className="card bento-donut donut-card">
             <div className="card-label">Distribución por discográfica</div>
             <div className="donut-wrap">
@@ -505,7 +510,7 @@ function DashboardInner() {
           </button>
         </motion.div>
 
-        <motion.div variants={fadeUp} custom={3} initial="hidden" animate="show">
+        <motion.div variants={fadeUp} custom={4} initial="hidden" animate="show">
           <RankingListeners />
         </motion.div>
 

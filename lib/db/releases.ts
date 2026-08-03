@@ -60,6 +60,14 @@ export function ensureReleasesSchema(): Promise<void> {
       await sql`ALTER TABLE pm_release_groups ADD COLUMN IF NOT EXISTS streaming_project TEXT`;
       await sql`CREATE INDEX IF NOT EXISTS pm_releases_group_idx ON pm_releases (group_id)`;
 
+      // Marketing plan lives per-track-row (like every other field a single
+      // release has). For EP/álbum groups, the calendar treats all tracks in
+      // a group as one event and reads/writes this through every row in the
+      // group at once — see setMarketingPlan below.
+      await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS marketing_plan BOOLEAN NOT NULL DEFAULT false`;
+      await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS marketing_plan_detalle TEXT`;
+      await sql`CREATE INDEX IF NOT EXISTS pm_releases_fecha_idx ON pm_releases (fecha_lanzamiento)`;
+
       await sql`
         CREATE TABLE IF NOT EXISTS pm_release_history (
           id BIGSERIAL PRIMARY KEY,
@@ -216,6 +224,33 @@ export async function updateReleaseEstado(
   await sql`
     INSERT INTO pm_release_history (release_id, action, actor_email, detail)
     VALUES (${id}, 'updated', ${actorEmail}, ${`Estado -> ${estado}`})
+  `;
+}
+
+export async function setMarketingPlan(
+  id: number,
+  groupId: number | null,
+  marketingPlan: boolean,
+  detalle: string | null,
+  actorEmail: string
+) {
+  await ensureReleasesSchema();
+  if (groupId != null) {
+    await sql`
+      UPDATE pm_releases SET marketing_plan = ${marketingPlan}, marketing_plan_detalle = ${detalle},
+        updated_by = ${actorEmail}, updated_at = now()
+      WHERE group_id = ${groupId}
+    `;
+  } else {
+    await sql`
+      UPDATE pm_releases SET marketing_plan = ${marketingPlan}, marketing_plan_detalle = ${detalle},
+        updated_by = ${actorEmail}, updated_at = now()
+      WHERE id = ${id}
+    `;
+  }
+  await sql`
+    INSERT INTO pm_release_history (release_id, action, actor_email, detail)
+    VALUES (${id}, 'updated', ${actorEmail}, ${`Plan de marketing -> ${marketingPlan ? "Sí" : "No"}`})
   `;
 }
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import Image from "next/image";
 import VPOScrollHero from "./components/VPOScrollHero";
 
 type Card = "label" | "pm" | null;
@@ -57,8 +58,9 @@ export default function Landing() {
         .vpo-hero-static{text-align:center;padding:3rem 2rem 1rem;display:flex;flex-direction:column;align-items:center;gap:10px;}
         .vpo-hero-static .vpo-hero-logo{width:min(280px, 60vw);}
         .vpo-hero-static p{font-size:13px;color:var(--text-3);margin:0;}
-        .landing-content{display:flex;align-items:center;justify-content:center;padding:2rem 2rem 6rem;}
-        .landing-inner{width:100%;max-width:760px;}
+        .landing-content{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:2rem 2rem 6rem;}
+        .landing-watermark{position:absolute;top:0;right:0;width:min(65vw, 820px);height:auto;opacity:.05;filter:grayscale(1) brightness(1.4);pointer-events:none;z-index:0;transform:translate(20%, -15%);}
+        .landing-inner{position:relative;z-index:1;width:100%;max-width:760px;}
         .landing-brand{text-align:center;margin-bottom:2.5rem;}
         .landing-brand .mark{width:44px;height:44px;border-radius:12px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;color:var(--accent-ink);margin:0 auto 12px;}
         .landing-brand h1{font-size:20px;font-weight:700;margin:0;letter-spacing:-.01em;}
@@ -81,6 +83,15 @@ export default function Landing() {
       <VPOScrollHero />
 
       <div className="landing-content">
+      <Image
+        src="/vpo-logo.png"
+        alt=""
+        width={2539}
+        height={1298}
+        className="landing-watermark"
+        aria-hidden
+        priority={false}
+      />
       <div className="landing-inner">
         <div className="landing-brand">
           <div className="mark">V</div>

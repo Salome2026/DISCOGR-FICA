@@ -38,6 +38,19 @@ const INDYANA_ARTISTS = [
   "sofi b",
   "toti",
   "virrshi dj",
+  "juana vincent",
+  "tibbas",
+];
+const CASERIO_ARTISTS = [
+  "eze remix",
+  "juanma girat",
+  "gnabry",
+  "los anormales",
+  "joaquin arce",
+  "eze greco",
+  "dura dj",
+  "tomi rmx",
+  "sossa",
 ];
 
 function norm(s: string): string {
@@ -50,5 +63,6 @@ export function assignSello(artist: string): Sello | null {
   if (a.includes("la juntada")) return "Streamings";
   if (MAWZ_ARTISTS.some((n) => a.includes(n))) return "MAWZ Records";
   if (INDYANA_ARTISTS.some((n) => a.includes(n))) return "Indyana Records";
+  if (CASERIO_ARTISTS.some((n) => a.includes(n))) return "Caserio Records";
   return null;
 }

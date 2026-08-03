@@ -39,6 +39,19 @@ export const SELLO_ROSTERS: Partial<Record<Sello, RosterArtist[]>> = {
     { id: "sofi-b", name: "Sofi B", aliases: ["sofi b"] },
     { id: "toti", name: "Toti", aliases: ["toti"] },
     { id: "virrshi-dj", name: "Virrshi DJ", aliases: ["virrshi dj"] },
+    { id: "juana-vincent", name: "Juana Vincent", aliases: ["juana vincent"] },
+    { id: "tibbas", name: "Tibbas", aliases: ["tibbas"] },
+  ],
+  "Caserio Records": [
+    { id: "eze-remix", name: "Eze Remix", aliases: ["eze remix"] },
+    { id: "juanma-girat", name: "Juanma Girat", aliases: ["juanma girat"] },
+    { id: "gnabry", name: "Gnabry", aliases: ["gnabry"] },
+    { id: "los-anormales", name: "Los Anormales", aliases: ["los anormales"] },
+    { id: "joaquin-arce", name: "Joaquín Arce", aliases: ["joaquin arce"] },
+    { id: "eze-greco", name: "Eze Greco", aliases: ["eze greco"] },
+    { id: "dura-dj", name: "Dura DJ", aliases: ["dura dj"] },
+    { id: "tomi-rmx", name: "Tomi Rmx", aliases: ["tomi rmx"] },
+    { id: "sossa", name: "Sossa", aliases: ["sossa"] },
   ],
 };
 

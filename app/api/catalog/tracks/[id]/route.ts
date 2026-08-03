@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { getTrack, assignTrackSello } from "@/lib/db/catalog";
+import { SELLOS } from "@/lib/sellos";
+
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  if (!session?.user?.email || role !== "admin") {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+  const { id } = await params;
+  const track = await getTrack(id);
+  if (!track) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+  return NextResponse.json({ track });
+}
+
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await auth();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  const email = session?.user?.email;
+  if (!email || role !== "admin") {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const body = await req.json();
+  const sello = body.sello === null ? null : String(body.sello ?? "");
+
+  if (sello !== null && !(SELLOS as readonly string[]).includes(sello)) {
+    return NextResponse.json({ error: "Sello inválido." }, { status: 400 });
+  }
+
+  const track = await assignTrackSello(id, sello, email);
+  if (!track) return NextResponse.json({ error: "No encontrado" }, { status: 404 });
+  return NextResponse.json({ track });
+}

@@ -300,6 +300,9 @@ function DashboardInner() {
               {s}
             </Link>
           ))}
+          <Link href="/catalogo-distribuido" className="sello-btn" style={{ borderStyle: "dashed" }}>
+            Catálogo Distribuido
+          </Link>
         </div>
 
         {acuerdosError && (

@@ -38,7 +38,10 @@ export default function RequireRole({
 
 function FullPageMessage({ text }: { text: string }) {
   return (
-    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#2a241c", color: "#8f8267" }}>
+    <div
+      className="bg-atmosphere"
+      style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-3)", fontFamily: "var(--font-display)" }}
+    >
       {text}
     </div>
   );
@@ -47,6 +50,7 @@ function FullPageMessage({ text }: { text: string }) {
 export function AccesoDenegado() {
   return (
     <div
+      className="bg-atmosphere"
       style={{
         minHeight: "100vh",
         display: "flex",
@@ -54,19 +58,34 @@ export function AccesoDenegado() {
         alignItems: "center",
         justifyContent: "center",
         gap: 12,
-        background: "#2a241c",
-        color: "#f4ede1",
-        fontFamily: "-apple-system, sans-serif",
+        color: "var(--text-1)",
+        fontFamily: "var(--font-display)",
         textAlign: "center",
         padding: "2rem",
       }}
     >
-      <div style={{ fontSize: 40 }}>🔒</div>
-      <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Acceso denegado</h1>
-      <p style={{ fontSize: 14, color: "#c2b39a", maxWidth: 360 }}>
+      <div
+        style={{
+          width: 56,
+          height: 56,
+          borderRadius: 16,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "var(--glass-bg)",
+          border: "1px solid var(--glass-border)",
+          backdropFilter: "blur(28px) saturate(1.7)",
+          WebkitBackdropFilter: "blur(28px) saturate(1.7)",
+          fontSize: 24,
+        }}
+      >
+        🔒
+      </div>
+      <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0, letterSpacing: "-.02em" }}>Acceso denegado</h1>
+      <p style={{ fontSize: 14, color: "var(--text-2)", maxWidth: 360 }}>
         No tenés permisos para acceder a este módulo.
       </p>
-      <a href="/" style={{ color: "#e6a94f", fontSize: 13, marginTop: 8 }}>
+      <a href="/" style={{ color: "var(--accent-color)", fontSize: 13, marginTop: 8 }}>
         Volver al inicio
       </a>
     </div>

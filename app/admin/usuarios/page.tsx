@@ -78,15 +78,10 @@ function AdminUsuariosInner() {
   }
 
   return (
-    <div className="dash-root">
+    <div className="dash-root bg-atmosphere">
       <style>{`
         .dash-root {
-          --bg-0:#2a241c; --bg-0b:#3a3226; --bg-1:#332c22; --bg-2:#3d3427;
-          --line:#544831; --line-soft:#403627;
-          --text-1:#f4ede1; --text-2:#c2b39a; --text-3:#8f8267;
-          --gold:#e6a94f;
-          font-family:-apple-system,"SF Pro Display",ui-sans-serif,"Segoe UI",Helvetica,Arial,sans-serif;
-          background:linear-gradient(180deg,var(--bg-0) 0%,var(--bg-0b) 55%,var(--bg-0) 100%);
+          font-family: var(--font-display);
           color:var(--text-1);
           min-height:100vh;
           padding-bottom:5rem;
@@ -95,9 +90,9 @@ function AdminUsuariosInner() {
         .crumb{font-size:13px;color:var(--text-3);margin-bottom:1.25rem;}
         .crumb a{color:var(--text-2);text-decoration:none;}
         .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
-        .btn-primary{background:var(--gold);border:none;border-radius:8px;padding:10px 18px;color:#3a2b0f;font-weight:600;cursor:pointer;font-size:13.5px;}
+        .btn-primary{background:var(--accent-glass-bg);border:1px solid var(--accent-glass-border);border-radius:8px;padding:10px 18px;color:var(--text-1);font-weight:600;cursor:pointer;font-size:13.5px;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);}
         .btn-ghost{background:transparent;border:1px solid var(--line-soft);border-radius:8px;padding:6px 12px;color:var(--text-2);cursor:pointer;font-size:12px;}
-        .card{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:16px;padding:1.5rem;}
+        .card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:1.5rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);}
         table{width:100%;border-collapse:collapse;font-size:13px;}
         th{text-align:left;color:var(--text-3);font-weight:500;padding:8px 10px;border-bottom:1px solid var(--line-soft);}
         td{padding:8px 10px;border-bottom:1px solid var(--line-soft);}
@@ -109,14 +104,14 @@ function AdminUsuariosInner() {
           <Link href="/dashboard">Dashboard</Link> › Usuarios
         </div>
         <div className="topbar">
-          <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Usuarios</h1>
+          <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "-.02em" }}>Usuarios</h1>
           <button className="btn-primary" onClick={() => setShowCreate(true)}>
             + Nuevo usuario
           </button>
         </div>
 
         {error && (
-          <div style={{ background: "#3d2a24", color: "#eab3a8", padding: 12, borderRadius: 10, marginBottom: 16, fontSize: 13 }}>
+          <div style={{ background: "var(--crit-bg)", color: "var(--crit-ink)", padding: 12, borderRadius: 10, marginBottom: 16, fontSize: 13 }}>
             {error}
           </div>
         )}
@@ -161,8 +156,8 @@ function AdminUsuariosInner() {
                       <span
                         className="pill"
                         style={{
-                          background: u.active ? "#3a4032" : "#3d2a24",
-                          color: u.active ? "#d3e6c9" : "#eab3a8",
+                          background: u.active ? "var(--good-bg)" : "var(--crit-bg)",
+                          color: u.active ? "var(--good-ink)" : "var(--crit-ink)",
                         }}
                       >
                         {u.active ? "Activo" : "Desactivado"}
@@ -233,13 +228,13 @@ function CreateUserForm({ onClose, onCreated }: { onClose: () => void; onCreated
 
   return (
     <div
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}
       onClick={onClose}
     >
       <form
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
-        style={{ background: "#1c1712", color: "#f4ede1", borderRadius: 16, border: "1px solid #403627", width: "100%", maxWidth: 420, padding: "1.5rem", display: "flex", flexDirection: "column", gap: 12 }}
+        style={{ background: "var(--glass-bg-strong)", backdropFilter: "blur(40px) saturate(1.7)", WebkitBackdropFilter: "blur(40px) saturate(1.7)", color: "var(--text-1)", borderRadius: 16, border: "1px solid var(--glass-border)", boxShadow: "var(--shadow-glass-lg)", width: "100%", maxWidth: 420, padding: "1.5rem", display: "flex", flexDirection: "column", gap: 12 }}
       >
         <div style={{ fontSize: 17, fontWeight: 600 }}>Nuevo usuario</div>
         <Field label="Nombre"><input value={name} onChange={(e) => setName(e.target.value)} required style={inputStyle} /></Field>
@@ -268,12 +263,12 @@ function CreateUserForm({ onClose, onCreated }: { onClose: () => void; onCreated
             ))}
           </select>
         </Field>
-        {error && <div style={{ color: "#eab3a8", fontSize: 12.5 }}>{error}</div>}
+        {error && <div style={{ color: "var(--crit-ink)", fontSize: 12.5 }}>{error}</div>}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button type="button" onClick={onClose} style={{ background: "transparent", border: "1px solid #403627", borderRadius: 8, padding: "8px 16px", color: "#c2b39a", cursor: "pointer", fontSize: 13 }}>
+          <button type="button" onClick={onClose} style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 16px", color: "var(--text-2)", cursor: "pointer", fontSize: 13 }}>
             Cancelar
           </button>
-          <button type="submit" disabled={saving} style={{ background: "#e6a94f", border: "none", borderRadius: 8, padding: "8px 16px", color: "#3a2b0f", fontWeight: 600, cursor: "pointer", fontSize: 13 }}>
+          <button type="submit" disabled={saving} style={{ background: "var(--accent-glass-bg)", border: "1px solid var(--accent-glass-border)", borderRadius: 8, padding: "8px 16px", color: "var(--text-1)", fontWeight: 600, cursor: "pointer", fontSize: 13, backdropFilter: "blur(20px) saturate(1.7)", WebkitBackdropFilter: "blur(20px) saturate(1.7)" }}>
             {saving ? "Creando..." : "Crear usuario"}
           </button>
         </div>
@@ -285,7 +280,7 @@ function CreateUserForm({ onClose, onCreated }: { onClose: () => void; onCreated
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label style={{ fontSize: 12.5, color: "#c2b39a" }}>{label}</label>
+      <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>{label}</label>
       {children}
     </div>
   );
@@ -293,11 +288,11 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "#242019",
-  border: "1px solid #403627",
+  background: "var(--bg-2)",
+  border: "1px solid var(--line-soft)",
   borderRadius: 8,
   padding: "8px 12px",
-  color: "#f4ede1",
+  color: "var(--text-1)",
   fontSize: 13,
   marginTop: 4,
 };

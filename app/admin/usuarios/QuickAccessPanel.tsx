@@ -138,11 +138,11 @@ export default function QuickAccessPanel({ onChanged }: { onChanged: () => void 
 }
 
 const inputStyle: React.CSSProperties = {
-  background: "#242019",
-  border: "1px solid #403627",
+  background: "var(--bg-2)",
+  border: "1px solid var(--line-soft)",
   borderRadius: 8,
   padding: "6px 10px",
-  color: "#f4ede1",
+  color: "var(--text-1)",
   fontSize: 13,
   marginTop: 4,
   height: 34,

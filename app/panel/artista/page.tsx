@@ -31,11 +31,11 @@ function Inner() {
 
   return (
     <div
+      className="bg-atmosphere"
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(180deg,#2a241c 0%,#3a3226 55%,#2a241c 100%)",
-        color: "#f4ede1",
-        fontFamily: "-apple-system, sans-serif",
+        color: "var(--text-1)",
+        fontFamily: "var(--font-display)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -46,12 +46,12 @@ function Inner() {
       }}
     >
       <div>
-        <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>Carga de lanzamientos</h1>
-        <p style={{ fontSize: 13, color: "#8f8267", marginTop: 6 }}>{session?.user?.email}</p>
+        <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "-.02em" }}>Carga de lanzamientos</h1>
+        <p style={{ fontSize: 13, color: "var(--text-3)", marginTop: 6 }}>{session?.user?.email}</p>
       </div>
 
       {justSaved && (
-        <div style={{ background: "#3a4032", color: "#d3e6c9", padding: "10px 18px", borderRadius: 10, fontSize: 13.5 }}>
+        <div style={{ background: "var(--good-bg)", color: "var(--good-ink)", padding: "10px 18px", borderRadius: 10, fontSize: 13.5 }}>
           Lanzamiento guardado. Ya quedó visible para el equipo.
         </div>
       )}
@@ -59,14 +59,17 @@ function Inner() {
       <button
         onClick={() => setShowForm(true)}
         style={{
-          background: "#e6a94f",
-          border: "none",
+          background: "var(--accent-glass-bg)",
+          border: "1px solid var(--accent-glass-border)",
           borderRadius: 10,
           padding: "14px 28px",
-          color: "#3a2b0f",
+          color: "var(--text-1)",
           fontWeight: 600,
           fontSize: 15,
           cursor: "pointer",
+          backdropFilter: "blur(28px) saturate(1.7)",
+          WebkitBackdropFilter: "blur(28px) saturate(1.7)",
+          boxShadow: "var(--shadow-glass)",
         }}
       >
         + Nuevo lanzamiento
@@ -74,7 +77,7 @@ function Inner() {
 
       <button
         onClick={() => signOut({ callbackUrl: "/" })}
-        style={{ background: "transparent", border: "1px solid #544831", borderRadius: 8, padding: "8px 16px", color: "#c2b39a", cursor: "pointer", fontSize: 13 }}
+        style={{ background: "transparent", border: "1px solid var(--line)", borderRadius: 8, padding: "8px 16px", color: "var(--text-2)", cursor: "pointer", fontSize: 13 }}
       >
         Cerrar sesión
       </button>

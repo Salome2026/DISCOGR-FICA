@@ -140,3 +140,30 @@ export async function getArtistHistory(artistId: string, sinceDays: number) {
   `;
   return rows;
 }
+
+// Looks an artist up by name (as opposed to Chartmetric's internal id) — the
+// entry point for a ficha page reached from anywhere that only has a name
+// (the catalog's participants list, not just the ranking table).
+export async function getArtistLatestByName(name: string) {
+  await ensureSchema();
+  const { rows } = await sql`
+    SELECT DISTINCT ON (artist_id) *
+    FROM artist_listeners_daily
+    WHERE lower(artist_name) = lower(${name})
+    ORDER BY artist_id, measured_at DESC
+    LIMIT 1
+  `;
+  return rows[0] ?? null;
+}
+
+export async function getArtistHistoryByName(name: string, sinceDays: number) {
+  await ensureSchema();
+  const { rows } = await sql`
+    SELECT measured_at, monthly_listeners, followers
+    FROM artist_listeners_daily
+    WHERE lower(artist_name) = lower(${name})
+      AND measured_at >= (CURRENT_DATE - ${sinceDays}::int)
+    ORDER BY measured_at ASC
+  `;
+  return rows;
+}

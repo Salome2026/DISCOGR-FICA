@@ -57,7 +57,9 @@ export default function RankingListeners() {
   return (
     <div className="card" style={{ marginBottom: "1.25rem" }}>
       <style>{`
-        .rk-row{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:10px 6px;border-bottom:1px solid var(--line-soft);}
+        .rk-row{display:grid;grid-template-columns:28px 1fr auto auto;gap:12px;align-items:center;padding:10px 6px;border-bottom:1px solid var(--line-soft);}
+        .rk-ficha{font-size:11.5px;padding:6px 12px;border-radius:100px;border:1px solid var(--line-soft);color:var(--text-2);text-decoration:none;white-space:nowrap;}
+        .rk-ficha:hover{background:var(--bg-2);}
         .rk-row:last-child{border-bottom:none;}
         .rk-avatar{width:34px;height:34px;border-radius:9px;background:var(--bg-3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text-2);}
         .rk-name{font-size:13.5px;font-weight:600;}
@@ -121,6 +123,9 @@ export default function RankingListeners() {
                     <DeltaTag current={r.monthly_listeners} prev={r.prev_30d} label="30d" />
                   </div>
                 </div>
+                <Link href={`/artistas/${encodeURIComponent(r.artist_name)}`} className="rk-ficha">
+                  Ver ficha
+                </Link>
               </div>
             ))}
           </div>

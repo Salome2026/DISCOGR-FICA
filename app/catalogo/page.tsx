@@ -1,54 +1,48 @@
-import catalogo from "@/data/catalogo.json";
-import DistribucionChart from "./DistribucionChart";
-import EstadoDonut from "./EstadoDonut";
-import CompanyList from "./CompanyList";
-import SellosGrid from "./SellosGrid";
-import ArtistRanking from "./ArtistRanking";
-import RegaliasCalc from "./RegaliasCalc";
-import IngresosEstimados from "./IngresosEstimados";
+"use client";
 
-type Track = {
-  track: string;
-  isrc: string;
-  album: string;
-  company: string;
-  release_date: string;
-  upc: string;
-};
-
-type ArtistEntry = {
-  artist: string;
-  track_count: number;
-  companies: string[];
-  tracks: Track[];
-};
-
-const data = catalogo as ArtistEntry[];
+import Link from "next/link";
+import RequireRole from "@/app/components/RequireRole";
+import RankingListeners from "@/app/components/RankingListeners";
+import EstadisticasIngresos from "./EstadisticasIngresos";
+import RegaliasNetas from "./RegaliasNetas";
 
 export default function Catalogo() {
   return (
-    <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-10">
-      <h1 className="text-2xl font-semibold mb-1">Catálogo</h1>
-      <p className="text-sm text-gray-500 mb-8">
-        {data.length} artistas · {data.reduce((a, e) => a + e.track_count, 0)} tracks
-        (importado desde Drive)
-      </p>
+    <RequireRole allow={["admin"]}>
+      <div className="dash-root">
+        <style>{`
+          .dash-root {
+            --bg-0:#2a241c; --bg-0b:#3a3226; --bg-1:#332c22; --bg-2:#3d3427;
+            --line:#544831; --line-soft:#403627;
+            --text-1:#f4ede1; --text-2:#c2b39a; --text-3:#8f8267;
+            --gold:#e6a94f; --good:#7fae6f; --crit:#c96a5a;
+            font-family:-apple-system,"SF Pro Display",ui-sans-serif,"Segoe UI",Helvetica,Arial,sans-serif;
+            background:linear-gradient(180deg,var(--bg-0) 0%,var(--bg-0b) 55%,var(--bg-0) 100%);
+            color:var(--text-1);
+            min-height:100vh;
+            padding-bottom:5rem;
+          }
+          .inner{max-width:1120px;margin:0 auto;padding:2.5rem 2rem 0;}
+          .crumb{font-size:13px;color:var(--text-3);margin-bottom:1.25rem;}
+          .crumb a{color:var(--text-2);text-decoration:none;}
+          .card{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:16px;padding:1.5rem;margin-bottom:1rem;}
+          .card-label{font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;}
+          .empty{color:var(--text-3);font-size:13.5px;padding:1rem 0;}
+        `}</style>
+        <div className="inner">
+          <div className="crumb">
+            <Link href="/dashboard">Dashboard</Link> › Catálogo
+          </div>
+          <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Catálogo</h1>
+          <p style={{ fontSize: 13, color: "var(--text-3)", marginBottom: 20 }}>
+            Ranking de artistas, estadísticas de ingresos y reparto de regalías.
+          </p>
 
-      <SellosGrid />
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-        <DistribucionChart />
-        <EstadoDonut />
+          <RankingListeners />
+          <EstadisticasIngresos />
+          <RegaliasNetas />
+        </div>
       </div>
-
-      <ArtistRanking />
-
-      <RegaliasCalc />
-
-      <IngresosEstimados />
-
-      <h2 className="text-base font-semibold mb-3">Tracks por compañía</h2>
-      <CompanyList />
-    </main>
+    </RequireRole>
   );
 }

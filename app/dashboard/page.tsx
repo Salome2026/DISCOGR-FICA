@@ -11,7 +11,7 @@ import RankingListeners from "@/app/components/RankingListeners";
 import RequireRole from "@/app/components/RequireRole";
 import type { Release } from "@/lib/notion";
 
-const COLORS = ["#e6a94f", "#c9825a", "#7f9bb0", "#5c5140", "#8a7c62"];
+const COLORS = ["#e6a94f", "#c9825a", "#7f9bb0", "#5c5140", "#8a7c62", "#a894c9"];
 
 type Track = {
   id?: string | number;
@@ -124,7 +124,7 @@ function DashboardInner() {
   }, [acuerdos]);
 
   const donutSegs = useMemo(() => {
-    const top = porCompaniaData.companies.slice(0, 5);
+    const top = porCompaniaData.companies;
     const circumference = 2 * Math.PI * 96;
     let offset = 0;
     const segs = top.map((c, i) => {

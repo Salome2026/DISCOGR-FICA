@@ -5,6 +5,7 @@ import { use, useEffect, useMemo, useState } from "react";
 import catalogo from "@/data/catalogo.json";
 import { assignSello, SELLOS } from "@/lib/sellos";
 import type { Release } from "@/lib/notion";
+import MawzRecordsView from "./MawzRecordsView";
 
 type ArtistEntry = {
   artist: string;
@@ -28,6 +29,7 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
   const { nombre } = use(params);
   const selloName = decodeURIComponent(nombre);
   const isLaJuntada = selloName === "La Juntada de los Artistas";
+  const isMAWZ = selloName === "MAWZ Records";
 
   const [acuerdos, setAcuerdos] = useState<Release[] | null>(null);
   const [acuerdosError, setAcuerdosError] = useState<string | null>(null);
@@ -88,6 +90,16 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
         th{text-align:left;color:var(--text-3);font-weight:500;padding:8px 10px;border-bottom:1px solid var(--line-soft);}
         td{padding:8px 10px;border-bottom:1px solid var(--line-soft);}
         .empty{color:var(--text-3);font-size:13.5px;padding:1rem 0;}
+        .card-label{font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;}
+        .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
+        .donut-center .n{font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+        .donut-center .l{font-size:12px;color:var(--text-3);margin-top:2px;}
+        .donut-legend{display:flex;flex-direction:column;gap:6px;}
+        .leg-row{display:flex;align-items:center;gap:10px;font-size:13px;background:transparent;border:none;padding:5px 6px;border-radius:8px;cursor:pointer;text-align:left;color:inherit;font:inherit;width:100%;}
+        .leg-row:hover{background:var(--bg-2);}
+        .leg-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+        .leg-name{color:var(--text-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+        .leg-val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-1);}
       `}</style>
       <div className="inner">
         <div className="crumb">
@@ -99,7 +111,9 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
           <p className="empty">Este sello no está en la lista configurada (VPO CORP).</p>
         )}
 
-        {artists.length === 0 ? (
+        {isMAWZ ? (
+          <MawzRecordsView />
+        ) : artists.length === 0 ? (
           <div className="card">
             <p className="empty">
               Todavía no hay artistas asignados a este sello en el mapeo (`lib/sellos.ts`). Pasame

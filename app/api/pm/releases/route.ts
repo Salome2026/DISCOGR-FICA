@@ -140,9 +140,11 @@ async function handleSingleCreate(
   });
 
   notifyNewLanzamiento({
+    tipo: "single",
     artist,
-    fonograma,
     sello,
+    streamingProject,
+    fonograma,
     estado: estado as EstadoRelease,
     distribuidora: distribuidora || null,
     fecha: fecha || null,
@@ -270,15 +272,26 @@ async function handleGroupedCreate(
   }
 
   notifyNewLanzamiento({
+    tipo,
     artist,
-    fonograma: `${tipo === "ep" ? "EP" : "Álbum"} "${nombre}" (${savedTracks.length} canciones)`,
     sello,
+    streamingProject,
+    nombre,
     estado: estado as EstadoRelease,
     distribuidora: distribuidora || null,
     fecha: fecha || null,
-    autoresCompositores: null,
-    audioUrl: null,
-    portadaUrl: null,
+    comentarios: comentarios || null,
+    tracks: cleanTracks.map((t, i) => ({
+      trackNumber: t.trackNumber ?? i + 1,
+      fonograma: t.fonograma,
+      artist: t.artist,
+      colaboradores: t.colaboradores,
+      productor: t.productor,
+      isrc: t.isrc,
+      comentario: t.comentario,
+      audioUrl: t.audioUrl,
+      portadaUrl: t.portadaUrl,
+    })),
     createdBy: email,
   }).catch((err) => console.error("notifyNewLanzamiento failed:", err));
 

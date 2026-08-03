@@ -82,6 +82,8 @@ export default function DrillDown<T extends { id?: string | number }>({
         position: "fixed",
         inset: 0,
         background: "rgba(0,0,0,0.55)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
         zIndex: 100,
         display: "flex",
         alignItems: "center",
@@ -93,10 +95,13 @@ export default function DrillDown<T extends { id?: string | number }>({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: "#1c1712",
-          color: "#f4ede1",
-          borderRadius: 16,
-          border: "1px solid #403627",
+          background: "var(--glass-bg-strong, #1c1712)",
+          backdropFilter: "blur(34px) saturate(1.4)",
+          WebkitBackdropFilter: "blur(34px) saturate(1.4)",
+          color: "var(--text-1, #f4ede1)",
+          borderRadius: "var(--radius-lg, 20px)",
+          border: "1px solid var(--glass-border, #403627)",
+          boxShadow: "var(--shadow-lg, 0 28px 70px -24px rgba(0,0,0,0.6))",
           width: "100%",
           maxWidth: 1000,
           maxHeight: "85vh",
@@ -111,22 +116,22 @@ export default function DrillDown<T extends { id?: string | number }>({
             alignItems: "flex-start",
             justifyContent: "space-between",
             padding: "1.25rem 1.5rem",
-            borderBottom: "1px solid #403627",
+            borderBottom: "1px solid var(--line-soft, #403627)",
           }}
         >
           <div>
             <div style={{ fontSize: 17, fontWeight: 600 }}>{title}</div>
             {subtitle && (
-              <div style={{ fontSize: 12.5, color: "#8f8267", marginTop: 2 }}>{subtitle}</div>
+              <div style={{ fontSize: 12.5, color: "var(--text-3, #8f8267)", marginTop: 2 }}>{subtitle}</div>
             )}
           </div>
           <button
             onClick={onClose}
             style={{
               background: "transparent",
-              border: "1px solid #403627",
+              border: "1px solid var(--line-soft, #403627)",
               borderRadius: 8,
-              color: "#c2b39a",
+              color: "var(--text-2, #c2b39a)",
               width: 30,
               height: 30,
               cursor: "pointer",
@@ -149,15 +154,15 @@ export default function DrillDown<T extends { id?: string | number }>({
             placeholder="Buscar..."
             style={{
               width: "100%",
-              background: "#242019",
-              border: "1px solid #403627",
+              background: "var(--bg-2, #242019)",
+              border: "1px solid var(--line-soft, #403627)",
               borderRadius: 8,
               padding: "8px 12px",
-              color: "#f4ede1",
+              color: "var(--text-1, #f4ede1)",
               fontSize: 13,
             }}
           />
-          <div style={{ fontSize: 11.5, color: "#8f8267", margin: "8px 0" }}>
+          <div style={{ fontSize: 11.5, color: "var(--text-3, #8f8267)", margin: "8px 0" }}>
             {filtered.length} registro{filtered.length === 1 ? "" : "s"}
           </div>
         </div>
@@ -173,14 +178,14 @@ export default function DrillDown<T extends { id?: string | number }>({
                     style={{
                       textAlign: "left",
                       padding: "8px 10px",
-                      color: "#8f8267",
+                      color: "var(--text-3, #8f8267)",
                       fontWeight: 500,
                       cursor: "pointer",
                       whiteSpace: "nowrap",
-                      borderBottom: "1px solid #403627",
+                      borderBottom: "1px solid var(--line-soft, #403627)",
                       position: "sticky",
                       top: 0,
-                      background: "#1c1712",
+                      background: "var(--bg-1, #1c1712)",
                     }}
                   >
                     {c.label}
@@ -190,10 +195,10 @@ export default function DrillDown<T extends { id?: string | number }>({
                 {urlKey && (
                   <th
                     style={{
-                      borderBottom: "1px solid #403627",
+                      borderBottom: "1px solid var(--line-soft, #403627)",
                       position: "sticky",
                       top: 0,
-                      background: "#1c1712",
+                      background: "var(--bg-1, #1c1712)",
                     }}
                   />
                 )}
@@ -205,19 +210,19 @@ export default function DrillDown<T extends { id?: string | number }>({
                   {columns.map((c) => (
                     <td
                       key={String(c.key)}
-                      style={{ padding: "8px 10px", borderBottom: "1px solid #2a2119" }}
+                      style={{ padding: "8px 10px", borderBottom: "1px solid var(--line-soft, #2a2119)" }}
                     >
                       {c.render ? c.render(row) : String(row[c.key] ?? "—")}
                     </td>
                   ))}
                   {urlKey && (
-                    <td style={{ padding: "8px 10px", borderBottom: "1px solid #2a2119" }}>
+                    <td style={{ padding: "8px 10px", borderBottom: "1px solid var(--line-soft, #2a2119)" }}>
                       {row[urlKey] ? (
                         <a
                           href={String(row[urlKey])}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ color: "#e6a94f", fontSize: 12 }}
+                          style={{ color: "var(--gold, #e6a94f)", fontSize: 12 }}
                         >
                           Abrir ↗
                         </a>
@@ -230,7 +235,7 @@ export default function DrillDown<T extends { id?: string | number }>({
                 <tr>
                   <td
                     colSpan={columns.length + (urlKey ? 1 : 0)}
-                    style={{ padding: "2rem 0", textAlign: "center", color: "#8f8267" }}
+                    style={{ padding: "2rem 0", textAlign: "center", color: "var(--text-3, #8f8267)" }}
                   >
                     Sin resultados
                   </td>
@@ -246,9 +251,9 @@ export default function DrillDown<T extends { id?: string | number }>({
             alignItems: "center",
             justifyContent: "space-between",
             padding: "1rem 1.5rem",
-            borderTop: "1px solid #403627",
+            borderTop: "1px solid var(--line-soft, #403627)",
             fontSize: 12.5,
-            color: "#8f8267",
+            color: "var(--text-3, #8f8267)",
           }}
         >
           <span>
@@ -260,10 +265,10 @@ export default function DrillDown<T extends { id?: string | number }>({
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               style={{
                 background: "transparent",
-                border: "1px solid #403627",
+                border: "1px solid var(--line-soft, #403627)",
                 borderRadius: 8,
                 padding: "5px 12px",
-                color: page === 0 ? "#544831" : "#c2b39a",
+                color: page === 0 ? "var(--line, #544831)" : "var(--text-2, #c2b39a)",
                 cursor: page === 0 ? "default" : "pointer",
               }}
             >
@@ -274,10 +279,10 @@ export default function DrillDown<T extends { id?: string | number }>({
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               style={{
                 background: "transparent",
-                border: "1px solid #403627",
+                border: "1px solid var(--line-soft, #403627)",
                 borderRadius: 8,
                 padding: "5px 12px",
-                color: page >= totalPages - 1 ? "#544831" : "#c2b39a",
+                color: page >= totalPages - 1 ? "var(--line, #544831)" : "var(--text-2, #c2b39a)",
                 cursor: page >= totalPages - 1 ? "default" : "pointer",
               }}
             >

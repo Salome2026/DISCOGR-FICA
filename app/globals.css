@@ -1,8 +1,68 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Base surfaces — neutral near-black, just a whisper of warmth (not the
+     saturated brown the app used before). Apple-dark-mode-style depth via
+     small luminance steps rather than color shifts. */
+  --bg-0: #121110;
+  --bg-0b: #171512;
+  --bg-1: #1c1a17;
+  --bg-2: #242220;
+  --bg-3: #2c2925;
+  --line: #3a3631;
+  --line-soft: #2a2723;
+
+  --text-1: #f5f2ec;
+  --text-2: #b8b2a6;
+  --text-3: #837c6e;
+
+  /* Brand accent — unchanged, this is the one color that should stay
+     saturated and identifiable across every screen. */
+  --gold: #e6a94f;
+  --gold-ink: #241a08;
+
+  /* Semantic status colors: bg variants are translucent so they read as
+     tinted glass rather than flat colored chips. */
+  --good: #7fae6f;
+  --good-bg: rgba(127, 174, 111, 0.14);
+  --good-ink: #bfe0ae;
+  --warn: #d99a4e;
+  --warn-bg: rgba(217, 154, 78, 0.14);
+  --warn-ink: #f0cfa0;
+  --crit: #d97862;
+  --crit-bg: rgba(217, 120, 98, 0.16);
+  --crit-ink: #f2b8a8;
+
+  /* Glass surfaces — reserved for chrome/elevated layers (nav, cards,
+     modals, hero). Dense data surfaces should stay closer to --bg-1/--bg-2
+     solid so text keeps contrast; see how app/dashboard/page.tsx uses these. */
+  --glass-bg: rgba(245, 240, 230, 0.045);
+  --glass-bg-strong: rgba(245, 240, 230, 0.08);
+  --glass-border: rgba(245, 240, 230, 0.09);
+  --glass-blur: 22px;
+  --glass-blur-strong: 34px;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 12px 32px -12px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 28px 70px -24px rgba(0, 0, 0, 0.6);
+  --shadow-gold: 0 20px 50px -20px rgba(230, 169, 79, 0.35);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 450ms;
+
+  --font-display: -apple-system, "SF Pro Display", ui-sans-serif, "Segoe UI", Helvetica, Arial,
+    sans-serif;
+
+  --background: var(--bg-0);
+  --foreground: var(--text-1);
 }
 
 @theme inline {
@@ -12,15 +72,26 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--bg-0);
+  color: var(--text-1);
+  font-family: var(--font-display);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Shared glass-surface primitives — available globally so any screen can
+   opt in without redefining blur/opacity by hand. Use -strong for surfaces
+   that need to stand out more (modals, popovers) and plain for ambient
+   chrome (nav, secondary cards). */
+.glass {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+}
+
+.glass-strong {
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(1.4);
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(1.4);
 }

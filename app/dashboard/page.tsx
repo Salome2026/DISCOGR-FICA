@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import porCompania from "@/data/por_compania.json";
 import catalogo from "@/data/catalogo.json";
 import { SELLOS, assignSello } from "@/lib/sellos";
@@ -90,6 +91,15 @@ function DashboardInner() {
   const [acuerdos, setAcuerdos] = useState<Release[] | null>(null);
   const [acuerdosError, setAcuerdosError] = useState<string | null>(null);
   const [drill, setDrill] = useState<DrillState>(null);
+  const reduceMotion = useReducedMotion();
+  const fadeUp: Variants = {
+    hidden: { opacity: 0, y: reduceMotion ? 0 : 14 },
+    show: (i: number = 0) => ({
+      opacity: 1,
+      y: 0,
+      transition: { duration: reduceMotion ? 0 : 0.5, delay: reduceMotion ? 0 : i * 0.08, ease: [0.16, 1, 0.3, 1] },
+    }),
+  };
 
   useEffect(() => {
     fetch("/api/acuerdos")
@@ -205,16 +215,8 @@ function DashboardInner() {
     <div className="dash-root">
       <style>{`
         .dash-root {
-          --bg-0:#2a241c; --bg-0b:#3a3226; --bg-1:#332c22; --bg-2:#3d3427; --bg-3:#473c2c;
-          --line:#544831; --line-soft:#403627;
-          --text-1:#f4ede1; --text-2:#c2b39a; --text-3:#8f8267;
-          --gold:#e6a94f; --gold-ink:#3a2b0f;
-          --good:#7fae6f; --good-bg:#3a4032; --good-ink:#d3e6c9;
-          --warn:#d99a4e; --warn-bg:#40331f; --warn-ink:#f0cfa0;
-          --crit:#c96a5a; --crit-bg:#3d2a24; --crit-ink:#eab3a8;
-          --radius-lg:20px; --radius-md:14px;
-          font-family:-apple-system,"SF Pro Display",ui-sans-serif,"Segoe UI",Helvetica,Arial,sans-serif;
-          background:linear-gradient(180deg,var(--bg-0) 0%,var(--bg-0b) 55%,var(--bg-0) 100%);
+          font-family: var(--font-display);
+          background:radial-gradient(ellipse 1200px 600px at 50% -10%, var(--bg-0b) 0%, var(--bg-0) 60%);
           color:var(--text-1);
           min-height:100vh;
           padding-bottom:5rem;
@@ -222,17 +224,17 @@ function DashboardInner() {
         .dash-inner{max-width:1120px;margin:0 auto;padding:2.5rem 2rem 0;}
         .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
         .brand{display:flex;align-items:center;gap:10px;}
-        .brand-mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(155deg,#e6a94f,#c98f3a);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#241a08;}
+        .brand-mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(155deg,#e6a94f,#c98f3a);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--gold-ink);}
         .brand-name{font-size:14px;font-weight:600;letter-spacing:-.01em;}
         .brand-sub{font-size:11px;color:var(--text-3);}
-        .nav-pills{display:flex;gap:6px;flex-wrap:wrap;}
-        .nav-pill{font-size:12.5px;padding:7px 13px;border-radius:100px;color:var(--text-2);border:1px solid transparent;text-decoration:none;}
-        .nav-pill.active{background:var(--bg-2);color:var(--text-1);border-color:var(--line);}
-        .nav-pill:hover:not(.active){background:var(--bg-1);}
+        .nav-pills{display:flex;gap:4px;flex-wrap:wrap;background:var(--glass-bg);border:1px solid var(--glass-border);backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);border-radius:var(--radius-pill);padding:5px;}
+        .nav-pill{font-size:12.5px;padding:7px 13px;border-radius:var(--radius-pill);color:var(--text-2);border:1px solid transparent;text-decoration:none;transition:background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);}
+        .nav-pill.active{background:var(--gold);color:var(--gold-ink);font-weight:600;}
+        .nav-pill:hover:not(.active){background:var(--glass-bg-strong);color:var(--text-1);}
         .sello-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:1.5rem;}
-        .sello-btn{aspect-ratio:1.4;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12.5px;font-weight:600;border:1px solid var(--line-soft);border-radius:var(--radius-md);background:var(--bg-1);color:var(--text-1);cursor:pointer;padding:.5rem;}
-        .sello-btn:hover{background:var(--bg-2);border-color:var(--line);}
-        .card{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:var(--radius-lg);padding:1.75rem;}
+        .sello-btn{aspect-ratio:1.4;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12.5px;font-weight:600;border:1px solid var(--glass-border);border-radius:var(--radius-md);background:var(--glass-bg);color:var(--text-1);cursor:pointer;padding:.5rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
+        .sello-btn:hover{background:var(--glass-bg-strong);border-color:var(--line);transform:translateY(-2px);}
+        .card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:1.75rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);box-shadow:var(--shadow-md);}
         .card-label{font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;}
         .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:1.25rem;margin-bottom:1.25rem;}
         .donut-card{display:flex;align-items:center;gap:2rem;flex-wrap:wrap;}
@@ -253,8 +255,8 @@ function DashboardInner() {
         .ebar-fill{height:100%;border-radius:6px;}
         .ebar-val{font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-1);font-weight:600;}
         .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:1.25rem;}
-        .kpi{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:var(--radius-lg);padding:1.5rem;cursor:pointer;text-align:left;color:inherit;font:inherit;}
-        .kpi:hover{border-color:var(--line);background:var(--bg-2);}
+        .kpi{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:1.5rem;cursor:pointer;text-align:left;color:inherit;font:inherit;backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);box-shadow:var(--shadow-md);transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);}
+        .kpi:hover{border-color:var(--line);background:var(--glass-bg-strong);transform:translateY(-3px);}
         .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
         .kpi-label{font-size:12.5px;color:var(--text-3);}
         .kpi-chip{font-size:11px;padding:3px 8px;border-radius:100px;font-weight:600;}
@@ -294,7 +296,7 @@ function DashboardInner() {
           </div>
         </div>
 
-        <div className="sello-row">
+        <motion.div className="sello-row" variants={fadeUp} custom={0} initial="hidden" animate="show">
           {SELLOS.filter((s) => s !== "Streamings").map((s) => (
             <Link key={s} href={`/sellos/${encodeURIComponent(s)}`} className="sello-btn">
               {s}
@@ -306,7 +308,7 @@ function DashboardInner() {
           <Link href="/streamings" className="sello-btn">
             Streamings
           </Link>
-        </div>
+        </motion.div>
 
         {acuerdosError && (
           <div
@@ -323,7 +325,7 @@ function DashboardInner() {
           </div>
         )}
 
-        <div className="hero-grid">
+        <motion.div className="hero-grid" variants={fadeUp} custom={1} initial="hidden" animate="show">
           <div className="card donut-card">
             <div style={{ position: "relative", width: 224, height: 224, flexShrink: 0 }}>
               <svg width="224" height="224" viewBox="0 0 224 224">
@@ -395,9 +397,9 @@ function DashboardInner() {
               })}
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="kpi-grid">
+        <motion.div className="kpi-grid" variants={fadeUp} custom={2} initial="hidden" animate="show">
           <button className="kpi" onClick={() => setDrill({ kind: "firmados", rows: firmados })}>
             <div className="kpi-top">
               <span className="kpi-label">Firmados</span>
@@ -431,9 +433,11 @@ function DashboardInner() {
             <div className="kpi-num">{catalogoData.length}</div>
             <div className="kpi-sub">con fonogramas cargados</div>
           </button>
-        </div>
+        </motion.div>
 
-        <RankingListeners />
+        <motion.div variants={fadeUp} custom={3} initial="hidden" animate="show">
+          <RankingListeners />
+        </motion.div>
 
         <p className="footer-note">
           Estados y acuerdos en vivo desde Notion · Catálogo de fonogramas actualizado desde Drive

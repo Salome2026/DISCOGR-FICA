@@ -276,11 +276,12 @@ function DashboardInner() {
         .card-label{font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;}
         .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:1.1rem;margin-bottom:1.25rem;}
         .bento-donut{grid-column:span 3;grid-row:span 2;}
-        .bento-estado{grid-column:span 3;grid-row:span 2;}
+        .bento-calendar{grid-column:span 3;grid-row:span 2;}
+        .bento-estado{grid-column:span 6;}
         .bento-kpi-firmados{grid-column:span 4;}
         .bento-kpi-artistas{grid-column:span 2;}
         .bento-kpi-sm{grid-column:span 3;}
-        @media (max-width:860px){ .bento{grid-template-columns:1fr;} .bento-donut,.bento-estado,.bento-kpi-firmados,.bento-kpi-artistas,.bento-kpi-sm{grid-column:span 1;grid-row:auto;} }
+        @media (max-width:860px){ .bento{grid-template-columns:1fr;} .bento-donut,.bento-calendar,.bento-estado,.bento-kpi-firmados,.bento-kpi-artistas,.bento-kpi-sm{grid-column:span 1;grid-row:auto;} }
         .donut-card{display:flex;flex-direction:column;height:100%;}
         .donut-wrap{display:flex;align-items:center;gap:2rem;flex-wrap:wrap;margin-top:1rem;flex:1;}
         .donut-seg{cursor:pointer;transition:filter var(--dur-fast) var(--ease-out);}
@@ -371,10 +372,6 @@ function DashboardInner() {
           </Link>
         </motion.div>
 
-        <motion.div variants={fadeUp} custom={2} initial="hidden" animate="show">
-          <ReleaseCalendar />
-        </motion.div>
-
         {acuerdosError && (
           <div
             style={{
@@ -390,7 +387,7 @@ function DashboardInner() {
           </div>
         )}
 
-        <motion.div className="bento" variants={fadeUp} custom={3} initial="hidden" animate="show">
+        <motion.div className="bento" variants={fadeUp} custom={2} initial="hidden" animate="show">
           <div className="card bento-donut donut-card">
             <div className="card-label">Distribución por discográfica</div>
             <div className="donut-wrap">
@@ -437,6 +434,8 @@ function DashboardInner() {
               </div>
             </div>
           </div>
+
+          <ReleaseCalendar className="bento-calendar" />
 
           <div className="card bento-estado">
             <div className="card-label">Estado de los acuerdos</div>
@@ -510,7 +509,7 @@ function DashboardInner() {
           </button>
         </motion.div>
 
-        <motion.div variants={fadeUp} custom={4} initial="hidden" animate="show">
+        <motion.div variants={fadeUp} custom={3} initial="hidden" animate="show">
           <RankingListeners />
         </motion.div>
 

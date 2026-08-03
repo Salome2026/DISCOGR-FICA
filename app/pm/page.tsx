@@ -31,9 +31,9 @@ function formatFecha(v: string | null): string {
 }
 
 const estadoColor: Record<string, string> = {
-  Firmado: "#7fae6f",
+  Firmado: "#8fb98a",
   Contactado: "#8aa0c9",
-  "Necesito ayuda": "#c96a5a",
+  "Necesito ayuda": "#c98a86",
 };
 
 export default function PMModule() {
@@ -73,15 +73,10 @@ function PMModuleInner() {
   }, [role, loadReleases]);
 
   return (
-    <div className="dash-root">
+    <div className="dash-root bg-atmosphere">
       <style>{`
         .dash-root {
-          --bg-0:#2a241c; --bg-0b:#3a3226; --bg-1:#332c22; --bg-2:#3d3427;
-          --line:#544831; --line-soft:#403627;
-          --text-1:#f4ede1; --text-2:#c2b39a; --text-3:#8f8267;
-          --gold:#e6a94f;
-          font-family:-apple-system,"SF Pro Display",ui-sans-serif,"Segoe UI",Helvetica,Arial,sans-serif;
-          background:linear-gradient(180deg,var(--bg-0) 0%,var(--bg-0b) 55%,var(--bg-0) 100%);
+          font-family: var(--font-display);
           color:var(--text-1);
           min-height:100vh;
           padding-bottom:5rem;
@@ -90,13 +85,13 @@ function PMModuleInner() {
         .crumb{font-size:13px;color:var(--text-3);margin-bottom:1.25rem;}
         .crumb a{color:var(--text-2);text-decoration:none;}
         .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;}
-        .btn-primary{background:var(--gold);border:none;border-radius:8px;padding:10px 18px;color:#3a2b0f;font-weight:600;cursor:pointer;font-size:13.5px;}
+        .btn-primary{background:var(--accent-glass-bg);border:1px solid var(--accent-glass-border);border-radius:8px;padding:10px 18px;color:var(--text-1);font-weight:600;cursor:pointer;font-size:13.5px;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);}
         .btn-ghost{background:transparent;border:1px solid var(--line-soft);border-radius:8px;padding:8px 14px;color:var(--text-2);cursor:pointer;font-size:13px;}
-        .card{background:var(--bg-1);border:1px solid var(--line-soft);border-radius:16px;padding:1.5rem;}
+        .card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:1.5rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);}
         table{width:100%;border-collapse:collapse;font-size:13px;}
         th{text-align:left;color:var(--text-3);font-weight:500;padding:8px 10px;border-bottom:1px solid var(--line-soft);}
         td{padding:8px 10px;border-bottom:1px solid var(--line-soft);}
-        .badge{font-size:11px;padding:3px 9px;border-radius:100px;font-weight:600;color:#0b0b0b;}
+        .badge{font-size:11px;padding:3px 9px;border-radius:100px;font-weight:600;color:var(--bg-0);}
       `}</style>
 
       <div className="inner">
@@ -106,7 +101,7 @@ function PMModuleInner() {
 
         <div className="topbar">
           <div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>
+            <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "-.02em" }}>
               {role === "admin" ? "Todos los lanzamientos" : "Mis lanzamientos"}
             </h1>
             <p style={{ fontSize: 12.5, color: "var(--text-3)", margin: "4px 0 0" }}>
@@ -124,7 +119,7 @@ function PMModuleInner() {
         </div>
 
         {error && (
-          <div style={{ background: "#3d2a24", color: "#eab3a8", padding: "10px 16px", borderRadius: 10, fontSize: 13, marginBottom: 16 }}>
+          <div style={{ background: "var(--crit-bg)", color: "var(--crit-ink)", padding: "10px 16px", borderRadius: 10, fontSize: 13, marginBottom: 16 }}>
             {error}
           </div>
         )}
@@ -174,7 +169,7 @@ function PMModuleInner() {
                     <td>
                       <span
                         className="badge"
-                        style={{ background: estadoColor[r.estado] ?? "#8a7c62" }}
+                        style={{ background: estadoColor[r.estado] ?? "#71737d" }}
                       >
                         {r.estado}
                       </span>
@@ -184,7 +179,7 @@ function PMModuleInner() {
                     <td>{r.autores_compositores ?? "—"}</td>
                     <td>
                       {r.audio_url ? (
-                        <a href={r.audio_url} target="_blank" rel="noopener noreferrer" style={{ color: "#e6a94f" }}>
+                        <a href={r.audio_url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-color)" }}>
                           ✓ Escuchar
                         </a>
                       ) : (
@@ -193,7 +188,7 @@ function PMModuleInner() {
                     </td>
                     <td>
                       {r.portada_url ? (
-                        <a href={r.portada_url} target="_blank" rel="noopener noreferrer" style={{ color: "#e6a94f" }}>
+                        <a href={r.portada_url} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-color)" }}>
                           ✓ Ver
                         </a>
                       ) : (

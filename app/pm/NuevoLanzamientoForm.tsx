@@ -443,6 +443,8 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
         position: "fixed",
         inset: 0,
         background: "rgba(0,0,0,0.55)",
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
         zIndex: 100,
         display: "flex",
         alignItems: "center",
@@ -456,10 +458,13 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
         style={{
-          background: "#1c1712",
-          color: "#f4ede1",
+          background: "var(--glass-bg-strong)",
+          backdropFilter: "blur(40px) saturate(1.7)",
+          WebkitBackdropFilter: "blur(40px) saturate(1.7)",
+          color: "var(--text-1)",
           borderRadius: 16,
-          border: "1px solid #403627",
+          border: "1px solid var(--glass-border)",
+          boxShadow: "var(--shadow-glass-lg)",
           width: "100%",
           maxWidth: modalWidth,
           padding: "1.5rem",
@@ -473,7 +478,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
         <div style={{ fontSize: 17, fontWeight: 600 }}>+ Nuevo lanzamiento</div>
 
         <div>
-          <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Tipo de lanzamiento</label>
+          <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Tipo de lanzamiento</label>
           <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
             {TIPOS.map((t) => (
               <button
@@ -484,9 +489,9 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                   flex: 1,
                   padding: "9px 0",
                   borderRadius: 8,
-                  border: tipo === t.value ? "1px solid #e6a94f" : "1px solid #403627",
-                  background: tipo === t.value ? "#3a2f1c" : "#242019",
-                  color: tipo === t.value ? "#e6a94f" : "#c2b39a",
+                  border: tipo === t.value ? "1px solid var(--accent-color)" : "1px solid var(--line-soft)",
+                  background: tipo === t.value ? "rgba(63,198,209,0.15)" : "var(--bg-2)",
+                  color: tipo === t.value ? "var(--accent-color)" : "var(--text-2)",
                   fontWeight: 600,
                   fontSize: 13,
                   cursor: "pointer",
@@ -501,7 +506,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
         {tipo && (
           <>
             <div>
-              <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Artista</label>
+              <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Artista</label>
               <input
                 value={artist}
                 onChange={(e) => onArtistChange(e.target.value)}
@@ -511,7 +516,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             </div>
 
             <div>
-              <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Sello / unidad de negocio</label>
+              <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Sello / unidad de negocio</label>
               <select
                 value={sello}
                 onChange={(e) => onSelloChange(e.target.value)}
@@ -526,7 +531,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
 
             {sello === "Streamings" && (
               <div>
-                <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Seleccionar streaming</label>
+                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Seleccionar streaming</label>
                 <select
                   value={streamingProject}
                   onChange={(e) => setStreamingProject(e.target.value)}
@@ -542,7 +547,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
 
             {tipo === "single" ? (
               <div>
-                <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Nombre del fonograma</label>
+                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Nombre del fonograma</label>
                 <input
                   value={fonograma}
                   onChange={(e) => setFonograma(e.target.value)}
@@ -552,7 +557,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
               </div>
             ) : (
               <div>
-                <label style={{ fontSize: 12.5, color: "#c2b39a" }}>
+                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>
                   Nombre del {tipo === "ep" ? "EP" : "álbum"}
                 </label>
                 <input
@@ -566,7 +571,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
 
             {tipo === "single" && (
               <div>
-                <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Autores y compositores</label>
+                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Autores y compositores</label>
                 <input
                   value={autores}
                   onChange={(e) => setAutores(e.target.value)}
@@ -577,7 +582,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             )}
 
             <div>
-              <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Estado del release</label>
+              <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Estado del release</label>
               <select value={estado} onChange={(e) => setEstado(e.target.value as typeof estado)} style={inputStyle}>
                 {ESTADOS.map((e) => (
                   <option key={e} value={e}>{e}</option>
@@ -586,7 +591,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             </div>
 
             <div>
-              <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Distribuidora</label>
+              <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Distribuidora</label>
               <select value={distribuidora} onChange={(e) => setDistribuidora(e.target.value)} style={inputStyle}>
                 <option value="">Elegir...</option>
                 {distribuidoras.map((d) => (
@@ -596,29 +601,29 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             </div>
 
             <div>
-              <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Fecha de lanzamiento</label>
+              <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Fecha de lanzamiento</label>
               <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} style={inputStyle} />
             </div>
 
             {tipo === "single" ? (
               <>
                 <div>
-                  <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Audio (.wav)</label>
+                  <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Audio (.wav)</label>
                   <input type="file" accept=".wav,audio/wav" onChange={handleAudioChange} style={fileInputStyle} />
-                  {audioFile && <p style={{ fontSize: 11.5, color: "#7fae6f", marginTop: 4 }}>✓ {audioFile.name}</p>}
+                  {audioFile && <p style={{ fontSize: 11.5, color: "var(--good)", marginTop: 4 }}>✓ {audioFile.name}</p>}
                 </div>
                 <div>
-                  <label style={{ fontSize: 12.5, color: "#c2b39a" }}>
+                  <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>
                     Portada ({PORTADA_SIZE}x{PORTADA_SIZE}px, para Spotify)
                   </label>
                   <input type="file" accept="image/png,image/jpeg" onChange={handlePortadaChange} style={fileInputStyle} />
-                  {portadaFile && <p style={{ fontSize: 11.5, color: "#7fae6f", marginTop: 4 }}>✓ {portadaFile.name}</p>}
+                  {portadaFile && <p style={{ fontSize: 11.5, color: "var(--good)", marginTop: 4 }}>✓ {portadaFile.name}</p>}
                 </div>
               </>
             ) : (
               <>
                 <div>
-                  <label style={{ fontSize: 12.5, color: "#c2b39a" }}>Comentarios u observaciones</label>
+                  <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Comentarios u observaciones</label>
                   <textarea
                     value={comentariosGrupo}
                     onChange={(e) => setComentariosGrupo(e.target.value)}
@@ -627,11 +632,11 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                   />
                 </div>
 
-                <div style={{ borderTop: "1px solid #403627", paddingTop: 12, marginTop: 4 }}>
+                <div style={{ borderTop: "1px solid var(--line-soft)", paddingTop: 12, marginTop: 4 }}>
                   <div style={{ fontSize: 14.5, fontWeight: 600, marginBottom: 4 }}>
                     Canciones del lanzamiento
                   </div>
-                  <div style={{ fontSize: 12, color: "#8f8267", marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, color: "var(--text-3)", marginBottom: 10 }}>
                     {tracks.length} {cancionPlural(tracks.length)} cargada{tracks.length === 1 ? "" : "s"}
                   </div>
 
@@ -640,9 +645,9 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                       <div
                         key={t.key}
                         style={{
-                          border: "1px solid #403627",
+                          border: "1px solid var(--line-soft)",
                           borderRadius: 10,
-                          background: "#242019",
+                          background: "var(--bg-2)",
                           overflow: "hidden",
                         }}
                       >
@@ -656,18 +661,18 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                           }}
                           onClick={() => updateTrack(t.key, { collapsed: !t.collapsed })}
                         >
-                          <span style={{ fontSize: 12, color: "#8f8267", width: 20 }}>{i + 1}</span>
+                          <span style={{ fontSize: 12, color: "var(--text-3)", width: 20 }}>{i + 1}</span>
                           <span style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>
                             {t.fonograma || "Sin nombre todavía"}
                             {(!t.fonograma.trim() || !t.artistaPrincipal.trim()) && (
-                              <span style={{ color: "#d99a4e", fontWeight: 500, fontSize: 11.5 }}> · incompleta</span>
+                              <span style={{ color: "var(--warn)", fontWeight: 500, fontSize: 11.5 }}> · incompleta</span>
                             )}
                           </span>
                           <button type="button" onClick={(e) => { e.stopPropagation(); moveTrack(t.key, -1); }} disabled={i === 0} style={miniBtnStyle(i === 0)}>↑</button>
                           <button type="button" onClick={(e) => { e.stopPropagation(); moveTrack(t.key, 1); }} disabled={i === tracks.length - 1} style={miniBtnStyle(i === tracks.length - 1)}>↓</button>
                           <button type="button" onClick={(e) => { e.stopPropagation(); duplicateTrack(t.key); }} style={miniBtnStyle(false)} title="Duplicar">⧉</button>
                           <button type="button" onClick={(e) => { e.stopPropagation(); removeTrack(t.key); }} disabled={tracks.length === 1} style={miniBtnStyle(tracks.length === 1)} title="Eliminar">×</button>
-                          <span style={{ fontSize: 12, color: "#8f8267" }}>{t.collapsed ? "▸" : "▾"}</span>
+                          <span style={{ fontSize: 12, color: "var(--text-3)" }}>{t.collapsed ? "▸" : "▾"}</span>
                         </div>
 
                         {!t.collapsed && (
@@ -737,9 +742,9 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                       width: "100%",
                       padding: "9px 0",
                       borderRadius: 8,
-                      border: "1px dashed #403627",
+                      border: "1px dashed var(--line-soft)",
                       background: "transparent",
-                      color: "#c2b39a",
+                      color: "var(--text-2)",
                       fontSize: 13,
                       cursor: "pointer",
                     }}
@@ -750,8 +755,8 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
 
                 <div
                   style={{
-                    background: "#242019",
-                    border: "1px solid #403627",
+                    background: "var(--bg-2)",
+                    border: "1px solid var(--line-soft)",
                     borderRadius: 10,
                     padding: "10px 12px",
                     fontSize: 12.5,
@@ -761,11 +766,11 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                   }}
                 >
                   <div>Total de canciones: <strong>{tracks.length}</strong></div>
-                  <div style={{ color: incompleteTracks.length ? "#eab3a8" : "#8f8267" }}>
+                  <div style={{ color: incompleteTracks.length ? "var(--crit-ink)" : "var(--text-3)" }}>
                     Con información incompleta: <strong>{incompleteTracks.length}</strong>
                   </div>
                   {duplicateNames.length > 0 && (
-                    <div style={{ color: "#f0cfa0" }}>
+                    <div style={{ color: "var(--warn-ink)" }}>
                       Nombres duplicados: {duplicateNames.join(", ")}
                     </div>
                   )}
@@ -776,17 +781,17 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
         )}
 
         {fileError && (
-          <div style={{ background: "#3d2a24", color: "#eab3a8", padding: "8px 12px", borderRadius: 8, fontSize: 12.5 }}>
+          <div style={{ background: "var(--crit-bg)", color: "var(--crit-ink)", padding: "8px 12px", borderRadius: 8, fontSize: 12.5 }}>
             {fileError}
           </div>
         )}
         {error && (
-          <div style={{ background: "#3d2a24", color: "#eab3a8", padding: "8px 12px", borderRadius: 8, fontSize: 13 }}>
+          <div style={{ background: "var(--crit-bg)", color: "var(--crit-ink)", padding: "8px 12px", borderRadius: 8, fontSize: 13 }}>
             {error}
           </div>
         )}
         {success && (
-          <div style={{ background: "#3a4032", color: "#d3e6c9", padding: "8px 12px", borderRadius: 8, fontSize: 13 }}>
+          <div style={{ background: "var(--good-bg)", color: "var(--good-ink)", padding: "8px 12px", borderRadius: 8, fontSize: 13 }}>
             Lanzamiento guardado y actualizado en el catálogo correctamente.
           </div>
         )}
@@ -797,10 +802,10 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             onClick={onClose}
             style={{
               background: "transparent",
-              border: "1px solid #403627",
+              border: "1px solid var(--line-soft)",
               borderRadius: 8,
               padding: "8px 16px",
-              color: "#c2b39a",
+              color: "var(--text-2)",
               cursor: "pointer",
               fontSize: 13,
             }}
@@ -811,12 +816,14 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             type="submit"
             disabled={saving || !tipo}
             style={{
-              background: "#e6a94f",
-              border: "none",
+              background: "var(--accent-glass-bg)",
+              border: "1px solid var(--accent-glass-border)",
               borderRadius: 8,
               padding: "8px 16px",
-              color: "#3a2b0f",
+              color: "var(--text-1)",
               fontWeight: 600,
+              backdropFilter: "blur(20px) saturate(1.7)",
+              WebkitBackdropFilter: "blur(20px) saturate(1.7)",
               cursor: saving || !tipo ? "default" : "pointer",
               fontSize: 13,
               opacity: saving || !tipo ? 0.6 : 1,
@@ -834,17 +841,17 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   );
 }
 
-const smallLabel: React.CSSProperties = { fontSize: 11.5, color: "#8f8267" };
+const smallLabel: React.CSSProperties = { fontSize: 11.5, color: "var(--text-3)" };
 
 function miniBtnStyle(disabled: boolean): React.CSSProperties {
   return {
     background: "transparent",
-    border: "1px solid #403627",
+    border: "1px solid var(--line-soft)",
     borderRadius: 6,
     width: 22,
     height: 22,
     fontSize: 12,
-    color: disabled ? "#544831" : "#c2b39a",
+    color: disabled ? "var(--line)" : "var(--text-2)",
     cursor: disabled ? "default" : "pointer",
     lineHeight: 1,
   };
@@ -852,11 +859,11 @@ function miniBtnStyle(disabled: boolean): React.CSSProperties {
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  background: "#242019",
-  border: "1px solid #403627",
+  background: "var(--bg-2)",
+  border: "1px solid var(--line-soft)",
   borderRadius: 8,
   padding: "8px 12px",
-  color: "#f4ede1",
+  color: "var(--text-1)",
   fontSize: 13,
   marginTop: 4,
 };

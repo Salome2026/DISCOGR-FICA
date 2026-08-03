@@ -27,6 +27,19 @@
   --gold: var(--accent);
   --gold-ink: var(--accent-ink);
 
+  /* Glass buttons: silver-tinted translucent glass, NOT a solid metal
+     fill. Used for every actual button/CTA so "transparent + gradient +
+     glass" is unmistakable on the most prominent elements, not just
+     ambient cards. Text sits on top in --text-1, not --accent-ink,
+     since the surface is no longer opaque enough for dark text. */
+  --accent-glass-bg: linear-gradient(
+    155deg,
+    rgba(220, 221, 226, 0.32) 0%,
+    rgba(220, 221, 226, 0.08) 55%,
+    rgba(220, 221, 226, 0.03) 100%
+  );
+  --accent-glass-border: rgba(220, 221, 226, 0.55);
+
   /* Semantic status colors — kept as a thin, muted functional layer (these
      communicate real state: signed/pending/blocked) rather than decoration.
      Desaturated so they sit quietly inside an otherwise monochrome UI. */
@@ -46,9 +59,19 @@
      a flat 4-5% white overlay barely reads as "glass" against a plain
      dark background; the diagonal sheen plus the inset top-highlight in
      --shadow-glass is what actually sells the material. */
-  --glass-bg: linear-gradient(155deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0.01) 100%);
-  --glass-bg-strong: linear-gradient(155deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 100%);
-  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-bg: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.16) 0%,
+    rgba(255, 255, 255, 0.025) 55%,
+    rgba(255, 255, 255, 0.006) 100%
+  );
+  --glass-bg-strong: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.24) 0%,
+    rgba(255, 255, 255, 0.04) 55%,
+    rgba(255, 255, 255, 0.012) 100%
+  );
+  --glass-border: rgba(255, 255, 255, 0.24);
   --glass-blur: 28px;
   --glass-blur-strong: 40px;
 

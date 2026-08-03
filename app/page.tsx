@@ -68,7 +68,8 @@ export default function Landing() {
         .access-card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:2rem;text-align:center;backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);box-shadow:var(--shadow-glass);}
         .access-card h2{font-size:17px;font-weight:600;margin:0 0 8px;}
         .access-card p{font-size:13px;color:var(--text-2);line-height:1.5;margin:0 0 20px;min-height:40px;}
-        .access-btn{width:100%;background:var(--accent-gradient);border:none;border-radius:10px;padding:11px;color:var(--accent-ink);font-weight:600;cursor:pointer;font-size:13.5px;}
+        .access-btn{width:100%;background:var(--accent-glass-bg);border:1px solid var(--accent-glass-border);border-radius:10px;padding:11px;color:var(--text-1);font-weight:600;cursor:pointer;font-size:13.5px;backdrop-filter:blur(var(--glass-blur)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.4);box-shadow:var(--shadow-glass);transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);}
+        .access-btn:hover{transform:translateY(-1px);}
         .access-btn.secondary{background:transparent;border:1px solid var(--line);color:var(--text-1);}
         .login-panel{background:var(--glass-bg-strong);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:2rem;max-width:380px;margin:0 auto;backdrop-filter:blur(var(--glass-blur-strong)) saturate(1.4);-webkit-backdrop-filter:blur(var(--glass-blur-strong)) saturate(1.4);box-shadow:var(--shadow-glass-lg);}
         .login-panel input{width:100%;background:var(--bg-2);border:1px solid var(--line-soft);border-radius:8px;padding:10px 12px;color:var(--text-1);font-size:13.5px;margin-top:6px;}

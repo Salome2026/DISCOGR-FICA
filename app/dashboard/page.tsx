@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { motion, useReducedMotion, animate, type Variants } from "framer-motion";
@@ -254,7 +255,8 @@ function DashboardInner() {
           min-height:100vh;
           padding-bottom:5rem;
         }
-        .dash-inner{max-width:1220px;margin:0 auto;padding:2.5rem 2rem 0;}
+        .dash-watermark{position:fixed;top:0;right:0;width:min(70vw, 900px);height:auto;opacity:.05;filter:grayscale(1) brightness(1.4);pointer-events:none;z-index:0;transform:translate(18%, -12%);}
+        .dash-inner{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:2.5rem 2rem 0;}
         .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2.25rem;flex-wrap:wrap;gap:1rem;}
         .brand{display:flex;align-items:center;gap:10px;}
         .brand-mark{width:30px;height:30px;border-radius:9px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--accent-ink);}
@@ -311,6 +313,16 @@ function DashboardInner() {
         .kpi-sub{font-size:12.5px;color:var(--text-3);margin-top:6px;}
         .footer-note{font-size:12px;color:var(--text-3);text-align:center;margin-top:2.5rem;}
       `}</style>
+
+      <Image
+        src="/vpo-logo.png"
+        alt=""
+        width={2539}
+        height={1298}
+        className="dash-watermark"
+        aria-hidden
+        priority={false}
+      />
 
       <div className="dash-inner">
         <div className="topbar">

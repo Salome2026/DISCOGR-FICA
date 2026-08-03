@@ -46,10 +46,8 @@ const estadoColor: Record<string, string> = {
   "NO SACAR": "#c96a5a",
   "Sin estado": "#8a7c62",
   Aprobado: "#dcdde2",
-  "En negociacion": "#d99a4e",
-  "Enviado a la firma": "#a894c9",
-  "Enviado Whatsapp": "#a894c9",
-  "Enviado Draft por Correo": "#a894c9",
+  "En negociación": "#d99a4e",
+  Enviado: "#a894c9",
   "Sin Empezar": "#6b6152",
 };
 
@@ -183,7 +181,6 @@ function DashboardInner() {
     return { segs, circumference, rest: circumference - offset };
   }, []);
 
-  const maxEstado = estadoCounts ? Math.max(1, ...Object.values(estadoCounts)) : 1;
   const estadoOrder = [
     "Firmado",
     "Contactado",
@@ -295,13 +292,14 @@ function DashboardInner() {
         .leg-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
         .leg-name{color:var(--text-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .leg-val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-1);}
-        .estado-bars{display:flex;flex-direction:column;gap:10px;margin-top:1.25rem;}
-        .ebar-row{display:grid;grid-template-columns:120px 1fr 40px;align-items:center;gap:10px;background:transparent;border:none;padding:4px 4px;border-radius:8px;cursor:pointer;text-align:left;color:inherit;font:inherit;}
-        .ebar-row:hover{background:var(--bg-2);}
-        .ebar-name{font-size:12px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .ebar-track{height:18px;background:var(--bg-2);border-radius:6px;overflow:hidden;}
-        .ebar-fill{height:100%;border-radius:6px;transition:width var(--dur-slow) var(--ease-out);}
-        .ebar-val{font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-1);font-weight:600;}
+        .estado-stack{display:flex;width:100%;height:14px;border-radius:7px;overflow:hidden;margin-top:.85rem;background:var(--bg-2);}
+        .estado-seg{border:none;cursor:pointer;height:100%;min-width:3px;padding:0;transition:filter var(--dur-fast) var(--ease-out);}
+        .estado-seg:hover{filter:brightness(1.2);}
+        .estado-legend{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:.85rem;}
+        .estado-legend-item{display:flex;align-items:center;gap:7px;background:transparent;border:none;cursor:pointer;padding:3px 5px;border-radius:6px;font-size:12px;color:var(--text-2);}
+        .estado-legend-item:hover{background:var(--bg-2);color:var(--text-1);}
+        .estado-legend-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+        .estado-legend-item .val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-1);}
         .kpi{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:1.5rem;cursor:pointer;text-align:left;color:inherit;font:inherit;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);display:flex;flex-direction:column;}
         .kpi:hover{border-color:var(--accent-color-glow);background:var(--glass-bg-strong);transform:translateY(-3px);box-shadow:var(--shadow-glass), 0 0 24px -8px var(--accent-color-glow);}
         .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
@@ -438,26 +436,41 @@ function DashboardInner() {
           <ReleaseCalendar className="bento-calendar" />
 
           <div className="card bento-estado">
-            <div className="card-label">Estado de los acuerdos</div>
-            <div style={{ fontSize: 16, fontWeight: 600, marginTop: 2 }}>
-              {acuerdos ? `${acuerdos.length} acuerdos activos` : "Cargando..."}
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+              <div className="card-label">Estado de los acuerdos</div>
+              <div style={{ fontSize: 13, color: "var(--text-3)" }}>
+                {acuerdos ? `${acuerdos.length} acuerdos activos` : "Cargando..."}
+              </div>
             </div>
-            <div className="estado-bars">
+            <div className="estado-stack">
               {estadoOrder.map((label) => {
                 const count = estadoCounts?.[label] ?? 0;
+                const total = acuerdos?.length ?? 0;
+                const pct = total ? (count / total) * 100 : 0;
+                if (count === 0) return null;
                 return (
-                  <button className="ebar-row" key={label} onClick={() => openEstado(label)}>
-                    <span className="ebar-name">{label}</span>
-                    <div className="ebar-track">
-                      <div
-                        className="ebar-fill"
-                        style={{
-                          width: `${(count / maxEstado) * 100}%`,
-                          background: estadoColor[label] || "var(--accent)",
-                        }}
-                      />
-                    </div>
-                    <span className="ebar-val">{count}</span>
+                  <button
+                    key={label}
+                    className="estado-seg"
+                    style={{ width: `${pct}%`, background: estadoColor[label] || "var(--accent)" }}
+                    onClick={() => openEstado(label)}
+                    title={`${label}: ${count} (${pct.toFixed(1)}%)`}
+                  />
+                );
+              })}
+            </div>
+            <div className="estado-legend">
+              {estadoOrder.map((label) => {
+                const count = estadoCounts?.[label] ?? 0;
+                const total = acuerdos?.length ?? 0;
+                const pct = total ? Math.round((count / total) * 1000) / 10 : 0;
+                return (
+                  <button className="estado-legend-item" key={label} onClick={() => openEstado(label)}>
+                    <span className="dot" style={{ background: estadoColor[label] || "var(--accent)" }} />
+                    <span>{label}</span>
+                    <span className="val">
+                      {count} · {pct}%
+                    </span>
                   </button>
                 );
               })}

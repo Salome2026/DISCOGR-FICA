@@ -96,7 +96,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   const [estado, setEstado] = useState<(typeof ESTADOS)[number]>("Contactado");
   const [distribuidora, setDistribuidora] = useState("");
   const [fecha, setFecha] = useState("");
-  const [hora, setHora] = useState("");
+  const [hora, setHora] = useState("20:00");
 
   // Single-only
   const [fonograma, setFonograma] = useState("");
@@ -701,7 +701,10 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                 <select value={hora} onChange={(e) => setHora(e.target.value)} style={inputStyle}>
                   <option value="">00 (por defecto)</option>
                   {HORAS.map((h) => (
-                    <option key={h} value={`${h}:00`}>{h}</option>
+                    <option key={h} value={`${h}:00`}>
+                      {h}
+                      {["19", "20", "21"].includes(h) ? " (sugerido)" : ""}
+                    </option>
                   ))}
                 </select>
               </div>

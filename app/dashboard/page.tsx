@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { motion, useReducedMotion, animate, type Variants } from "framer-motion";
-import catalogo from "@/data/catalogo.json";
 import { SELLOS, assignSello } from "@/lib/sellos";
 import DrillDown, { Column } from "@/app/components/DrillDown";
 import RankingListeners from "@/app/components/RankingListeners";
@@ -43,8 +42,6 @@ type CatalogTrack = {
   company: string | null;
   artist_display: string;
 };
-
-const catalogoData = catalogo as ArtistEntry[];
 
 const estadoColor: Record<string, string> = {
   Firmado: "#7fae6f",
@@ -203,6 +200,31 @@ function DashboardInner() {
       .sort((a, b) => b.count - a.count);
   }, [catalogTracks]);
 
+  // Live "artistas en catálogo" — built from catalog_tracks instead of the
+  // frozen data/catalogo.json snapshot, so newly added tracks (and artists)
+  // show up here immediately without a code deploy, same fix as the donut
+  // and the Caserío roster page earlier. "La Juntada De Los Artistas" is a
+  // project/container credit, not an individual artist, so it's excluded
+  // from the distinct-artist count.
+  const liveArtistRows = useMemo(() => {
+    if (!catalogTracks) return [];
+    const map = new Map<string, ArtistEntry>();
+    for (const t of catalogTracks) {
+      const names = t.artist_display
+        .split("|")
+        .map((s) => s.trim())
+        .filter((n) => n && n.toLowerCase() !== "la juntada de los artistas");
+      for (const name of names) {
+        if (!map.has(name)) map.set(name, { artist: name, track_count: 0, companies: [], tracks: [] });
+        const entry = map.get(name)!;
+        entry.track_count += 1;
+        if (t.company && !entry.companies.includes(t.company)) entry.companies.push(t.company);
+        entry.tracks.push({ track: t.track, isrc: t.isrc || "", company: t.company || "" });
+      }
+    }
+    return [...map.values()].sort((a, b) => a.artist.localeCompare(b.artist, "es"));
+  }, [catalogTracks]);
+
   const donutTotal = catalogTracks?.length ?? 0;
 
   const donutSegs = useMemo(() => {
@@ -274,13 +296,13 @@ function DashboardInner() {
 
   const artistRows = useMemo(
     () =>
-      catalogoData.map((a) => ({
+      liveArtistRows.map((a) => ({
         ...a,
         id: a.artist,
         acuerdosVinculados: artistaAcuerdoCount.get(norm(a.artist))?.length ?? 0,
         sello: assignSello(a.artist) ?? "Sin asignar",
       })),
-    [artistaAcuerdoCount]
+    [liveArtistRows, artistaAcuerdoCount]
   );
 
   return (
@@ -525,7 +547,7 @@ function DashboardInner() {
               <span className="kpi-label">Artistas en catálogo</span>
             </div>
             <div className="kpi-num">
-              <CountUp value={catalogoData.length} reduceMotion={reduceMotion} />
+              <CountUp value={liveArtistRows.length} reduceMotion={reduceMotion} />
             </div>
             <div className="kpi-sub">con fonogramas cargados</div>
           </button>

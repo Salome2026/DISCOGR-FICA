@@ -34,18 +34,12 @@ export function ensureLegalSchema(): Promise<void> {
   return ready;
 }
 
-export const TIPOS_CONTRATO = [
-  "Sello / Label",
-  "Management",
-  "Booking",
-  "Distribución",
-  "Publishing",
-  "Marketing",
-  "Featuring / Colaboración",
-  "Otro",
-] as const;
+// The three fixed categories a contract can be — matches the actual
+// structure of the label's Legal drive (each artist folder holds up to
+// one contract per category) and the three buttons on the artist ficha.
+export const TIPOS_CONTRATO = ["Editorial", "Intérprete", "Representación"] as const;
 
-export const ESTADOS_CONTRATO = ["Vigente", "Vencido", "En negociación", "Rescindido"] as const;
+export const ESTADOS_CONTRATO = ["Vigente", "Pendiente", "Vencido", "Rescindido"] as const;
 
 export type LegalContract = {
   id: string;

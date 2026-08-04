@@ -46,7 +46,6 @@ const INDYANA_ARTISTS = [
   "matias mareco",
   "sergio ponce",
   "pola dj",
-  "alan gomez",
 ];
 const CASERIO_ARTISTS = [
   "eze remix",

@@ -95,7 +95,7 @@ export default function RankingListeners() {
     <div className="card" style={{ marginBottom: "1.25rem" }}>
       <style>{`
         .rk-split{display:flex;gap:20px;margin-top:1.1rem;align-items:stretch;}
-        .rk-podium{flex:0 0 240px;display:flex;align-items:flex-end;justify-content:center;gap:8px;}
+        .rk-podium{flex:1;min-width:0;display:flex;align-items:flex-end;justify-content:center;gap:22px;}
         .rk-podium-item{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px;text-decoration:none;color:inherit;text-align:center;transition:transform var(--dur-fast) var(--ease-out);}
         .rk-podium-item:hover{transform:translateY(-3px);}
         .rk-podium-item.first{flex:1.2;}

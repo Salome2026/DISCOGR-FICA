@@ -32,7 +32,7 @@ export const SELLO_ROSTERS: Partial<Record<Sello, RosterArtist[]>> = {
     { id: "facuu-dj", name: "Facuu DJ", aliases: ["facuu dj", "facuudj"] },
     { id: "g-sony", name: "G Sony", aliases: ["g sony"] },
     { id: "laalo-dj", name: "Laalo DJ", aliases: ["laalo dj", "laalodj"] },
-    { id: "lazer-k", name: "Lazer K", aliases: ["lazer k"] },
+    { id: "lazer-k", name: "Lazer K", aliases: ["lazer k", "lazerk"] },
     { id: "more-savan", name: "More Savan", aliases: ["more savan"] },
     { id: "nicole-fernandez", name: "Nicole Fernandez", aliases: ["nicole fernandez"] },
     { id: "simo-viani", name: "Simo Viani", aliases: ["simo viani"] },

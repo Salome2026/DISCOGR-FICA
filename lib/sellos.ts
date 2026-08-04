@@ -34,6 +34,7 @@ const INDYANA_ARTISTS = [
   "laalo dj",
   "laalodj",
   "lazer k",
+  "lazerk",
   "more savan",
   "nicole fernandez",
   "simo viani",

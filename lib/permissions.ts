@@ -17,6 +17,8 @@ export const PERMISSIONS = [
   "exportar_datos",
   "modulo_financiero",
   "administrar_usuarios",
+  "ver_legal",
+  "editar_legal",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -48,7 +50,12 @@ const ALL: Permission[] = [...PERMISSIONS];
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   admin: ALL,
   project_manager: ["editar_acuerdos", "subir_audio", "subir_portada", "ver_estadisticas"],
-  legal: ["editar_acuerdos", "aprobar_releases", "ver_estadisticas", "exportar_datos"],
+  // Legal is a fully separate module — its own permissions, shared with no
+  // other operational area (Label/PM/Distribución/Marketing/etc). It does
+  // NOT get editar_acuerdos/aprobar_releases/ver_estadisticas/exportar_datos
+  // even though those existed before this module did — legal's read access
+  // to release status comes from ver_legal, scoped to its own panel only.
+  legal: ["ver_legal", "editar_legal"],
   distribucion: ["editar_acuerdos", "aprobar_releases", "ver_estadisticas"],
   marketing: ["ver_estadisticas", "exportar_datos"],
   artista: ["subir_audio", "subir_portada"],

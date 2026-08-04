@@ -29,9 +29,9 @@ export const SELLO_ROSTERS: Partial<Record<Sello, RosterArtist[]>> = {
     { id: "candu-dominguez", name: "Candu Dominguez", aliases: ["candu dominguez"] },
     { id: "dj-plaga", name: "DJ Plaga", aliases: ["dj plaga"] },
     { id: "dormun", name: "Dormun", aliases: ["dormun"] },
-    { id: "facuu-dj", name: "Facuu DJ", aliases: ["facuu dj"] },
+    { id: "facuu-dj", name: "Facuu DJ", aliases: ["facuu dj", "facuudj"] },
     { id: "g-sony", name: "G Sony", aliases: ["g sony"] },
-    { id: "laalo-dj", name: "Laalo DJ", aliases: ["laalo dj"] },
+    { id: "laalo-dj", name: "Laalo DJ", aliases: ["laalo dj", "laalodj"] },
     { id: "lazer-k", name: "Lazer K", aliases: ["lazer k"] },
     { id: "more-savan", name: "More Savan", aliases: ["more savan"] },
     { id: "nicole-fernandez", name: "Nicole Fernandez", aliases: ["nicole fernandez"] },
@@ -41,6 +41,10 @@ export const SELLO_ROSTERS: Partial<Record<Sello, RosterArtist[]>> = {
     { id: "virrshi-dj", name: "Virrshi DJ", aliases: ["virrshi dj"] },
     { id: "juana-vincent", name: "Juana Vincent", aliases: ["juana vincent"] },
     { id: "tibbas", name: "Tibbas", aliases: ["tibbas"] },
+    { id: "matias-mareco", name: "Matias Mareco", aliases: ["matias mareco"] },
+    { id: "sergio-ponce", name: "Sergio Ponce", aliases: ["sergio ponce"] },
+    { id: "pola-dj", name: "Pola DJ", aliases: ["pola dj"] },
+    { id: "alan-gomez", name: "Alan Gomez", aliases: ["alan gomez"] },
   ],
   // Caserio Records intentionally has no entry here. This roster only
   // classifies tracks in the static data/tracks.json snapshot (an old

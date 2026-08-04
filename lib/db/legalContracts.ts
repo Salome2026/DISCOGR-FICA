@@ -39,7 +39,7 @@ export function ensureLegalSchema(): Promise<void> {
 // one contract per category) and the three buttons on the artist ficha.
 export const TIPOS_CONTRATO = ["Editorial", "Intérprete", "Representación"] as const;
 
-export const ESTADOS_CONTRATO = ["Vigente", "Pendiente", "Vencido", "Rescindido", "Finalizado"] as const;
+export const ESTADOS_CONTRATO = ["Vigente", "Pendiente", "Vencido", "Rescindido", "Finalizado", "Potencial"] as const;
 
 export type LegalContract = {
   id: string;

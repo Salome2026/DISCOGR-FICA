@@ -13,6 +13,7 @@ export const ESTADO_BADGE: Record<string, { bg: string; ink: string }> = {
   Pendiente: { bg: "rgba(217,164,65,.16)", ink: "var(--warn-ink)" },
   Rescindido: { bg: "var(--bg-2)", ink: "var(--text-3)" },
   Finalizado: { bg: "var(--bg-2)", ink: "var(--text-3)" },
+  Potencial: { bg: "rgba(139,147,232,.16)", ink: "#8b93e8" },
   Firmado: { bg: "var(--good-bg)", ink: "var(--good-ink)" },
   Contactado: { bg: "rgba(217,164,65,.16)", ink: "var(--warn-ink)" },
   "NO SACAR": { bg: "var(--crit-bg)", ink: "var(--crit-ink)" },

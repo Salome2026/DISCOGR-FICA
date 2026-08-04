@@ -75,7 +75,7 @@ function publishStatus(fecha: string): { label: string; tone: "warn" | "good" } 
   return d.getTime() > today.getTime() ? { label: "Programado", tone: "warn" } : { label: "Publicado", tone: "good" };
 }
 
-export default function ReleaseCalendar({ className = "" }: { className?: string }) {
+export default function ReleaseCalendar({ className = "", readOnly = false }: { className?: string; readOnly?: boolean }) {
   const [rows, setRows] = useState<PmReleaseRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<"month" | "week" | "day">("month");
@@ -340,7 +340,7 @@ export default function ReleaseCalendar({ className = "" }: { className?: string
       </div>
 
       {selected && (
-        <EventDetail event={selected} onClose={() => setSelected(null)} onSaveMarketing={saveMarketingPlan} />
+        <EventDetail event={selected} onClose={() => setSelected(null)} onSaveMarketing={saveMarketingPlan} readOnly={readOnly} />
       )}
     </div>
   );
@@ -350,10 +350,12 @@ function EventDetail({
   event,
   onClose,
   onSaveMarketing,
+  readOnly = false,
 }: {
   event: CalendarEvent;
   onClose: () => void;
   onSaveMarketing: (ev: CalendarEvent, marketingPlan: boolean, detalle: string | null) => Promise<void>;
+  readOnly?: boolean;
 }) {
   const [detalle, setDetalle] = useState(event.marketingPlanDetalle ?? "");
   const [saving, setSaving] = useState(false);
@@ -426,32 +428,57 @@ function EventDetail({
         <div style={{ borderTop: "1px solid var(--line-soft)", paddingTop: 14, marginTop: 4 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: event.marketingPlan ? 10 : 0 }}>
             <span style={{ fontSize: 13, fontWeight: 600 }}>Plan de marketing</span>
-            <button
-              onClick={toggleMarketing}
-              disabled={saving}
-              style={{
-                background: event.marketingPlan ? "var(--good-bg)" : "var(--glass-bg)",
-                color: event.marketingPlan ? "var(--good-ink)" : "var(--text-2)",
-                border: "1px solid var(--glass-border)", borderRadius: 100, padding: "5px 14px",
-                fontSize: 12, fontWeight: 600, cursor: saving ? "default" : "pointer",
-              }}
-            >
-              {event.marketingPlan ? "Sí" : "No"}
-            </button>
+            {readOnly ? (
+              <span
+                style={{
+                  background: event.marketingPlan ? "var(--good-bg)" : "var(--bg-2)",
+                  color: event.marketingPlan ? "var(--good-ink)" : "var(--text-3)",
+                  border: "1px solid var(--glass-border)", borderRadius: 100, padding: "5px 14px",
+                  fontSize: 12, fontWeight: 600,
+                }}
+              >
+                {event.marketingPlan ? "Sí" : "No"}
+              </span>
+            ) : (
+              <button
+                onClick={toggleMarketing}
+                disabled={saving}
+                style={{
+                  background: event.marketingPlan ? "var(--good-bg)" : "var(--glass-bg)",
+                  color: event.marketingPlan ? "var(--good-ink)" : "var(--text-2)",
+                  border: "1px solid var(--glass-border)", borderRadius: 100, padding: "5px 14px",
+                  fontSize: 12, fontWeight: 600, cursor: saving ? "default" : "pointer",
+                }}
+              >
+                {event.marketingPlan ? "Sí" : "No"}
+              </button>
+            )}
           </div>
           {event.marketingPlan && (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <input
-                value={detalle}
-                onChange={(e) => setDetalle(e.target.value)}
-                onBlur={saveDetalle}
-                placeholder="Link o notas del plan de marketing"
-                style={{ width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-1)", fontSize: 13 }}
-              />
-              {looksLikeUrl && (
-                <a href={event.marketingPlanDetalle!} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-color)", fontSize: 12.5 }}>
-                  Abrir plan de marketing ↗
-                </a>
+              {readOnly ? (
+                looksLikeUrl ? (
+                  <a href={event.marketingPlanDetalle!} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-color)", fontSize: 12.5 }}>
+                    Abrir plan de marketing ↗
+                  </a>
+                ) : (
+                  event.marketingPlanDetalle && <div style={{ fontSize: 12.5, color: "var(--text-2)" }}>{event.marketingPlanDetalle}</div>
+                )
+              ) : (
+                <>
+                  <input
+                    value={detalle}
+                    onChange={(e) => setDetalle(e.target.value)}
+                    onBlur={saveDetalle}
+                    placeholder="Link o notas del plan de marketing"
+                    style={{ width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-1)", fontSize: 13 }}
+                  />
+                  {looksLikeUrl && (
+                    <a href={event.marketingPlanDetalle!} target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-color)", fontSize: 12.5 }}>
+                      Abrir plan de marketing ↗
+                    </a>
+                  )}
+                </>
               )}
             </div>
           )}

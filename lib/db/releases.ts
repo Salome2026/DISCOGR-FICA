@@ -200,7 +200,10 @@ export async function createGroupedRelease(group: NewReleaseGroup, tracks: NewGr
 
 export async function listReleasesFor(email: string, role: string) {
   await ensureReleasesSchema();
-  if (role === "admin") {
+  // Legal has no releases of its own — it needs the same full calendar as
+  // Label Management to know what's coming up, same live data, same rule
+  // as admin's "see everything" branch below.
+  if (role === "admin" || role === "legal") {
     const { rows } = await sql`
       SELECT r.*, g.tipo AS group_tipo, g.nombre AS group_nombre
       FROM pm_releases r

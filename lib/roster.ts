@@ -55,6 +55,33 @@ export const SELLO_ROSTERS: Partial<Record<Sello, RosterArtist[]>> = {
   // the catalog_tracks DB table where PM-loaded releases actually land.
 };
 
+// Caserio's roster, kept separate from SELLO_ROSTERS above for the reason
+// noted there. Used for things that just need "our artists' names" — like
+// picking who to sync with Chartmetric — without touching sello-page
+// rendering.
+export const CASERIO_ROSTER_NAMES = [
+  "Eze Remix",
+  "Juanma Girat",
+  "Gnabry",
+  "Los Anormales",
+  "Joaquín Arce",
+  "Eze Greco",
+  "Dura DJ",
+  "Tomi Rmx",
+  "Sossa",
+];
+
+// Every artist actually signed to / working with one of our sellos — the
+// roster lists above exist to classify tracks, but this flat name list is
+// what things like the Chartmetric sync use to know who "our artists" are,
+// as opposed to every artist in the wider catalog exports.
+export function getAllRosterArtistNames(): string[] {
+  const fromRosters = Object.values(SELLO_ROSTERS)
+    .flat()
+    .map((a) => a.name);
+  return [...new Set([...fromRosters, ...CASERIO_ROSTER_NAMES])];
+}
+
 export function matchRosterArtist(
   participant: string,
   roster: RosterArtist[]

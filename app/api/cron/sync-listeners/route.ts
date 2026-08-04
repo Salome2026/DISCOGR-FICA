@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import catalogo from "@/data/catalogo.json";
 import { assignSello } from "@/lib/sellos";
+import { getAllRosterArtistNames } from "@/lib/roster";
 import { chartmetricConfigured, searchArtist, getArtistSpotifyStats } from "@/lib/chartmetric";
 import { upsertDailyRecord, startSyncRun, finishSyncRun } from "@/lib/db/listeners";
-
-type ArtistEntry = { artist: string };
-const catalogoData = catalogo as ArtistEntry[];
 
 function today(): string {
   return new Date().toISOString().slice(0, 10);
@@ -34,9 +31,7 @@ export async function GET(req: NextRequest) {
   const errors: string[] = [];
   const measuredAt = today();
 
-  for (const entry of catalogoData) {
-    const artistName = entry.artist;
-    if (!artistName || artistName === "Sin artista") continue;
+  for (const artistName of getAllRosterArtistNames()) {
     try {
       const match = await searchArtist(artistName);
       if (!match) {

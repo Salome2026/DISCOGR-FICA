@@ -35,6 +35,30 @@ export function getContentExamples(genero: string): ContentExample[] {
   return map[genero] ?? [];
 }
 
+// Real calendar dates from today (day of load) through the launch date —
+// computed here in code, never left to the model, since LLMs are unreliable
+// at date arithmetic and this has to line up with the real calendar exactly.
+// Capped so a release scheduled months out doesn't blow up the request; the
+// near-term run-up to launch is what actually needs day-by-day granularity.
+export function buildCalendarDates(fechaISO: string | null, maxDays = 45): { fecha: string; diaSemana: string }[] {
+  if (!fechaISO) return [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const launch = new Date(`${fechaISO}T00:00:00`);
+  if (isNaN(launch.getTime()) || launch < today) return [];
+
+  const days: { fecha: string; diaSemana: string }[] = [];
+  const cursor = new Date(today);
+  while (cursor <= launch && days.length < maxDays) {
+    days.push({
+      fecha: cursor.toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" }),
+      diaSemana: cursor.toLocaleDateString("es-AR", { weekday: "long" }),
+    });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return days;
+}
+
 export type MarketingPlanInput = {
   artist: string;
   featuring: string[];
@@ -61,6 +85,13 @@ export type MarketingPlanInput = {
     } | null;
   };
   contentExamples: ContentExample[];
+  // Real calendar dates from "day of load" through the launch date, computed
+  // in code (never by Gemini — LLMs are unreliable at date arithmetic and
+  // this must line up exactly with the real calendar). Gemini only fills in
+  // the content idea for each date; the date itself is echoed back from here
+  // by position when rendering, same zero-hallucination pattern as the
+  // content-examples links.
+  calendario: { fecha: string; diaSemana: string }[];
 };
 
 export type MarketingPlanAccion = {
@@ -72,6 +103,12 @@ export type MarketingPlanAccion = {
   resultadoEsperado: string;
 };
 
+export type MarketingPlanCalendarItem = {
+  contenido: string;
+  plataforma: string;
+  formato: string;
+};
+
 export type MarketingPlanAI = {
   resumenEstrategico: string;
   secciones: {
@@ -79,6 +116,7 @@ export type MarketingPlanAI = {
     contexto: string;
     acciones: MarketingPlanAccion[];
   }[];
+  calendarioContenido: MarketingPlanCalendarItem[];
   kpis: { nombre: string; objetivo: string; frecuencia: string }[];
 };
 
@@ -112,6 +150,18 @@ const RESPONSE_SCHEMA = {
         required: ["titulo", "contexto", "acciones"],
       },
     },
+    calendarioContenido: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          contenido: { type: "STRING" },
+          plataforma: { type: "STRING" },
+          formato: { type: "STRING" },
+        },
+        required: ["contenido", "plataforma", "formato"],
+      },
+    },
     kpis: {
       type: "ARRAY",
       items: {
@@ -125,7 +175,7 @@ const RESPONSE_SCHEMA = {
       },
     },
   },
-  required: ["resumenEstrategico", "secciones", "kpis"],
+  required: ["resumenEstrategico", "secciones", "calendarioContenido", "kpis"],
 };
 
 function buildPrompt(input: MarketingPlanInput): string {
@@ -150,6 +200,10 @@ function buildPrompt(input: MarketingPlanInput): string {
   const cmFeatStr = input.chartmetric.featuring
     ? `Datos del featuring (${input.chartmetric.featuring.nombre}): oyentes mensuales ${input.chartmetric.featuring.monthlyListeners ?? "s/d"}, ciudades top: ${input.chartmetric.featuring.topCities.map((c) => `${c.name} (${c.countryCode.toUpperCase()})`).join(", ") || "s/d"}.`
     : "";
+
+  const calendarioStr = input.calendario.length
+    ? input.calendario.map((d, i) => `${i + 1}. ${d.diaSemana} ${d.fecha}`).join("\n")
+    : null;
 
   const examplesStr = input.contentExamples.length
     ? input.contentExamples
@@ -181,6 +235,7 @@ ${cmFeatStr}
 FORMATOS DE CONTENIDO QUE FUNCIONAN BIEN EN ESTE GÉNERO (referencia real, verificada)
 ${examplesStr}
 
+${calendarioStr ? `CALENDARIO REAL — un ítem de "calendarioContenido" por cada uno de estos días, EN ESTE ORDEN EXACTO (son ${input.calendario.length} días, desde hoy hasta el lanzamiento):\n${calendarioStr}\n` : ""}
 INSTRUCCIONES
 - Generá entre 7 y 9 secciones. Cada sección debe tener un título claro y un contexto breve (2-3 líneas) de por qué esa sección importa PARA ESTE lanzamiento puntual, no en general.
 - Cada sección debe tener entre 2 y 4 acciones. Cada acción tiene que especificar, en campos separados: QUÉ hacer (concreto y ejecutable, no un consejo abstracto), CUÁNDO hacerlo (momento relativo al lanzamiento: ej. "7 días antes", "el día del estreno", "primera semana post-lanzamiento"), CÓMO hacerlo paso a paso (instrucciones prácticas que un equipo pueda seguir sin dudas), POR QUÉ funciona (la razón concreta, no genérica), qué OBJETIVO tiene esa acción, y qué RESULTADO ESPERADO es razonable dado el tamaño de audiencia y presupuesto de este artista.
@@ -190,6 +245,7 @@ INSTRUCCIONES
 - Usá las ciudades/países de mayor audiencia (si están disponibles) para dar foco geográfico concreto.
 - Si el artista tiene lanzamientos previos en el sello, referite a ese historial para dar continuidad (qué construir sobre lo anterior) en vez de tratarlo como debut.
 - Si NO hay presupuesto, el plan debe ser 100% orgánico y no debe mencionar pauta paga en ningún punto.
+${calendarioStr ? `- "calendarioContenido" tiene que traer EXACTAMENTE ${input.calendario.length} elementos, uno por cada día listado en CALENDARIO REAL, en el mismo orden — no agregues ni quites días, no incluyas la fecha en el texto (eso lo maneja el sistema). Cada día necesita UNA idea de contenido concreta y distinta a la de los demás días (nunca "publicar contenido" genérico), con su plataforma (Instagram, TikTok, YouTube, Spotify, etc.) y formato (Reel, Historia, Post, Video largo, Live, etc.). Usá los datos de audiencia (ciudades top, oyentes mensuales) para decidir intensidad y enfoque: más cerca de la fecha de lanzamiento, contenido más fuerte y frecuente (anuncios, cuentas regresivas, adelantos); los días intermedios pueden ser historias más livianas, contenido de proceso o interacción con fans. Si hay más de un artista (featuring), alterná protagonismo entre ambos.` : `- No se pudo calcular un calendario día a día (falta la fecha de lanzamiento o ya pasó) — dejá "calendarioContenido" como un array vacío.`}
 - IMPORTANTE: no incluyas URLs, links ni menciones de "podés ver un ejemplo acá" en ningún campo de texto — el documento final ya inserta por separado los links reales verificados. Vos solo describís las acciones.
 - Escribí todo en español rioplatense, tono profesional pero directo, como si lo hubiera preparado un equipo de marketing musical real con años de experiencia en este género.
 - Muy importante: usá tildes y tildes en mayúsculas correctamente en todas las palabras que las llevan (campaña, técnicas, orgánicas, años, canción, música, etc.) y la letra ñ donde corresponda. No omitas ningún acento — un texto sin tildes se ve poco profesional.

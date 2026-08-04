@@ -1,5 +1,9 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet, renderToFile } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, renderToFile, Font } from "@react-pdf/renderer";
+
+// Disable react-pdf's default word hyphenation — without this it sometimes
+// splits ordinary words mid-letter to fit a line (e.g. "YouTube" -> "Y ouTube").
+Font.registerHyphenationCallback((word: string) => [word]);
 
 const TEAL = "#2a8c94";
 const INK = "#15161a";

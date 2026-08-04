@@ -3,7 +3,7 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { auth } from "@/auth";
 import { getArtistCatalogHistory } from "@/lib/db/catalog";
 import { chartmetricConfigured, searchArtist, getArtistSpotifyStats } from "@/lib/chartmetric";
-import { geminiConfigured, generateMarketingPlan, getContentExamples, type MarketingPlanInput } from "@/lib/gemini";
+import { geminiConfigured, generateMarketingPlan, getContentExamples, buildCalendarDates, type MarketingPlanInput } from "@/lib/gemini";
 import PlanPersonalizadoDoc from "@/lib/pdf/PlanPersonalizadoDoc";
 
 // Never let a slow/unavailable Chartmetric call eat into the 5-10s budget —
@@ -104,6 +104,7 @@ export async function POST(req: NextRequest) {
       featuring: cmFeaturing && primaryFeaturing ? { nombre: primaryFeaturing, ...cmFeaturing } : null,
     },
     contentExamples: getContentExamples(genero),
+    calendario: buildCalendarDates(fecha || null),
   };
 
   try {

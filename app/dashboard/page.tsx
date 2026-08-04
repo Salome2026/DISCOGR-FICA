@@ -207,7 +207,7 @@ function DashboardInner() {
 
   const donutSegs = useMemo(() => {
     const top = companyBuckets ?? [];
-    const circumference = 2 * Math.PI * 96;
+    const circumference = 2 * Math.PI * 80;
     let offset = 0;
     const segs = top.map((c, i) => {
       const frac = donutTotal ? c.count / donutTotal : 0;
@@ -293,24 +293,24 @@ function DashboardInner() {
           padding-bottom:5rem;
         }
         .dash-watermark{position:fixed;top:0;right:0;width:min(70vw, 900px);height:auto;opacity:.05;filter:grayscale(1) brightness(1.4);pointer-events:none;z-index:0;transform:translate(18%, -12%);}
-        .dash-inner{position:relative;z-index:1;max-width:1220px;margin:0 auto;padding:2.5rem 2rem 0;}
-        .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:2.25rem;flex-wrap:wrap;gap:1rem;}
-        .brand{display:flex;align-items:center;gap:10px;}
-        .brand-mark{width:30px;height:30px;border-radius:9px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--accent-ink);}
-        .brand-name{font-size:14px;font-weight:600;letter-spacing:-.01em;}
-        .brand-sub{font-size:11px;color:var(--text-3);}
-        .nav-pills{display:flex;gap:4px;flex-wrap:wrap;background:var(--glass-bg);border:1px solid var(--glass-border);backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);border-radius:var(--radius-pill);padding:5px;}
-        .nav-pill{font-size:12.5px;padding:7px 13px;border-radius:var(--radius-pill);color:var(--text-2);border:1px solid transparent;text-decoration:none;transition:background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);}
+        .dash-inner{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2rem 1.75rem 0;}
+        .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:.85rem;}
+        .brand{display:flex;align-items:center;gap:9px;}
+        .brand-mark{width:26px;height:26px;border-radius:8px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11.5px;color:var(--accent-ink);}
+        .brand-name{font-size:12.5px;font-weight:600;letter-spacing:-.01em;}
+        .brand-sub{font-size:10px;color:var(--text-3);}
+        .nav-pills{display:flex;gap:3px;flex-wrap:wrap;background:var(--glass-bg);border:1px solid var(--glass-border);backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);border-radius:var(--radius-pill);padding:4px;}
+        .nav-pill{font-size:11.5px;padding:6px 11px;border-radius:var(--radius-pill);color:var(--text-2);border:1px solid transparent;text-decoration:none;transition:background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);}
         .nav-pill.active{background:var(--accent-glass-bg);border-color:var(--accent-glass-border);color:var(--text-1);font-weight:600;}
         .nav-pill:hover:not(.active){background:var(--glass-bg-strong);color:var(--text-1);}
-        .page-title{font-size:42px;font-weight:700;letter-spacing:-.03em;margin:0;background:linear-gradient(180deg,var(--text-1) 30%,var(--text-2) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
-        .page-subtitle{font-size:14.5px;color:var(--text-3);margin-top:6px;}
-        .sello-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:1.5rem;}
-        .sello-btn{aspect-ratio:1.4;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12.5px;font-weight:600;border:1px solid var(--glass-border);border-radius:var(--radius-md);background:var(--glass-bg);color:var(--text-1);cursor:pointer;padding:.5rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
+        .page-title{font-size:32px;font-weight:700;letter-spacing:-.03em;margin:0;background:linear-gradient(180deg,var(--text-1) 30%,var(--text-2) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+        .page-subtitle{font-size:13px;color:var(--text-3);margin-top:5px;}
+        .sello-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:7px;margin-bottom:1.25rem;}
+        .sello-btn{aspect-ratio:1.7;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11.5px;font-weight:600;border:1px solid var(--glass-border);border-radius:var(--radius-md);background:var(--glass-bg);color:var(--text-1);cursor:pointer;padding:.4rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
         .sello-btn:hover{background:var(--glass-bg-strong);border-color:var(--accent-color-glow);transform:translateY(-2px);}
-        .card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:1.75rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);}
-        .card-label{font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;}
-        .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:1.1rem;margin-bottom:1.25rem;}
+        .card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:1.4rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);}
+        .card-label{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;}
+        .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:.9rem;margin-bottom:1rem;}
         .bento-donut{grid-column:span 3;grid-row:span 2;}
         .bento-calendar{grid-column:span 3;grid-row:span 2;}
         .bento-estado{grid-column:span 6;}
@@ -319,38 +319,38 @@ function DashboardInner() {
         .bento-kpi-sm{grid-column:span 3;}
         @media (max-width:860px){ .bento{grid-template-columns:1fr;} .bento-donut,.bento-calendar,.bento-estado,.bento-kpi-firmados,.bento-kpi-artistas,.bento-kpi-sm{grid-column:span 1;grid-row:auto;} }
         .donut-card{display:flex;flex-direction:column;height:100%;}
-        .donut-wrap{display:flex;align-items:center;gap:2rem;flex-wrap:wrap;margin-top:1rem;flex:1;}
+        .donut-wrap{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-top:.85rem;flex:1;}
         .donut-seg{cursor:pointer;transition:filter var(--dur-fast) var(--ease-out);}
         .donut-seg:hover{filter:drop-shadow(0 0 10px rgba(255,255,255,0.4));}
         .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
-        .donut-center .n{font-size:52px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
-        .donut-center .l{font-size:12px;color:var(--text-3);margin-top:2px;}
-        .donut-legend{display:flex;flex-direction:column;gap:6px;flex:1;min-width:180px;}
-        .leg-row{display:flex;align-items:center;gap:10px;font-size:13px;background:transparent;border:none;padding:5px 6px;border-radius:8px;cursor:pointer;text-align:left;color:inherit;font:inherit;width:100%;transition:background var(--dur-fast) var(--ease-out);}
+        .donut-center .n{font-size:40px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+        .donut-center .l{font-size:11px;color:var(--text-3);margin-top:2px;}
+        .donut-legend{display:flex;flex-direction:column;gap:5px;flex:1;min-width:160px;}
+        .leg-row{display:flex;align-items:center;gap:9px;font-size:12px;background:transparent;border:none;padding:4px 5px;border-radius:7px;cursor:pointer;text-align:left;color:inherit;font:inherit;width:100%;transition:background var(--dur-fast) var(--ease-out);}
         .leg-row:hover{background:var(--bg-2);}
-        .leg-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+        .leg-dot{width:8px;height:8px;border-radius:3px;flex-shrink:0;}
         .leg-name{color:var(--text-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .leg-val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-1);}
-        .estado-bars{display:flex;align-items:flex-end;justify-content:space-around;gap:10px;width:100%;height:170px;margin-top:1.25rem;padding:0 4px;}
-        .estado-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;flex:1;min-width:0;background:transparent;border:none;cursor:pointer;padding:0;gap:8px;}
-        .estado-col .count{font-size:17px;font-weight:700;color:var(--text-1);font-variant-numeric:tabular-nums;}
-        .estado-col .bar{width:100%;max-width:46px;border-radius:8px 8px 4px 4px;min-height:4px;transition:filter var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);}
+        .estado-bars{display:flex;align-items:flex-end;justify-content:space-around;gap:8px;width:100%;height:135px;margin-top:1rem;padding:0 4px;}
+        .estado-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;flex:1;min-width:0;background:transparent;border:none;cursor:pointer;padding:0;gap:6px;}
+        .estado-col .count{font-size:14.5px;font-weight:700;color:var(--text-1);font-variant-numeric:tabular-nums;}
+        .estado-col .bar{width:100%;max-width:38px;border-radius:7px 7px 4px 4px;min-height:4px;transition:filter var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);}
         .estado-col:hover .bar{filter:brightness(1.2);transform:scaleX(1.08);}
-        .estado-col .label{font-size:13.5px;font-weight:600;color:var(--text-2);text-align:center;line-height:1.25;}
+        .estado-col .label{font-size:11.5px;font-weight:600;color:var(--text-2);text-align:center;line-height:1.25;}
         .estado-col:hover .label{color:var(--text-1);}
-        .estado-col .pct{font-size:12px;color:var(--text-3);font-variant-numeric:tabular-nums;}
-        .kpi{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:1.5rem;cursor:pointer;text-align:left;color:inherit;font:inherit;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);display:flex;flex-direction:column;}
+        .estado-col .pct{font-size:10.5px;color:var(--text-3);font-variant-numeric:tabular-nums;}
+        .kpi{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:1.2rem;cursor:pointer;text-align:left;color:inherit;font:inherit;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);display:flex;flex-direction:column;}
         .kpi:hover{border-color:var(--accent-color-glow);background:var(--glass-bg-strong);transform:translateY(-3px);box-shadow:var(--shadow-glass), 0 0 24px -8px var(--accent-color-glow);}
-        .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
-        .kpi-label{font-size:12.5px;color:var(--text-3);}
-        .kpi-chip{font-size:11px;padding:3px 8px;border-radius:100px;font-weight:600;}
+        .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+        .kpi-label{font-size:11.5px;color:var(--text-3);}
+        .kpi-chip{font-size:10px;padding:2px 7px;border-radius:100px;font-weight:600;}
         .kpi-chip.good{background:var(--good-bg);color:var(--good-ink);}
         .kpi-chip.warn{background:var(--warn-bg);color:var(--warn-ink);}
         .kpi-chip.crit{background:var(--crit-bg);color:var(--crit-ink);}
-        .kpi-num{font-size:42px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:auto;}
-        .kpi-num-xl{font-size:72px;background:var(--accent-gradient);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
-        .kpi-sub{font-size:12.5px;color:var(--text-3);margin-top:6px;}
-        .footer-note{font-size:12px;color:var(--text-3);text-align:center;margin-top:2.5rem;}
+        .kpi-num{font-size:32px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:auto;}
+        .kpi-num-xl{font-size:56px;background:var(--accent-gradient);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+        .kpi-sub{font-size:11.5px;color:var(--text-3);margin-top:5px;}
+        .footer-note{font-size:11px;color:var(--text-3);text-align:center;margin-top:2rem;}
       `}</style>
 
       <Image
@@ -395,7 +395,11 @@ function DashboardInner() {
           <p className="page-subtitle">Pulso general de sellos, acuerdos y catálogo.</p>
         </motion.div>
 
-        <motion.div className="sello-row" variants={fadeUp} custom={1} initial="hidden" animate="show">
+        <motion.div variants={fadeUp} custom={1} initial="hidden" animate="show">
+          <RankingListeners />
+        </motion.div>
+
+        <motion.div className="sello-row" variants={fadeUp} custom={2} initial="hidden" animate="show">
           {SELLOS.filter((s) => s !== "Streamings").map((s) => (
             <Link key={s} href={`/sellos/${encodeURIComponent(s)}`} className="sello-btn">
               {s}
@@ -424,27 +428,27 @@ function DashboardInner() {
           </div>
         )}
 
-        <motion.div className="bento" variants={fadeUp} custom={2} initial="hidden" animate="show">
+        <motion.div className="bento" variants={fadeUp} custom={3} initial="hidden" animate="show">
           <div className="card bento-donut donut-card">
             <div className="card-label">Distribución por discográfica</div>
             <div className="donut-wrap">
-              <div style={{ position: "relative", width: 200, height: 200, flexShrink: 0 }}>
-                <svg width="200" height="200" viewBox="0 0 224 224">
-                  <circle cx="112" cy="112" r="96" fill="none" stroke="var(--bg-2)" strokeWidth="26" />
+              <div style={{ position: "relative", width: 170, height: 170, flexShrink: 0 }}>
+                <svg width="170" height="170" viewBox="0 0 190 190">
+                  <circle cx="95" cy="95" r="80" fill="none" stroke="var(--bg-2)" strokeWidth="22" />
                   {donutSegs.segs.map((s) => (
                     <circle
                       key={s.company}
                       className="donut-seg"
-                      cx="112"
-                      cy="112"
-                      r="96"
+                      cx="95"
+                      cy="95"
+                      r="80"
                       fill="none"
                       stroke={s.color}
-                      strokeWidth="26"
+                      strokeWidth="22"
                       strokeDasharray={`${s.len * drawProgress} ${donutSegs.circumference}`}
                       strokeDashoffset={-s.offset}
                       strokeLinecap="round"
-                      transform="rotate(-90 112 112)"
+                      transform="rotate(-90 95 95)"
                       onClick={() => openCompany(s.company)}
                     >
                       <title>{`${s.company}: ${s.count} (${s.pct}%)`}</title>
@@ -543,10 +547,6 @@ function DashboardInner() {
             </div>
             <div className="kpi-sub">bloquean el release</div>
           </button>
-        </motion.div>
-
-        <motion.div variants={fadeUp} custom={3} initial="hidden" animate="show">
-          <RankingListeners />
         </motion.div>
 
         <p className="footer-note">

@@ -293,7 +293,7 @@ function DashboardInner() {
           padding-bottom:5rem;
         }
         .dash-watermark{position:fixed;top:0;right:0;width:min(70vw, 900px);height:auto;opacity:.05;filter:grayscale(1) brightness(1.4);pointer-events:none;z-index:0;transform:translate(18%, -12%);}
-        .dash-inner{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:2rem 1.75rem 0;}
+        .dash-inner{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:2rem 2.5rem 0;}
         .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:.85rem;}
         .brand{display:flex;align-items:center;gap:9px;}
         .brand-mark{width:26px;height:26px;border-radius:8px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11.5px;color:var(--accent-ink);}

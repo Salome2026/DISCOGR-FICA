@@ -59,26 +59,29 @@ export default function RankingListeners() {
   const visible = expanded ? (rows ?? []).slice(3) : rest;
   const maxListeners = Math.max(1, ...(rows ?? []).map((r) => r.monthly_listeners ?? 0));
   const podiumOrder = [top3[1], top3[0], top3[2]]; // visual order: 2nd, 1st, 3rd
-  const podiumClass = ["second", "first", "third"];
 
   return (
     <div className="card" style={{ marginBottom: "1.25rem" }}>
       <style>{`
-        .rk-podium{display:grid;grid-template-columns:1fr 1.12fr 1fr;gap:10px;align-items:end;margin-top:1rem;margin-bottom:1.25rem;}
-        .rk-podium-card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:13px 10px;border-radius:var(--radius-lg);border:1px solid var(--glass-border);background:var(--glass-bg);box-shadow:var(--shadow-glass);text-decoration:none;color:inherit;text-align:center;transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);}
-        .rk-podium-card:hover{transform:translateY(-4px);background:var(--glass-bg-strong);}
-        .rk-podium-card.first{padding:21px 12px 16px;border-color:var(--accent-color-glow);background:var(--glass-bg-strong);box-shadow:0 0 32px -10px var(--accent-color-glow), var(--shadow-glass-lg);order:2;}
-        .rk-podium-card.second{order:1;}
-        .rk-podium-card.third{order:3;}
-        .rk-podium-badge{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;background:var(--bg-2);color:var(--text-2);}
-        .rk-podium-card.first .rk-podium-badge{width:26px;height:26px;font-size:11.5px;background:var(--accent-gradient);color:var(--accent-ink);}
-        .rk-podium-avatar{width:42px;height:42px;border-radius:12px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--accent-ink);}
-        .rk-podium-card.first .rk-podium-avatar{width:54px;height:54px;font-size:16px;}
+        .rk-podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;margin-top:1.1rem;margin-bottom:1.25rem;}
+        .rk-podium-item{display:flex;flex-direction:column;align-items:center;gap:5px;text-decoration:none;color:inherit;text-align:center;width:104px;transition:transform var(--dur-fast) var(--ease-out);}
+        .rk-podium-item:hover{transform:translateY(-3px);}
+        .rk-podium-item.first{width:116px;}
+        .rk-podium-avatar{width:40px;height:40px;border-radius:12px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:700;color:var(--accent-ink);}
+        .rk-podium-item.first .rk-podium-avatar{width:52px;height:52px;font-size:15px;}
         .rk-podium-name{font-size:12px;font-weight:700;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;}
-        .rk-podium-card.first .rk-podium-name{font-size:14px;}
+        .rk-podium-item.first .rk-podium-name{font-size:14px;}
         .rk-podium-sello{font-size:9.5px;color:var(--text-3);}
-        .rk-podium-listeners{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent-color);}
-        .rk-podium-card.first .rk-podium-listeners{font-size:19px;}
+        .rk-podium-listeners{font-size:14.5px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--accent-color);}
+        .rk-podium-item.first .rk-podium-listeners{font-size:18px;}
+        .rk-podium-bar{width:100%;border-radius:9px 9px 3px 3px;display:flex;align-items:flex-start;justify-content:center;padding-top:8px;margin-top:6px;}
+        .rk-podium-num{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;}
+        .rk-podium-bar.rank-1{height:86px;background:var(--accent-gradient);box-shadow:0 0 24px -8px var(--accent-color-glow);}
+        .rk-podium-bar.rank-1 .rk-podium-num{color:var(--accent-ink);}
+        .rk-podium-bar.rank-2{height:58px;background:var(--glass-bg-strong);border:1px solid var(--glass-border);}
+        .rk-podium-bar.rank-2 .rk-podium-num{color:var(--text-1);}
+        .rk-podium-bar.rank-3{height:40px;background:var(--glass-bg);border:1px solid var(--glass-border);}
+        .rk-podium-bar.rank-3 .rk-podium-num{color:var(--text-2);}
         .rk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:1rem;}
         .rk-card{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:var(--radius-md);border:1px solid var(--glass-border);background:var(--glass-bg);box-shadow:var(--shadow-glass);text-decoration:none;color:inherit;transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
         .rk-card:hover{transform:translateY(-3px);background:var(--glass-bg-strong);border-color:var(--accent-color-glow);box-shadow:0 0 24px -8px var(--accent-color-glow);}
@@ -130,24 +133,26 @@ export default function RankingListeners() {
           {top3.length > 0 && (
             <div className="rk-podium">
               {podiumOrder.map((r, idx) => {
-                if (!r) return <div key={`empty-${idx}`} />;
+                if (!r) return <div key={`empty-${idx}`} className="rk-podium-item" />;
                 const rank = top3.indexOf(r) + 1;
                 return (
                   <Link
                     href={`/artistas/${encodeURIComponent(r.artist_name)}`}
-                    className={`rk-podium-card ${podiumClass[idx]}`}
+                    className={`rk-podium-item ${rank === 1 ? "first" : ""}`}
                     key={r.artist_id}
                   >
-                    <span className="rk-podium-badge">#{rank}</span>
                     <div className="rk-podium-avatar">{r.artist_name.slice(0, 2).toUpperCase()}</div>
                     <div className="rk-podium-name">{r.artist_name}</div>
                     <div className="rk-podium-sello">{r.sello ?? "Sin sello asignado"}</div>
                     <div className="rk-podium-listeners">{r.monthly_listeners?.toLocaleString("es-AR") ?? "—"}</div>
                     {r.artist_rank != null && (
-                      <div style={{ fontSize: 10, color: "var(--text-3)" }}>
+                      <div style={{ fontSize: 9.5, color: "var(--text-3)" }}>
                         Chartmetric #{r.artist_rank.toLocaleString("es-AR")}
                       </div>
                     )}
+                    <div className={`rk-podium-bar rank-${rank}`}>
+                      <span className="rk-podium-num">{rank}</span>
+                    </div>
                   </Link>
                 );
               })}

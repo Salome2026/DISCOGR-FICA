@@ -55,8 +55,10 @@ function ContratosTab() {
         <table>
           <thead>
             <tr>
+              <th>Código</th>
               <th>Artista</th>
               <th>Tipo</th>
+              <th>Contraparte</th>
               <th>Sello</th>
               <th>Firma</th>
               <th>Vencimiento</th>
@@ -68,8 +70,10 @@ function ContratosTab() {
           <tbody>
             {visible.map((c) => (
               <tr key={c.id}>
+                <td className="muted">{c.codigoInterno ?? "—"}</td>
                 <td>{c.artist}</td>
                 <td className="muted">{c.tipoContrato}</td>
+                <td className="muted">{c.contraparte ?? "—"}</td>
                 <td className="muted">{c.sello ?? "—"}</td>
                 <td className="muted">{c.fechaFirma ?? "—"}</td>
                 <td className="muted">{c.fechaVencimiento ?? "—"}</td>
@@ -95,7 +99,7 @@ function ContratosTab() {
             ))}
             {visible.length === 0 && (
               <tr>
-                <td colSpan={8} className="muted" style={{ textAlign: "center", padding: 24 }}>
+                <td colSpan={10} className="muted" style={{ textAlign: "center", padding: 24 }}>
                   Sin contratos cargados todavía.
                 </td>
               </tr>
@@ -130,6 +134,8 @@ function ContractForm({
   const [artist, setArtist] = useState(contract?.artist ?? "");
   const [sello, setSello] = useState(contract?.sello ?? "");
   const [tipoContrato, setTipoContrato] = useState(contract?.tipoContrato ?? TIPOS_CONTRATO[0]);
+  const [contraparte, setContraparte] = useState(contract?.contraparte ?? "");
+  const [codigoInterno, setCodigoInterno] = useState(contract?.codigoInterno ?? "");
   const [fechaFirma, setFechaFirma] = useState(contract?.fechaFirma ?? "");
   const [fechaVencimiento, setFechaVencimiento] = useState(contract?.fechaVencimiento ?? "");
   const [estado, setEstado] = useState(contract?.estado ?? "Vigente");
@@ -165,7 +171,8 @@ function ContractForm({
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          artist, sello: sello || null, tipoContrato, fechaFirma: fechaFirma || null,
+          artist, sello: sello || null, tipoContrato, contraparte: contraparte || null,
+          codigoInterno: codigoInterno || null, fechaFirma: fechaFirma || null,
           fechaVencimiento: fechaVencimiento || null, estado, documentoUrl: documentoUrl || null,
           documentoNombre: documentoNombre || null, notas: notas || null,
         }),
@@ -193,16 +200,26 @@ function ContractForm({
         <div style={{ fontSize: 17, fontWeight: 600 }}>{contract ? "Editar contrato" : "Nuevo contrato"}</div>
 
         <Field label="Artista"><input value={artist} onChange={(e) => setArtist(e.target.value)} required style={inputStyle} /></Field>
-        <Field label="Sello">
-          <select value={sello} onChange={(e) => setSello(e.target.value)} style={inputStyle}>
-            <option value="">Sin asignar</option>
-            {SELLOS.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </Field>
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ flex: 1 }}>
+            <Field label="Sello">
+              <select value={sello} onChange={(e) => setSello(e.target.value)} style={inputStyle}>
+                <option value="">Sin asignar</option>
+                {SELLOS.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </Field>
+          </div>
+          <div style={{ flex: 1 }}>
+            <Field label="Código interno"><input value={codigoInterno} onChange={(e) => setCodigoInterno(e.target.value)} placeholder="Ej: I0049" style={inputStyle} /></Field>
+          </div>
+        </div>
         <Field label="Tipo de contrato">
           <select value={tipoContrato} onChange={(e) => setTipoContrato(e.target.value)} style={inputStyle}>
             {TIPOS_CONTRATO.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
+        </Field>
+        <Field label="Contraparte (si no es el sello mismo)">
+          <input value={contraparte} onChange={(e) => setContraparte(e.target.value)} placeholder="Ej: Tango Made In Argentina Publishing" style={inputStyle} />
         </Field>
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1 }}>

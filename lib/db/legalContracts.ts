@@ -22,6 +22,12 @@ export function ensureLegalSchema(): Promise<void> {
           updated_at TIMESTAMPTZ
         )
       `;
+      // Both found to be real, already-in-use fields when reviewing the
+      // actual Legal Drive: contracts aren't always with the sello itself
+      // (e.g. a publishing deal goes to a separate editorial company), and
+      // every artist folder is keyed by an internal code (e.g. "I0049").
+      await sql`ALTER TABLE legal_contracts ADD COLUMN IF NOT EXISTS contraparte TEXT`;
+      await sql`ALTER TABLE legal_contracts ADD COLUMN IF NOT EXISTS codigo_interno TEXT`;
       await sql`CREATE INDEX IF NOT EXISTS legal_contracts_artist_idx ON legal_contracts (artist)`;
     })();
   }
@@ -46,6 +52,8 @@ export type LegalContract = {
   artist: string;
   sello: string | null;
   tipoContrato: string;
+  contraparte: string | null;
+  codigoInterno: string | null;
   fechaFirma: string | null;
   fechaVencimiento: string | null;
   estado: string;
@@ -63,6 +71,8 @@ function rowToContract(r: Record<string, unknown>): LegalContract {
     artist: r.artist as string,
     sello: (r.sello as string | null) ?? null,
     tipoContrato: r.tipo_contrato as string,
+    contraparte: (r.contraparte as string | null) ?? null,
+    codigoInterno: (r.codigo_interno as string | null) ?? null,
     fechaFirma: (r.fecha_firma as string | null) ?? null,
     fechaVencimiento: (r.fecha_vencimiento as string | null) ?? null,
     estado: r.estado as string,
@@ -93,6 +103,8 @@ export async function createContract(input: {
   artist: string;
   sello: string | null;
   tipoContrato: string;
+  contraparte: string | null;
+  codigoInterno: string | null;
   fechaFirma: string | null;
   fechaVencimiento: string | null;
   estado: string;
@@ -105,10 +117,11 @@ export async function createContract(input: {
   const id = `legal-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const { rows } = await sql`
     INSERT INTO legal_contracts
-      (id, artist, sello, tipo_contrato, fecha_firma, fecha_vencimiento, estado, documento_url, documento_nombre, notas, updated_by, updated_at)
+      (id, artist, sello, tipo_contrato, contraparte, codigo_interno, fecha_firma, fecha_vencimiento, estado, documento_url, documento_nombre, notas, updated_by, updated_at)
     VALUES
-      (${id}, ${input.artist}, ${input.sello}, ${input.tipoContrato}, ${input.fechaFirma}, ${input.fechaVencimiento},
-       ${input.estado}, ${input.documentoUrl}, ${input.documentoNombre}, ${input.notas}, ${input.actorEmail}, now())
+      (${id}, ${input.artist}, ${input.sello}, ${input.tipoContrato}, ${input.contraparte}, ${input.codigoInterno},
+       ${input.fechaFirma}, ${input.fechaVencimiento}, ${input.estado}, ${input.documentoUrl}, ${input.documentoNombre},
+       ${input.notas}, ${input.actorEmail}, now())
     RETURNING *
   `;
   return rowToContract(rows[0]);
@@ -120,6 +133,8 @@ export async function updateContract(
     artist: string;
     sello: string | null;
     tipoContrato: string;
+    contraparte: string | null;
+    codigoInterno: string | null;
     fechaFirma: string | null;
     fechaVencimiento: string | null;
     estado: string;
@@ -135,6 +150,8 @@ export async function updateContract(
       artist = ${input.artist},
       sello = ${input.sello},
       tipo_contrato = ${input.tipoContrato},
+      contraparte = ${input.contraparte},
+      codigo_interno = ${input.codigoInterno},
       fecha_firma = ${input.fechaFirma},
       fecha_vencimiento = ${input.fechaVencimiento},
       estado = ${input.estado},

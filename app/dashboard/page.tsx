@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { motion, useReducedMotion, animate, type Variants } from "framer-motion";
-import porCompania from "@/data/por_compania.json";
 import catalogo from "@/data/catalogo.json";
 import { SELLOS, assignSello } from "@/lib/sellos";
 import DrillDown, { Column } from "@/app/components/DrillDown";
@@ -34,11 +33,18 @@ type ArtistEntry = {
   tracks: { track: string; isrc: string; company: string }[];
 };
 
-const catalogoData = catalogo as ArtistEntry[];
-const porCompaniaData = porCompania as {
-  total: number;
-  companies: { company: string; count: number; pct: number; tracks: Track[] }[];
+type CatalogTrack = {
+  id: string;
+  isrc: string | null;
+  track: string;
+  album: string | null;
+  release_date: string | null;
+  upc: string | null;
+  company: string | null;
+  artist_display: string;
 };
+
+const catalogoData = catalogo as ArtistEntry[];
 
 const estadoColor: Record<string, string> = {
   Firmado: "#7fae6f",
@@ -109,6 +115,7 @@ export default function Dashboard() {
 function DashboardInner() {
   const [acuerdos, setAcuerdos] = useState<Release[] | null>(null);
   const [acuerdosError, setAcuerdosError] = useState<string | null>(null);
+  const [catalogTracks, setCatalogTracks] = useState<CatalogTrack[] | null>(null);
   const [drill, setDrill] = useState<DrillState>(null);
   const reduceMotion = !!useReducedMotion();
   const fadeUp: Variants = {
@@ -145,6 +152,13 @@ function DashboardInner() {
       .catch((e) => setAcuerdosError(String(e)));
   }, []);
 
+  useEffect(() => {
+    fetch("/api/catalog/tracks")
+      .then((r) => r.json())
+      .then((d) => !d.error && setCatalogTracks(d.tracks))
+      .catch(() => {});
+  }, []);
+
   const estadoCounts = useMemo(() => {
     if (!acuerdos) return null;
     const buckets: Record<string, number> = {};
@@ -167,19 +181,44 @@ function DashboardInner() {
     return map;
   }, [acuerdos]);
 
+  const companyBuckets = useMemo(() => {
+    if (!catalogTracks) return null;
+    const buckets = new Map<string, Track[]>();
+    for (const t of catalogTracks) {
+      const company = t.company || "Sin distribuidora";
+      if (!buckets.has(company)) buckets.set(company, []);
+      buckets.get(company)!.push({
+        id: t.id,
+        artist: t.artist_display.replace(/\|/g, ", "),
+        track: t.track,
+        isrc: t.isrc || "",
+        album: t.album || "",
+        release_date: t.release_date || "",
+        upc: t.upc || "",
+        type: "",
+      });
+    }
+    return [...buckets.entries()]
+      .map(([company, tracks]) => ({ company, tracks, count: tracks.length }))
+      .sort((a, b) => b.count - a.count);
+  }, [catalogTracks]);
+
+  const donutTotal = catalogTracks?.length ?? 0;
+
   const donutSegs = useMemo(() => {
-    const top = porCompaniaData.companies;
+    const top = companyBuckets ?? [];
     const circumference = 2 * Math.PI * 96;
     let offset = 0;
     const segs = top.map((c, i) => {
-      const frac = c.count / porCompaniaData.total;
+      const frac = donutTotal ? c.count / donutTotal : 0;
       const len = frac * circumference;
-      const seg = { color: COLORS[i % COLORS.length], len, offset, company: c.company, count: c.count, pct: c.pct };
+      const pct = donutTotal ? Math.round((c.count / donutTotal) * 1000) / 10 : 0;
+      const seg = { color: COLORS[i % COLORS.length], len, offset, company: c.company, count: c.count, pct, tracks: c.tracks };
       offset += len;
       return seg;
     });
     return { segs, circumference, rest: circumference - offset };
-  }, []);
+  }, [companyBuckets, donutTotal]);
 
   const estadoOrder = [
     "Firmado",
@@ -197,7 +236,7 @@ function DashboardInner() {
   const sinPortada = acuerdos?.filter((a) => !a.portada) ?? [];
 
   function openCompany(company: string) {
-    const c = porCompaniaData.companies.find((x) => x.company === company);
+    const c = companyBuckets?.find((x) => x.company === company);
     if (c) setDrill({ kind: "company", company, rows: c.tracks });
   }
 
@@ -292,14 +331,14 @@ function DashboardInner() {
         .leg-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
         .leg-name{color:var(--text-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .leg-val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-1);}
-        .estado-stack{display:flex;width:100%;height:14px;border-radius:7px;overflow:hidden;margin-top:.85rem;background:var(--bg-2);}
-        .estado-seg{border:none;cursor:pointer;height:100%;min-width:3px;padding:0;transition:filter var(--dur-fast) var(--ease-out);}
-        .estado-seg:hover{filter:brightness(1.2);}
-        .estado-legend{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:.85rem;}
-        .estado-legend-item{display:flex;align-items:center;gap:7px;background:transparent;border:none;cursor:pointer;padding:3px 5px;border-radius:6px;font-size:12px;color:var(--text-2);}
-        .estado-legend-item:hover{background:var(--bg-2);color:var(--text-1);}
-        .estado-legend-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-        .estado-legend-item .val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-1);}
+        .estado-bars{display:flex;align-items:flex-end;justify-content:space-around;gap:10px;width:100%;height:170px;margin-top:1.25rem;padding:0 4px;}
+        .estado-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;flex:1;min-width:0;background:transparent;border:none;cursor:pointer;padding:0;gap:8px;}
+        .estado-col .count{font-size:17px;font-weight:700;color:var(--text-1);font-variant-numeric:tabular-nums;}
+        .estado-col .bar{width:100%;max-width:46px;border-radius:8px 8px 4px 4px;min-height:4px;transition:filter var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);}
+        .estado-col:hover .bar{filter:brightness(1.2);transform:scaleX(1.08);}
+        .estado-col .label{font-size:13.5px;font-weight:600;color:var(--text-2);text-align:center;line-height:1.25;}
+        .estado-col:hover .label{color:var(--text-1);}
+        .estado-col .pct{font-size:12px;color:var(--text-3);font-variant-numeric:tabular-nums;}
         .kpi{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:1.5rem;cursor:pointer;text-align:left;color:inherit;font:inherit;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);display:flex;flex-direction:column;}
         .kpi:hover{border-color:var(--accent-color-glow);background:var(--glass-bg-strong);transform:translateY(-3px);box-shadow:var(--shadow-glass), 0 0 24px -8px var(--accent-color-glow);}
         .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
@@ -414,7 +453,7 @@ function DashboardInner() {
                 </svg>
                 <div className="donut-center">
                   <div className="n">
-                    <CountUp value={porCompaniaData.total} reduceMotion={reduceMotion} />
+                    <CountUp value={donutTotal} reduceMotion={reduceMotion} />
                   </div>
                   <div className="l">fonogramas</div>
                 </div>
@@ -442,35 +481,19 @@ function DashboardInner() {
                 {acuerdos ? `${acuerdos.length} acuerdos activos` : "Cargando..."}
               </div>
             </div>
-            <div className="estado-stack">
-              {estadoOrder.map((label) => {
-                const count = estadoCounts?.[label] ?? 0;
-                const total = acuerdos?.length ?? 0;
-                const pct = total ? (count / total) * 100 : 0;
-                if (count === 0) return null;
-                return (
-                  <button
-                    key={label}
-                    className="estado-seg"
-                    style={{ width: `${pct}%`, background: estadoColor[label] || "var(--accent)" }}
-                    onClick={() => openEstado(label)}
-                    title={`${label}: ${count} (${pct.toFixed(1)}%)`}
-                  />
-                );
-              })}
-            </div>
-            <div className="estado-legend">
+            <div className="estado-bars">
               {estadoOrder.map((label) => {
                 const count = estadoCounts?.[label] ?? 0;
                 const total = acuerdos?.length ?? 0;
                 const pct = total ? Math.round((count / total) * 1000) / 10 : 0;
+                const maxCount = estadoCounts ? Math.max(1, ...Object.values(estadoCounts)) : 1;
+                const barPct = Math.max(4, (count / maxCount) * 100);
                 return (
-                  <button className="estado-legend-item" key={label} onClick={() => openEstado(label)}>
-                    <span className="dot" style={{ background: estadoColor[label] || "var(--accent)" }} />
-                    <span>{label}</span>
-                    <span className="val">
-                      {count} · {pct}%
-                    </span>
+                  <button className="estado-col" key={label} onClick={() => openEstado(label)} title={`${label}: ${count} (${pct}%)`}>
+                    <span className="count">{count}</span>
+                    <span className="bar" style={{ height: `${barPct}%`, background: estadoColor[label] || "var(--accent)" }} />
+                    <span className="label">{label}</span>
+                    <span className="pct">{pct}%</span>
                   </button>
                 );
               })}

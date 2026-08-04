@@ -75,6 +75,7 @@ export default function RankingListeners() {
   const [error, setError] = useState<string | null>(null);
   const [lastRun, setLastRun] = useState<{ finished_at?: string } | null>(null);
   const [expanded, setExpanded] = useState(false);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetch("/api/ranking")
@@ -87,9 +88,17 @@ export default function RankingListeners() {
       .catch((e) => setError(String(e)));
   }, []);
 
+  const searching = search.trim().length > 0;
+  const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const searchResults = searching
+    ? (rows ?? []).filter((r) => norm(r.artist_name).includes(norm(search.trim())))
+    : null;
+
   const top3 = (rows ?? []).slice(0, 3);
   const podiumOrder = [top3[1], top3[0], top3[2]]; // visual order: 2nd, 1st, 3rd
-  const listRows = expanded ? rows ?? [] : (rows ?? []).slice(0, 10);
+  // Searching bypasses the top-10/expanded truncation entirely — filtering
+  // just the visible slice would silently hide real matches further down.
+  const listRows = searching ? (searchResults ?? []) : expanded ? rows ?? [] : (rows ?? []).slice(0, 10);
 
   return (
     <div className="card" style={{ marginBottom: "1.25rem" }}>
@@ -130,7 +139,7 @@ export default function RankingListeners() {
         @media (max-width:640px){ .rk-split{flex-direction:column;} .rk-podium{flex:0 0 auto;} }
       `}</style>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10 }}>
         <div>
           <div className="card-label">Ranking de artistas</div>
           <div style={{ fontSize: 16, fontWeight: 600, marginTop: 2 }}>Oyentes mensuales</div>
@@ -141,6 +150,24 @@ export default function RankingListeners() {
           </span>
         )}
       </div>
+
+      {rows && rows.length > 0 && (
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar artista..."
+          style={{
+            marginTop: 10,
+            width: "100%",
+            background: "var(--bg-2)",
+            border: "1px solid var(--line-soft)",
+            borderRadius: 8,
+            padding: "8px 12px",
+            color: "var(--text-1)",
+            fontSize: 13,
+          }}
+        />
+      )}
 
       {(!rows || rows.length === 0) && (
         <div className="rk-pending">
@@ -159,7 +186,7 @@ export default function RankingListeners() {
       {rows && rows.length > 0 && (
         <>
           <div className="rk-split">
-            {top3.length > 0 && (
+            {!searching && top3.length > 0 && (
               <div className="rk-podium">
                 {podiumOrder.map((r, idx) => {
                   if (!r) return <div key={`empty-${idx}`} className="rk-podium-item" />;
@@ -183,13 +210,18 @@ export default function RankingListeners() {
             )}
 
             <div className="rk-list">
+              {searching && listRows.length === 0 && (
+                <div className="rk-pending">Sin resultados para "{search}".</div>
+              )}
               {listRows.map((r, i) => (
                 <Link
                   href={`/artistas/${encodeURIComponent(r.artist_name)}`}
                   className="rk-list-row"
                   key={r.artist_id}
                 >
-                  <span className="rk-list-rank">#{i + 1}</span>
+                  <span className="rk-list-rank">
+                    #{searching ? (rows ?? []).findIndex((x) => x.artist_id === r.artist_id) + 1 : i + 1}
+                  </span>
                   <Avatar r={r} size={30} radius={9} fontSize={11} />
                   <div className="rk-list-info">
                     <div className="rk-list-name">{r.artist_name}</div>
@@ -206,7 +238,7 @@ export default function RankingListeners() {
             </div>
           </div>
 
-          {rows.length > 10 && (
+          {!searching && rows.length > 10 && (
             <button className="rk-toggle" onClick={() => setExpanded((e) => !e)}>
               {expanded ? "Mostrar solo Top 10" : `Ver ranking completo (${rows.length})`}
             </button>

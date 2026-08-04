@@ -69,7 +69,33 @@ export const CASERIO_ROSTER_NAMES = [
   "Dura DJ",
   "Tomi Rmx",
   "Sossa",
+  // Found via catalog_tracks participants (real Caserio-sello releases) —
+  // this list was badly out of date and missing most of the roster.
+  "Bruno Chavez Dj",
+  "Dimelo Gabbo",
+  "DJ Feed",
+  "DJ Tra RKT",
+  "Elam Mix",
+  "Falcone",
+  "Fede Tarifeño",
+  "Gutti Ezequiel",
+  "Ibanxo",
+  "Juan Zapata DJ",
+  "Maate DJ",
+  "Mambo DJ",
+  "Nahu In The Mix",
+  "Nubrio",
+  "Titan 13",
+  "Ventu",
+  "Zalo DJ",
+  "Sheafiell",
 ];
+
+// Projects/collectives that have their own Spotify artist profile (not an
+// individual artist, but still something the label wants tracked in the
+// listener ranking) — kept separate from CASERIO_ROSTER_NAMES since they
+// aren't tied to one sello's track classification.
+export const EXTRA_TRACKABLE_NAMES = ["La Juntada De Los Artistas", "Sin Guion"];
 
 // Every artist actually signed to / working with one of our sellos — the
 // roster lists above exist to classify tracks, but this flat name list is
@@ -79,7 +105,7 @@ export function getAllRosterArtistNames(): string[] {
   const fromRosters = Object.values(SELLO_ROSTERS)
     .flat()
     .map((a) => a.name);
-  return [...new Set([...fromRosters, ...CASERIO_ROSTER_NAMES])];
+  return [...new Set([...fromRosters, ...CASERIO_ROSTER_NAMES, ...EXTRA_TRACKABLE_NAMES])];
 }
 
 export function matchRosterArtist(

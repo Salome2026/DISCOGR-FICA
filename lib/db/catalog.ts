@@ -86,6 +86,21 @@ export async function getTrack(id: string): Promise<CatalogTrack | null> {
   return (rows[0] as CatalogTrack) ?? null;
 }
 
+// Past releases where this exact name appears as a participant (main
+// artist or featuring) — used to give the marketing-plan generator real
+// context on what this artist has already put out, instead of starting
+// from zero on every request.
+export async function getArtistCatalogHistory(name: string, limit = 8): Promise<CatalogTrack[]> {
+  await ensureCatalogSchema();
+  const { rows } = await sql`
+    SELECT * FROM catalog_tracks
+    WHERE participants @> ${JSON.stringify([name])}::jsonb
+    ORDER BY release_date DESC NULLS LAST
+    LIMIT ${limit}
+  `;
+  return rows as CatalogTrack[];
+}
+
 // Mirrors a pm_releases row (single or one EP/álbum canción) into the
 // general catalog so it shows up everywhere sello/streaming pages, fichas
 // and rankings already read from — same table, not a parallel copy. Keyed

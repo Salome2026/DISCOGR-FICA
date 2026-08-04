@@ -77,16 +77,27 @@ export type ChartmetricStats = {
   monthlyListenersRank: number | null;
   artistRank: number | null;
   imageUrl: string | null;
+  topCities: { name: string; countryCode: string; listeners: number }[];
+  homeCountry: string | null;
 };
 
 export async function getArtistSpotifyStats(chartmetricId: number): Promise<ChartmetricStats> {
   const data = await cmFetch(`/api/artist/${chartmetricId}`);
   const stats = data?.obj?.cm_statistics ?? {};
+  const cities = Array.isArray(stats.sp_where_people_listen) ? stats.sp_where_people_listen : [];
   return {
     monthlyListeners: stats.sp_monthly_listeners ?? null,
     followers: stats.sp_followers ?? null,
     monthlyListenersRank: stats.sp_monthly_listeners_rank ?? null,
     artistRank: stats.cm_artist_rank ?? null,
     imageUrl: data?.obj?.image_url ?? null,
+    topCities: cities
+      .slice(0, 5)
+      .map((c: { name: string; code2: string; listeners: number }) => ({
+        name: c.name,
+        countryCode: c.code2,
+        listeners: c.listeners,
+      })),
+    homeCountry: stats.countryRank?.country ?? null,
   };
 }

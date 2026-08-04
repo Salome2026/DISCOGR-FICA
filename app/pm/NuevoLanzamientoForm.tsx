@@ -21,6 +21,10 @@ const TIPOS = [
   { value: "album", label: "Álbum" },
 ] as const;
 type Tipo = (typeof TIPOS)[number]["value"] | "";
+const GENEROS = [
+  "Cumbia", "Cuarteto", "RKT", "Reggaetón", "Trap", "Pop", "Rock",
+  "Electrónica", "Latin House", "Tech House", "Folklore", "Tango", "Otro",
+];
 
 type Props = {
   role: "admin" | "project_manager";
@@ -115,6 +119,15 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   const [uploadStep, setUploadStep] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Plan de Marketing con IA
+  const [showAiForm, setShowAiForm] = useState(false);
+  const [aiSocialLink, setAiSocialLink] = useState("");
+  const [aiGenero, setAiGenero] = useState("");
+  const [aiTienePresupuesto, setAiTienePresupuesto] = useState<"no" | "si" | "">("");
+  const [aiPresupuestoMonto, setAiPresupuestoMonto] = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
 
   const isGrouped = tipo === "ep" || tipo === "album";
 
@@ -448,6 +461,73 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
 
   const modalWidth = isGrouped ? 720 : 480;
 
+  async function handleGenerateAiPlan() {
+    setAiError(null);
+    if (!aiSocialLink.trim()) {
+      setAiError("Pegá el link de la red social más fuerte del artista.");
+      return;
+    }
+    if (!/^https?:\/\//i.test(aiSocialLink.trim())) {
+      setAiError("El link tiene que empezar con http:// o https://");
+      return;
+    }
+    if (!aiGenero) {
+      setAiError("Elegí el género principal.");
+      return;
+    }
+    if (!aiTienePresupuesto) {
+      setAiError("Indicá si hay presupuesto de marketing.");
+      return;
+    }
+    if (aiTienePresupuesto === "si" && !aiPresupuestoMonto.trim()) {
+      setAiError("Ingresá el presupuesto aproximado en pesos argentinos.");
+      return;
+    }
+
+    const featuringCombined = isGrouped
+      ? [...new Set(tracks.flatMap((t) => (t.colaboradores ? t.colaboradores.split(",").map((c) => c.trim()) : [])))].join(", ")
+      : featuring;
+
+    setAiGenerating(true);
+    try {
+      const res = await fetch("/api/marketing-plan/personalizado", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          artist,
+          featuring: featuringCombined || null,
+          sello: sello || null,
+          tipo,
+          fonograma: isGrouped ? groupNombre : fonograma,
+          fecha: fecha || null,
+          genero: aiGenero,
+          socialLink: aiSocialLink.trim(),
+          presupuesto:
+            aiTienePresupuesto === "si"
+              ? { tiene: true, montoArs: Number(aiPresupuestoMonto.replace(/\D/g, "")) }
+              : { tiene: false },
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "No se pudo generar el plan.");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Plan-Marketing-${artist}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setAiError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setAiGenerating(false);
+    }
+  }
+
   if (success) {
     return (
       <div
@@ -502,91 +582,225 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
           </div>
           <div style={{ fontSize: 19, fontWeight: 700 }}>¡Lanzamiento creado con éxito!</div>
 
-          <div
-            style={{
-              width: "100%",
-              marginTop: 8,
-              paddingTop: 20,
-              borderTop: "1px solid var(--line-soft)",
-              display: "flex",
-              flexDirection: "column",
-              gap: 10,
-            }}
-          >
-            <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-2)" }}>
-              Plan de Marketing disponible
-            </div>
-
-            <a
-              href="/plan-marketing-base.pdf"
-              download
-              style={{
-                background: "var(--accent-glass-bg)",
-                border: "1px solid var(--accent-glass-border)",
-                borderRadius: 10,
-                padding: "11px 16px",
-                color: "var(--text-1)",
-                fontWeight: 600,
-                fontSize: 13.5,
-                textDecoration: "none",
-                backdropFilter: "blur(20px) saturate(1.7)",
-                WebkitBackdropFilter: "blur(20px) saturate(1.7)",
-                cursor: "pointer",
-              }}
-            >
-              ↓ Descargar Plan Base
-            </a>
-
-            <button
-              type="button"
-              disabled
-              title="Próximamente — requiere configurar la conexión con IA"
-              style={{
-                background: "transparent",
-                border: "1px solid var(--line-soft)",
-                borderRadius: 10,
-                padding: "11px 16px",
-                color: "var(--text-3)",
-                fontWeight: 600,
-                fontSize: 13.5,
-                cursor: "not-allowed",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}
-            >
-              Generar Plan Personalizado con IA
-              <span
+          {!showAiForm ? (
+            <>
+              <div
                 style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  color: "var(--text-3)",
-                  border: "1px solid var(--line-soft)",
-                  borderRadius: 100,
-                  padding: "2px 7px",
+                  width: "100%",
+                  marginTop: 8,
+                  paddingTop: 20,
+                  borderTop: "1px solid var(--line-soft)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
                 }}
               >
-                Próximamente
-              </span>
-            </button>
-          </div>
+                <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-2)" }}>
+                  Plan de Marketing disponible
+                </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              marginTop: 6,
-              background: "transparent",
-              border: "none",
-              color: "var(--text-3)",
-              fontSize: 12.5,
-              cursor: "pointer",
-              textDecoration: "underline",
-            }}
-          >
-            Cerrar
-          </button>
+                <a
+                  href="/plan-marketing-base.pdf"
+                  download
+                  style={{
+                    background: "var(--accent-glass-bg)",
+                    border: "1px solid var(--accent-glass-border)",
+                    borderRadius: 10,
+                    padding: "11px 16px",
+                    color: "var(--text-1)",
+                    fontWeight: 600,
+                    fontSize: 13.5,
+                    textDecoration: "none",
+                    backdropFilter: "blur(20px) saturate(1.7)",
+                    WebkitBackdropFilter: "blur(20px) saturate(1.7)",
+                    cursor: "pointer",
+                  }}
+                >
+                  ↓ Descargar Plan Base
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAiForm(true)}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid var(--line-soft)",
+                    borderRadius: 10,
+                    padding: "11px 16px",
+                    color: "var(--text-1)",
+                    fontWeight: 600,
+                    fontSize: 13.5,
+                    cursor: "pointer",
+                  }}
+                >
+                  Generar Plan Personalizado con IA
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={onClose}
+                style={{
+                  marginTop: 6,
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--text-3)",
+                  fontSize: 12.5,
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                }}
+              >
+                Cerrar
+              </button>
+            </>
+          ) : (
+            <div
+              style={{
+                width: "100%",
+                marginTop: 8,
+                paddingTop: 20,
+                borderTop: "1px solid var(--line-soft)",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                textAlign: "left",
+              }}
+            >
+              <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-2)", textAlign: "center" }}>
+                Plan Personalizado con IA
+              </div>
+
+              <div>
+                <label style={{ fontSize: 12, color: "var(--text-2)" }}>
+                  Link de la red social más fuerte del artista
+                </label>
+                <input
+                  value={aiSocialLink}
+                  onChange={(e) => setAiSocialLink(e.target.value)}
+                  placeholder="https://instagram.com/... o tiktok, youtube, etc."
+                  disabled={aiGenerating}
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: 12, color: "var(--text-2)" }}>Género principal</label>
+                <select
+                  value={aiGenero}
+                  onChange={(e) => setAiGenero(e.target.value)}
+                  disabled={aiGenerating}
+                  style={inputStyle}
+                >
+                  <option value="">Elegir...</option>
+                  {GENEROS.map((g) => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: 12, color: "var(--text-2)" }}>¿Cuenta con presupuesto de marketing?</label>
+                <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+                  {(["no", "si"] as const).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      disabled={aiGenerating}
+                      onClick={() => setAiTienePresupuesto(v)}
+                      style={{
+                        flex: 1,
+                        padding: "9px 10px",
+                        borderRadius: 8,
+                        fontSize: 12.5,
+                        cursor: "pointer",
+                        border: aiTienePresupuesto === v ? "1px solid var(--accent-glass-border)" : "1px solid var(--line-soft)",
+                        background: aiTienePresupuesto === v ? "var(--accent-glass-bg)" : "transparent",
+                        color: "var(--text-1)",
+                      }}
+                    >
+                      {v === "no" ? "No, 100% orgánico" : "Sí"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {aiTienePresupuesto === "si" && (
+                <div>
+                  <label style={{ fontSize: 12, color: "var(--text-2)" }}>Presupuesto aproximado (ARS)</label>
+                  <input
+                    value={aiPresupuestoMonto}
+                    onChange={(e) => setAiPresupuestoMonto(e.target.value)}
+                    placeholder="Ej: 200000"
+                    disabled={aiGenerating}
+                    style={inputStyle}
+                  />
+                </div>
+              )}
+
+              {aiError && (
+                <div style={{ background: "var(--crit-bg)", color: "var(--crit-ink)", padding: "8px 12px", borderRadius: 8, fontSize: 12.5 }}>
+                  {aiError}
+                </div>
+              )}
+
+              <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                <button
+                  type="button"
+                  onClick={() => setShowAiForm(false)}
+                  disabled={aiGenerating}
+                  style={{
+                    flex: 1,
+                    background: "transparent",
+                    border: "1px solid var(--line-soft)",
+                    borderRadius: 10,
+                    padding: "11px 16px",
+                    color: "var(--text-2)",
+                    fontSize: 13,
+                    cursor: aiGenerating ? "default" : "pointer",
+                  }}
+                >
+                  Volver
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGenerateAiPlan}
+                  disabled={aiGenerating}
+                  style={{
+                    flex: 2,
+                    background: "var(--accent-glass-bg)",
+                    border: "1px solid var(--accent-glass-border)",
+                    borderRadius: 10,
+                    padding: "11px 16px",
+                    color: "var(--text-1)",
+                    fontWeight: 600,
+                    fontSize: 13,
+                    cursor: aiGenerating ? "default" : "pointer",
+                    opacity: aiGenerating ? 0.6 : 1,
+                  }}
+                >
+                  {aiGenerating ? "Generando..." : "Generar y descargar"}
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={aiGenerating}
+                style={{
+                  marginTop: 2,
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--text-3)",
+                  fontSize: 12.5,
+                  cursor: aiGenerating ? "default" : "pointer",
+                  textDecoration: "underline",
+                  alignSelf: "center",
+                }}
+              >
+                Cerrar
+              </button>
+            </div>
+          )}
 
           <style>{`
             @keyframes pm-check-pop {

@@ -50,6 +50,7 @@ export async function GET(req: NextRequest) {
         followers: stats.followers,
         monthlyListenersRank: stats.monthlyListenersRank,
         artistRank: stats.artistRank,
+        imageUrl: stats.imageUrl,
         source: "chartmetric",
       });
       ok++;

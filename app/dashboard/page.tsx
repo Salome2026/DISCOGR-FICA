@@ -395,11 +395,7 @@ function DashboardInner() {
           <p className="page-subtitle">Pulso general de sellos, acuerdos y catálogo.</p>
         </motion.div>
 
-        <motion.div variants={fadeUp} custom={1} initial="hidden" animate="show">
-          <RankingListeners />
-        </motion.div>
-
-        <motion.div className="sello-row" variants={fadeUp} custom={2} initial="hidden" animate="show">
+        <motion.div className="sello-row" variants={fadeUp} custom={1} initial="hidden" animate="show">
           {SELLOS.filter((s) => s !== "Streamings").map((s) => (
             <Link key={s} href={`/sellos/${encodeURIComponent(s)}`} className="sello-btn">
               {s}
@@ -428,7 +424,7 @@ function DashboardInner() {
           </div>
         )}
 
-        <motion.div className="bento" variants={fadeUp} custom={3} initial="hidden" animate="show">
+        <motion.div className="bento" variants={fadeUp} custom={2} initial="hidden" animate="show">
           <div className="card bento-donut donut-card">
             <div className="card-label">Distribución por discográfica</div>
             <div className="donut-wrap">
@@ -547,6 +543,10 @@ function DashboardInner() {
             </div>
             <div className="kpi-sub">bloquean el release</div>
           </button>
+        </motion.div>
+
+        <motion.div variants={fadeUp} custom={3} initial="hidden" animate="show">
+          <RankingListeners />
         </motion.div>
 
         <p className="footer-note">

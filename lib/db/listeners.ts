@@ -30,6 +30,7 @@ export function ensureSchema(): Promise<void> {
       // these for free alongside the listeners/followers snapshot.
       await sql`ALTER TABLE artist_listeners_daily ADD COLUMN IF NOT EXISTS monthly_listeners_rank INTEGER`;
       await sql`ALTER TABLE artist_listeners_daily ADD COLUMN IF NOT EXISTS artist_rank INTEGER`;
+      await sql`ALTER TABLE artist_listeners_daily ADD COLUMN IF NOT EXISTS image_url TEXT`;
       await sql`
         CREATE TABLE IF NOT EXISTS listeners_sync_runs (
           id BIGSERIAL PRIMARY KEY,
@@ -55,6 +56,7 @@ export type DailyRecord = {
   followers: number | null;
   monthlyListenersRank: number | null;
   artistRank: number | null;
+  imageUrl: string | null;
   source: string;
   error?: string | null;
 };
@@ -64,16 +66,17 @@ export async function upsertDailyRecord(r: DailyRecord) {
   await sql`
     INSERT INTO artist_listeners_daily
       (artist_id, artist_name, spotify_id, sello, measured_at, monthly_listeners, followers,
-       monthly_listeners_rank, artist_rank, source, error)
+       monthly_listeners_rank, artist_rank, image_url, source, error)
     VALUES
       (${r.artistId}, ${r.artistName}, ${r.spotifyId}, ${r.sello}, ${r.measuredAt},
-       ${r.monthlyListeners}, ${r.followers}, ${r.monthlyListenersRank}, ${r.artistRank}, ${r.source}, ${r.error ?? null})
+       ${r.monthlyListeners}, ${r.followers}, ${r.monthlyListenersRank}, ${r.artistRank}, ${r.imageUrl}, ${r.source}, ${r.error ?? null})
     ON CONFLICT (artist_id, measured_at)
     DO UPDATE SET
       monthly_listeners = EXCLUDED.monthly_listeners,
       followers = EXCLUDED.followers,
       monthly_listeners_rank = EXCLUDED.monthly_listeners_rank,
       artist_rank = EXCLUDED.artist_rank,
+      image_url = EXCLUDED.image_url,
       fetched_at = now(),
       error = EXCLUDED.error
   `;
@@ -111,6 +114,7 @@ export type RankingRow = {
   followers: number | null;
   monthly_listeners_rank: number | null;
   artist_rank: number | null;
+  image_url: string | null;
   measured_at: string;
   prev_day: number | null;
   prev_7d: number | null;
@@ -124,13 +128,13 @@ export async function getRankingLatest(): Promise<RankingRow[]> {
     WITH latest AS (
       SELECT DISTINCT ON (artist_id)
         artist_id, artist_name, sello, monthly_listeners, followers,
-        monthly_listeners_rank, artist_rank, measured_at
+        monthly_listeners_rank, artist_rank, image_url, measured_at
       FROM artist_listeners_daily
       ORDER BY artist_id, measured_at DESC
     )
     SELECT
       l.artist_id, l.artist_name, l.sello, l.monthly_listeners, l.followers,
-      l.monthly_listeners_rank, l.artist_rank, l.measured_at,
+      l.monthly_listeners_rank, l.artist_rank, l.image_url, l.measured_at,
       (SELECT monthly_listeners FROM artist_listeners_daily d
         WHERE d.artist_id = l.artist_id AND d.measured_at = l.measured_at - INTERVAL '1 day') AS prev_day,
       (SELECT monthly_listeners FROM artist_listeners_daily d

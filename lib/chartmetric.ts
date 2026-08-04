@@ -76,6 +76,7 @@ export type ChartmetricStats = {
   followers: number | null;
   monthlyListenersRank: number | null;
   artistRank: number | null;
+  imageUrl: string | null;
 };
 
 export async function getArtistSpotifyStats(chartmetricId: number): Promise<ChartmetricStats> {
@@ -86,5 +87,6 @@ export async function getArtistSpotifyStats(chartmetricId: number): Promise<Char
     followers: stats.sp_followers ?? null,
     monthlyListenersRank: stats.sp_monthly_listeners_rank ?? null,
     artistRank: stats.cm_artist_rank ?? null,
+    imageUrl: data?.obj?.image_url ?? null,
   };
 }

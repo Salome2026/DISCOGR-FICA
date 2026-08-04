@@ -473,7 +473,13 @@ function DashboardInner() {
           </div>
 
           <ReleaseCalendar className="bento-calendar" />
+        </motion.div>
 
+        <motion.div variants={fadeUp} custom={3} initial="hidden" animate="show">
+          <RankingListeners />
+        </motion.div>
+
+        <motion.div className="bento" variants={fadeUp} custom={4} initial="hidden" animate="show">
           <div className="card bento-estado">
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
               <div className="card-label">Estado de los acuerdos</div>
@@ -543,10 +549,6 @@ function DashboardInner() {
             </div>
             <div className="kpi-sub">bloquean el release</div>
           </button>
-        </motion.div>
-
-        <motion.div variants={fadeUp} custom={3} initial="hidden" animate="show">
-          <RankingListeners />
         </motion.div>
 
         <p className="footer-note">

@@ -1,11 +1,11 @@
 // Chartmetric integration.
 //
-// NOTE: the exact endpoint paths below (/api/token, /api/search, /api/artist/:id/stat/spotify)
-// follow Chartmetric's publicly documented API v2 shape, but have not been exercised against a
-// live account yet (access was pending approval at the time this was written). The first real
-// call should be verified against https://api.chartmetric.com/apidoc and this file adjusted if
-// any path/response shape differs — everything Chartmetric-specific is isolated here so that's a
-// small, contained fix.
+// Verified against a live account (2026-08-04). /api/token and /api/search work as originally
+// written. getArtistSpotifyStats originally called /api/artist/:id/stat/spotify with no `field`
+// param — that endpoint requires one and 400s without it, so this always failed. It now reads
+// /api/artist/:id instead: a single call that returns cm_statistics with the current snapshot of
+// monthly listeners, followers, and — usefully — Chartmetric's own global rank for each, which
+// the old stat/spotify endpoint never exposed at all.
 
 const CM_API = "https://api.chartmetric.com";
 
@@ -74,13 +74,17 @@ export async function searchArtist(name: string): Promise<ChartmetricArtistMatch
 export type ChartmetricStats = {
   monthlyListeners: number | null;
   followers: number | null;
+  monthlyListenersRank: number | null;
+  artistRank: number | null;
 };
 
 export async function getArtistSpotifyStats(chartmetricId: number): Promise<ChartmetricStats> {
-  const data = await cmFetch(`/api/artist/${chartmetricId}/stat/spotify`);
-  const latest = Array.isArray(data?.obj) ? data.obj[data.obj.length - 1] : data?.obj;
+  const data = await cmFetch(`/api/artist/${chartmetricId}`);
+  const stats = data?.obj?.cm_statistics ?? {};
   return {
-    monthlyListeners: latest?.listeners ?? null,
-    followers: latest?.followers ?? null,
+    monthlyListeners: stats.sp_monthly_listeners ?? null,
+    followers: stats.sp_followers ?? null,
+    monthlyListenersRank: stats.sp_monthly_listeners_rank ?? null,
+    artistRank: stats.cm_artist_rank ?? null,
   };
 }

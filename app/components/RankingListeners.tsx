@@ -9,6 +9,8 @@ type RankingRow = {
   sello: string | null;
   monthly_listeners: number | null;
   followers: number | null;
+  monthly_listeners_rank: number | null;
+  artist_rank: number | null;
   measured_at: string;
   prev_day: number | null;
   prev_7d: number | null;
@@ -122,6 +124,11 @@ export default function RankingListeners() {
                   <div className="rk-sello-chip">{r.sello ?? "Sin sello asignado"}</div>
                 </div>
                 <div className="rk-listeners">{r.monthly_listeners?.toLocaleString("es-AR") ?? "—"}</div>
+                {r.artist_rank != null && (
+                  <div style={{ fontSize: 10.5, color: "var(--text-3)" }}>
+                    Chartmetric #{r.artist_rank.toLocaleString("es-AR")} global
+                  </div>
+                )}
                 <div className="rk-bar-track">
                   <div
                     className="rk-bar-fill"

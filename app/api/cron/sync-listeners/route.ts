@@ -53,6 +53,8 @@ export async function GET(req: NextRequest) {
         measuredAt,
         monthlyListeners: stats.monthlyListeners,
         followers: stats.followers,
+        monthlyListenersRank: stats.monthlyListenersRank,
+        artistRank: stats.artistRank,
         source: "chartmetric",
       });
       ok++;

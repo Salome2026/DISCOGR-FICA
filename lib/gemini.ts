@@ -5,7 +5,13 @@
 const GEMINI_API = "https://generativelanguage.googleapis.com/v1beta";
 // Alias Google keeps pointed at their current recommended flash model —
 // avoids hardcoding a model name that gets deprecated later.
-const MODEL = "gemini-flash-latest";
+// The plain "flash" alias currently resolves to a model whose "thinking"
+// can't be disabled (thinkingBudget: 0 → 400 invalid argument), which added
+// ~24s to every plan generation. The "lite" alias resolves to a smaller,
+// non-thinking model that responds in ~2-4s — the right tradeoff here,
+// since this is a bounded, schema-constrained generation task, not open
+// reasoning.
+const MODEL = "gemini-flash-lite-latest";
 
 export function geminiConfigured(): boolean {
   return !!process.env.GEMINI_API_KEY;
@@ -128,6 +134,7 @@ INSTRUCCIONES
 - Si el artista tiene lanzamientos previos en el sello, referite a ese historial para dar continuidad a la estrategia (qué funcionó, qué construir sobre eso) en vez de tratarlo como debut.
 - Incluí como mínimo estas secciones, adaptadas específicamente a este género y este artista (no genéricas): Estrategia de pre-save, Cronograma de lanzamiento, Calendario de contenidos, Ideas de contenido para Reels/TikTok/Shorts, Estrategia de Spotify, Generación de UGC, Playlisting orgánico${input.presupuesto.tiene ? ", Plan de pauta paga (acorde al presupuesto)" : ""}.
 - Escribí todo en español rioplatense, tono profesional pero directo, como si lo hubiera preparado un equipo de marketing musical real.
+- Muy importante: usá tildes y tildes en mayúsculas correctamente en todas las palabras que las llevan (campaña, técnicas, orgánicas, años, canción, música, etc.) y la letra ñ donde corresponda. No omitas ningún acento — un texto sin tildes se ve poco profesional.
 - Respondé únicamente con el JSON solicitado, sin texto adicional.`;
 }
 
@@ -143,7 +150,6 @@ export async function generateMarketingPlan(input: MarketingPlanInput): Promise<
       generationConfig: {
         responseMimeType: "application/json",
         responseSchema: RESPONSE_SCHEMA,
-        thinkingConfig: { thinkingBudget: 0 },
       },
     }),
   });

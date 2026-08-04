@@ -1,0 +1,41 @@
+{
+  "_comment": "Curated, manually verified reference material used by the AI marketing-plan generator (lib/gemini.ts). Every `url` here was checked live via WebFetch before being added — Gemini is instructed to cite ONLY from this list, never invent a URL. Instagram/TikTok/YouTube post-level links could not be reliably verified (those platforms don't render for automated fetches, so a specific 'viral Reel' link can't be confirmed live or attributed) — so for those platforms we ship real, well-known PROVEN FORMATS with no link attached, rather than a link that might be dead or wrong. Spotify playlist links are real, verified, official/near-official editorial playlists and are safe to cite directly.",
+  "generos": {
+    "RKT": [
+      { "tipo": "playlist", "titulo": "RKT & Turreo (Spotify)", "descripcion": "Playlist de nicho con más de 300.000 guardados — el tipo de playlist independiente al que hay que apuntar con pitching directo al curador, además del pitch a Spotify.", "url": "https://open.spotify.com/playlist/37i9dQZF1DWXqChmcHvVBA" },
+      { "tipo": "reel", "titulo": "Reto de baile del estribillo", "descripcion": "El RKT se viraliza con coreografías de 4 a 8 pasos, fáciles de repetir, sincronizadas con el 'bajón' del beat — es el formato más replicado del género.", "url": null },
+      { "tipo": "reel", "titulo": "Freestyle en previa o boliche real", "descripcion": "Grabar el tema sonando en una previa o boliche real, con gente cantando y bailando, posiciona la canción como 'himno de previa' — funciona mejor que cualquier video producido.", "url": null },
+      { "tipo": "campana", "titulo": "Envío a cuentas de baile RKT", "descripcion": "Mandar el audio a 3-5 cuentas de bailarines de RKT conocidas para que suban su versión el mismo día del estreno multiplica el alcance inicial sin costo de pauta.", "url": null }
+    ],
+    "Cumbia": [
+      { "tipo": "playlist", "titulo": "100% Cumbia (Spotify, oficial)", "descripcion": "Playlist editorial oficial de Spotify con más de 1,2 millones de guardados — objetivo directo de pitching a través de Spotify for Artists.", "url": "https://open.spotify.com/playlist/37i9dQZF1DX8yLfjPY8emY" },
+      { "tipo": "reel", "titulo": "Baile en pareja", "descripcion": "El paso característico de la cumbia bailado en pareja es el formato con mejor retención del género — cámara fija, plano entero.", "url": null },
+      { "tipo": "reel", "titulo": "Estribillo con letra tipo karaoke", "descripcion": "Mostrar el estribillo en texto grande sincronizado con la música aprovecha lo más pegadizo de la canción para generar repetición y guardados.", "url": null },
+      { "tipo": "historia", "titulo": "Detrás de escena de la grabación", "descripcion": "Historias cortas del estudio o del rodaje del videoclip generan cercanía y sirven de contenido puente entre lanzamientos.", "url": null }
+    ],
+    "Trap": [
+      { "tipo": "playlist", "titulo": "Trapperz Argentina (Spotify)", "descripcion": "Playlist de referencia del trap argentino con más de 600.000 guardados — históricamente meten a Duki, KHEA, Lit Killah y Milo J.", "url": "https://open.spotify.com/playlist/37i9dQZF1DWXrVH01e3PIE" },
+      { "tipo": "reel", "titulo": "Verso a cámara, primer plano", "descripcion": "El artista rapeando la estrofa más fuerte directo a cámara, sin edición compleja, es el formato que más convierte en trap — la autenticidad pesa más que la producción.", "url": null },
+      { "tipo": "reel", "titulo": "Beat reveal antes del lanzamiento", "descripcion": "Mostrar el instrumental sonando unos días antes, sin vocals, genera intriga y funciona como pre-save encubierto.", "url": null },
+      { "tipo": "historia", "titulo": "Cuenta regresiva con snippet de 15s", "descripcion": "Historias con cuenta regresiva a la fecha de estreno, mostrando 15 segundos del tema, es el formato estándar de expectativa en el género.", "url": null }
+    ],
+    "Reggaetón": [
+      { "tipo": "playlist", "titulo": "MANSIÓN REGGAETÓN (Spotify, oficial)", "descripcion": "Playlist editorial oficial de Spotify con más de 9,7 millones de guardados — una de las playlists más grandes del género en todo el catálogo de Spotify.", "url": "https://open.spotify.com/playlist/37i9dQZF1DWZjqjZMudx9T" },
+      { "tipo": "reel", "titulo": "Perreo/coreografía en el drop", "descripcion": "Coreografía simple sincronizada justo con el 'drop' del beat — es el momento que la gente recorta y repite.", "url": null },
+      { "tipo": "reel", "titulo": "POV / storytime con la letra", "descripcion": "Un mini-storytime en formato POV que conecta con lo que cuenta la letra genera identificación y comentarios, más allá del baile.", "url": null },
+      { "tipo": "reel", "titulo": "Transición de outfit con el beat", "descripcion": "Cambios de vestuario sincronizados con golpes del beat es uno de los formatos con mejor completion rate en el género.", "url": null }
+    ],
+    "Pop": [
+      { "tipo": "playlist", "titulo": "Éxitos Argentina (Spotify, oficial)", "descripcion": "Playlist editorial oficial de Spotify con más de 3,4 millones de guardados, foco en hits argentinos contemporáneos.", "url": "https://open.spotify.com/playlist/37i9dQZF1DXbbu94YBG7Ye" },
+      { "tipo": "reel", "titulo": "Lip sync emocional al puente", "descripcion": "El puente o pre-estribillo suele ser el momento más emotivo de una canción pop — un lip sync cercano a cámara ahí funciona mejor que en el estribillo.", "url": null },
+      { "tipo": "reel", "titulo": "Storytelling visual ligado a la letra", "descripcion": "Un antes/después o una secuencia visual que ilustra literalmente lo que dice la letra ayuda a que quien no conoce el tema entienda la historia en 15 segundos.", "url": null },
+      { "tipo": "historia", "titulo": "Detrás de cámaras del videoclip o sesión de fotos", "descripcion": "Contenido de backstage genera cercanía y sirve para sostener expectativa entre el anuncio y el lanzamiento.", "url": null }
+    ],
+    "Cuarteto": [
+      { "tipo": "playlist", "titulo": "100% Cuarteto (Spotify, oficial)", "descripcion": "Playlist editorial oficial de Spotify con más de 800.000 guardados, con Q'Lokura, La K'onga, Luck Ra y Ulises Bueno.", "url": "https://open.spotify.com/playlist/37i9dQZF1DX490QbTioWDE" },
+      { "tipo": "reel", "titulo": "Baile de cuarteto en una previa real", "descripcion": "El cuarteto vive del baile en pareja en cuarteteras y previas — grabarlo en una situación real pesa más que un video producido.", "url": null },
+      { "tipo": "reel", "titulo": "Edit acelerado 'tunga-tunga'", "descripcion": "Un corte rápido del tema con el ritmo característico acelerado para redes es el formato que más se comparte entre fanáticos del género.", "url": null },
+      { "tipo": "campana", "titulo": "Registro de show en vivo", "descripcion": "El cuarteto se vende por el vivo — mostrar la energía de la banda y la respuesta del público en un show es más efectivo que cualquier pieza de estudio.", "url": null }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import porCompania from "@/data/por_compania.json";
 import { assignSello, SELLOS } from "@/lib/sellos";
@@ -25,6 +25,23 @@ const GENEROS = [
   "Cumbia", "Cuarteto", "RKT", "Reggaetón", "Trap", "Pop", "Rock",
   "Electrónica", "Latin House", "Tech House", "Folklore", "Tango", "Otro",
 ];
+
+type ArtistMatch = {
+  id: string;
+  name: string;
+  instagram: string | null;
+  tiktok: string | null;
+  youtube: string | null;
+  spotify: string | null;
+  chartmetricId: number | null;
+};
+
+// Preference order when auto-filling "la red social más fuerte" from what's
+// on file — Instagram first since it's the most commonly used for artist
+// promo in this catalog, falling back down the list.
+function bestSocialLink(a: ArtistMatch): string | null {
+  return a.instagram || a.tiktok || a.youtube || a.spotify || null;
+}
 
 type Props = {
   role: "admin" | "project_manager";
@@ -124,6 +141,14 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   const [showAiForm, setShowAiForm] = useState(false);
   const [aiSocialLink, setAiSocialLink] = useState("");
   const [aiGenero, setAiGenero] = useState("");
+  const [aiOtroGenero, setAiOtroGenero] = useState("");
+  const [aiArtistQuery, setAiArtistQuery] = useState("");
+  const [aiArtistResults, setAiArtistResults] = useState<ArtistMatch[]>([]);
+  const [aiArtistOpen, setAiArtistOpen] = useState(false);
+  const [aiSelectedArtist, setAiSelectedArtist] = useState<ArtistMatch | null>(null);
+  const [aiChartmetricId, setAiChartmetricId] = useState<number | null>(null);
+  const [aiManualLink, setAiManualLink] = useState(false);
+  const aiSearchDebounce = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [aiTienePresupuesto, setAiTienePresupuesto] = useState<"no" | "si" | "">("");
   const [aiPresupuestoMonto, setAiPresupuestoMonto] = useState("");
   const [aiGenerating, setAiGenerating] = useState(false);
@@ -461,10 +486,65 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
 
   const modalWidth = isGrouped ? 720 : 480;
 
+  // As soon as the AI question flow opens, try to auto-resolve the artist
+  // from the socials DB using the name already entered for the release —
+  // in the best case the user never has to type or search anything here.
+  useEffect(() => {
+    if (!showAiForm || aiSelectedArtist || aiManualLink || !artist.trim()) return;
+    fetch(`/api/artists/search?q=${encodeURIComponent(artist.trim())}`)
+      .then((r) => r.json())
+      .then((d: { results?: ArtistMatch[] }) => {
+        const results = d.results ?? [];
+        const exact = results.find(
+          (r) => r.name.trim().toLowerCase() === artist.trim().toLowerCase() && bestSocialLink(r)
+        );
+        if (exact) {
+          setAiSelectedArtist(exact);
+          setAiArtistQuery(exact.name);
+          setAiSocialLink(bestSocialLink(exact) || "");
+          setAiChartmetricId(exact.chartmetricId);
+        } else {
+          setAiArtistQuery(artist.trim());
+        }
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showAiForm]);
+
+  function runArtistSearch(query: string) {
+    setAiArtistQuery(query);
+    setAiSelectedArtist(null);
+    setAiChartmetricId(null);
+    setAiSocialLink("");
+    if (aiSearchDebounce.current) clearTimeout(aiSearchDebounce.current);
+    if (query.trim().length < 2) {
+      setAiArtistResults([]);
+      setAiArtistOpen(false);
+      return;
+    }
+    aiSearchDebounce.current = setTimeout(() => {
+      fetch(`/api/artists/search?q=${encodeURIComponent(query.trim())}`)
+        .then((r) => r.json())
+        .then((d: { results?: ArtistMatch[] }) => {
+          setAiArtistResults(d.results ?? []);
+          setAiArtistOpen(true);
+        })
+        .catch(() => {});
+    }, 250);
+  }
+
+  function selectArtist(a: ArtistMatch) {
+    setAiSelectedArtist(a);
+    setAiArtistQuery(a.name);
+    setAiSocialLink(bestSocialLink(a) || "");
+    setAiChartmetricId(a.chartmetricId);
+    setAiArtistOpen(false);
+  }
+
   async function handleGenerateAiPlan() {
     setAiError(null);
     if (!aiSocialLink.trim()) {
-      setAiError("Pegá el link de la red social más fuerte del artista.");
+      setAiError("Elegí el artista en el buscador o pegá el link de su red social manualmente.");
       return;
     }
     if (!/^https?:\/\//i.test(aiSocialLink.trim())) {
@@ -473,6 +553,10 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
     }
     if (!aiGenero) {
       setAiError("Elegí el género principal.");
+      return;
+    }
+    if (aiGenero === "Otro" && !aiOtroGenero.trim()) {
+      setAiError("Escribí el género del lanzamiento.");
       return;
     }
     if (!aiTienePresupuesto) {
@@ -500,8 +584,9 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
           tipo,
           fonograma: isGrouped ? groupNombre : fonograma,
           fecha: fecha || null,
-          genero: aiGenero,
+          genero: aiGenero === "Otro" ? aiOtroGenero.trim() : aiGenero,
           socialLink: aiSocialLink.trim(),
+          chartmetricId: aiChartmetricId,
           presupuesto:
             aiTienePresupuesto === "si"
               ? { tiene: true, montoArs: Number(aiPresupuestoMonto.replace(/\D/g, "")) }
@@ -670,17 +755,89 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                 Plan Personalizado con IA
               </div>
 
-              <div>
+              <div style={{ position: "relative" }}>
                 <label style={{ fontSize: 12, color: "var(--text-2)" }}>
-                  Link de la red social más fuerte del artista
+                  Red social más fuerte del artista
                 </label>
-                <input
-                  value={aiSocialLink}
-                  onChange={(e) => setAiSocialLink(e.target.value)}
-                  placeholder="https://instagram.com/... o tiktok, youtube, etc."
-                  disabled={aiGenerating}
-                  style={inputStyle}
-                />
+
+                {!aiManualLink ? (
+                  <>
+                    <input
+                      value={aiArtistQuery}
+                      onChange={(e) => runArtistSearch(e.target.value)}
+                      onFocus={() => aiArtistResults.length > 0 && setAiArtistOpen(true)}
+                      placeholder="Buscar artista..."
+                      disabled={aiGenerating}
+                      style={inputStyle}
+                      autoComplete="off"
+                    />
+                    {aiArtistOpen && aiArtistResults.length > 0 && (
+                      <div
+                        style={{
+                          position: "absolute", zIndex: 10, top: "100%", left: 0, right: 0, marginTop: 4,
+                          background: "var(--glass-bg-strong)", border: "1px solid var(--glass-border)",
+                          borderRadius: 10, boxShadow: "var(--shadow-glass)", overflow: "hidden",
+                          backdropFilter: "blur(30px) saturate(1.7)", WebkitBackdropFilter: "blur(30px) saturate(1.7)",
+                        }}
+                      >
+                        {aiArtistResults.map((r) => {
+                          const handle = bestSocialLink(r);
+                          return (
+                            <button
+                              key={r.id}
+                              type="button"
+                              onClick={() => selectArtist(r)}
+                              style={{
+                                display: "block", width: "100%", textAlign: "left", padding: "9px 12px",
+                                background: "transparent", border: "none", borderBottom: "1px solid var(--line-soft)",
+                                color: "var(--text-1)", fontSize: 13, cursor: "pointer",
+                              }}
+                            >
+                              <div style={{ fontWeight: 600 }}>{r.name}</div>
+                              <div style={{ fontSize: 11, color: handle ? "var(--text-3)" : "var(--crit-ink)" }}>
+                                {handle ? handle.replace(/^https?:\/\//, "") : "Sin redes cargadas todavía"}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {aiSelectedArtist && (
+                      <div style={{ marginTop: 6, fontSize: 11.5, color: "var(--good-ink)" }}>
+                        ✓ Usando {bestSocialLink(aiSelectedArtist)?.replace(/^https?:\/\//, "")}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAiManualLink(true);
+                        setAiArtistOpen(false);
+                        setAiSelectedArtist(null);
+                        setAiChartmetricId(null);
+                      }}
+                      style={{ background: "none", border: "none", color: "var(--text-3)", fontSize: 11, textDecoration: "underline", cursor: "pointer", marginTop: 6, padding: 0 }}
+                    >
+                      ¿No aparece? Pegar el link manualmente
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      value={aiSocialLink}
+                      onChange={(e) => setAiSocialLink(e.target.value)}
+                      placeholder="https://instagram.com/... o tiktok, youtube, etc."
+                      disabled={aiGenerating}
+                      style={inputStyle}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { setAiManualLink(false); setAiSocialLink(""); }}
+                      style={{ background: "none", border: "none", color: "var(--text-3)", fontSize: 11, textDecoration: "underline", cursor: "pointer", marginTop: 6, padding: 0 }}
+                    >
+                      Volver a buscar
+                    </button>
+                  </>
+                )}
               </div>
 
               <div>
@@ -697,6 +854,19 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                   ))}
                 </select>
               </div>
+
+              {aiGenero === "Otro" && (
+                <div>
+                  <label style={{ fontSize: 12, color: "var(--text-2)" }}>¿Qué género es?</label>
+                  <input
+                    value={aiOtroGenero}
+                    onChange={(e) => setAiOtroGenero(e.target.value)}
+                    placeholder="Ej: Bachata, Corridos, R&B..."
+                    disabled={aiGenerating}
+                    style={inputStyle}
+                  />
+                </div>
+              )}
 
               <div>
                 <label style={{ fontSize: 12, color: "var(--text-2)" }}>¿Cuenta con presupuesto de marketing?</label>

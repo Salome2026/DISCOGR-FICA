@@ -1,6 +1,7 @@
 // Gemini integration for the AI-generated marketing plan. Uses the raw REST
 // API (no SDK) with a fixed JSON response schema so the output can be
 // dropped straight into the PDF template without parsing freeform text.
+import contentExamplesData from "@/data/content-examples.json";
 
 const GEMINI_API = "https://generativelanguage.googleapis.com/v1beta";
 // Alias Google keeps pointed at their current recommended flash model —
@@ -15,6 +16,23 @@ const MODEL = "gemini-flash-lite-latest";
 
 export function geminiConfigured(): boolean {
   return !!process.env.GEMINI_API_KEY;
+}
+
+export type ContentExample = {
+  tipo: "playlist" | "reel" | "tiktok" | "historia" | "campana";
+  titulo: string;
+  descripcion: string;
+  url: string | null;
+};
+
+// Manually curated, WebFetch-verified reference material (data/content-examples.json)
+// — Gemini never generates URLs itself (the schema has no url field at all),
+// it only sees these as textual inspiration. The links that end up in the
+// PDF are inserted directly from this file by PlanPersonalizadoDoc, so a
+// link can never be wrong, invented, or dead-on-arrival.
+export function getContentExamples(genero: string): ContentExample[] {
+  const map = contentExamplesData.generos as Record<string, ContentExample[]>;
+  return map[genero] ?? [];
 }
 
 export type MarketingPlanInput = {
@@ -42,11 +60,25 @@ export type MarketingPlanInput = {
       topCities: { name: string; countryCode: string }[];
     } | null;
   };
+  contentExamples: ContentExample[];
+};
+
+export type MarketingPlanAccion = {
+  accion: string;
+  cuando: string;
+  como: string;
+  porQue: string;
+  objetivo: string;
+  resultadoEsperado: string;
 };
 
 export type MarketingPlanAI = {
   resumenEstrategico: string;
-  secciones: { titulo: string; parrafo: string; bullets: string[] }[];
+  secciones: {
+    titulo: string;
+    contexto: string;
+    acciones: MarketingPlanAccion[];
+  }[];
   kpis: { nombre: string; objetivo: string; frecuencia: string }[];
 };
 
@@ -60,10 +92,24 @@ const RESPONSE_SCHEMA = {
         type: "OBJECT",
         properties: {
           titulo: { type: "STRING" },
-          parrafo: { type: "STRING" },
-          bullets: { type: "ARRAY", items: { type: "STRING" } },
+          contexto: { type: "STRING" },
+          acciones: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                accion: { type: "STRING" },
+                cuando: { type: "STRING" },
+                como: { type: "STRING" },
+                porQue: { type: "STRING" },
+                objetivo: { type: "STRING" },
+                resultadoEsperado: { type: "STRING" },
+              },
+              required: ["accion", "cuando", "como", "porQue", "objetivo", "resultadoEsperado"],
+            },
+          },
         },
-        required: ["titulo", "parrafo", "bullets"],
+        required: ["titulo", "contexto", "acciones"],
       },
     },
     kpis: {
@@ -105,7 +151,13 @@ function buildPrompt(input: MarketingPlanInput): string {
     ? `Datos del featuring (${input.chartmetric.featuring.nombre}): oyentes mensuales ${input.chartmetric.featuring.monthlyListeners ?? "s/d"}, ciudades top: ${input.chartmetric.featuring.topCities.map((c) => `${c.name} (${c.countryCode.toUpperCase()})`).join(", ") || "s/d"}.`
     : "";
 
-  return `Sos un estratega senior de marketing musical especializado en el mercado argentino/latinoamericano. Generá un plan de marketing personalizado, concreto y accionable para el siguiente lanzamiento — nada de texto genérico de IA, nada de relleno. Cada bullet tiene que ser una acción específica que un equipo pueda ejecutar directamente, no un consejo abstracto.
+  const examplesStr = input.contentExamples.length
+    ? input.contentExamples
+        .map((e) => `- [${e.tipo}] ${e.titulo}: ${e.descripcion}`)
+        .join("\n")
+    : "No hay formatos de referencia curados todavía para este género — basate en tu conocimiento general de qué funciona en redes para este estilo musical.";
+
+  return `Sos un estratega senior de marketing musical especializado en el mercado argentino/latinoamericano, con el nivel de detalle y profesionalismo de una agencia real. Generá un plan de marketing personalizado, extenso, concreto y accionable para el siguiente lanzamiento — nada de texto genérico de IA, nada de relleno, nada de consejos abstractos tipo "publicá contenido regularmente".
 
 DATOS DEL LANZAMIENTO
 - Artista principal: ${input.artist}
@@ -126,14 +178,20 @@ DATOS DE AUDIENCIA (Chartmetric)
 Artista principal: ${cmArtistStr}
 ${cmFeatStr}
 
+FORMATOS DE CONTENIDO QUE FUNCIONAN BIEN EN ESTE GÉNERO (referencia real, verificada)
+${examplesStr}
+
 INSTRUCCIONES
-- Si hay presupuesto, las acciones pagas deben ser realistas para ese monto exacto en pesos argentinos (no propongas campañas de pauta desproporcionadas a lo que el presupuesto permite).
+- Generá entre 7 y 9 secciones. Cada sección debe tener un título claro y un contexto breve (2-3 líneas) de por qué esa sección importa PARA ESTE lanzamiento puntual, no en general.
+- Cada sección debe tener entre 2 y 4 acciones. Cada acción tiene que especificar, en campos separados: QUÉ hacer (concreto y ejecutable, no un consejo abstracto), CUÁNDO hacerlo (momento relativo al lanzamiento: ej. "7 días antes", "el día del estreno", "primera semana post-lanzamiento"), CÓMO hacerlo paso a paso (instrucciones prácticas que un equipo pueda seguir sin dudas), POR QUÉ funciona (la razón concreta, no genérica), qué OBJETIVO tiene esa acción, y qué RESULTADO ESPERADO es razonable dado el tamaño de audiencia y presupuesto de este artista.
+- Incluí como mínimo secciones equivalentes a: Estrategia de pre-save, Cronograma de lanzamiento (día a día o semana a semana), Calendario de contenidos, Ideas de contenido para Reels/TikTok/Shorts (usando y adaptando los formatos de referencia de arriba a este artista y lanzamiento puntual), Estrategia de Spotify y playlisting orgánico, Generación de contenido de fans/UGC${input.presupuesto.tiene ? ", Plan de pauta paga (acorde exactamente al presupuesto indicado, sin proponer campañas desproporcionadas)" : ""}.
+- Usá los "formatos de contenido que funcionan bien en este género" de arriba como base real para tus ideas de Reels/TikTok — adaptalos específicamente a este artista, este featuring (si hay) y esta canción, no los copies genéricamente.
+- Si hay featuring, incluí una sección o varias acciones específicas sobre campañas cruzadas entre los dos públicos y regiones de afinidad conjunta.
+- Usá las ciudades/países de mayor audiencia (si están disponibles) para dar foco geográfico concreto.
+- Si el artista tiene lanzamientos previos en el sello, referite a ese historial para dar continuidad (qué construir sobre lo anterior) en vez de tratarlo como debut.
 - Si NO hay presupuesto, el plan debe ser 100% orgánico y no debe mencionar pauta paga en ningún punto.
-- Si hay featuring, incluí al menos una sección o varios bullets sobre campañas cruzadas, públicos compartidos y regiones de afinidad conjunta entre ambos artistas.
-- Usá las ciudades/países de mayor audiencia (si están disponibles) para sugerir foco geográfico concreto en la estrategia.
-- Si el artista tiene lanzamientos previos en el sello, referite a ese historial para dar continuidad a la estrategia (qué funcionó, qué construir sobre eso) en vez de tratarlo como debut.
-- Incluí como mínimo estas secciones, adaptadas específicamente a este género y este artista (no genéricas): Estrategia de pre-save, Cronograma de lanzamiento, Calendario de contenidos, Ideas de contenido para Reels/TikTok/Shorts, Estrategia de Spotify, Generación de UGC, Playlisting orgánico${input.presupuesto.tiene ? ", Plan de pauta paga (acorde al presupuesto)" : ""}.
-- Escribí todo en español rioplatense, tono profesional pero directo, como si lo hubiera preparado un equipo de marketing musical real.
+- IMPORTANTE: no incluyas URLs, links ni menciones de "podés ver un ejemplo acá" en ningún campo de texto — el documento final ya inserta por separado los links reales verificados. Vos solo describís las acciones.
+- Escribí todo en español rioplatense, tono profesional pero directo, como si lo hubiera preparado un equipo de marketing musical real con años de experiencia en este género.
 - Muy importante: usá tildes y tildes en mayúsculas correctamente en todas las palabras que las llevan (campaña, técnicas, orgánicas, años, canción, música, etc.) y la letra ñ donde corresponda. No omitas ningún acento — un texto sin tildes se ve poco profesional.
 - Respondé únicamente con el JSON solicitado, sin texto adicional.`;
 }

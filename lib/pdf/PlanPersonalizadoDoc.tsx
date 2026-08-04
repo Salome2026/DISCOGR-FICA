@@ -1,5 +1,5 @@
 import React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Link } from "@react-pdf/renderer";
 import type { MarketingPlanAI, MarketingPlanInput } from "@/lib/gemini";
 
 const TEAL = "#2a8c94";
@@ -23,10 +23,21 @@ const styles = StyleSheet.create({
   h1Num: { fontSize: 10, color: TEAL, fontFamily: "Helvetica-Bold", letterSpacing: 1.5, marginBottom: 6 },
   h1: { fontSize: 17, fontFamily: "Helvetica-Bold", color: INK, marginBottom: 4 },
   h1Rule: { height: 2, backgroundColor: TEAL, width: 28, marginBottom: 14, marginTop: 2 },
-  p: { fontSize: 10, color: GRAY, marginBottom: 8, lineHeight: 1.5 },
-  bullet: { flexDirection: "row", marginBottom: 5, paddingRight: 4 },
-  bulletDot: { width: 10, fontSize: 10, color: TEAL, fontFamily: "Helvetica-Bold" },
-  bulletText: { flex: 1, fontSize: 10, color: GRAY, lineHeight: 1.45 },
+  p: { fontSize: 10, color: GRAY, marginBottom: 10, lineHeight: 1.5 },
+
+  accionCard: { backgroundColor: "#fafafb", border: "1px solid " + LINE, borderRadius: 6, padding: 12, marginBottom: 10 },
+  accionTitle: { fontSize: 11, fontFamily: "Helvetica-Bold", color: INK, marginBottom: 7 },
+  metaRow: { flexDirection: "row", gap: 14, marginBottom: 6 },
+  metaCol: { flex: 1 },
+  metaLabel: { fontSize: 7.5, fontFamily: "Helvetica-Bold", color: TEAL, letterSpacing: 0.8, marginBottom: 2, textTransform: "uppercase" },
+  metaValue: { fontSize: 9.5, color: GRAY, lineHeight: 1.4 },
+
+  exBox: { backgroundColor: LIGHT, borderRadius: 6, padding: 12, marginBottom: 8 },
+  exTipo: { fontSize: 7.5, fontFamily: "Helvetica-Bold", color: TEAL, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 3 },
+  exTitulo: { fontSize: 10.5, fontFamily: "Helvetica-Bold", color: INK, marginBottom: 3 },
+  exDesc: { fontSize: 9.5, color: GRAY, lineHeight: 1.45, marginBottom: 4 },
+  exLink: { fontSize: 9, color: TEAL },
+
   kpiRow: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: LINE, paddingVertical: 7 },
   kpiRowHead: { flexDirection: "row", borderBottomWidth: 1.5, borderBottomColor: INK, paddingVertical: 6 },
   kpiName: { width: 170, fontSize: 9.5, fontFamily: "Helvetica-Bold", color: INK },
@@ -35,6 +46,14 @@ const styles = StyleSheet.create({
   kpiHeadText: { fontSize: 9, fontFamily: "Helvetica-Bold", color: INK, textTransform: "uppercase", letterSpacing: 0.5 },
   footer: { position: "absolute", bottom: 28, left: 44, right: 44, flexDirection: "row", justifyContent: "space-between", fontSize: 8, color: "#9a9da8", borderTopWidth: 1, borderTopColor: LINE, paddingTop: 8 },
 });
+
+const TIPO_LABEL: Record<string, string> = {
+  playlist: "Playlist de referencia",
+  reel: "Idea de Reel",
+  tiktok: "Idea de TikTok",
+  historia: "Idea de Historia",
+  campana: "Idea de campaña",
+};
 
 function Footer({ artist }: { artist: string }) {
   return (
@@ -88,16 +107,68 @@ export default function PlanPersonalizadoDoc({
           <Text style={styles.resumenText}>{plan.resumenEstrategico}</Text>
         </View>
 
-        {plan.secciones.map((s, i) => (
-          <View key={i} wrap={false} style={{ marginTop: 16 }}>
-            <Text style={styles.h1Num}>{String(i + 1).padStart(2, "0")}</Text>
-            <Text style={styles.h1}>{s.titulo}</Text>
+        {input.contentExamples.length > 0 && (
+          <View wrap={false} style={{ marginTop: 16 }}>
+            <Text style={styles.h1Num}>REFERENCIAS</Text>
+            <Text style={styles.h1}>Ejemplos reales que funcionan en {input.genero}</Text>
             <View style={styles.h1Rule} />
-            {s.parrafo ? <Text style={styles.p}>{s.parrafo}</Text> : null}
-            {s.bullets.map((b, bi) => (
-              <View style={styles.bullet} key={bi}>
-                <Text style={styles.bulletDot}>•</Text>
-                <Text style={styles.bulletText}>{b}</Text>
+            <Text style={styles.p}>
+              Formatos y playlists verificadas, usadas como base real para las ideas de contenido de este plan.
+            </Text>
+            {input.contentExamples.map((ex, i) => (
+              <View key={i} style={styles.exBox}>
+                <Text style={styles.exTipo}>{TIPO_LABEL[ex.tipo] ?? ex.tipo}</Text>
+                <Text style={styles.exTitulo}>{ex.titulo}</Text>
+                <Text style={styles.exDesc}>{ex.descripcion}</Text>
+                {ex.url ? (
+                  <Link src={ex.url} style={styles.exLink}>{ex.url}</Link>
+                ) : (
+                  <Text style={styles.exLink}>Formato recomendado — sin link de post específico</Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+
+        {plan.secciones.map((s, i) => (
+          <View key={i} style={{ marginTop: 18 }}>
+            <View wrap={false}>
+              <Text style={styles.h1Num}>{String(i + 1).padStart(2, "0")}</Text>
+              <Text style={styles.h1}>{s.titulo}</Text>
+              <View style={styles.h1Rule} />
+              {s.contexto ? <Text style={styles.p}>{s.contexto}</Text> : null}
+            </View>
+            {s.acciones.map((a, ai) => (
+              <View key={ai} wrap={false} style={styles.accionCard}>
+                <Text style={styles.accionTitle}>{a.accion}</Text>
+                <View style={styles.metaRow}>
+                  <View style={styles.metaCol}>
+                    <Text style={styles.metaLabel}>Cuándo</Text>
+                    <Text style={styles.metaValue}>{a.cuando}</Text>
+                  </View>
+                </View>
+                <View style={styles.metaRow}>
+                  <View style={styles.metaCol}>
+                    <Text style={styles.metaLabel}>Cómo</Text>
+                    <Text style={styles.metaValue}>{a.como}</Text>
+                  </View>
+                </View>
+                <View style={styles.metaRow}>
+                  <View style={styles.metaCol}>
+                    <Text style={styles.metaLabel}>Por qué funciona</Text>
+                    <Text style={styles.metaValue}>{a.porQue}</Text>
+                  </View>
+                </View>
+                <View style={styles.metaRow}>
+                  <View style={styles.metaCol}>
+                    <Text style={styles.metaLabel}>Objetivo</Text>
+                    <Text style={styles.metaValue}>{a.objetivo}</Text>
+                  </View>
+                  <View style={styles.metaCol}>
+                    <Text style={styles.metaLabel}>Resultado esperado</Text>
+                    <Text style={styles.metaValue}>{a.resultadoEsperado}</Text>
+                  </View>
+                </View>
               </View>
             ))}
           </View>

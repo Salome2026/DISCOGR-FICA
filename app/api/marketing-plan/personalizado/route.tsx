@@ -3,13 +3,8 @@ import { renderToBuffer } from "@react-pdf/renderer";
 import { auth } from "@/auth";
 import { getArtistCatalogHistory } from "@/lib/db/catalog";
 import { chartmetricConfigured, searchArtist, getArtistSpotifyStats } from "@/lib/chartmetric";
-import { geminiConfigured, generateMarketingPlan, type MarketingPlanInput } from "@/lib/gemini";
+import { geminiConfigured, generateMarketingPlan, getContentExamples, type MarketingPlanInput } from "@/lib/gemini";
 import PlanPersonalizadoDoc from "@/lib/pdf/PlanPersonalizadoDoc";
-
-const GENEROS = [
-  "Cumbia", "Cuarteto", "RKT", "Reggaetón", "Trap", "Pop", "Rock",
-  "Electrónica", "Latin House", "Tech House", "Folklore", "Tango", "Otro",
-];
 
 // Never let a slow/unavailable Chartmetric call eat into the 5-10s budget —
 // fall back to null and keep going with what the platform already has.
@@ -24,11 +19,15 @@ async function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | null> {
   }
 }
 
-async function chartmetricSnapshot(name: string) {
+async function chartmetricSnapshot(name: string, knownChartmetricId?: number | null) {
   if (!chartmetricConfigured()) return null;
-  const match = await withTimeout(searchArtist(name), 4000);
-  if (!match) return null;
-  const stats = await withTimeout(getArtistSpotifyStats(match.chartmetricId), 4000);
+  let chartmetricId = knownChartmetricId ?? null;
+  if (!chartmetricId) {
+    const match = await withTimeout(searchArtist(name), 4000);
+    if (!match) return null;
+    chartmetricId = match.chartmetricId;
+  }
+  const stats = await withTimeout(getArtistSpotifyStats(chartmetricId), 4000);
   if (!stats) return null;
   return {
     monthlyListeners: stats.monthlyListeners,
@@ -58,17 +57,17 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const {
-    artist, featuring, sello, tipo, fonograma, fecha, genero, socialLink, presupuesto,
+    artist, featuring, sello, tipo, fonograma, fecha, genero, socialLink, presupuesto, chartmetricId,
   } = body as {
     artist?: string; featuring?: string; sello?: string | null; tipo?: string;
     fonograma?: string; fecha?: string | null; genero?: string; socialLink?: string;
-    presupuesto?: { tiene: boolean; montoArs?: number };
+    presupuesto?: { tiene: boolean; montoArs?: number }; chartmetricId?: number | null;
   };
 
   if (!artist || !fonograma || !genero || !socialLink || !presupuesto) {
     return NextResponse.json({ error: "Faltan datos obligatorios." }, { status: 400 });
   }
-  if (!GENEROS.includes(genero)) {
+  if (genero.trim().length < 2 || genero.trim().length > 60) {
     return NextResponse.json({ error: "Género inválido." }, { status: 400 });
   }
   if (!/^https?:\/\//i.test(socialLink.trim())) {
@@ -84,7 +83,7 @@ export async function POST(req: NextRequest) {
   const [historialArtista, historialFeaturingRaw, cmArtist, cmFeaturing] = await Promise.all([
     getArtistCatalogHistory(artist).catch(() => []),
     primaryFeaturing ? getArtistCatalogHistory(primaryFeaturing).catch(() => []) : Promise.resolve([]),
-    chartmetricSnapshot(artist),
+    chartmetricSnapshot(artist, chartmetricId),
     primaryFeaturing ? chartmetricSnapshot(primaryFeaturing) : Promise.resolve(null),
   ]);
 
@@ -104,6 +103,7 @@ export async function POST(req: NextRequest) {
       artist: cmArtist,
       featuring: cmFeaturing && primaryFeaturing ? { nombre: primaryFeaturing, ...cmFeaturing } : null,
     },
+    contentExamples: getContentExamples(genero),
   };
 
   try {

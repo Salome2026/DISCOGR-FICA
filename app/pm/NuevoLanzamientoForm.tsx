@@ -374,7 +374,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "No se pudo guardar.");
         setSuccess(true);
-        setTimeout(() => onCreated(), 900);
+        onCreated();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error desconocido");
       } finally {
@@ -437,7 +437,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "No se pudo guardar.");
       setSuccess(true);
-      setTimeout(() => onCreated(), 900);
+      onCreated();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
@@ -474,8 +474,8 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             border: "1px solid var(--glass-border)",
             boxShadow: "var(--shadow-glass-lg)",
             width: "100%",
-            maxWidth: 380,
-            padding: "3rem 2rem",
+            maxWidth: 420,
+            padding: "3rem 2rem 2rem",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -500,10 +500,94 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
           >
             ✓
           </div>
-          <div style={{ fontSize: 18, fontWeight: 700 }}>¡Lanzamiento guardado!</div>
-          <div style={{ fontSize: 13, color: "var(--text-3)" }}>
-            Se actualizó el catálogo y se envió la notificación por correo.
+          <div style={{ fontSize: 19, fontWeight: 700 }}>¡Lanzamiento creado con éxito!</div>
+
+          <div
+            style={{
+              width: "100%",
+              marginTop: 8,
+              paddingTop: 20,
+              borderTop: "1px solid var(--line-soft)",
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+            }}
+          >
+            <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text-2)" }}>
+              Plan de Marketing disponible
+            </div>
+
+            <a
+              href="/plan-marketing-base.pdf"
+              download
+              style={{
+                background: "var(--accent-glass-bg)",
+                border: "1px solid var(--accent-glass-border)",
+                borderRadius: 10,
+                padding: "11px 16px",
+                color: "var(--text-1)",
+                fontWeight: 600,
+                fontSize: 13.5,
+                textDecoration: "none",
+                backdropFilter: "blur(20px) saturate(1.7)",
+                WebkitBackdropFilter: "blur(20px) saturate(1.7)",
+                cursor: "pointer",
+              }}
+            >
+              ↓ Descargar Plan Base
+            </a>
+
+            <button
+              type="button"
+              disabled
+              title="Próximamente — requiere configurar la conexión con IA"
+              style={{
+                background: "transparent",
+                border: "1px solid var(--line-soft)",
+                borderRadius: 10,
+                padding: "11px 16px",
+                color: "var(--text-3)",
+                fontWeight: 600,
+                fontSize: 13.5,
+                cursor: "not-allowed",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+              }}
+            >
+              Generar Plan Personalizado con IA
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: "var(--text-3)",
+                  border: "1px solid var(--line-soft)",
+                  borderRadius: 100,
+                  padding: "2px 7px",
+                }}
+              >
+                Próximamente
+              </span>
+            </button>
           </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            style={{
+              marginTop: 6,
+              background: "transparent",
+              border: "none",
+              color: "var(--text-3)",
+              fontSize: 12.5,
+              cursor: "pointer",
+              textDecoration: "underline",
+            }}
+          >
+            Cerrar
+          </button>
+
           <style>{`
             @keyframes pm-check-pop {
               0% { transform: scale(0); opacity: 0; }

@@ -270,11 +270,11 @@ function PMModuleInner() {
         <NuevoLanzamientoForm
           role={role as "admin" | "project_manager"}
           assignedArtists={role === "admin" ? null : assignedArtists}
-          onClose={() => setShowForm(false)}
-          onCreated={() => {
+          onClose={() => {
             setShowForm(false);
             loadReleases();
           }}
+          onCreated={loadReleases}
         />
       )}
     </div>

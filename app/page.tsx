@@ -6,7 +6,7 @@ import { signIn } from "next-auth/react";
 import Image from "next/image";
 import VPOScrollHero from "./components/VPOScrollHero";
 
-type Card = "label" | "pm" | "legal" | null;
+type Card = "label" | "pm" | "legal" | "editorial" | null;
 
 export default function Landing() {
   const router = useRouter();
@@ -72,9 +72,9 @@ export default function Landing() {
         .vpo-hero-static p{font-size:13px;color:var(--text-3);margin:0;}
         .landing-content{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:2rem 2rem 6rem;}
         .landing-watermark{position:absolute;top:0;right:0;width:min(65vw, 820px);height:auto;opacity:.05;filter:grayscale(1) brightness(1.4);pointer-events:none;z-index:0;transform:translate(20%, -15%);}
-        .landing-inner{position:relative;z-index:1;width:100%;max-width:880px;}
-        .cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.25rem;}
-        @media (max-width:860px){ .cards{grid-template-columns:1fr 1fr;} }
+        .landing-inner{position:relative;z-index:1;width:100%;max-width:1080px;}
+        .cards{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1.25rem;}
+        @media (max-width:1020px){ .cards{grid-template-columns:1fr 1fr;} }
         @media (max-width:640px){ .cards{grid-template-columns:1fr;} }
         .access-card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:2rem;text-align:center;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);transition:border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);}
         .access-card:hover{border-color:var(--accent-color-glow);box-shadow:var(--shadow-glass), 0 0 30px -10px var(--accent-color-glow);}
@@ -125,6 +125,13 @@ export default function Landing() {
                 Ingresar
               </button>
             </div>
+            <div className="access-card">
+              <h2>Editorial</h2>
+              <p>Acceso para Tango Made In Argentina Publishing.</p>
+              <button className="access-btn" onClick={() => setActive("editorial")}>
+                Ingresar
+              </button>
+            </div>
           </div>
         )}
 
@@ -134,7 +141,13 @@ export default function Landing() {
               ← Volver
             </button>
             <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
-              {active === "label" ? "Acceso Label Management" : active === "pm" ? "Acceso Project Managers" : "Acceso Legales"}
+              {active === "label"
+                ? "Acceso Label Management"
+                : active === "pm"
+                ? "Acceso Project Managers"
+                : active === "legal"
+                ? "Acceso Legales"
+                : "Acceso Editorial"}
             </h2>
             <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>

@@ -15,6 +15,10 @@ export default function Landing() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotMsg, setForgotMsg] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Reaching the login panel means scrolling past the full-height hero, so
@@ -44,6 +48,32 @@ export default function Landing() {
     }
     const me = await fetch("/api/me").then((r) => r.json());
     router.push(me.home ?? "/acceso-denegado");
+  }
+
+  async function handleForgotSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setForgotLoading(true);
+    setForgotMsg(null);
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: forgotEmail }),
+      });
+      const data = await res.json();
+      setForgotMsg(data.message ?? "Si el correo está registrado, vas a recibir un enlace para restablecer tu contraseña.");
+    } catch {
+      setForgotMsg("Hubo un error de conexión. Intentá de nuevo en unos minutos.");
+    } finally {
+      setForgotLoading(false);
+    }
+  }
+
+  function backToCards() {
+    setActive(null);
+    setForgotMode(false);
+    setForgotEmail("");
+    setForgotMsg(null);
   }
 
   return (
@@ -88,6 +118,8 @@ export default function Landing() {
         .login-panel input{width:100%;background:var(--bg-2);border:1px solid var(--line-soft);border-radius:8px;padding:10px 12px;color:var(--text-1);font-size:13.5px;margin-top:6px;}
         .login-panel label{font-size:12.5px;color:var(--text-2);}
         .back-link{background:none;border:none;color:var(--text-3);font-size:12.5px;cursor:pointer;margin-bottom:16px;padding:0;}
+        .forgot-link{background:none;border:none;color:var(--text-3);font-size:12px;cursor:pointer;padding:0;text-align:center;text-decoration:underline;text-underline-offset:2px;}
+        .forgot-link:hover{color:var(--text-2);}
       `}</style>
 
       <VPOScrollHero />
@@ -138,11 +170,13 @@ export default function Landing() {
 
         {active !== null && (
           <div className="login-panel" ref={panelRef}>
-            <button className="back-link" onClick={() => setActive(null)}>
+            <button className="back-link" onClick={backToCards}>
               ← Volver
             </button>
             <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>
-              {active === "label"
+              {forgotMode
+                ? "Restablecer contraseña"
+                : active === "label"
                 ? "Acceso Label Management"
                 : active === "pm"
                 ? "Acceso Project Managers"
@@ -150,37 +184,88 @@ export default function Landing() {
                 ? "Acceso Legales"
                 : "Acceso Editorial"}
             </h2>
-            <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <div>
-                <label>Usuario o email</label>
-                <input
-                  type="text"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="username"
-                  required
-                />
-              </div>
-              <div>
-                <label>Contraseña</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                />
-              </div>
-              {error && (
-                <div style={{ color: "var(--crit-ink)", fontSize: 12.5 }}>{error}</div>
-              )}
-              <button className="access-btn" type="submit" disabled={loading}>
-                {loading ? "Ingresando..." : "Ingresar"}
-              </button>
-            </form>
-            <p style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 16, textAlign: "center" }}>
-              No hay registro público — tu cuenta la crea un administrador.
-            </p>
+
+            {!forgotMode ? (
+              <>
+                <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  <div>
+                    <label>Usuario o email</label>
+                    <input
+                      type="text"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      autoComplete="username"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label>Contraseña</label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      autoComplete="current-password"
+                      required
+                    />
+                  </div>
+                  {error && (
+                    <div style={{ color: "var(--crit-ink)", fontSize: 12.5 }}>{error}</div>
+                  )}
+                  <button className="access-btn" type="submit" disabled={loading}>
+                    {loading ? "Ingresando..." : "Ingresar"}
+                  </button>
+                  <button
+                    type="button"
+                    className="forgot-link"
+                    onClick={() => {
+                      setForgotMode(true);
+                      setForgotEmail(email);
+                      setForgotMsg(null);
+                    }}
+                  >
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                </form>
+                <p style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 16, textAlign: "center" }}>
+                  No hay registro público — tu cuenta la crea un administrador.
+                </p>
+              </>
+            ) : (
+              <form onSubmit={handleForgotSubmit} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <p style={{ fontSize: 12.5, color: "var(--text-3)", margin: 0 }}>
+                  Ingresá tu correo electrónico y, si está registrado, te enviamos un enlace para restablecer tu contraseña.
+                </p>
+                <div>
+                  <label>Correo electrónico</label>
+                  <input
+                    type="email"
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                    disabled={!!forgotMsg}
+                  />
+                </div>
+                {forgotMsg && (
+                  <div style={{ fontSize: 12.5, color: "var(--good-ink)" }}>{forgotMsg}</div>
+                )}
+                {!forgotMsg && (
+                  <button className="access-btn" type="submit" disabled={forgotLoading}>
+                    {forgotLoading ? "Enviando..." : "Enviar enlace"}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="forgot-link"
+                  onClick={() => {
+                    setForgotMode(false);
+                    setForgotMsg(null);
+                  }}
+                >
+                  ← Volver a iniciar sesión
+                </button>
+              </form>
+            )}
           </div>
         )}
       </div>

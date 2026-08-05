@@ -136,6 +136,10 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   const [uploadStep, setUploadStep] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  // Field-level red-border highlighting only kicks in after a real submit
+  // attempt — a blank form shouldn't look like a wall of errors before the
+  // user has even tried to send it.
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   // Plan de Marketing con IA
   const [showAiForm, setShowAiForm] = useState(false);
@@ -296,10 +300,47 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
     }
   }
 
+  // Every field on a track is required except colaboradores (featuring),
+  // productor, and comentario — same "everything but Featuring" rule as the
+  // rest of the form.
   const incompleteTracks = useMemo(
-    () => tracks.filter((t) => !t.fonograma.trim() || !t.artistaPrincipal.trim()),
+    () => tracks.filter((t) => !t.fonograma.trim() || !t.artistaPrincipal.trim() || !t.audioFile || !t.portadaFile),
     [tracks]
   );
+
+  // All required top-level fields, live — drives both the submit-button
+  // readiness state and the "faltan completar" message. Featuring stays out
+  // of this list on purpose: it's the one field that's allowed to be empty.
+  const missingFields = useMemo(() => {
+    const missing: string[] = [];
+    if (!tipo) {
+      missing.push("Tipo de lanzamiento");
+      return missing;
+    }
+    if (!artist.trim()) missing.push("Artista");
+    if (!sello) missing.push("Sello / unidad de negocio");
+    if (sello === "Streamings" && !streamingProject) missing.push("Proyecto de streaming");
+    if (tipo === "single") {
+      if (!fonograma.trim()) missing.push("Nombre del fonograma");
+      if (!autores.trim()) missing.push("Autores y compositores");
+      if (!audioFile) missing.push("Audio (.wav)");
+      if (!portadaFile) missing.push("Portada");
+    } else {
+      if (!groupNombre.trim()) missing.push(`Nombre del ${tipo === "ep" ? "EP" : "álbum"}`);
+    }
+    if (!distribuidora) missing.push("Distribuidora");
+    if (!fecha) missing.push("Fecha de lanzamiento");
+    if (!hora) missing.push("Hora de lanzamiento");
+    return missing;
+  }, [tipo, artist, sello, streamingProject, fonograma, autores, audioFile, portadaFile, groupNombre, distribuidora, fecha, hora]);
+
+  const formIncomplete =
+    missingFields.length > 0 || (isGrouped && (tracks.length === 0 || incompleteTracks.length > 0));
+
+  function missingStyle(isMissing: boolean, base: React.CSSProperties = inputStyle): React.CSSProperties {
+    if (!isMissing || !submitAttempted) return base;
+    return { ...base, border: "1px solid var(--crit-ink)", background: "rgba(220,80,80,0.08)" };
+  }
   const duplicateNames = useMemo(() => {
     const counts = new Map<string, number>();
     for (const t of tracks) {
@@ -339,30 +380,14 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setSubmitAttempted(true);
 
-    if (!tipo) {
-      setError("Elegí el tipo de lanzamiento.");
-      return;
-    }
-    if (!artist.trim()) {
-      setError("Completá el nombre del artista.");
-      return;
-    }
-    if (!sello) {
-      setError("Elegí el sello / unidad de negocio.");
-      return;
-    }
-    if (sello === "Streamings" && !streamingProject) {
-      setError("Elegí el proyecto de streaming.");
+    if (missingFields.length > 0) {
+      setError(`Faltan completar: ${missingFields.join(", ")}.`);
       return;
     }
 
     if (tipo === "single") {
-      if (!fonograma.trim()) {
-        setError("El nombre del fonograma es obligatorio.");
-        return;
-      }
-
       setSaving(true);
       try {
         let audioUrl: string | null = null;
@@ -423,17 +448,13 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
     }
 
     // EP / álbum
-    if (!groupNombre.trim()) {
-      setError(`El nombre del ${tipo === "ep" ? "EP" : "álbum"} es obligatorio.`);
-      return;
-    }
     if (tracks.length === 0) {
       setError("Agregá al menos una canción.");
       return;
     }
     if (incompleteTracks.length > 0) {
       setError(
-        `Faltan datos en ${incompleteTracks.length} ${cancionPlural(incompleteTracks.length)} (nombre y artista principal son obligatorios).`
+        `Faltan datos en ${incompleteTracks.length} ${cancionPlural(incompleteTracks.length)} (nombre, artista principal, audio y portada son obligatorios).`
       );
       return;
     }
@@ -1058,7 +1079,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                 value={artist}
                 onChange={(e) => onArtistChange(e.target.value)}
                 placeholder="Nombre del artista"
-                style={inputStyle}
+                style={missingStyle(!artist.trim())}
               />
             </div>
 
@@ -1067,7 +1088,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
               <select
                 value={sello}
                 onChange={(e) => onSelloChange(e.target.value)}
-                style={inputStyle}
+                style={missingStyle(!sello)}
               >
                 <option value="">Elegir...</option>
                 {SELLOS.map((s) => (
@@ -1082,7 +1103,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                 <select
                   value={streamingProject}
                   onChange={(e) => setStreamingProject(e.target.value)}
-                  style={inputStyle}
+                  style={missingStyle(!streamingProject)}
                 >
                   <option value="">Elegir...</option>
                   {streamingProjects.map((p) => (
@@ -1099,7 +1120,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                   value={fonograma}
                   onChange={(e) => setFonograma(e.target.value)}
                   placeholder="Nombre del single"
-                  style={inputStyle}
+                  style={missingStyle(!fonograma.trim())}
                 />
               </div>
             ) : (
@@ -1111,7 +1132,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                   value={groupNombre}
                   onChange={(e) => setGroupNombre(e.target.value)}
                   placeholder={`Nombre del ${tipo === "ep" ? "EP" : "álbum"}`}
-                  style={inputStyle}
+                  style={missingStyle(!groupNombre.trim())}
                 />
               </div>
             )}
@@ -1123,14 +1144,16 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                   value={autores}
                   onChange={(e) => setAutores(e.target.value)}
                   placeholder="Nombre y apellido de cada uno, separados por coma"
-                  style={inputStyle}
+                  style={missingStyle(!autores.trim())}
                 />
               </div>
             )}
 
             {tipo === "single" && (
               <div>
-                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Featuring / artistas invitados</label>
+                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>
+                  Featuring / artistas invitados <span style={{ color: "var(--text-3)", fontWeight: 400 }}>(opcional)</span>
+                </label>
                 <input
                   value={featuring}
                   onChange={(e) => setFeaturing(e.target.value)}
@@ -1151,7 +1174,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
 
             <div>
               <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Distribuidora</label>
-              <select value={distribuidora} onChange={(e) => setDistribuidora(e.target.value)} style={inputStyle}>
+              <select value={distribuidora} onChange={(e) => setDistribuidora(e.target.value)} style={missingStyle(!distribuidora)}>
                 <option value="">Elegir...</option>
                 {distribuidoras.map((d) => (
                   <option key={d} value={d}>{d}</option>
@@ -1162,12 +1185,11 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             <div style={{ display: "flex", gap: 10 }}>
               <div style={{ flex: 1 }}>
                 <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Fecha de lanzamiento</label>
-                <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} style={inputStyle} />
+                <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} style={missingStyle(!fecha)} />
               </div>
               <div style={{ flex: 1 }}>
                 <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Hora (ART)</label>
-                <select value={hora} onChange={(e) => setHora(e.target.value)} style={inputStyle}>
-                  <option value="">00 (por defecto)</option>
+                <select value={hora} onChange={(e) => setHora(e.target.value)} style={missingStyle(!hora)}>
                   {HORAS.map((h) => (
                     <option key={h} value={`${h}:00`}>
                       {h}
@@ -1182,21 +1204,23 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
               <>
                 <div>
                   <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Audio (.wav)</label>
-                  <input type="file" accept=".wav,audio/wav" onChange={handleAudioChange} style={fileInputStyle} />
+                  <input type="file" accept=".wav,audio/wav" onChange={handleAudioChange} style={missingStyle(!audioFile, fileInputStyle)} />
                   {audioFile && <p style={{ fontSize: 11.5, color: "var(--good)", marginTop: 4 }}>✓ {audioFile.name}</p>}
                 </div>
                 <div>
                   <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>
                     Portada ({PORTADA_SIZE}x{PORTADA_SIZE}px, para Spotify)
                   </label>
-                  <input type="file" accept="image/png,image/jpeg" onChange={handlePortadaChange} style={fileInputStyle} />
+                  <input type="file" accept="image/png,image/jpeg" onChange={handlePortadaChange} style={missingStyle(!portadaFile, fileInputStyle)} />
                   {portadaFile && <p style={{ fontSize: 11.5, color: "var(--good)", marginTop: 4 }}>✓ {portadaFile.name}</p>}
                 </div>
               </>
             ) : (
               <>
                 <div>
-                  <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Comentarios u observaciones</label>
+                  <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>
+                    Comentarios u observaciones <span style={{ color: "var(--text-3)", fontWeight: 400 }}>(opcional)</span>
+                  </label>
                   <textarea
                     value={comentariosGrupo}
                     onChange={(e) => setComentariosGrupo(e.target.value)}
@@ -1237,7 +1261,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                           <span style={{ fontSize: 12, color: "var(--text-3)", width: 20 }}>{i + 1}</span>
                           <span style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>
                             {t.fonograma || "Sin nombre todavía"}
-                            {(!t.fonograma.trim() || !t.artistaPrincipal.trim()) && (
+                            {(!t.fonograma.trim() || !t.artistaPrincipal.trim() || !t.audioFile || !t.portadaFile) && (
                               <span style={{ color: "var(--warn)", fontWeight: 500, fontSize: 11.5 }}> · incompleta</span>
                             )}
                           </span>
@@ -1255,7 +1279,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                               <input
                                 value={t.fonograma}
                                 onChange={(e) => updateTrack(t.key, { fonograma: e.target.value })}
-                                style={inputStyle}
+                                style={missingStyle(!t.fonograma.trim())}
                               />
                             </div>
                             <div>
@@ -1263,11 +1287,11 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                               <input
                                 value={t.artistaPrincipal}
                                 onChange={(e) => updateTrack(t.key, { artistaPrincipal: e.target.value })}
-                                style={inputStyle}
+                                style={missingStyle(!t.artistaPrincipal.trim())}
                               />
                             </div>
                             <div>
-                              <label style={smallLabel}>Artistas invitados / colaboradores</label>
+                              <label style={smallLabel}>Artistas invitados / colaboradores (opcional)</label>
                               <input
                                 value={t.colaboradores}
                                 onChange={(e) => updateTrack(t.key, { colaboradores: e.target.value })}
@@ -1276,7 +1300,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                               />
                             </div>
                             <div>
-                              <label style={smallLabel}>Productor (si corresponde)</label>
+                              <label style={smallLabel}>Productor (opcional, si corresponde)</label>
                               <input
                                 value={t.productor}
                                 onChange={(e) => updateTrack(t.key, { productor: e.target.value })}
@@ -1285,16 +1309,16 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                             </div>
                             <div>
                               <label style={smallLabel}>Audio (.wav) — estado: {t.audioFile ? "Cargado" : "Pendiente"}</label>
-                              <input type="file" accept=".wav,audio/wav" onChange={(e) => handleTrackAudioChange(t.key, e)} style={fileInputStyle} />
+                              <input type="file" accept=".wav,audio/wav" onChange={(e) => handleTrackAudioChange(t.key, e)} style={missingStyle(!t.audioFile, fileInputStyle)} />
                             </div>
                             <div>
                               <label style={smallLabel}>
-                                Portada, si aplica ({PORTADA_SIZE}x{PORTADA_SIZE}px) — estado: {t.portadaFile ? "Cargada" : "Pendiente"}
+                                Portada ({PORTADA_SIZE}x{PORTADA_SIZE}px) — estado: {t.portadaFile ? "Cargada" : "Pendiente"}
                               </label>
-                              <input type="file" accept="image/png,image/jpeg" onChange={(e) => handleTrackPortadaChange(t.key, e)} style={fileInputStyle} />
+                              <input type="file" accept="image/png,image/jpeg" onChange={(e) => handleTrackPortadaChange(t.key, e)} style={missingStyle(!t.portadaFile, fileInputStyle)} />
                             </div>
                             <div>
-                              <label style={smallLabel}>Comentario u observación</label>
+                              <label style={smallLabel}>Comentario u observación (opcional)</label>
                               <input
                                 value={t.comentario}
                                 onChange={(e) => updateTrack(t.key, { comentario: e.target.value })}
@@ -1381,7 +1405,8 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
           </button>
           <button
             type="submit"
-            disabled={saving || !tipo}
+            disabled={saving}
+            title={formIncomplete ? "Completá los campos obligatorios para poder enviar" : undefined}
             style={{
               background: "var(--accent-glass-bg)",
               border: "1px solid var(--accent-glass-border)",
@@ -1391,9 +1416,9 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
               fontWeight: 600,
               backdropFilter: "blur(20px) saturate(1.7)",
               WebkitBackdropFilter: "blur(20px) saturate(1.7)",
-              cursor: saving || !tipo ? "default" : "pointer",
+              cursor: saving ? "default" : "pointer",
               fontSize: 13,
-              opacity: saving || !tipo ? 0.6 : 1,
+              opacity: saving || formIncomplete ? 0.55 : 1,
             }}
           >
             {saving

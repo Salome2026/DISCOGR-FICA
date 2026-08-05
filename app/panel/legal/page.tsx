@@ -14,17 +14,14 @@ export default function LegalHomePage() {
 
           <div className="legal-home-buttons legal-ficha-buttons">
             <Link href="/panel/legal/contratos" className="legal-big-btn">
-              <span className="icon">📄</span>
               <h2>Contratos de Artistas</h2>
               <p>Base de datos de contratos y documentación legal de cada artista.</p>
             </Link>
             <Link href="/panel/legal/releases" className="legal-big-btn">
-              <span className="icon">🎵</span>
               <h2>Releases / Fonogramas</h2>
               <p>Información legal vinculada a cada lanzamiento y fonograma.</p>
             </Link>
             <Link href="/panel/legal/releases-externos" className="legal-big-btn">
-              <span className="icon">🌐</span>
               <h2>Releases Externos</h2>
               <p>Lanzamientos de nuestros artistas que salieron por fuera de la plataforma.</p>
             </Link>

@@ -9,8 +9,8 @@ import { TIPOS_ARTISTA_PUBLISHING, type PublishingArtist } from "@/lib/db/publis
 
 export const PUBLISHING_STYLES = `
   .pub-root {
-    --pub-accent: #b06868;
-    --pub-accent-ink: #2a1414;
+    --pub-accent: #5468c9;
+    --pub-accent-ink: #14163a;
     font-family: var(--font-display);
     color: var(--text-1);
     min-height: 100vh;
@@ -27,7 +27,7 @@ export const PUBLISHING_STYLES = `
   .pub-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 1.5rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); box-shadow: var(--shadow-glass); }
   .pub-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
   .pub-search { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 9px 12px; color: var(--text-1); font-size: 13px; min-width: 240px; }
-  .pub-btn-primary { background: linear-gradient(155deg, var(--pub-accent), #7d4444); border: none; border-radius: 8px; padding: 10px 18px; color: #fff; font-weight: 700; cursor: pointer; font-size: 13.5px; }
+  .pub-btn-primary { background: linear-gradient(155deg, var(--pub-accent), #39408c); border: none; border-radius: 8px; padding: 10px 18px; color: #fff; font-weight: 700; cursor: pointer; font-size: 13.5px; }
   .pub-btn-ghost { background: transparent; border: 1px solid var(--line-soft); border-radius: 8px; padding: 6px 12px; color: var(--text-2); cursor: pointer; font-size: 12px; }
   table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   th { text-align: left; color: var(--text-3); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
@@ -46,7 +46,6 @@ export const PUBLISHING_STYLES = `
     transition: border-color var(--dur-base) var(--ease-out), transform var(--dur-fast) var(--ease-out);
   }
   .pub-big-btn:hover { border-color: var(--pub-accent); transform: translateY(-2px); }
-  .pub-big-btn .icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 19px; background: linear-gradient(155deg, var(--pub-accent), #7d4444); color: #fff; }
   .pub-big-btn h2 { font-size: 17px; font-weight: 700; margin: 0; }
   .pub-big-btn p { font-size: 12.5px; color: var(--text-3); margin: 0; line-height: 1.5; }
 
@@ -61,7 +60,7 @@ export const PUBLISHING_STYLES = `
   .pub-artist-card:hover { border-color: var(--pub-accent); transform: translateY(-2px); }
   .pub-artist-avatar {
     width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 17px; font-weight: 700; background: linear-gradient(155deg, var(--pub-accent), #7d4444); color: #fff;
+    font-size: 17px; font-weight: 700; background: linear-gradient(155deg, var(--pub-accent), #39408c); color: #fff;
   }
   .pub-artist-name { font-size: 13px; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .pub-artist-meta { font-size: 10.5px; color: var(--text-3); }

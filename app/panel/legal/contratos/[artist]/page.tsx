@@ -5,12 +5,6 @@ import RequireRole from "@/app/components/RequireRole";
 import { TIPOS_CONTRATO, type LegalContract } from "@/lib/db/legalContracts";
 import { LegalShell, Badge, ContractForm } from "../../_shared";
 
-const TIPO_ICON: Record<string, string> = {
-  Editorial: "📝",
-  Intérprete: "🎤",
-  Representación: "🤝",
-};
-
 function isVencido(fechaVencimiento: string | null): boolean {
   if (!fechaVencimiento) return false;
   return new Date(fechaVencimiento) < new Date(new Date().toDateString());
@@ -64,7 +58,6 @@ function ArtistFicha({ artist }: { artist: string }) {
             const current = list[0];
             return (
               <button key={tipo} className="legal-big-btn" onClick={() => setOpenTipo(tipo)} style={{ width: "100%" }}>
-                <span className="icon">{TIPO_ICON[tipo] ?? "📄"}</span>
                 <h2>{tipo}</h2>
                 {current ? (
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>

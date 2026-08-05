@@ -88,7 +88,6 @@ export const LEGAL_STYLES = `
     transition: border-color var(--dur-base) var(--ease-out), transform var(--dur-fast) var(--ease-out);
   }
   .legal-big-btn:hover { border-color: var(--legal-accent); transform: translateY(-2px); }
-  .legal-big-btn .icon { width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 19px; background: linear-gradient(155deg, var(--legal-accent), #a3854f); color: var(--legal-accent-ink); }
   .legal-big-btn h2 { font-size: 17px; font-weight: 700; margin: 0; }
   .legal-big-btn p { font-size: 12.5px; color: var(--text-3); margin: 0; line-height: 1.5; }
 

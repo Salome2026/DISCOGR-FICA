@@ -14,19 +14,22 @@ import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion
 export default function VPOScrollHero() {
   const reduceMotion = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  // "end end" (target bottom meets viewport bottom) lands exactly on the
+  // moment the sticky child unpins, whatever height the section is given in
+  // CSS — so scrollYProgress 0->1 always spans exactly the pin's full
+  // scrollable duration, and the stops below stay correct no matter how
+  // short the section is made.
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
 
-  // The section is 200dvh tall, so the sticky child only stays pinned on
-  // screen for the first half of scrollYProgress (0 -> 0.5) before it
-  // unpins and scrolls away with the page. Every value below finishes its
-  // move by 0.45 so the whole animation plays out while still pinned —
-  // otherwise it'd be shrinking/fading off-screen, unseen.
-  const scale = useTransform(scrollYProgress, [0, 0.45], [1, 0.55]);
-  const y = useTransform(scrollYProgress, [0, 0.45], [0, -24]);
-  const markOpacity = useTransform(scrollYProgress, [0.28, 0.45], [1, 0]);
-  const textOpacity = useTransform(scrollYProgress, [0, 0.18], [1, 0]);
-  const textY = useTransform(scrollYProgress, [0, 0.22], [0, -14]);
-  const hint = useTransform(scrollYProgress, [0, 0.08], [1, 0]);
+  // Every value below finishes its move by 0.9 (90% through the pin) so the
+  // whole animation plays out while still pinned, with a brief settled pause
+  // before the handoff — otherwise it'd be shrinking/fading off-screen, unseen.
+  const scale = useTransform(scrollYProgress, [0, 0.9], [1, 0.55]);
+  const y = useTransform(scrollYProgress, [0, 0.9], [0, -24]);
+  const markOpacity = useTransform(scrollYProgress, [0.56, 0.9], [1, 0]);
+  const textOpacity = useTransform(scrollYProgress, [0, 0.36], [1, 0]);
+  const textY = useTransform(scrollYProgress, [0, 0.44], [0, -14]);
+  const hint = useTransform(scrollYProgress, [0, 0.16], [1, 0]);
 
   if (reduceMotion) {
     return (

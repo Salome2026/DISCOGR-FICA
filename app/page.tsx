@@ -54,7 +54,8 @@ export default function Landing() {
           color:var(--text-1);
           min-height:100dvh;
         }
-        .vpo-hero{height:200dvh;position:relative;}
+        .vpo-hero{height:140dvh;position:relative;}
+        @media (max-width:640px){ .vpo-hero{height:118dvh;} }
         .vpo-hero-sticky{
           position:sticky; top:0; height:100dvh;
           display:flex; flex-direction:column; align-items:center; justify-content:center;

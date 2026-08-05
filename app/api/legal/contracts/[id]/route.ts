@@ -17,9 +17,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
 
   const body = await req.json();
-  const { artist, sello, tipoContrato, contraparte, codigoInterno, fechaFirma, fechaVencimiento, estado, documentoUrl, documentoNombre, notas } = body as {
+  const { artist, sello, tipoContrato, contraparte, codigoInterno, firmantes, fonograma, fechaFirma, fechaVencimiento, estado, documentoUrl, documentoNombre, notas } = body as {
     artist?: string; sello?: string | null; tipoContrato?: string; contraparte?: string | null;
-    codigoInterno?: string | null; fechaFirma?: string | null; fechaVencimiento?: string | null;
+    codigoInterno?: string | null; firmantes?: string | null; fonograma?: string | null;
+    fechaFirma?: string | null; fechaVencimiento?: string | null;
     estado?: string; documentoUrl?: string | null; documentoNombre?: string | null; notas?: string | null;
   };
 
@@ -39,6 +40,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     tipoContrato,
     contraparte: contraparte || null,
     codigoInterno: codigoInterno || null,
+    firmantes: firmantes || null,
+    fonograma: fonograma || null,
     fechaFirma: fechaFirma || null,
     fechaVencimiento: fechaVencimiento || null,
     estado,

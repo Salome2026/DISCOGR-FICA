@@ -28,6 +28,17 @@ export function ensureLegalSchema(): Promise<void> {
       // every artist folder is keyed by an internal code (e.g. "I0049").
       await sql`ALTER TABLE legal_contracts ADD COLUMN IF NOT EXISTS contraparte TEXT`;
       await sql`ALTER TABLE legal_contracts ADD COLUMN IF NOT EXISTS codigo_interno TEXT`;
+      // Added for the DocuSign import flow: who actually signed (pulled
+      // automatically from DocuSign, or typed in for a manual PDF upload),
+      // and which song/fonograma/project the contract is tied to, if any —
+      // most Editorial/Representación contracts aren't tied to one song, so
+      // this stays nullable rather than forcing every contract into that
+      // shape.
+      await sql`ALTER TABLE legal_contracts ADD COLUMN IF NOT EXISTS firmantes TEXT`;
+      await sql`ALTER TABLE legal_contracts ADD COLUMN IF NOT EXISTS fonograma TEXT`;
+      // Dedup key so the same completed envelope can't be imported twice.
+      await sql`ALTER TABLE legal_contracts ADD COLUMN IF NOT EXISTS docusign_envelope_id TEXT`;
+      await sql`CREATE UNIQUE INDEX IF NOT EXISTS legal_contracts_docusign_envelope_idx ON legal_contracts (docusign_envelope_id) WHERE docusign_envelope_id IS NOT NULL`;
       await sql`CREATE INDEX IF NOT EXISTS legal_contracts_artist_idx ON legal_contracts (artist)`;
     })();
   }
@@ -48,12 +59,15 @@ export type LegalContract = {
   tipoContrato: string;
   contraparte: string | null;
   codigoInterno: string | null;
+  firmantes: string | null;
+  fonograma: string | null;
   fechaFirma: string | null;
   fechaVencimiento: string | null;
   estado: string;
   documentoUrl: string | null;
   documentoNombre: string | null;
   notas: string | null;
+  docusignEnvelopeId: string | null;
   createdAt: string;
   updatedBy: string | null;
   updatedAt: string | null;
@@ -67,12 +81,15 @@ function rowToContract(r: Record<string, unknown>): LegalContract {
     tipoContrato: r.tipo_contrato as string,
     contraparte: (r.contraparte as string | null) ?? null,
     codigoInterno: (r.codigo_interno as string | null) ?? null,
+    firmantes: (r.firmantes as string | null) ?? null,
+    fonograma: (r.fonograma as string | null) ?? null,
     fechaFirma: (r.fecha_firma as string | null) ?? null,
     fechaVencimiento: (r.fecha_vencimiento as string | null) ?? null,
     estado: r.estado as string,
     documentoUrl: (r.documento_url as string | null) ?? null,
     documentoNombre: (r.documento_nombre as string | null) ?? null,
     notas: (r.notas as string | null) ?? null,
+    docusignEnvelopeId: (r.docusign_envelope_id as string | null) ?? null,
     createdAt: r.created_at as string,
     updatedBy: (r.updated_by as string | null) ?? null,
     updatedAt: (r.updated_at as string | null) ?? null,
@@ -99,23 +116,27 @@ export async function createContract(input: {
   tipoContrato: string;
   contraparte: string | null;
   codigoInterno: string | null;
+  firmantes: string | null;
+  fonograma: string | null;
   fechaFirma: string | null;
   fechaVencimiento: string | null;
   estado: string;
   documentoUrl: string | null;
   documentoNombre: string | null;
   notas: string | null;
+  docusignEnvelopeId: string | null;
   actorEmail: string;
 }): Promise<LegalContract> {
   await ensureLegalSchema();
   const id = `legal-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const { rows } = await sql`
     INSERT INTO legal_contracts
-      (id, artist, sello, tipo_contrato, contraparte, codigo_interno, fecha_firma, fecha_vencimiento, estado, documento_url, documento_nombre, notas, updated_by, updated_at)
+      (id, artist, sello, tipo_contrato, contraparte, codigo_interno, firmantes, fonograma, fecha_firma, fecha_vencimiento, estado, documento_url, documento_nombre, notas, docusign_envelope_id, updated_by, updated_at)
     VALUES
       (${id}, ${input.artist}, ${input.sello}, ${input.tipoContrato}, ${input.contraparte}, ${input.codigoInterno},
-       ${input.fechaFirma}, ${input.fechaVencimiento}, ${input.estado}, ${input.documentoUrl}, ${input.documentoNombre},
-       ${input.notas}, ${input.actorEmail}, now())
+       ${input.firmantes}, ${input.fonograma}, ${input.fechaFirma}, ${input.fechaVencimiento}, ${input.estado},
+       ${input.documentoUrl}, ${input.documentoNombre}, ${input.notas}, ${input.docusignEnvelopeId},
+       ${input.actorEmail}, now())
     RETURNING *
   `;
   return rowToContract(rows[0]);
@@ -129,6 +150,8 @@ export async function updateContract(
     tipoContrato: string;
     contraparte: string | null;
     codigoInterno: string | null;
+    firmantes: string | null;
+    fonograma: string | null;
     fechaFirma: string | null;
     fechaVencimiento: string | null;
     estado: string;
@@ -146,6 +169,8 @@ export async function updateContract(
       tipo_contrato = ${input.tipoContrato},
       contraparte = ${input.contraparte},
       codigo_interno = ${input.codigoInterno},
+      firmantes = ${input.firmantes},
+      fonograma = ${input.fonograma},
       fecha_firma = ${input.fechaFirma},
       fecha_vencimiento = ${input.fechaVencimiento},
       estado = ${input.estado},

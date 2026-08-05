@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { signOut, useSession } from "next-auth/react";
 import { upload } from "@vercel/blob/client";
@@ -205,6 +205,8 @@ export function ContractForm({
   const [tipoContrato, setTipoContrato] = useState(contract?.tipoContrato ?? lockedTipo ?? TIPOS_CONTRATO[0]);
   const [contraparte, setContraparte] = useState(contract?.contraparte ?? "");
   const [codigoInterno, setCodigoInterno] = useState(contract?.codigoInterno ?? "");
+  const [firmantes, setFirmantes] = useState(contract?.firmantes ?? "");
+  const [fonograma, setFonograma] = useState(contract?.fonograma ?? "");
   const [fechaFirma, setFechaFirma] = useState(contract?.fechaFirma ?? "");
   const [fechaVencimiento, setFechaVencimiento] = useState(contract?.fechaVencimiento ?? "");
   const [estado, setEstado] = useState(contract?.estado ?? "Vigente");
@@ -241,7 +243,8 @@ export function ContractForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           artist, sello: sello || null, tipoContrato, contraparte: contraparte || null,
-          codigoInterno: codigoInterno || null, fechaFirma: fechaFirma || null,
+          codigoInterno: codigoInterno || null, firmantes: firmantes || null, fonograma: fonograma || null,
+          fechaFirma: fechaFirma || null,
           fechaVencimiento: fechaVencimiento || null, estado, documentoUrl: documentoUrl || null,
           documentoNombre: documentoNombre || null, notas: notas || null,
         }),
@@ -292,6 +295,9 @@ export function ContractForm({
         <Field label="Contraparte (si no es el sello mismo)">
           <input value={contraparte} onChange={(e) => setContraparte(e.target.value)} placeholder="Ej: Tango Made In Argentina Publishing" style={inputStyle} />
         </Field>
+        <Field label="Canción / fonograma / proyecto (si aplica)">
+          <input value={fonograma} onChange={(e) => setFonograma(e.target.value)} placeholder="Dejar vacío si es un contrato general del artista" style={inputStyle} />
+        </Field>
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1 }}>
             <Field label="Fecha de firma"><input type="date" value={fechaFirma} onChange={(e) => setFechaFirma(e.target.value)} style={inputStyle} /></Field>
@@ -300,6 +306,9 @@ export function ContractForm({
             <Field label="Vencimiento"><input type="date" value={fechaVencimiento} onChange={(e) => setFechaVencimiento(e.target.value)} style={inputStyle} /></Field>
           </div>
         </div>
+        <Field label="Firmantes">
+          <input value={firmantes} onChange={(e) => setFirmantes(e.target.value)} placeholder="Nombres de quienes firmaron, separados por coma" style={inputStyle} />
+        </Field>
         <Field label="Estado">
           <select value={estado} onChange={(e) => setEstado(e.target.value)} style={inputStyle}>
             {ESTADOS_CONTRATO.map((s) => <option key={s} value={s}>{s}</option>)}
@@ -331,6 +340,266 @@ export function ContractForm({
         </div>
       </form>
     </div>
+  );
+}
+
+type DocusignSigner = { name: string; email: string; signedDateTime: string | null };
+type DocusignEnvelope = {
+  envelopeId: string;
+  subject: string;
+  status: string;
+  sentDateTime: string | null;
+  completedDateTime: string | null;
+  signers: DocusignSigner[];
+  alreadyImported: boolean;
+};
+
+function isoToDateInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  return d.toISOString().slice(0, 10);
+}
+
+// Two steps in one modal: browse DocuSign's completed envelopes, pick one,
+// then say which artist/category/song it belongs to (DocuSign has no idea
+// about our roster) before it lands in legal_contracts as "Vigente".
+export function DocusignImportModal({
+  onClose,
+  onImported,
+}: {
+  onClose: () => void;
+  onImported: () => void;
+}) {
+  const [status, setStatus] = useState<"checking" | "not_configured" | "ready" | "load_error">("checking");
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [envelopes, setEnvelopes] = useState<DocusignEnvelope[] | null>(null);
+  const [filter, setFilter] = useState("");
+  const [selected, setSelected] = useState<DocusignEnvelope | null>(null);
+
+  useEffect(() => {
+    fetch("/api/legal/docusign/status")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!d.configured) {
+          setStatus("not_configured");
+          return;
+        }
+        fetch("/api/legal/docusign/envelopes")
+          .then((r) => r.json())
+          .then((d2) => {
+            if (d2.error) {
+              setLoadError(d2.error);
+              setStatus("load_error");
+            } else {
+              setEnvelopes(d2.envelopes);
+              setStatus("ready");
+            }
+          })
+          .catch((e) => {
+            setLoadError(String(e));
+            setStatus("load_error");
+          });
+      })
+      .catch((e) => {
+        setLoadError(String(e));
+        setStatus("load_error");
+      });
+  }, []);
+
+  const visible = (envelopes ?? []).filter((e) => e.subject.toLowerCase().includes(filter.toLowerCase()));
+
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem", overflowY: "auto" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: "var(--glass-bg-strong)", backdropFilter: "blur(40px) saturate(1.7)", WebkitBackdropFilter: "blur(40px) saturate(1.7)", color: "var(--text-1)", borderRadius: 16, border: "1px solid var(--glass-border)", boxShadow: "var(--shadow-glass-lg)", width: "100%", maxWidth: 560, padding: "1.5rem", display: "flex", flexDirection: "column", gap: 14, maxHeight: "85vh", overflowY: "auto" }}
+      >
+        {!selected ? (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ fontSize: 17, fontWeight: 600 }}>Importar desde DocuSign</div>
+              <button onClick={onClose} style={{ background: "transparent", border: "1px solid var(--glass-border)", borderRadius: 8, color: "var(--text-2)", width: 30, height: 30, cursor: "pointer", fontSize: 14 }}>×</button>
+            </div>
+
+            {status === "checking" && <p className="muted">Conectando con DocuSign...</p>}
+
+            {status === "not_configured" && (
+              <p className="muted">
+                DocuSign todavía no está configurado en la plataforma. Mientras tanto podés cargar contratos firmados
+                manualmente en PDF desde el botón &quot;+ Agregar contrato&quot;.
+              </p>
+            )}
+
+            {status === "load_error" && (
+              <div style={{ background: "var(--crit-bg)", color: "var(--crit-ink)", padding: 12, borderRadius: 10, fontSize: 13 }}>
+                {loadError}
+              </div>
+            )}
+
+            {status === "ready" && (
+              <>
+                <input
+                  className="legal-search"
+                  placeholder="Buscar por asunto..."
+                  value={filter}
+                  onChange={(e) => setFilter(e.target.value)}
+                  style={{ width: "100%" }}
+                />
+                {visible.length === 0 ? (
+                  <p className="muted" style={{ textAlign: "center", padding: "1rem 0" }}>
+                    No hay contratos completados en DocuSign para mostrar.
+                  </p>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {visible.map((e) => (
+                      <button
+                        key={e.envelopeId}
+                        type="button"
+                        disabled={e.alreadyImported}
+                        onClick={() => setSelected(e)}
+                        style={{
+                          textAlign: "left", background: "var(--bg-2)", border: "1px solid var(--line-soft)",
+                          borderRadius: 10, padding: 12, cursor: e.alreadyImported ? "default" : "pointer",
+                          opacity: e.alreadyImported ? 0.55 : 1,
+                        }}
+                      >
+                        <div style={{ fontSize: 13.5, fontWeight: 600 }}>{e.subject}</div>
+                        <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 2 }}>
+                          Completado el {e.completedDateTime ? new Date(e.completedDateTime).toLocaleDateString("es-AR") : "—"}
+                          {e.signers.length > 0 ? ` · Firmantes: ${e.signers.map((s) => s.name).join(", ")}` : ""}
+                        </div>
+                        {e.alreadyImported && (
+                          <div style={{ fontSize: 10.5, color: "var(--legal-accent)", marginTop: 4 }}>Ya importado</div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </>
+        ) : (
+          <DocusignImportForm envelope={selected} onBack={() => setSelected(null)} onClose={onClose} onImported={onImported} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DocusignImportForm({
+  envelope,
+  onBack,
+  onClose,
+  onImported,
+}: {
+  envelope: DocusignEnvelope;
+  onBack: () => void;
+  onClose: () => void;
+  onImported: () => void;
+}) {
+  const [artist, setArtist] = useState("");
+  const [sello, setSello] = useState("");
+  const [tipoContrato, setTipoContrato] = useState<string>(TIPOS_CONTRATO[0]);
+  const [contraparte, setContraparte] = useState("");
+  const [fonograma, setFonograma] = useState("");
+  const [firmantes, setFirmantes] = useState(envelope.signers.map((s) => s.name).filter(Boolean).join(", "));
+  const [fechaFirma, setFechaFirma] = useState(isoToDateInput(envelope.completedDateTime));
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (!artist.trim()) {
+      setError("El artista es obligatorio.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/legal/docusign/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          envelopeId: envelope.envelopeId,
+          subject: envelope.subject,
+          artist: artist.trim(),
+          sello: sello || null,
+          tipoContrato,
+          contraparte: contraparte || null,
+          fonograma: fonograma || null,
+          firmantes: firmantes || null,
+          fechaFirma: fechaFirma || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo importar.");
+      onImported();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ fontSize: 17, fontWeight: 600 }}>Asociar contrato</div>
+        <button type="button" onClick={onClose} style={{ background: "transparent", border: "1px solid var(--glass-border)", borderRadius: 8, color: "var(--text-2)", width: 30, height: 30, cursor: "pointer", fontSize: 14 }}>×</button>
+      </div>
+      <div style={{ background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: 10, fontSize: 12.5 }}>
+        <div style={{ fontWeight: 600 }}>{envelope.subject}</div>
+        <div style={{ color: "var(--text-3)", marginTop: 2 }}>Estado en DocuSign: {envelope.status}</div>
+      </div>
+
+      <Field label="Artista">
+        <input value={artist} onChange={(e) => setArtist(e.target.value)} required autoFocus style={inputStyle} />
+      </Field>
+      <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ flex: 1 }}>
+          <Field label="Sello">
+            <select value={sello} onChange={(e) => setSello(e.target.value)} style={inputStyle}>
+              <option value="">Sin asignar</option>
+              {SELLOS.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </Field>
+        </div>
+        <div style={{ flex: 1 }}>
+          <Field label="Categoría">
+            <select value={tipoContrato} onChange={(e) => setTipoContrato(e.target.value)} style={inputStyle}>
+              {TIPOS_CONTRATO.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </Field>
+        </div>
+      </div>
+      <Field label="Contraparte (si no es el sello mismo)">
+        <input value={contraparte} onChange={(e) => setContraparte(e.target.value)} style={inputStyle} />
+      </Field>
+      <Field label="Canción / fonograma / proyecto (si aplica)">
+        <input value={fonograma} onChange={(e) => setFonograma(e.target.value)} placeholder="Dejar vacío si es un contrato general del artista" style={inputStyle} />
+      </Field>
+      <Field label="Firmantes">
+        <input value={firmantes} onChange={(e) => setFirmantes(e.target.value)} style={inputStyle} />
+      </Field>
+      <Field label="Fecha de firma">
+        <input type="date" value={fechaFirma} onChange={(e) => setFechaFirma(e.target.value)} style={inputStyle} />
+      </Field>
+
+      {error && <div style={{ color: "var(--crit-ink)", fontSize: 12.5 }}>{error}</div>}
+      <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+        <button type="button" onClick={onBack} disabled={saving} style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 16px", color: "var(--text-2)", cursor: "pointer", fontSize: 13 }}>
+          ← Volver
+        </button>
+        <button type="submit" disabled={saving} className="legal-btn-primary">
+          {saving ? "Importando..." : "Importar y guardar"}
+        </button>
+      </div>
+    </form>
   );
 }
 

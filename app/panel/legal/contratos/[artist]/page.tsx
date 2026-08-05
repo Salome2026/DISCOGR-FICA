@@ -156,11 +156,17 @@ function CategoryModal({
               <MiniField label="Vencimiento" value={c.fechaVencimiento ?? "—"} />
               <MiniField label="Contraparte" value={c.contraparte ?? "—"} />
               <MiniField label="Código interno" value={c.codigoInterno ?? "—"} />
+              <MiniField label="Canción / proyecto" value={c.fonograma ?? "—"} />
+              <MiniField label="Firmantes" value={c.firmantes ?? "—"} />
+              <MiniField label="Cargado por" value={c.updatedBy ?? "—"} />
               <MiniField
                 label="Última actualización"
                 value={c.updatedAt ? new Date(c.updatedAt).toLocaleDateString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—"}
               />
             </div>
+            {c.docusignEnvelopeId && (
+              <div style={{ fontSize: 10.5, color: "var(--legal-accent)" }}>Importado desde DocuSign</div>
+            )}
             {c.notas && <div style={{ fontSize: 12, color: "var(--text-2)" }}>{c.notas}</div>}
             {c.documentoUrl ? (
               <div style={{ display: "flex", gap: 10, marginTop: 2 }}>

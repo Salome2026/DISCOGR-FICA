@@ -5,7 +5,7 @@ import Link from "next/link";
 import RequireRole from "@/app/components/RequireRole";
 import { SELLOS } from "@/lib/sellos";
 import type { LegalContract } from "@/lib/db/legalContracts";
-import { LegalShell } from "../_shared";
+import { LegalShell, DocusignImportModal } from "../_shared";
 
 type Artist = { id: string; name: string; sello: string | null };
 
@@ -25,16 +25,21 @@ function ArtistGrid() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState("");
   const [selloFilter, setSelloFilter] = useState("");
+  const [showDocusignImport, setShowDocusignImport] = useState(false);
+
+  function loadContracts() {
+    fetch("/api/legal/contracts")
+      .then((r) => r.json())
+      .then((d) => !d.error && setContracts(d.contracts))
+      .catch(() => {});
+  }
 
   useEffect(() => {
     fetch("/api/legal/artists")
       .then((r) => r.json())
       .then((d) => (d.error ? setError(d.error) : setArtists(d.artists)))
       .catch((e) => setError(String(e)));
-    fetch("/api/legal/contracts")
-      .then((r) => r.json())
-      .then((d) => !d.error && setContracts(d.contracts))
-      .catch(() => {});
+    loadContracts();
   }, []);
 
   const contractCountByArtist = useMemo(() => {
@@ -50,12 +55,24 @@ function ArtistGrid() {
   return (
     <>
       <div className="legal-toolbar" style={{ marginBottom: 20 }}>
-        <input className="legal-search" placeholder="Buscar artista..." value={filter} onChange={(e) => setFilter(e.target.value)} />
-        <select className="legal-search" value={selloFilter} onChange={(e) => setSelloFilter(e.target.value)} style={{ minWidth: 180 }}>
-          <option value="">Todos los sellos</option>
-          {SELLOS.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <input className="legal-search" placeholder="Buscar artista..." value={filter} onChange={(e) => setFilter(e.target.value)} />
+          <select className="legal-search" value={selloFilter} onChange={(e) => setSelloFilter(e.target.value)} style={{ minWidth: 180 }}>
+            <option value="">Todos los sellos</option>
+            {SELLOS.map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+        <button className="legal-btn-primary" onClick={() => setShowDocusignImport(true)}>
+          Importar desde DocuSign
+        </button>
       </div>
+
+      {showDocusignImport && (
+        <DocusignImportModal
+          onClose={() => setShowDocusignImport(false)}
+          onImported={loadContracts}
+        />
+      )}
 
       {error && <div style={{ background: "var(--crit-bg)", color: "var(--crit-ink)", padding: 12, borderRadius: 10, marginBottom: 16, fontSize: 13 }}>{error}</div>}
 

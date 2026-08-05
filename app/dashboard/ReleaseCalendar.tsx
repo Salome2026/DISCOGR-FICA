@@ -200,18 +200,18 @@ export default function ReleaseCalendar({ className = "", readOnly = false }: { 
     <div className={`card cal-card ${className}`}>
       <style>{`
         .cal-card{display:flex;flex-direction:column;height:100%;}
-        .cal-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:.85rem;}
+        .cal-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:.5rem;}
         .cal-title{display:flex;flex-direction:column;gap:1px;}
-        .cal-nav{display:flex;align-items:center;gap:5px;}
-        .cal-nav button{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:7px;width:24px;height:24px;color:var(--text-2);cursor:pointer;font-size:12px;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);}
+        .cal-nav{display:flex;align-items:center;gap:4px;}
+        .cal-nav button{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:6px;width:20px;height:20px;color:var(--text-2);cursor:pointer;font-size:11px;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);}
         .cal-nav button:hover{color:var(--text-1);border-color:var(--accent-color-glow);}
-        .cal-nav .today-btn{width:auto;padding:0 10px;font-size:11px;font-weight:600;}
-        .cal-views{display:flex;gap:3px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-pill);padding:3px;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);}
-        .cal-view-btn{border:none;background:transparent;border-radius:var(--radius-pill);padding:4px 11px;font-size:11px;font-weight:600;color:var(--text-2);cursor:pointer;}
+        .cal-nav .today-btn{width:auto;padding:0 8px;font-size:10px;font-weight:600;}
+        .cal-views{display:flex;gap:2px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-pill);padding:2px;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);}
+        .cal-view-btn{border:none;background:transparent;border-radius:var(--radius-pill);padding:3px 8px;font-size:10px;font-weight:600;color:var(--text-2);cursor:pointer;}
         .cal-view-btn.active{background:var(--accent-glass-bg);color:var(--text-1);}
-        .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
-        .cal-dayname{font-size:10px;color:var(--text-3);text-align:center;padding:2px 0 6px;text-transform:uppercase;letter-spacing:.06em;}
-        .cal-cell{min-height:40px;border-radius:8px;border:1px solid var(--line-soft);padding:4px;display:flex;flex-direction:column;gap:2px;transition:border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);}
+        .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+        .cal-dayname{font-size:9.5px;color:var(--text-3);text-align:center;padding:1px 0 4px;text-transform:uppercase;letter-spacing:.06em;}
+        .cal-cell{min-height:30px;border-radius:7px;border:1px solid var(--line-soft);padding:3px;display:flex;flex-direction:column;gap:2px;transition:border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);}
         .cal-cell.outside{opacity:.35;}
         .cal-cell.today{border-color:var(--accent-color);background:rgba(63,198,209,0.06);}
         .cal-daynum{font-size:11px;color:var(--text-2);font-variant-numeric:tabular-nums;}
@@ -231,15 +231,15 @@ export default function ReleaseCalendar({ className = "", readOnly = false }: { 
         .cal-day-item:hover{background:var(--glass-bg-strong);transform:translateY(-2px);}
         .cal-day-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
         .cal-day-item .meta{font-size:11px;color:var(--text-3);margin-top:1px;}
-        .cal-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:.75rem;border-top:1px solid var(--line-soft);}
-        .cal-legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-3);}
-        .cal-legend-item .dot{width:7px;height:7px;border-radius:50%;}
+        .cal-legend{display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:auto;padding-top:.4rem;border-top:1px solid var(--line-soft);}
+        .cal-legend-item{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text-3);}
+        .cal-legend-item .dot{width:6px;height:6px;border-radius:50%;}
       `}</style>
 
       <div className="cal-header">
         <div className="cal-title">
           <div className="card-label">Próximos lanzamientos</div>
-          <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: "-.01em" }}>{label}</div>
+          <div style={{ fontSize: 14.5, fontWeight: 700, letterSpacing: "-.01em" }}>{label}</div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <div className="cal-views">

@@ -70,7 +70,7 @@ function Avatar({ r, size, radius, fontSize }: { r: RankingRow; size: number; ra
   );
 }
 
-export default function RankingListeners() {
+export default function RankingListeners({ className = "", compact = false }: { className?: string; compact?: boolean }) {
   const [rows, setRows] = useState<RankingRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastRun, setLastRun] = useState<{ finished_at?: string } | null>(null);
@@ -100,8 +100,12 @@ export default function RankingListeners() {
   // just the visible slice would silently hide real matches further down.
   const listRows = searching ? (searchResults ?? []) : expanded ? rows ?? [] : (rows ?? []).slice(0, 10);
 
+  const avatarSize = compact ? 22 : 30;
+  const avatarRadius = compact ? 7 : 9;
+  const avatarFontSize = compact ? 9 : 11;
+
   return (
-    <div className="card" style={{ marginBottom: "1.25rem" }}>
+    <div className={`card ${compact ? "rk-compact" : ""} ${className}`} style={compact ? undefined : { marginBottom: "1.25rem" }}>
       <style>{`
         .rk-split{display:flex;gap:20px;margin-top:1.1rem;align-items:stretch;}
         .rk-podium{flex:1;min-width:0;display:flex;align-items:flex-end;justify-content:center;gap:22px;}
@@ -137,14 +141,26 @@ export default function RankingListeners() {
         .rk-toggle:hover{background:var(--bg-2);}
         .rk-pending{font-size:12px;color:var(--text-3);padding:1rem 0;line-height:1.6;}
         @media (max-width:640px){ .rk-split{flex-direction:column;} .rk-podium{flex:0 0 auto;} }
+
+        .rk-compact{display:flex;flex-direction:column;height:100%;}
+        .rk-compact .rk-split{margin-top:.5rem;flex:1;min-height:0;}
+        .rk-compact .rk-list{max-height:190px;gap:1px;}
+        .rk-compact .rk-list-row{padding:4px 5px;gap:6px;border-radius:7px;}
+        .rk-compact .rk-list-rank{width:15px;font-size:10px;}
+        .rk-compact .rk-list-name{font-size:11px;}
+        .rk-compact .rk-list-sello{font-size:9px;}
+        .rk-compact .rk-list-listeners{font-size:11px;}
+        .rk-compact .rk-deltas{display:none;}
+        .rk-compact .rk-toggle{margin-top:6px;padding:4px 10px;font-size:10px;}
+        .rk-compact .rk-search{margin-top:6px !important;padding:5px 9px !important;font-size:11.5px !important;}
       `}</style>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10 }}>
         <div>
           <div className="card-label">Ranking de artistas</div>
-          <div style={{ fontSize: 16, fontWeight: 600, marginTop: 2 }}>Oyentes mensuales</div>
+          <div style={{ fontSize: compact ? 13 : 16, fontWeight: 600, marginTop: 2 }}>Oyentes mensuales</div>
         </div>
-        {lastRun?.finished_at && (
+        {!compact && lastRun?.finished_at && (
           <span style={{ fontSize: 11, color: "var(--text-3)" }}>
             Actualizado: {new Date(lastRun.finished_at).toLocaleString("es-AR")}
           </span>
@@ -153,6 +169,7 @@ export default function RankingListeners() {
 
       {rows && rows.length > 0 && (
         <input
+          className="rk-search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar artista..."
@@ -186,7 +203,7 @@ export default function RankingListeners() {
       {rows && rows.length > 0 && (
         <>
           <div className="rk-split">
-            {!searching && top3.length > 0 && (
+            {!compact && !searching && top3.length > 0 && (
               <div className="rk-podium">
                 {podiumOrder.map((r, idx) => {
                   if (!r) return <div key={`empty-${idx}`} className="rk-podium-item" />;
@@ -222,7 +239,7 @@ export default function RankingListeners() {
                   <span className="rk-list-rank">
                     #{searching ? (rows ?? []).findIndex((x) => x.artist_id === r.artist_id) + 1 : i + 1}
                   </span>
-                  <Avatar r={r} size={30} radius={9} fontSize={11} />
+                  <Avatar r={r} size={avatarSize} radius={avatarRadius} fontSize={avatarFontSize} />
                   <div className="rk-list-info">
                     <div className="rk-list-name">{r.artist_name}</div>
                     <div className="rk-list-sello">{r.sello ?? "Sin sello asignado"}</div>

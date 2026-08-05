@@ -315,64 +315,63 @@ function DashboardInner() {
           padding-bottom:5rem;
         }
         .dash-watermark{position:fixed;top:0;right:0;width:min(70vw, 900px);height:auto;opacity:.05;filter:grayscale(1) brightness(1.4);pointer-events:none;z-index:0;transform:translate(18%, -12%);}
-        .dash-inner{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:2rem 2.5rem 0;}
-        .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:.85rem;}
+        .dash-inner{position:relative;z-index:1;max-width:1520px;margin:0 auto;padding:1rem 2rem 0;}
+        .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;flex-wrap:wrap;gap:.6rem;}
         .brand{display:flex;align-items:center;gap:9px;}
-        .brand-mark{width:26px;height:26px;border-radius:8px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11.5px;color:var(--accent-ink);}
-        .brand-name{font-size:12.5px;font-weight:600;letter-spacing:-.01em;}
-        .brand-sub{font-size:10px;color:var(--text-3);}
-        .nav-pills{display:flex;gap:3px;flex-wrap:wrap;background:var(--glass-bg);border:1px solid var(--glass-border);backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);border-radius:var(--radius-pill);padding:4px;}
-        .nav-pill{font-size:11.5px;padding:6px 11px;border-radius:var(--radius-pill);color:var(--text-2);border:1px solid transparent;text-decoration:none;transition:background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);}
+        .brand-mark{width:24px;height:24px;border-radius:7px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:var(--accent-ink);}
+        .brand-name{font-size:12px;font-weight:600;letter-spacing:-.01em;}
+        .brand-sub{font-size:9.5px;color:var(--text-3);}
+        .nav-pills{display:flex;gap:2px;flex-wrap:wrap;background:var(--glass-bg);border:1px solid var(--glass-border);backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);border-radius:var(--radius-pill);padding:3px;}
+        .nav-pill{font-size:11px;padding:5px 10px;border-radius:var(--radius-pill);color:var(--text-2);border:1px solid transparent;text-decoration:none;transition:background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);}
         .nav-pill.active{background:var(--accent-glass-bg);border-color:var(--accent-glass-border);color:var(--text-1);font-weight:600;}
         .nav-pill:hover:not(.active){background:var(--glass-bg-strong);color:var(--text-1);}
-        .page-title{font-size:32px;font-weight:700;letter-spacing:-.03em;margin:0;background:linear-gradient(180deg,var(--text-1) 30%,var(--text-2) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
-        .page-subtitle{font-size:13px;color:var(--text-3);margin-top:5px;}
-        .sello-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:7px;margin-bottom:1.25rem;}
-        .sello-btn{aspect-ratio:1.7;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11.5px;font-weight:600;border:1px solid var(--glass-border);border-radius:var(--radius-md);background:var(--glass-bg);color:var(--text-1);cursor:pointer;padding:.4rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
+        .page-head{display:flex;align-items:baseline;gap:10px;margin-bottom:.65rem;flex-wrap:wrap;}
+        .page-title{font-size:19px;font-weight:700;letter-spacing:-.02em;margin:0;background:linear-gradient(180deg,var(--text-1) 30%,var(--text-2) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+        .page-subtitle{font-size:11.5px;color:var(--text-3);}
+        .sello-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(88px,1fr));gap:5px;margin-bottom:.65rem;}
+        .sello-btn{aspect-ratio:3.4;display:flex;align-items:center;justify-content:center;text-align:center;font-size:10.5px;font-weight:600;border:1px solid var(--glass-border);border-radius:var(--radius-md);background:var(--glass-bg);color:var(--text-1);cursor:pointer;padding:.3rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
         .sello-btn:hover{background:var(--glass-bg-strong);border-color:var(--accent-color-glow);transform:translateY(-2px);}
-        .card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:1.4rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);}
-        .card-label{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;}
-        .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:.9rem;margin-bottom:1rem;}
-        .bento-donut{grid-column:span 3;grid-row:span 2;}
-        .bento-calendar{grid-column:span 3;grid-row:span 2;}
-        .bento-estado{grid-column:span 6;}
-        .bento-kpi-firmados{grid-column:span 4;}
-        .bento-kpi-artistas{grid-column:span 2;}
-        .bento-kpi-sm{grid-column:span 3;}
-        @media (max-width:860px){ .bento{grid-template-columns:1fr;} .bento-donut,.bento-calendar,.bento-estado,.bento-kpi-firmados,.bento-kpi-artistas,.bento-kpi-sm{grid-column:span 1;grid-row:auto;} }
+        .card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:.95rem 1.05rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);}
+        .card-label{font-size:10px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;}
+        .bento{display:grid;grid-template-columns:repeat(12,1fr);gap:.65rem;margin-bottom:.65rem;}
+        .bento-donut{grid-column:span 4;}
+        .bento-calendar{grid-column:span 4;}
+        .bento-ranking{grid-column:span 4;}
+        .bento-estado{grid-column:span 12;}
+        @media (max-width:1100px){ .bento-donut,.bento-calendar,.bento-ranking{grid-column:span 6;} }
+        @media (max-width:860px){ .bento{grid-template-columns:1fr;} .bento-donut,.bento-calendar,.bento-ranking,.bento-estado{grid-column:span 1;} }
         .donut-card{display:flex;flex-direction:column;height:100%;}
-        .donut-wrap{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-top:.85rem;flex:1;}
+        .donut-wrap{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;margin-top:.5rem;flex:1;}
         .donut-seg{cursor:pointer;transition:filter var(--dur-fast) var(--ease-out);}
         .donut-seg:hover{filter:drop-shadow(0 0 10px rgba(255,255,255,0.4));}
         .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
-        .donut-center .n{font-size:40px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
-        .donut-center .l{font-size:11px;color:var(--text-3);margin-top:2px;}
-        .donut-legend{display:flex;flex-direction:column;gap:5px;flex:1;min-width:160px;}
-        .leg-row{display:flex;align-items:center;gap:9px;font-size:12px;background:transparent;border:none;padding:4px 5px;border-radius:7px;cursor:pointer;text-align:left;color:inherit;font:inherit;width:100%;transition:background var(--dur-fast) var(--ease-out);}
+        .donut-center .n{font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+        .donut-center .l{font-size:9.5px;color:var(--text-3);margin-top:1px;}
+        .donut-legend{display:flex;flex-direction:column;gap:3px;flex:1;min-width:120px;max-height:190px;overflow-y:auto;}
+        .leg-row{display:flex;align-items:center;gap:7px;font-size:11px;background:transparent;border:none;padding:3px 4px;border-radius:6px;cursor:pointer;text-align:left;color:inherit;font:inherit;width:100%;transition:background var(--dur-fast) var(--ease-out);}
         .leg-row:hover{background:var(--bg-2);}
-        .leg-dot{width:8px;height:8px;border-radius:3px;flex-shrink:0;}
+        .leg-dot{width:7px;height:7px;border-radius:3px;flex-shrink:0;}
         .leg-name{color:var(--text-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-        .leg-val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-1);}
-        .estado-bars{display:flex;align-items:flex-end;justify-content:space-around;gap:8px;width:100%;height:135px;margin-top:1rem;padding:0 4px;}
-        .estado-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;flex:1;min-width:0;background:transparent;border:none;cursor:pointer;padding:0;gap:6px;}
-        .estado-col .count{font-size:14.5px;font-weight:700;color:var(--text-1);font-variant-numeric:tabular-nums;}
-        .estado-col .bar{width:100%;max-width:38px;border-radius:7px 7px 4px 4px;min-height:4px;transition:filter var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);}
+        .leg-val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-1);font-size:10.5px;}
+        .estado-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+        .estado-kpis{display:flex;gap:6px;flex-wrap:wrap;}
+        .estado-kpi{display:flex;align-items:center;gap:5px;background:var(--bg-2);border:1px solid var(--line-soft);border-radius:100px;padding:3px 10px 3px 5px;cursor:pointer;font:inherit;color:inherit;transition:background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
+        .estado-kpi:hover{background:var(--glass-bg-strong);border-color:var(--accent-color-glow);}
+        .estado-kpi .n{font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text-1);}
+        .estado-kpi .l{font-size:9.5px;color:var(--text-3);}
+        .estado-kpi-chip{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+        .estado-kpi-chip.good{background:var(--good);}
+        .estado-kpi-chip.warn{background:var(--warn);}
+        .estado-kpi-chip.crit{background:var(--crit);}
+        .estado-bars{display:flex;align-items:flex-end;justify-content:space-around;gap:8px;width:100%;height:78px;margin-top:.6rem;padding:0 4px;}
+        .estado-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;flex:1;min-width:0;background:transparent;border:none;cursor:pointer;padding:0;gap:3px;}
+        .estado-col .count{font-size:12px;font-weight:700;color:var(--text-1);font-variant-numeric:tabular-nums;}
+        .estado-col .bar{width:100%;max-width:32px;border-radius:6px 6px 3px 3px;min-height:4px;transition:filter var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);}
         .estado-col:hover .bar{filter:brightness(1.2);transform:scaleX(1.08);}
-        .estado-col .label{font-size:11.5px;font-weight:600;color:var(--text-2);text-align:center;line-height:1.25;}
+        .estado-col .label{font-size:10px;font-weight:600;color:var(--text-2);text-align:center;line-height:1.2;}
         .estado-col:hover .label{color:var(--text-1);}
-        .estado-col .pct{font-size:10.5px;color:var(--text-3);font-variant-numeric:tabular-nums;}
-        .kpi{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:1.2rem;cursor:pointer;text-align:left;color:inherit;font:inherit;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);display:flex;flex-direction:column;}
-        .kpi:hover{border-color:var(--accent-color-glow);background:var(--glass-bg-strong);transform:translateY(-3px);box-shadow:var(--shadow-glass), 0 0 24px -8px var(--accent-color-glow);}
-        .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
-        .kpi-label{font-size:11.5px;color:var(--text-3);}
-        .kpi-chip{font-size:10px;padding:2px 7px;border-radius:100px;font-weight:600;}
-        .kpi-chip.good{background:var(--good-bg);color:var(--good-ink);}
-        .kpi-chip.warn{background:var(--warn-bg);color:var(--warn-ink);}
-        .kpi-chip.crit{background:var(--crit-bg);color:var(--crit-ink);}
-        .kpi-num{font-size:32px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-top:auto;}
-        .kpi-num-xl{font-size:56px;background:var(--accent-gradient);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
-        .kpi-sub{font-size:11.5px;color:var(--text-3);margin-top:5px;}
-        .footer-note{font-size:11px;color:var(--text-3);text-align:center;margin-top:2rem;}
+        .estado-col .pct{font-size:9.5px;color:var(--text-3);font-variant-numeric:tabular-nums;}
+        .footer-note{font-size:10px;color:var(--text-3);text-align:center;margin-top:.85rem;}
       `}</style>
 
       <Image
@@ -413,7 +412,7 @@ function DashboardInner() {
           </div>
         </div>
 
-        <motion.div variants={fadeUp} custom={0} initial="hidden" animate="show" style={{ marginBottom: "2rem" }}>
+        <motion.div className="page-head" variants={fadeUp} custom={0} initial="hidden" animate="show">
           <h1 className="page-title">Dashboard</h1>
           <p className="page-subtitle">Pulso general de sellos, acuerdos y catálogo.</p>
         </motion.div>
@@ -451,8 +450,8 @@ function DashboardInner() {
           <div className="card bento-donut donut-card">
             <div className="card-label">Distribución por discográfica</div>
             <div className="donut-wrap">
-              <div style={{ position: "relative", width: 170, height: 170, flexShrink: 0 }}>
-                <svg width="170" height="170" viewBox="0 0 190 190">
+              <div style={{ position: "relative", width: 128, height: 128, flexShrink: 0 }}>
+                <svg width="128" height="128" viewBox="0 0 190 190">
                   <circle cx="95" cy="95" r="80" fill="none" stroke="var(--bg-2)" strokeWidth="22" />
                   {donutSegs.segs.map((s) => (
                     <circle
@@ -496,18 +495,47 @@ function DashboardInner() {
           </div>
 
           <ReleaseCalendar className="bento-calendar" />
+
+          <RankingListeners className="bento-ranking" compact />
         </motion.div>
 
-        <motion.div variants={fadeUp} custom={3} initial="hidden" animate="show">
-          <RankingListeners />
-        </motion.div>
-
-        <motion.div className="bento" variants={fadeUp} custom={4} initial="hidden" animate="show">
+        <motion.div className="bento" variants={fadeUp} custom={3} initial="hidden" animate="show">
           <div className="card bento-estado">
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-              <div className="card-label">Estado de los acuerdos</div>
-              <div style={{ fontSize: 13, color: "var(--text-3)" }}>
-                {acuerdos ? `${acuerdos.length} acuerdos activos` : "Cargando..."}
+            <div className="estado-head">
+              <div>
+                <div className="card-label">Estado de los acuerdos</div>
+                <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 1 }}>
+                  {acuerdos ? `${acuerdos.length} acuerdos activos` : "Cargando..."}
+                </div>
+              </div>
+              <div className="estado-kpis">
+                <button className="estado-kpi" onClick={() => setDrill({ kind: "firmados", rows: firmados })} title="Firmados">
+                  <span className="estado-kpi-chip good" />
+                  <span className="n">
+                    <CountUp value={firmados.length} reduceMotion={reduceMotion} />
+                  </span>
+                  <span className="l">Firmados</span>
+                </button>
+                <button className="estado-kpi" onClick={() => setDrill({ kind: "artistas" })} title="Artistas en catálogo">
+                  <span className="n">
+                    <CountUp value={liveArtistRows.length} reduceMotion={reduceMotion} />
+                  </span>
+                  <span className="l">Artistas</span>
+                </button>
+                <button className="estado-kpi" onClick={() => setDrill({ kind: "sinAudio", rows: sinAudio })} title="Sin audio — bloquean el release">
+                  <span className="estado-kpi-chip crit" />
+                  <span className="n">
+                    <CountUp value={sinAudio.length} reduceMotion={reduceMotion} />
+                  </span>
+                  <span className="l">Sin audio</span>
+                </button>
+                <button className="estado-kpi" onClick={() => setDrill({ kind: "sinPortada", rows: sinPortada })} title="Sin portada — bloquean el release">
+                  <span className="estado-kpi-chip warn" />
+                  <span className="n">
+                    <CountUp value={sinPortada.length} reduceMotion={reduceMotion} />
+                  </span>
+                  <span className="l">Sin portada</span>
+                </button>
               </div>
             </div>
             <div className="estado-bars">
@@ -528,50 +556,6 @@ function DashboardInner() {
               })}
             </div>
           </div>
-
-          <button className="kpi bento-kpi-firmados" onClick={() => setDrill({ kind: "firmados", rows: firmados })}>
-            <div className="kpi-top">
-              <span className="kpi-label">Firmados</span>
-              <span className="kpi-chip good">
-                {acuerdos ? Math.round((firmados.length / acuerdos.length) * 100) : 0}%
-              </span>
-            </div>
-            <div className="kpi-num kpi-num-xl">
-              <CountUp value={firmados.length} reduceMotion={reduceMotion} />
-            </div>
-            <div className="kpi-sub">de {acuerdos?.length ?? "—"} acuerdos</div>
-          </button>
-
-          <button className="kpi bento-kpi-artistas" onClick={() => setDrill({ kind: "artistas" })}>
-            <div className="kpi-top">
-              <span className="kpi-label">Artistas en catálogo</span>
-            </div>
-            <div className="kpi-num">
-              <CountUp value={liveArtistRows.length} reduceMotion={reduceMotion} />
-            </div>
-            <div className="kpi-sub">con fonogramas cargados</div>
-          </button>
-
-          <button className="kpi bento-kpi-sm" onClick={() => setDrill({ kind: "sinAudio", rows: sinAudio })}>
-            <div className="kpi-top">
-              <span className="kpi-label">Sin audio</span>
-              <span className="kpi-chip crit">Atención</span>
-            </div>
-            <div className="kpi-num">
-              <CountUp value={sinAudio.length} reduceMotion={reduceMotion} />
-            </div>
-            <div className="kpi-sub">bloquean el release</div>
-          </button>
-          <button className="kpi bento-kpi-sm" onClick={() => setDrill({ kind: "sinPortada", rows: sinPortada })}>
-            <div className="kpi-top">
-              <span className="kpi-label">Sin portada</span>
-              <span className="kpi-chip warn">Revisar</span>
-            </div>
-            <div className="kpi-num">
-              <CountUp value={sinPortada.length} reduceMotion={reduceMotion} />
-            </div>
-            <div className="kpi-sub">bloquean el release</div>
-          </button>
         </motion.div>
 
         <p className="footer-note">

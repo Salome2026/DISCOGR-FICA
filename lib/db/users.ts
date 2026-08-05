@@ -3,6 +3,14 @@ import bcrypt from "bcryptjs";
 import type { AccountType, Permission, Role } from "@/lib/permissions";
 import { getSharedPasswordHash } from "@/lib/db/settings";
 
+// Email is the primary key and login identifier, so it must be treated as
+// case-insensitive everywhere: "Usuario@Empresa.com" and "usuario@empresa.com"
+// are the same account. Every function below normalizes its email input(s)
+// through this before touching the DB.
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 let ready: Promise<void> | null = null;
 
 export function ensureUsersSchema(): Promise<void> {
@@ -64,7 +72,8 @@ export type AppUser = {
 
 export async function verifyCredentials(email: string, password: string): Promise<AppUser | null> {
   await ensureUsersSchema();
-  const { rows } = await sql`SELECT * FROM app_users WHERE email = ${email}`;
+  const normalized = normalizeEmail(email);
+  const { rows } = await sql`SELECT * FROM app_users WHERE lower(email) = ${normalized}`;
   const user = rows[0];
   if (!user || !user.active) return null;
 
@@ -77,14 +86,15 @@ export async function verifyCredentials(email: string, password: string): Promis
   }
   if (!ok) return null;
 
-  await sql`UPDATE app_users SET last_login = now() WHERE email = ${email}`;
-  await logActivity(email, "login");
+  await sql`UPDATE app_users SET last_login = now() WHERE lower(email) = ${normalized}`;
+  await logActivity(user.email as string, "login");
   return toAppUser(user);
 }
 
 export async function getUserByEmail(email: string): Promise<AppUser | null> {
   await ensureUsersSchema();
-  const { rows } = await sql`SELECT * FROM app_users WHERE email = ${email}`;
+  const normalized = normalizeEmail(email);
+  const { rows } = await sql`SELECT * FROM app_users WHERE lower(email) = ${normalized}`;
   return rows[0] ? toAppUser(rows[0]) : null;
 }
 
@@ -112,12 +122,13 @@ export async function createUser(input: {
   createdBy: string;
 }) {
   await ensureUsersSchema();
+  const email = normalizeEmail(input.email);
   const hash = await bcrypt.hash(input.password, 10);
   await sql`
     INSERT INTO app_users (email, name, password_hash, uses_shared_password, account_type, role, created_by)
-    VALUES (${input.email}, ${input.name}, ${hash}, false, ${input.accountType}, ${input.role}, ${input.createdBy})
+    VALUES (${email}, ${input.name}, ${hash}, false, ${input.accountType}, ${input.role}, ${input.createdBy})
   `;
-  await logActivity(input.createdBy, "user_created", input.email);
+  await logActivity(input.createdBy, "user_created", email);
 }
 
 // Quick-add: no individual password — the person logs in with their email +
@@ -130,13 +141,14 @@ export async function createUserWithSharedPassword(input: {
   createdBy: string;
 }) {
   await ensureUsersSchema();
+  const email = normalizeEmail(input.email);
   await sql`
     INSERT INTO app_users (email, name, password_hash, uses_shared_password, account_type, role, created_by)
-    VALUES (${input.email}, ${input.name}, NULL, true, ${input.accountType}, ${input.role}, ${input.createdBy})
+    VALUES (${email}, ${input.name}, NULL, true, ${input.accountType}, ${input.role}, ${input.createdBy})
     ON CONFLICT (email) DO UPDATE SET
       uses_shared_password = true, role = ${input.role}, account_type = ${input.accountType}, active = true
   `;
-  await logActivity(input.createdBy, "user_quick_added", input.email);
+  await logActivity(input.createdBy, "user_quick_added", email);
 }
 
 export async function listUsers(): Promise<AppUser[]> {
@@ -157,6 +169,7 @@ export async function updateUserRole(
   actorEmail: string
 ) {
   await ensureUsersSchema();
+  const normalized = normalizeEmail(email);
   const extraLit = pgArrayLiteral(extraPermissions);
   const revokedLit = pgArrayLiteral(revokedPermissions);
   await sql`
@@ -164,28 +177,31 @@ export async function updateUserRole(
     SET role = ${role},
         extra_permissions = ${extraLit}::text[],
         revoked_permissions = ${revokedLit}::text[]
-    WHERE email = ${email}
+    WHERE lower(email) = ${normalized}
   `;
-  await logActivity(actorEmail, "role_updated", email);
+  await logActivity(actorEmail, "role_updated", normalized);
 }
 
 export async function setUserActive(email: string, active: boolean, actorEmail: string) {
   await ensureUsersSchema();
-  await sql`UPDATE app_users SET active = ${active} WHERE email = ${email}`;
-  await logActivity(actorEmail, active ? "user_activated" : "user_deactivated", email);
+  const normalized = normalizeEmail(email);
+  await sql`UPDATE app_users SET active = ${active} WHERE lower(email) = ${normalized}`;
+  await logActivity(actorEmail, active ? "user_activated" : "user_deactivated", normalized);
 }
 
 export async function resetPassword(email: string, newPassword: string, actorEmail: string) {
   await ensureUsersSchema();
+  const normalized = normalizeEmail(email);
   const hash = await bcrypt.hash(newPassword, 10);
-  await sql`UPDATE app_users SET password_hash = ${hash}, uses_shared_password = false WHERE email = ${email}`;
-  await logActivity(actorEmail, "password_reset", email);
+  await sql`UPDATE app_users SET password_hash = ${hash}, uses_shared_password = false WHERE lower(email) = ${normalized}`;
+  await logActivity(actorEmail, "password_reset", normalized);
 }
 
 export async function forceLogout(email: string, actorEmail: string) {
   await ensureUsersSchema();
-  await sql`UPDATE app_users SET session_version = session_version + 1 WHERE email = ${email}`;
-  await logActivity(actorEmail, "force_logout", email);
+  const normalized = normalizeEmail(email);
+  await sql`UPDATE app_users SET session_version = session_version + 1 WHERE lower(email) = ${normalized}`;
+  await logActivity(actorEmail, "force_logout", normalized);
 }
 
 export async function logActivity(email: string, action: string, detail?: string) {
@@ -203,19 +219,21 @@ export async function getActivityLog(limit = 100) {
 
 export async function getAssignedArtists(email: string): Promise<string[]> {
   await ensureUsersSchema();
+  const normalized = normalizeEmail(email);
   const { rows } = await sql`
-    SELECT artist_name FROM pm_artist_assignments WHERE pm_email = ${email}
+    SELECT artist_name FROM pm_artist_assignments WHERE lower(pm_email) = ${normalized}
   `;
   return rows.map((r) => r.artist_name as string);
 }
 
 export async function setAssignedArtists(email: string, artists: string[]) {
   await ensureUsersSchema();
-  await sql`DELETE FROM pm_artist_assignments WHERE pm_email = ${email}`;
+  const normalized = normalizeEmail(email);
+  await sql`DELETE FROM pm_artist_assignments WHERE lower(pm_email) = ${normalized}`;
   for (const artist of artists) {
     await sql`
       INSERT INTO pm_artist_assignments (pm_email, artist_name)
-      VALUES (${email}, ${artist})
+      VALUES (${normalized}, ${artist})
       ON CONFLICT DO NOTHING
     `;
   }

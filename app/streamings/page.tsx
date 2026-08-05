@@ -84,13 +84,14 @@ export default function StreamingsIndex() {
           .crumb{font-size:13px;color:var(--text-3);margin-bottom:1.25rem;}
           .crumb a{color:var(--text-2);text-decoration:none;}
           .proj-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:1.5rem;}
-          .proj-card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:1.5rem;position:relative;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
+          .proj-card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:1.5rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
           .proj-card.inactive{opacity:.5;}
-          .proj-card a{text-decoration:none;color:var(--text-1);display:block;}
+          .proj-card-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+          .proj-card a{text-decoration:none;color:var(--text-1);display:block;flex:1;min-width:0;}
           .proj-card:hover{background:var(--glass-bg-strong);border-color:var(--accent-color-glow);transform:translateY(-2px);}
-          .proj-name{font-size:16px;font-weight:700;margin-bottom:6px;}
+          .proj-name{font-size:16px;font-weight:700;margin-bottom:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
           .proj-sub{font-size:12.5px;color:var(--text-3);}
-          .proj-toggle{position:absolute;top:10px;right:10px;font-size:10.5px;padding:3px 8px;border-radius:100px;border:1px solid var(--glass-border);background:var(--glass-bg-strong);color:var(--text-2);cursor:pointer;}
+          .proj-toggle{flex-shrink:0;margin-top:2px;font-size:10.5px;padding:3px 8px;border-radius:100px;border:1px solid var(--glass-border);background:var(--glass-bg-strong);color:var(--text-2);cursor:pointer;white-space:nowrap;}
           .card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-lg);padding:1.5rem;margin-top:1.5rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);}
           .card-label{font-size:12px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;margin-bottom:10px;}
           .add-row{display:flex;gap:8px;}
@@ -109,16 +110,18 @@ export default function StreamingsIndex() {
           <div className="proj-grid">
             {(projects ?? []).map((p) => (
               <div key={p.id} className={`proj-card${p.active ? "" : " inactive"}`}>
-                <button type="button" className="proj-toggle" onClick={() => toggleActive(p)}>
-                  {p.active ? "Desactivar" : "Reactivar"}
-                </button>
-                <Link href={`/streamings/${encodeURIComponent(p.name)}`}>
-                  <div className="proj-name">{p.name}</div>
-                  <div className="proj-sub">
-                    {counts ? `${counts[p.name] ?? 0} fonogramas` : "Cargando..."}
-                    {!p.active ? " · inactivo" : ""}
-                  </div>
-                </Link>
+                <div className="proj-card-row">
+                  <Link href={`/streamings/${encodeURIComponent(p.name)}`}>
+                    <div className="proj-name">{p.name}</div>
+                    <div className="proj-sub">
+                      {counts ? `${counts[p.name] ?? 0} fonogramas` : "Cargando..."}
+                      {!p.active ? " · inactivo" : ""}
+                    </div>
+                  </Link>
+                  <button type="button" className="proj-toggle" onClick={() => toggleActive(p)}>
+                    {p.active ? "Desactivar" : "Reactivar"}
+                  </button>
+                </div>
               </div>
             ))}
           </div>

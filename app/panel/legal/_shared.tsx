@@ -6,6 +6,7 @@ import { signOut, useSession } from "next-auth/react";
 import { upload } from "@vercel/blob/client";
 import { SELLOS } from "@/lib/sellos";
 import { TIPOS_CONTRATO, ESTADOS_CONTRATO, type LegalContract } from "@/lib/db/legalContracts";
+import type { SignedRelease } from "@/lib/db/legalSignedReleases";
 
 export const ESTADO_BADGE: Record<string, { bg: string; ink: string }> = {
   Vigente: { bg: "var(--good-bg)", ink: "var(--good-ink)" },
@@ -107,6 +108,23 @@ export const LEGAL_STYLES = `
   .legal-artist-name { font-size: 13px; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .legal-artist-meta { font-size: 10.5px; color: var(--text-3); }
   .legal-artist-count { font-size: 9.5px; color: var(--legal-accent); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+
+  .legal-release-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+  .legal-release-card {
+    display: flex; flex-direction: column; gap: 8px; position: relative;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
+    text-decoration: none; color: var(--text-1); padding: 1.1rem;
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7);
+    box-shadow: var(--shadow-glass); transition: border-color var(--dur-base) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  }
+  .legal-release-card:hover { border-color: var(--legal-accent); transform: translateY(-2px); }
+  .legal-release-song { font-size: 14.5px; font-weight: 700; line-height: 1.3; }
+  .legal-release-feat { font-size: 12px; color: var(--text-3); }
+  .legal-release-date { font-size: 10.5px; color: var(--legal-accent); font-weight: 600; }
+  .legal-release-edit {
+    position: absolute; top: 10px; right: 10px; background: var(--glass-bg); border: 1px solid var(--glass-border);
+    border-radius: 6px; padding: 3px 8px; color: var(--text-2); cursor: pointer; font-size: 10.5px;
+  }
 `;
 
 export function LegalShell({
@@ -289,6 +307,133 @@ export function ContractForm({
           </select>
         </Field>
         <Field label="Documento (PDF)">
+          <input
+            type="file"
+            accept="application/pdf"
+            disabled={uploading}
+            onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])}
+            style={{ ...inputStyle, padding: "6px 8px" }}
+          />
+          {uploading && <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 4 }}>Subiendo...</div>}
+          {documentoNombre && !uploading && <div style={{ fontSize: 11.5, color: "var(--good-ink)", marginTop: 4 }}>✓ {documentoNombre}</div>}
+        </Field>
+        <Field label="Notas">
+          <textarea value={notas} onChange={(e) => setNotas(e.target.value)} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
+        </Field>
+
+        {error && <div style={{ color: "var(--crit-ink)", fontSize: 12.5 }}>{error}</div>}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+          <button type="button" onClick={onClose} style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 16px", color: "var(--text-2)", cursor: "pointer", fontSize: 13 }}>
+            Cancelar
+          </button>
+          <button type="submit" disabled={saving || uploading} className="legal-btn-primary">
+            {saving ? "Guardando..." : "Guardar"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+export function SignedReleaseForm({
+  release,
+  lockedArtist,
+  onClose,
+  onSaved,
+}: {
+  release: SignedRelease | null;
+  // Reached from an artist's own releases page — the artist is already known.
+  lockedArtist?: string;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [artist, setArtist] = useState(release?.artist ?? lockedArtist ?? "");
+  const [sello, setSello] = useState(release?.sello ?? "");
+  const [fonograma, setFonograma] = useState(release?.fonograma ?? "");
+  const [featuring, setFeaturing] = useState(release?.featuring ?? "");
+  const [fechaFirma, setFechaFirma] = useState(release?.fechaFirma ?? "");
+  const [notas, setNotas] = useState(release?.notas ?? "");
+  const [documentoUrl, setDocumentoUrl] = useState(release?.documentoUrl ?? "");
+  const [documentoNombre, setDocumentoNombre] = useState(release?.documentoNombre ?? "");
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  async function handleFile(file: File) {
+    setUploading(true);
+    setError(null);
+    try {
+      const blob = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/legal/upload" });
+      setDocumentoUrl(blob.url);
+      setDocumentoNombre(file.name);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo subir el archivo.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSaving(true);
+    try {
+      const url = release ? `/api/legal/signed-releases/${release.id}` : "/api/legal/signed-releases";
+      const method = release ? "PATCH" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          artist, sello: sello || null, fonograma, featuring: featuring || null,
+          fechaFirma: fechaFirma || null, documentoUrl: documentoUrl || null,
+          documentoNombre: documentoNombre || null, notas: notas || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo guardar.");
+      onSaved();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem", overflowY: "auto" }}
+      onClick={onClose}
+    >
+      <form
+        onClick={(e) => e.stopPropagation()}
+        onSubmit={handleSubmit}
+        style={{ background: "var(--glass-bg-strong)", backdropFilter: "blur(40px) saturate(1.7)", WebkitBackdropFilter: "blur(40px) saturate(1.7)", color: "var(--text-1)", borderRadius: 16, border: "1px solid var(--glass-border)", boxShadow: "var(--shadow-glass-lg)", width: "100%", maxWidth: 460, padding: "1.5rem", display: "flex", flexDirection: "column", gap: 12 }}
+      >
+        <div style={{ fontSize: 17, fontWeight: 600 }}>{release ? "Editar release firmado" : "Nuevo release firmado"}</div>
+
+        <Field label="Artista">
+          <input value={artist} onChange={(e) => setArtist(e.target.value)} required disabled={!!lockedArtist} style={{ ...inputStyle, opacity: lockedArtist ? 0.65 : 1 }} />
+        </Field>
+        <Field label="Nombre de la canción">
+          <input value={fonograma} onChange={(e) => setFonograma(e.target.value)} required style={inputStyle} />
+        </Field>
+        <Field label="Featuring (si tiene)">
+          <input value={featuring} onChange={(e) => setFeaturing(e.target.value)} placeholder="Ej: Coty Hernández" style={inputStyle} />
+        </Field>
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ flex: 1 }}>
+            <Field label="Sello">
+              <select value={sello} onChange={(e) => setSello(e.target.value)} style={inputStyle}>
+                <option value="">Sin asignar</option>
+                {SELLOS.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </Field>
+          </div>
+          <div style={{ flex: 1 }}>
+            <Field label="Fecha de firma"><input type="date" value={fechaFirma} onChange={(e) => setFechaFirma(e.target.value)} style={inputStyle} /></Field>
+          </div>
+        </div>
+        <Field label="Documento firmado (PDF)">
           <input
             type="file"
             accept="application/pdf"

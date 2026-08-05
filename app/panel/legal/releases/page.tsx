@@ -1,112 +1,83 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import RequireRole from "@/app/components/RequireRole";
-import { normalizeName } from "@/lib/participants";
-import { LegalShell, Badge } from "../_shared";
+import { SELLOS } from "@/lib/sellos";
+import type { SignedRelease } from "@/lib/db/legalSignedReleases";
+import { LegalShell } from "../_shared";
 
-type CatalogTrack = {
-  id: string;
-  track: string;
-  release_date: string | null;
-  company: string | null;
-  artist_display: string;
-  sello: string | null;
-};
+type Artist = { id: string; name: string; sello: string | null };
 
-type Acuerdo = {
-  id: string;
-  nombre: string;
-  compania: string | null;
-  estado: string[];
-};
-
-export default function ReleasesPage() {
+export default function ReleasesFonogramasPage() {
   return (
     <RequireRole allow={["legal"]}>
-      <LegalShell title="Releases / Fonogramas" backHref="/panel/legal">
-        <ReleasesTab />
+      <LegalShell title="Releases Fonogramas" subtitle="Elegí un artista para ver sus releases firmados." backHref="/panel/legal">
+        <ArtistGrid />
       </LegalShell>
     </RequireRole>
   );
 }
 
-function ReleasesTab() {
-  const [tracks, setTracks] = useState<CatalogTrack[] | null>(null);
-  const [acuerdos, setAcuerdos] = useState<Acuerdo[] | null>(null);
+function ArtistGrid() {
+  const [artists, setArtists] = useState<Artist[] | null>(null);
+  const [releases, setReleases] = useState<SignedRelease[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState("");
+  const [selloFilter, setSelloFilter] = useState("");
 
   useEffect(() => {
-    fetch("/api/legal/releases")
+    fetch("/api/legal/artists")
       .then((r) => r.json())
-      .then((d) => !d.error && setTracks(d.tracks))
+      .then((d) => (d.error ? setError(d.error) : setArtists(d.artists)))
       .catch((e) => setError(String(e)));
-    fetch("/api/acuerdos")
+    fetch("/api/legal/signed-releases")
       .then((r) => r.json())
-      .then((d) => (d.error ? setError(d.error) : setAcuerdos(d.acuerdos)))
-      .catch((e) => setError(String(e)));
+      .then((d) => !d.error && setReleases(d.releases))
+      .catch(() => {});
   }, []);
 
-  const acuerdoByArtist = useMemo(() => {
-    const map = new Map<string, Acuerdo>();
-    for (const a of acuerdos ?? []) map.set(normalizeName(a.nombre), a);
+  const countByArtist = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const r of releases ?? []) map.set(r.artist, (map.get(r.artist) ?? 0) + 1);
     return map;
-  }, [acuerdos]);
+  }, [releases]);
 
-  const visible = (tracks ?? []).filter((t) => t.artist_display.toLowerCase().includes(filter.toLowerCase()));
+  const visible = (artists ?? []).filter(
+    (a) => a.name.toLowerCase().includes(filter.toLowerCase()) && (!selloFilter || a.sello === selloFilter)
+  );
 
   return (
-    <div className="legal-card">
-      <div className="legal-toolbar">
-        <input className="legal-search" placeholder="Buscar por artista..." value={filter} onChange={(e) => setFilter(e.target.value)} />
+    <>
+      <div className="legal-toolbar" style={{ marginBottom: 20 }}>
+        <input className="legal-search" placeholder="Buscar artista..." value={filter} onChange={(e) => setFilter(e.target.value)} />
+        <select className="legal-search" value={selloFilter} onChange={(e) => setSelloFilter(e.target.value)} style={{ minWidth: 180 }}>
+          <option value="">Todos los sellos</option>
+          {SELLOS.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
       </div>
+
       {error && <div style={{ background: "var(--crit-bg)", color: "var(--crit-ink)", padding: 12, borderRadius: 10, marginBottom: 16, fontSize: 13 }}>{error}</div>}
-      {!tracks ? (
+
+      {!artists ? (
         <p className="muted">Cargando...</p>
+      ) : visible.length === 0 ? (
+        <p className="muted">Sin resultados.</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Fonograma</th>
-              <th>Artista(s)</th>
-              <th>Sello</th>
-              <th>Fecha</th>
-              <th>Estado del acuerdo</th>
-            </tr>
-          </thead>
-          <tbody>
-            {visible.map((t) => {
-              const names = t.artist_display.split("|").map((s) => s.trim());
-              const acuerdo = names.map((n) => acuerdoByArtist.get(normalizeName(n))).find(Boolean);
-              return (
-                <tr key={t.id}>
-                  <td>{t.track}</td>
-                  <td className="muted">{names.join(", ")}</td>
-                  <td className="muted">{t.sello ?? t.company ?? "—"}</td>
-                  <td className="muted">{t.release_date ?? "—"}</td>
-                  <td>
-                    {acuerdo && acuerdo.estado.length > 0 ? (
-                      <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                        {acuerdo.estado.map((e) => <Badge key={e} label={e} />)}
-                      </div>
-                    ) : (
-                      <span className="muted">Sin acuerdo registrado</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-            {visible.length === 0 && (
-              <tr>
-                <td colSpan={5} className="muted" style={{ textAlign: "center", padding: 24 }}>
-                  Sin resultados.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+        <div className="legal-artist-grid">
+          {visible.map((a) => {
+            const count = countByArtist.get(a.name) ?? 0;
+            return (
+              <Link key={a.id} href={`/panel/legal/releases/${encodeURIComponent(a.name)}`} className="legal-artist-card">
+                <div className="legal-artist-avatar">{a.name.charAt(0).toUpperCase()}</div>
+                <div className="legal-artist-name">{a.name}</div>
+                <div className="legal-artist-meta">{a.sello ?? "Sin sello"}</div>
+                <div className="legal-artist-count">{count > 0 ? `${count} release${count > 1 ? "s" : ""} firmado${count > 1 ? "s" : ""}` : "Sin releases"}</div>
+              </Link>
+            );
+          })}
+        </div>
       )}
-    </div>
+    </>
   );
 }

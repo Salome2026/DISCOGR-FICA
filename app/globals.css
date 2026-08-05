@@ -153,3 +153,18 @@ body {
     radial-gradient(ellipse 800px 500px at 50% 110%, rgba(63, 198, 209, 0.045), transparent 60%),
     linear-gradient(180deg, var(--bg-0b) 0%, var(--bg-0) 45%);
 }
+
+/* Fixed brand watermark, rendered once from the root layout so every
+   screen gets it without each page carrying its own copy. */
+.vpo-watermark {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(70vw, 900px);
+  height: auto;
+  opacity: 0.05;
+  filter: grayscale(1) brightness(1.4);
+  pointer-events: none;
+  z-index: 0;
+  transform: translate(18%, -12%);
+}

@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { motion, useReducedMotion, animate, type Variants } from "framer-motion";
@@ -314,7 +313,6 @@ function DashboardInner() {
           min-height:100vh;
           padding-bottom:5rem;
         }
-        .dash-watermark{position:fixed;top:0;right:0;width:min(70vw, 900px);height:auto;opacity:.05;filter:grayscale(1) brightness(1.4);pointer-events:none;z-index:0;transform:translate(18%, -12%);}
         .dash-inner{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:2rem 2.5rem 0;}
         .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:.85rem;}
         .brand{display:flex;align-items:center;gap:9px;}
@@ -353,14 +351,17 @@ function DashboardInner() {
         .leg-dot{width:8px;height:8px;border-radius:3px;flex-shrink:0;}
         .leg-name{color:var(--text-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .leg-val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-1);}
-        .estado-bars{display:flex;align-items:flex-end;justify-content:space-around;gap:8px;width:100%;height:135px;margin-top:1rem;padding:0 4px;}
-        .estado-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;flex:1;min-width:0;background:transparent;border:none;cursor:pointer;padding:0;gap:6px;}
-        .estado-col .count{font-size:14.5px;font-weight:700;color:var(--text-1);font-variant-numeric:tabular-nums;}
-        .estado-col .bar{width:100%;max-width:38px;border-radius:7px 7px 4px 4px;min-height:4px;transition:filter var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);}
-        .estado-col:hover .bar{filter:brightness(1.2);transform:scaleX(1.08);}
-        .estado-col .label{font-size:11.5px;font-weight:600;color:var(--text-2);text-align:center;line-height:1.25;}
-        .estado-col:hover .label{color:var(--text-1);}
-        .estado-col .pct{font-size:10.5px;color:var(--text-3);font-variant-numeric:tabular-nums;}
+        .estado-bars{display:flex;flex-direction:column;gap:9px;width:100%;margin-top:1.1rem;}
+        .estado-row{display:grid;grid-template-columns:130px 1fr 88px;align-items:center;gap:12px;background:transparent;border:none;cursor:pointer;padding:0;width:100%;text-align:left;}
+        .estado-row .label{font-size:12.5px;font-weight:600;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+        .estado-row:hover .label{color:var(--text-1);}
+        .estado-row .track{position:relative;height:10px;border-radius:100px;background:var(--bg-2);overflow:hidden;}
+        .estado-row .bar{position:absolute;left:0;top:0;height:100%;border-radius:100px;min-width:4px;transition:filter var(--dur-fast) var(--ease-out), width var(--dur-base) var(--ease-out);}
+        .estado-row:hover .bar{filter:brightness(1.2);}
+        .estado-row .stats{display:flex;align-items:baseline;justify-content:flex-end;gap:6px;}
+        .estado-row .count{font-size:13.5px;font-weight:700;color:var(--text-1);font-variant-numeric:tabular-nums;}
+        .estado-row .pct{font-size:10.5px;color:var(--text-3);font-variant-numeric:tabular-nums;}
+        @media (max-width:640px){ .estado-row{grid-template-columns:100px 1fr 72px;gap:8px;} }
         .kpi{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:1.2rem;cursor:pointer;text-align:left;color:inherit;font:inherit;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);transition:transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);display:flex;flex-direction:column;}
         .kpi:hover{border-color:var(--accent-color-glow);background:var(--glass-bg-strong);transform:translateY(-3px);box-shadow:var(--shadow-glass), 0 0 24px -8px var(--accent-color-glow);}
         .kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
@@ -374,16 +375,6 @@ function DashboardInner() {
         .kpi-sub{font-size:11.5px;color:var(--text-3);margin-top:5px;}
         .footer-note{font-size:11px;color:var(--text-3);text-align:center;margin-top:2rem;}
       `}</style>
-
-      <Image
-        src="/vpo-logo.png"
-        alt=""
-        width={2539}
-        height={1298}
-        className="dash-watermark"
-        aria-hidden
-        priority={false}
-      />
 
       <div className="dash-inner">
         <div className="topbar">
@@ -516,13 +507,17 @@ function DashboardInner() {
                 const total = acuerdos?.length ?? 0;
                 const pct = total ? Math.round((count / total) * 1000) / 10 : 0;
                 const maxCount = estadoCounts ? Math.max(1, ...Object.values(estadoCounts)) : 1;
-                const barPct = Math.max(4, (count / maxCount) * 100);
+                const barPct = Math.max(2, (count / maxCount) * 100);
                 return (
-                  <button className="estado-col" key={label} onClick={() => openEstado(label)} title={`${label}: ${count} (${pct}%)`}>
-                    <span className="count">{count}</span>
-                    <span className="bar" style={{ height: `${barPct}%`, background: estadoColor[label] || "var(--accent)" }} />
+                  <button className="estado-row" key={label} onClick={() => openEstado(label)} title={`${label}: ${count} (${pct}%)`}>
                     <span className="label">{label}</span>
-                    <span className="pct">{pct}%</span>
+                    <span className="track">
+                      <span className="bar" style={{ width: `${barPct}%`, background: estadoColor[label] || "var(--accent)" }} />
+                    </span>
+                    <span className="stats">
+                      <span className="count">{count}</span>
+                      <span className="pct">{pct}%</span>
+                    </span>
                   </button>
                 );
               })}

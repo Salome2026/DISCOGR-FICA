@@ -1,17 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { use, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { use, useEffect, useState } from "react";
 import { SELLOS, type Sello } from "@/lib/sellos";
 import { SELLO_ROSTERS } from "@/lib/roster";
 import RosterSelloView from "./RosterSelloView";
 import CatalogTracksPanel from "@/app/components/CatalogTracksPanel";
+import RizzvorProyectosPanel from "./RizzvorProyectosPanel";
 
 export default function SelloPage({ params }: { params: Promise<{ nombre: string }> }) {
   const { nombre } = use(params);
   const selloName = decodeURIComponent(nombre);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data: session } = useSession();
+  const role = (session?.user as { role?: string } | undefined)?.role;
+  const canSeeProyectos = role === "admin" || role === "project_manager";
+  const isRizzvor = selloName === "Rizzvor";
+  const [tab, setTab] = useState<"lanzamientos" | "proyectos">(
+    isRizzvor && searchParams.get("tab") === "proyectos" ? "proyectos" : "lanzamientos"
+  );
 
   // Streamings became a container of projects (/streamings) and La Juntada de
   // los Artistas moved inside it as one of those projects — keep old links working.
@@ -64,6 +74,9 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
         .leg-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
         .leg-name{color:var(--text-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .leg-val{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-1);}
+        .sello-tabs{display:flex;gap:3px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-pill);padding:4px;width:fit-content;margin-bottom:1.25rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);}
+        .sello-tab{font-size:12.5px;font-weight:600;padding:7px 16px;border-radius:var(--radius-pill);border:none;background:transparent;color:var(--text-2);cursor:pointer;}
+        .sello-tab.active{background:var(--accent-glass-bg);color:var(--text-1);}
       `}</style>
       <div className="inner">
         <div className="crumb">
@@ -75,7 +88,26 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
           <p className="empty">Este sello no está en la lista configurada (VPO CORP).</p>
         )}
 
-        {hasRoster ? (
+        {isRizzvor && canSeeProyectos && (
+          <div className="sello-tabs">
+            <button
+              className={`sello-tab${tab === "lanzamientos" ? " active" : ""}`}
+              onClick={() => setTab("lanzamientos")}
+            >
+              Lanzamientos
+            </button>
+            <button
+              className={`sello-tab${tab === "proyectos" ? " active" : ""}`}
+              onClick={() => setTab("proyectos")}
+            >
+              Proyectos
+            </button>
+          </div>
+        )}
+
+        {isRizzvor && canSeeProyectos && tab === "proyectos" ? (
+          <RizzvorProyectosPanel />
+        ) : hasRoster ? (
           <RosterSelloView sello={selloName as Sello} />
         ) : isKnownSello ? (
           <CatalogTracksPanel

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import porCompania from "@/data/por_compania.json";
 import { assignSello, SELLOS } from "@/lib/sellos";
+import { GENEROS } from "@/lib/genres";
 
 const distribuidoras = [
   ...(porCompania as { companies: { company: string }[] }).companies
@@ -21,10 +22,6 @@ const TIPOS = [
   { value: "album", label: "Álbum" },
 ] as const;
 type Tipo = (typeof TIPOS)[number]["value"] | "";
-const GENEROS = [
-  "Cumbia", "Cuarteto", "RKT", "Reggaetón", "Trap", "Pop", "Rock",
-  "Electrónica", "Latin House", "Tech House", "Folklore", "Tango", "Otro",
-];
 
 type ArtistMatch = {
   id: string;

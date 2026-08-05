@@ -21,6 +21,8 @@ export const PERMISSIONS = [
   "editar_legal",
   "ver_publishing",
   "editar_publishing",
+  "ver_rizzvor_proyectos",
+  "editar_rizzvor_proyectos",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -52,7 +54,17 @@ const ALL: Permission[] = [...PERMISSIONS];
 
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   admin: ALL,
-  project_manager: ["editar_acuerdos", "subir_audio", "subir_portada", "ver_estadisticas"],
+  // Rizzvor's A&R pipeline is owned by PM — the same people who create
+  // lanzamientos are the ones who'll click "Convertir a lanzamiento" once a
+  // proyecto is ready, so it rides on the same role rather than a new one.
+  project_manager: [
+    "editar_acuerdos",
+    "subir_audio",
+    "subir_portada",
+    "ver_estadisticas",
+    "ver_rizzvor_proyectos",
+    "editar_rizzvor_proyectos",
+  ],
   // Legal is a fully separate module — its own permissions, shared with no
   // other operational area (Label/PM/Distribución/Marketing/etc). It does
   // NOT get editar_acuerdos/aprobar_releases/ver_estadisticas/exportar_datos

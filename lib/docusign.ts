@@ -142,33 +142,45 @@ export async function listCompletedEnvelopes(fromDate?: string): Promise<Docusig
   }[];
 
   // Signer detail isn't included in the status-change list itself — one
-  // extra call per envelope to fetch who actually signed and when.
-  return Promise.all(
-    envelopes.map(async (e): Promise<DocusignEnvelope> => {
-      let signers: DocusignSigner[] = [];
-      try {
-        const recipients = await envelopesApi.listRecipients(account.accountId, e.envelopeId);
-        signers = ((recipients.signers ?? []) as { name?: string; email?: string; signedDateTime?: string }[]).map(
-          (s) => ({
-            name: s.name ?? "",
-            email: s.email ?? "",
-            signedDateTime: s.signedDateTime ?? null,
-          })
-        );
-      } catch {
-        // If a single envelope's recipient lookup fails, still show the
-        // envelope — Legal can fill in firmantes manually on import.
-      }
-      return {
-        envelopeId: e.envelopeId,
-        subject: e.emailSubject ?? "(sin asunto)",
-        status: e.status,
-        sentDateTime: e.sentDateTime ?? null,
-        completedDateTime: e.completedDateTime ?? null,
-        signers,
-      };
-    })
-  );
+  // extra call per envelope to fetch who actually signed and when. Done in
+  // small batches, not all at once: with a real account's worth of
+  // envelopes (100+), firing every recipient lookup concurrently exhausts
+  // the serverless function's outbound connections and starves unrelated
+  // fetches in the same invocation (observed taking down the DB connection
+  // used elsewhere in the same request).
+  const BATCH_SIZE = 8;
+  const out: DocusignEnvelope[] = [];
+  for (let i = 0; i < envelopes.length; i += BATCH_SIZE) {
+    const batch = envelopes.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(
+      batch.map(async (e): Promise<DocusignEnvelope> => {
+        let signers: DocusignSigner[] = [];
+        try {
+          const recipients = await envelopesApi.listRecipients(account.accountId, e.envelopeId);
+          signers = ((recipients.signers ?? []) as { name?: string; email?: string; signedDateTime?: string }[]).map(
+            (s) => ({
+              name: s.name ?? "",
+              email: s.email ?? "",
+              signedDateTime: s.signedDateTime ?? null,
+            })
+          );
+        } catch {
+          // If a single envelope's recipient lookup fails, still show the
+          // envelope — Legal can fill in firmantes manually on import.
+        }
+        return {
+          envelopeId: e.envelopeId,
+          subject: e.emailSubject ?? "(sin asunto)",
+          status: e.status,
+          sentDateTime: e.sentDateTime ?? null,
+          completedDateTime: e.completedDateTime ?? null,
+          signers,
+        };
+      })
+    );
+    out.push(...batchResults);
+  }
+  return out;
 }
 
 // The "combined" pseudo-document ID returns every document in the envelope

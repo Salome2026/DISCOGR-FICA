@@ -23,6 +23,8 @@ export function ensureExternalReleasesSchema(): Promise<void> {
         )
       `;
       await sql`CREATE INDEX IF NOT EXISTS legal_external_releases_artist_idx ON legal_external_releases (artist)`;
+      await sql`ALTER TABLE legal_external_releases ADD COLUMN IF NOT EXISTS docusign_envelope_id TEXT`;
+      await sql`CREATE UNIQUE INDEX IF NOT EXISTS legal_external_releases_docusign_envelope_idx ON legal_external_releases (docusign_envelope_id) WHERE docusign_envelope_id IS NOT NULL`;
     })();
   }
   return ready;
@@ -39,6 +41,7 @@ export type ExternalRelease = {
   documentoNombre: string | null;
   notas: string | null;
   requiereRevision: boolean;
+  docusignEnvelopeId: string | null;
   createdAt: string;
   updatedBy: string | null;
   updatedAt: string | null;
@@ -56,6 +59,7 @@ function rowToRelease(r: Record<string, unknown>): ExternalRelease {
     documentoNombre: (r.documento_nombre as string | null) ?? null,
     notas: (r.notas as string | null) ?? null,
     requiereRevision: !!r.requiere_revision,
+    docusignEnvelopeId: (r.docusign_envelope_id as string | null) ?? null,
     createdAt: r.created_at as string,
     updatedBy: (r.updated_by as string | null) ?? null,
     updatedAt: (r.updated_at as string | null) ?? null,
@@ -80,6 +84,7 @@ type ExternalReleaseInput = {
   documentoNombre: string | null;
   notas: string | null;
   requiereRevision: boolean;
+  docusignEnvelopeId?: string | null;
   actorEmail: string;
 };
 
@@ -88,10 +93,10 @@ export async function createExternalRelease(input: ExternalReleaseInput): Promis
   const id = `extrel-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const { rows } = await sql`
     INSERT INTO legal_external_releases
-      (id, artist, titulo, sello_externo, fecha_lanzamiento, vinculo, documento_url, documento_nombre, notas, requiere_revision, updated_by, updated_at)
+      (id, artist, titulo, sello_externo, fecha_lanzamiento, vinculo, documento_url, documento_nombre, notas, requiere_revision, docusign_envelope_id, updated_by, updated_at)
     VALUES
       (${id}, ${input.artist}, ${input.titulo}, ${input.selloExterno}, ${input.fechaLanzamiento}, ${input.vinculo},
-       ${input.documentoUrl}, ${input.documentoNombre}, ${input.notas}, ${input.requiereRevision}, ${input.actorEmail}, now())
+       ${input.documentoUrl}, ${input.documentoNombre}, ${input.notas}, ${input.requiereRevision}, ${input.docusignEnvelopeId ?? null}, ${input.actorEmail}, now())
     RETURNING *
   `;
   return rowToRelease(rows[0]);

@@ -28,6 +28,10 @@ export function ensureLegalSignedReleasesSchema(): Promise<void> {
         )
       `;
       await sql`CREATE INDEX IF NOT EXISTS legal_signed_releases_artist_idx ON legal_signed_releases (artist)`;
+      // Dedup key for the automated DocuSign sync — same envelope can't land
+      // here twice.
+      await sql`ALTER TABLE legal_signed_releases ADD COLUMN IF NOT EXISTS docusign_envelope_id TEXT`;
+      await sql`CREATE UNIQUE INDEX IF NOT EXISTS legal_signed_releases_docusign_envelope_idx ON legal_signed_releases (docusign_envelope_id) WHERE docusign_envelope_id IS NOT NULL`;
     })();
   }
   return ready;
@@ -43,6 +47,7 @@ export type SignedRelease = {
   documentoUrl: string | null;
   documentoNombre: string | null;
   notas: string | null;
+  docusignEnvelopeId: string | null;
   createdAt: string;
   updatedBy: string | null;
   updatedAt: string | null;
@@ -59,6 +64,7 @@ function rowToRelease(r: Record<string, unknown>): SignedRelease {
     documentoUrl: (r.documento_url as string | null) ?? null,
     documentoNombre: (r.documento_nombre as string | null) ?? null,
     notas: (r.notas as string | null) ?? null,
+    docusignEnvelopeId: (r.docusign_envelope_id as string | null) ?? null,
     createdAt: r.created_at as string,
     updatedBy: (r.updated_by as string | null) ?? null,
     updatedAt: (r.updated_at as string | null) ?? null,
@@ -86,6 +92,7 @@ type ReleaseInput = {
   documentoUrl: string | null;
   documentoNombre: string | null;
   notas: string | null;
+  docusignEnvelopeId?: string | null;
   actorEmail: string;
 };
 
@@ -94,10 +101,10 @@ export async function createSignedRelease(input: ReleaseInput): Promise<SignedRe
   const id = `sr-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const { rows } = await sql`
     INSERT INTO legal_signed_releases
-      (id, artist, sello, fonograma, featuring, fecha_firma, documento_url, documento_nombre, notas, updated_by, updated_at)
+      (id, artist, sello, fonograma, featuring, fecha_firma, documento_url, documento_nombre, notas, docusign_envelope_id, updated_by, updated_at)
     VALUES
       (${id}, ${input.artist}, ${input.sello}, ${input.fonograma}, ${input.featuring}, ${input.fechaFirma},
-       ${input.documentoUrl}, ${input.documentoNombre}, ${input.notas}, ${input.actorEmail}, now())
+       ${input.documentoUrl}, ${input.documentoNombre}, ${input.notas}, ${input.docusignEnvelopeId ?? null}, ${input.actorEmail}, now())
     RETURNING *
   `;
   return rowToRelease(rows[0]);

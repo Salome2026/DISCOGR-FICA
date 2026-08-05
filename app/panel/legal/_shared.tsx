@@ -376,6 +376,29 @@ export function DocusignImportModal({
   const [envelopes, setEnvelopes] = useState<DocusignEnvelope[] | null>(null);
   const [filter, setFilter] = useState("");
   const [selected, setSelected] = useState<DocusignEnvelope | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState<string | null>(null);
+  const [syncError, setSyncError] = useState<string | null>(null);
+
+  async function runAutoSync() {
+    setSyncing(true);
+    setSyncError(null);
+    setSyncResult(null);
+    try {
+      const res = await fetch("/api/legal/docusign/sync", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo sincronizar.");
+      setSyncResult(
+        `Revisados: ${data.checked} · Importados y clasificados: ${data.imported} · Ya estaban cargados: ${data.alreadyImported}` +
+          (data.errors?.length ? ` · Con error: ${data.errors.length}` : "")
+      );
+      onImported();
+    } catch (err) {
+      setSyncError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   useEffect(() => {
     fetch("/api/legal/docusign/status")
@@ -442,6 +465,17 @@ export function DocusignImportModal({
 
             {status === "ready" && (
               <>
+                <div style={{ background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ fontSize: 12.5, color: "var(--text-2)" }}>
+                    Clasifica y archiva automáticamente todo lo nuevo que esté firmado en DocuSign — sin pedir confirmación.
+                  </div>
+                  <button type="button" className="legal-btn-primary" onClick={runAutoSync} disabled={syncing} style={{ alignSelf: "flex-start" }}>
+                    {syncing ? "Sincronizando..." : "Sincronizar automáticamente ahora"}
+                  </button>
+                  {syncResult && <div style={{ fontSize: 12, color: "var(--good-ink)" }}>{syncResult}</div>}
+                  {syncError && <div style={{ fontSize: 12, color: "var(--crit-ink)" }}>{syncError}</div>}
+                </div>
+
                 <input
                   className="legal-search"
                   placeholder="Buscar por asunto..."

@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/sync-listeners",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/sync-docusign",
+      "schedule": "0 * * * *"
     }
   ]
 }

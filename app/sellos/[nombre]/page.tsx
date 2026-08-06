@@ -117,6 +117,7 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
           <CatalogTracksPanel
             apiUrl={`/api/catalog/tracks?sello=${encodeURIComponent(selloName)}`}
             emptyMessage={`Todavía no hay fonogramas asignados a ${selloName}. Asignalos desde la ficha de cada fonograma en Catálogo Distribuido.`}
+            showEstado={false}
           />
         ) : null}
       </div>

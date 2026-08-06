@@ -68,6 +68,13 @@ export default function ShowMap() {
         .bksm-toggle-btn.active { background: var(--accent-glass-bg); color: var(--text-1); }
         .bksm-map-wrap { flex: 1; min-height: 380px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--glass-border); }
         .bksm-empty-note { font-size: 12px; color: var(--text-3); margin-top: 8px; }
+        .bksm-map-wrap .leaflet-popup-content-wrapper { background: var(--glass-bg-strong); color: var(--text-1); border-radius: 10px; box-shadow: var(--shadow-glass-lg); }
+        .bksm-map-wrap .leaflet-popup-tip { background: var(--glass-bg-strong); }
+        .bksm-map-wrap .leaflet-container a.leaflet-popup-close-button { color: var(--text-2); }
+        .bksm-map-wrap .leaflet-bar a { background: var(--bg-2); color: var(--text-1); border-color: var(--glass-border); }
+        .bksm-map-wrap .leaflet-bar a:hover { background: var(--glass-bg-strong); }
+        .bksm-map-wrap .leaflet-control-attribution { background: rgba(12,12,14,0.7); color: var(--text-3); }
+        .bksm-map-wrap .leaflet-control-attribution a { color: var(--text-2); }
       `}</style>
 
       <div className="bksm-header">
@@ -95,7 +102,7 @@ export default function ShowMap() {
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
           {markers.map((s) => (
             <Marker key={s.id} position={[s.lat as number, s.lng as number]} icon={redIcon}>

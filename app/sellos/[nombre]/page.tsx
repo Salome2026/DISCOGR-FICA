@@ -18,9 +18,12 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
   const { data: session } = useSession();
   const role = (session?.user as { role?: string } | undefined)?.role;
   const canSeeProyectos = role === "admin" || role === "project_manager";
-  const isRizzvor = selloName === "Rizzvor";
+  // Sellos with an A&R "Proyectos" pre-production pipeline alongside their
+  // Lanzamientos — same module/data model for every sello here, just scoped
+  // by the `sello` field (see lib/db/rizzvorProjects.ts).
+  const hasProyectos = selloName === "Rizzvor" || selloName === "Kids";
   const [tab, setTab] = useState<"lanzamientos" | "proyectos">(
-    isRizzvor && searchParams.get("tab") === "proyectos" ? "proyectos" : "lanzamientos"
+    hasProyectos && searchParams.get("tab") === "proyectos" ? "proyectos" : "lanzamientos"
   );
 
   // Streamings became a container of projects (/streamings) and La Juntada de
@@ -88,7 +91,7 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
           <p className="empty">Este sello no está en la lista configurada (VPO CORP).</p>
         )}
 
-        {isRizzvor && canSeeProyectos && (
+        {hasProyectos && canSeeProyectos && (
           <div className="sello-tabs">
             <button
               className={`sello-tab${tab === "lanzamientos" ? " active" : ""}`}
@@ -105,8 +108,8 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
           </div>
         )}
 
-        {isRizzvor && canSeeProyectos && tab === "proyectos" ? (
-          <RizzvorProyectosPanel />
+        {hasProyectos && canSeeProyectos && tab === "proyectos" ? (
+          <RizzvorProyectosPanel sello={selloName} />
         ) : hasRoster ? (
           <RosterSelloView sello={selloName as Sello} />
         ) : isKnownSello ? (

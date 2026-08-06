@@ -230,7 +230,7 @@ export default function ProyectoDetailPage({ params }: { params: Promise<{ id: s
       `}</style>
 
       <div className="rzd-topbar">
-        <Link href={`/sellos/Rizzvor?tab=proyectos`} className="rzd-back">← Volver a Proyectos</Link>
+        <Link href={`/sellos/${encodeURIComponent(project.sello)}?tab=proyectos`} className="rzd-back">← Volver a Proyectos</Link>
         <button className="rzd-signout" onClick={() => signOut({ callbackUrl: "/" })}>Cerrar sesión</button>
       </div>
 

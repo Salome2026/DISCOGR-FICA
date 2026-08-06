@@ -13,12 +13,13 @@ async function sessionUser(): Promise<SessionUser | null> {
   return session.user as unknown as SessionUser;
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const user = await sessionUser();
   if (!user || !hasPermission(user, "ver_rizzvor_proyectos")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  const projects = await listProjects();
+  const sello = req.nextUrl.searchParams.get("sello") || undefined;
+  const projects = await listProjects(sello);
   return NextResponse.json({ projects });
 }
 

@@ -33,7 +33,7 @@ function Avatar({ name, url }: { name: string; url: string | null }) {
   );
 }
 
-export default function RizzvorProyectosPanel() {
+export default function RizzvorProyectosPanel({ sello }: { sello: string }) {
   const [projects, setProjects] = useState<RizzvorProject[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -41,7 +41,7 @@ export default function RizzvorProyectosPanel() {
   const [showCreate, setShowCreate] = useState(false);
 
   function reload() {
-    fetch("/api/rizzvor/projects")
+    fetch(`/api/rizzvor/projects?sello=${encodeURIComponent(sello)}`)
       .then((r) => r.json())
       .then((d) => {
         if (d.error) setError(d.error);
@@ -50,7 +50,7 @@ export default function RizzvorProyectosPanel() {
       .catch((e) => setError(String(e)));
   }
 
-  useEffect(reload, []);
+  useEffect(reload, [sello]);
 
   const filtered = useMemo(() => {
     if (!projects) return [];
@@ -165,6 +165,7 @@ export default function RizzvorProyectosPanel() {
 
       {showCreate && (
         <CreateProjectModal
+          defaultSello={sello}
           onClose={() => setShowCreate(false)}
           onCreated={() => {
             setShowCreate(false);
@@ -176,9 +177,17 @@ export default function RizzvorProyectosPanel() {
   );
 }
 
-function CreateProjectModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+function CreateProjectModal({
+  defaultSello,
+  onClose,
+  onCreated,
+}: {
+  defaultSello: string;
+  onClose: () => void;
+  onCreated: () => void;
+}) {
   const [artistName, setArtistName] = useState("");
-  const [sello, setSello] = useState("Rizzvor");
+  const [sello, setSello] = useState(defaultSello);
   const [genero, setGenero] = useState("");
   const [priority, setPriority] = useState<string>("Media");
   const [responsableEmail, setResponsableEmail] = useState("");

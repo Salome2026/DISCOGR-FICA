@@ -388,11 +388,15 @@ export async function getProjectHistory(projectId: string): Promise<RizzvorProje
 
 // ---------- Projects ----------
 
-export async function listProjects(): Promise<RizzvorProject[]> {
+export async function listProjects(sello?: string): Promise<RizzvorProject[]> {
   await ensureRizzvorProjectsSchema();
-  const { rows } = await sql`
-    SELECT * FROM rizzvor_projects WHERE archived = false ORDER BY created_at DESC
-  `;
+  const { rows } = sello
+    ? await sql`
+        SELECT * FROM rizzvor_projects WHERE archived = false AND sello = ${sello} ORDER BY created_at DESC
+      `
+    : await sql`
+        SELECT * FROM rizzvor_projects WHERE archived = false ORDER BY created_at DESC
+      `;
   return rows.map(rowToProject);
 }
 

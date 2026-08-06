@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import RequireRole from "@/app/components/RequireRole";
-import RankingListeners from "@/app/components/RankingListeners";
 import EstadisticasIngresos from "./EstadisticasIngresos";
 import RegaliasNetas from "./RegaliasNetas";
 
@@ -33,7 +32,6 @@ export default function Catalogo() {
             Ranking de artistas, estadísticas de ingresos y reparto de regalías.
           </p>
 
-          <RankingListeners />
           <EstadisticasIngresos />
           <RegaliasNetas />
         </div>

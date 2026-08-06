@@ -78,7 +78,15 @@ const CASERIO_ARTISTS = [
   "sossa",
 ];
 const SECTOR_NINE_ARTISTS = ["sector nine"];
-const SIGEL_ARTISTS = ["al rojo vivo", "los totora", "juli jones"];
+const SIGEL_ARTISTS = [
+  "al rojo vivo",
+  "los totora",
+  "juli jones",
+  "ariel casco",
+  "ciuffi",
+  "sol aleza",
+  "alexander caniggia",
+];
 
 function norm(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();

@@ -52,11 +52,15 @@ export function ensureBookingSchema(): Promise<void> {
           instagram TEXT,
           email TEXT,
           observaciones TEXT,
+          provincia TEXT,
+          pais TEXT,
           created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
           updated_by TEXT,
           updated_at TIMESTAMPTZ
         )
       `;
+      await sql`ALTER TABLE booking_contacts ADD COLUMN IF NOT EXISTS provincia TEXT`;
+      await sql`ALTER TABLE booking_contacts ADD COLUMN IF NOT EXISTS pais TEXT`;
     })();
   }
   return ready;
@@ -253,6 +257,8 @@ export type BookingContact = {
   instagram: string | null;
   email: string | null;
   observaciones: string | null;
+  provincia: string | null;
+  pais: string | null;
   createdAt: string;
   updatedBy: string | null;
   updatedAt: string | null;
@@ -269,6 +275,8 @@ function rowToContact(r: Record<string, unknown>): BookingContact {
     instagram: (r.instagram as string | null) ?? null,
     email: (r.email as string | null) ?? null,
     observaciones: (r.observaciones as string | null) ?? null,
+    provincia: (r.provincia as string | null) ?? null,
+    pais: (r.pais as string | null) ?? null,
     createdAt: r.created_at as string,
     updatedBy: (r.updated_by as string | null) ?? null,
     updatedAt: (r.updated_at as string | null) ?? null,
@@ -290,6 +298,8 @@ export type NewContact = {
   instagram: string | null;
   email: string | null;
   observaciones: string | null;
+  provincia: string | null;
+  pais: string | null;
   createdBy: string;
 };
 
@@ -298,10 +308,10 @@ export async function createContact(input: NewContact): Promise<BookingContact> 
   const id = `contact-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const { rows } = await sql`
     INSERT INTO booking_contacts
-      (id, nombre, apellido, venue_nombre, telefono, whatsapp, instagram, email, observaciones, updated_by, updated_at)
+      (id, nombre, apellido, venue_nombre, telefono, whatsapp, instagram, email, observaciones, provincia, pais, updated_by, updated_at)
     VALUES
       (${id}, ${input.nombre}, ${input.apellido}, ${input.venueNombre}, ${input.telefono}, ${input.whatsapp},
-       ${input.instagram}, ${input.email}, ${input.observaciones}, ${input.createdBy}, now())
+       ${input.instagram}, ${input.email}, ${input.observaciones}, ${input.provincia}, ${input.pais}, ${input.createdBy}, now())
     RETURNING *
   `;
   return rowToContact(rows[0]);
@@ -319,6 +329,8 @@ export async function updateContact(id: string, input: NewContact): Promise<Book
       instagram = ${input.instagram},
       email = ${input.email},
       observaciones = ${input.observaciones},
+      provincia = ${input.provincia},
+      pais = ${input.pais},
       updated_by = ${input.createdBy},
       updated_at = now()
     WHERE id = ${id}

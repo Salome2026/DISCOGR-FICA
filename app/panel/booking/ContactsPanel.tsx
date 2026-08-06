@@ -12,7 +12,12 @@ type BookingContact = {
   instagram: string | null;
   email: string | null;
   observaciones: string | null;
+  provincia: string | null;
+  pais: string | null;
 };
+
+const SIN_PAIS = "Sin país";
+const SIN_PROVINCIA = "Sin provincia";
 
 export default function ContactsPanel() {
   const [contacts, setContacts] = useState<BookingContact[] | null>(null);
@@ -37,11 +42,38 @@ export default function ContactsPanel() {
     const q = query.trim().toLowerCase();
     if (!q) return contacts;
     return contacts.filter((c) =>
-      [c.nombre, c.apellido, c.venueNombre, c.telefono, c.instagram, c.email]
+      [c.nombre, c.apellido, c.venueNombre, c.telefono, c.instagram, c.email, c.provincia, c.pais]
         .filter(Boolean)
         .some((f) => (f as string).toLowerCase().includes(q))
     );
   }, [contacts, query]);
+
+  // Grouped by país → provincia, per module request — a flat list of 50+
+  // venue contacts across several countries was unusable without this split.
+  const grouped = useMemo(() => {
+    const byPais = new Map<string, Map<string, BookingContact[]>>();
+    for (const c of filtered) {
+      const pais = c.pais?.trim() || SIN_PAIS;
+      const provincia = c.provincia?.trim() || SIN_PROVINCIA;
+      if (!byPais.has(pais)) byPais.set(pais, new Map());
+      const byProvincia = byPais.get(pais)!;
+      if (!byProvincia.has(provincia)) byProvincia.set(provincia, []);
+      byProvincia.get(provincia)!.push(c);
+    }
+    const paisEntries = [...byPais.entries()].sort(([a], [b]) => {
+      if (a === SIN_PAIS) return 1;
+      if (b === SIN_PAIS) return -1;
+      return a.localeCompare(b, "es");
+    });
+    return paisEntries.map(([pais, byProvincia]) => ({
+      pais,
+      provincias: [...byProvincia.entries()].sort(([a], [b]) => {
+        if (a === SIN_PROVINCIA) return 1;
+        if (b === SIN_PROVINCIA) return -1;
+        return a.localeCompare(b, "es");
+      }),
+    }));
+  }, [filtered]);
 
   return (
     <div className="card bkct-card">
@@ -52,6 +84,12 @@ export default function ContactsPanel() {
         .bkct-toolbar { display: flex; gap: 10px; flex-wrap: wrap; }
         .bkct-search { flex: 1; min-width: 200px; background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 9px 12px; color: var(--text-1); font-size: 13.5px; font-family: inherit; }
         .bkct-new-btn { background: var(--accent-gradient); border: none; border-radius: 8px; padding: 9px 16px; color: var(--accent-ink); font-weight: 700; cursor: pointer; font-size: 13px; }
+        .bkct-groups { display: flex; flex-direction: column; gap: 1.8rem; }
+        .bkct-pais-group { display: flex; flex-direction: column; gap: 1rem; }
+        .bkct-pais-title { font-size: 16px; font-weight: 700; letter-spacing: -.01em; padding-bottom: 8px; border-bottom: 1px solid var(--glass-border); }
+        .bkct-pais-title .count { color: var(--text-3); font-weight: 500; font-size: 13px; margin-left: 6px; }
+        .bkct-provincia-group { display: flex; flex-direction: column; gap: 10px; }
+        .bkct-provincia-title { font-size: 12px; color: var(--text-2); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; }
         .bkct-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
         .bkct-item { display: flex; flex-direction: column; gap: 6px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 1.1rem; }
         .bkct-name { font-size: 15px; font-weight: 700; }
@@ -101,20 +139,35 @@ export default function ContactsPanel() {
       )}
 
       {filtered.length > 0 && (
-        <div className="bkct-grid">
-          {filtered.map((c) => (
-            <div key={c.id} className="bkct-item">
-              <div className="bkct-name">{c.nombre} {c.apellido ?? ""}</div>
-              {c.venueNombre && <div className="bkct-venue">{c.venueNombre}</div>}
-              <div className="bkct-meta">
-                {c.telefono && <span>📞 {c.telefono}</span>}
-                {c.whatsapp && <span>WhatsApp: {c.whatsapp}</span>}
-                {c.instagram && <span>IG: {c.instagram}</span>}
-                {c.email && <span>{c.email}</span>}
+        <div className="bkct-groups">
+          {grouped.map(({ pais, provincias }) => {
+            const totalPais = provincias.reduce((n, [, list]) => n + list.length, 0);
+            return (
+              <div key={pais} className="bkct-pais-group">
+                <div className="bkct-pais-title">{pais}<span className="count">({totalPais})</span></div>
+                {provincias.map(([provincia, list]) => (
+                  <div key={provincia} className="bkct-provincia-group">
+                    {provincias.length > 1 && <div className="bkct-provincia-title">{provincia}</div>}
+                    <div className="bkct-grid">
+                      {list.map((c) => (
+                        <div key={c.id} className="bkct-item">
+                          <div className="bkct-name">{c.nombre} {c.apellido ?? ""}</div>
+                          {c.venueNombre && <div className="bkct-venue">{c.venueNombre}</div>}
+                          <div className="bkct-meta">
+                            {c.telefono && <span>📞 {c.telefono}</span>}
+                            {c.whatsapp && <span>WhatsApp: {c.whatsapp}</span>}
+                            {c.instagram && <span>IG: {c.instagram}</span>}
+                            {c.email && <span>{c.email}</span>}
+                          </div>
+                          <button className="bkct-edit-btn" onClick={() => setEditing(c)}>Editar</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
-              <button className="bkct-edit-btn" onClick={() => setEditing(c)}>Editar</button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -145,6 +198,8 @@ function ContactModal({
   const [whatsapp, setWhatsapp] = useState(contact?.whatsapp ?? "");
   const [instagram, setInstagram] = useState(contact?.instagram ?? "");
   const [email, setEmail] = useState(contact?.email ?? "");
+  const [provincia, setProvincia] = useState(contact?.provincia ?? "");
+  const [pais, setPais] = useState(contact?.pais ?? "");
   const [observaciones, setObservaciones] = useState(contact?.observaciones ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -165,6 +220,7 @@ function ContactModal({
         body: JSON.stringify({
           nombre, apellido: apellido || null, venueNombre: venueNombre || null, telefono: telefono || null,
           whatsapp: whatsapp || null, instagram: instagram || null, email: email || null, observaciones: observaciones || null,
+          provincia: provincia || null, pais: pais || null,
         }),
       });
       const data = await res.json();
@@ -207,6 +263,17 @@ function ContactModal({
         <div className="bkct-field">
           <label>Boliche / venue</label>
           <input value={venueNombre} onChange={(e) => setVenueNombre(e.target.value)} />
+        </div>
+
+        <div className="bkct-field-row">
+          <div className="bkct-field">
+            <label>Provincia</label>
+            <input value={provincia} onChange={(e) => setProvincia(e.target.value)} />
+          </div>
+          <div className="bkct-field">
+            <label>País</label>
+            <input value={pais} onChange={(e) => setPais(e.target.value)} />
+          </div>
         </div>
 
         <div className="bkct-field-row">

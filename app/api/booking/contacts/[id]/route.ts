@@ -16,7 +16,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
   const { id } = await params;
   const body = await req.json();
-  const { nombre, apellido, venueNombre, telefono, whatsapp, instagram, email, observaciones } = body as {
+  const { nombre, apellido, venueNombre, telefono, whatsapp, instagram, email, observaciones, provincia, pais } = body as {
     nombre?: string;
     apellido?: string | null;
     venueNombre?: string | null;
@@ -25,6 +25,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     instagram?: string | null;
     email?: string | null;
     observaciones?: string | null;
+    provincia?: string | null;
+    pais?: string | null;
   };
   if (!nombre) {
     return NextResponse.json({ error: "El nombre es obligatorio." }, { status: 400 });
@@ -38,6 +40,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     instagram: instagram || null,
     email: email || null,
     observaciones: observaciones || null,
+    provincia: provincia || null,
+    pais: pais || null,
     createdBy: user.email,
   });
   if (!contact) return NextResponse.json({ error: "No encontrado." }, { status: 404 });

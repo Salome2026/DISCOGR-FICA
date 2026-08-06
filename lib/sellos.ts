@@ -57,11 +57,12 @@ const INDYANA_ARTISTS = [
   "maxi y la champions liga",
   "yankee",
   "el retutu",
-  "soy tiara",
-  "paco remix",
+  "soytiara",
+  "pacoremix",
   "luli barrio",
   "federikita",
   "coco palmer",
+  "juani cumbia base",
 ];
 const CASERIO_ARTISTS = [
   "eze remix",
@@ -76,7 +77,7 @@ const CASERIO_ARTISTS = [
   "sossa",
 ];
 const SECTOR_NINE_ARTISTS = ["sector nine"];
-const SIGEL_ARTISTS = ["al rojo vivo", "los totora"];
+const SIGEL_ARTISTS = ["al rojo vivo", "los totora", "juli jones"];
 
 function norm(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();

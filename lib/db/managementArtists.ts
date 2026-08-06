@@ -1,4 +1,4 @@
-import { listAllArtists, type Artist } from "./artists";
+import { listAllArtists, slugify, type Artist } from "./artists";
 import { getRankingLatest } from "./listeners";
 import { getManagementReleaseEvents } from "./managementReleases";
 import { listContracts } from "./legalContracts";
@@ -66,6 +66,37 @@ export async function getManagementArtistOverview(): Promise<ManagementArtistRow
     });
   }
 
+  // "Streamings"-sello artists (e.g. compilation acts like La Juntada De Los
+  // Artistas) have no entry in the static roster and no row in the `artists`
+  // table, so listAllArtists() never surfaces them at all — pull in any such
+  // artist directly from the Chartmetric ranking data instead, so anyone
+  // with real Spotify/Chartmetric data shows up regardless of roster source.
+  const knownNames = new Set(artists.map((a) => normalize(a.name)));
+  const streamingsArtists: Artist[] = [];
+  for (const r of ranking) {
+    if (r.sello !== "Streamings") continue;
+    const key = normalize(r.artist_name);
+    if (knownNames.has(key)) continue;
+    knownNames.add(key);
+    streamingsArtists.push({
+      id: slugify(r.artist_name),
+      name: r.artist_name,
+      aliases: [],
+      sello: "Streamings",
+      instagram: null,
+      tiktok: null,
+      youtube: null,
+      spotify: null,
+      chartmetricId: null,
+      photoUrl: r.image_url,
+      chartPosition: null,
+      estadoGeneral: null,
+      genero: null,
+      updatedAt: null,
+    });
+  }
+  const allArtists = [...artists, ...streamingsArtists];
+
   // An artist whose contract with the label ended shouldn't show up as part
   // of the active roster, even though their past catalog stays intact
   // everywhere else in the app.
@@ -73,7 +104,7 @@ export async function getManagementArtistOverview(): Promise<ManagementArtistRow
     contracts.filter((c) => c.estado === "Rescindido").map((c) => normalize(c.artist))
   );
 
-  const rows: ManagementArtistRow[] = artists
+  const rows: ManagementArtistRow[] = allArtists
     .filter((a) => !rescindedNames.has(normalize(a.name)))
     .map((a: Artist) => {
       const key = normalize(a.name);

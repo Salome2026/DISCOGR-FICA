@@ -9,7 +9,7 @@ import UpcomingReleasesList from "./UpcomingReleasesList";
 export default function ManagementHomePage() {
   return (
     <RequireRole allow={["management"]}>
-      <ManagementShell title="Management">
+      <ManagementShell>
         <ArtistGrid />
         <div className="mgmt-section">
           <div className="mgmt-section-label">Calendario de lanzamientos</div>

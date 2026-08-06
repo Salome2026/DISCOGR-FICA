@@ -98,13 +98,15 @@ export default function ArtistGrid() {
   return (
     <div className="mgmt-section">
       <style>{`
-        .mgrid-toolbar { position: sticky; top: 108px; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: var(--glass-bg-strong); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 1.25rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); box-shadow: var(--shadow-glass); }
+        .mgrid-toolbar { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: var(--glass-bg-strong); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 1.25rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); box-shadow: var(--shadow-glass); }
         .mgrid-search { flex: 1; min-width: 200px; background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 8px 12px; color: var(--text-1); font-size: 13px; font-family: inherit; }
         .mgrid-toolbar select { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 8px 12px; color: var(--text-1); font-size: 12.5px; font-family: inherit; }
 
         .mgrid-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
         .mgrid-card { position: relative; display: flex; flex-direction: column; gap: 10px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 1.25rem; color: var(--text-1); box-shadow: var(--shadow-glass); backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out); }
         .mgrid-card:hover { transform: translateY(-2px); border-color: var(--accent-color-glow); }
+        .mgrid-card.mgrid-card-upcoming { border-color: var(--crit); background: var(--crit-bg); }
+        .mgrid-card.mgrid-card-upcoming:hover { border-color: var(--crit-ink); }
         .mgrid-card-link { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
         .mgrid-avatar-img { width: 46px; height: 46px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
         .mgrid-avatar-fallback { width: 46px; height: 46px; border-radius: 12px; background: var(--accent-gradient); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0; }
@@ -194,7 +196,7 @@ export default function ArtistGrid() {
               the persisted ranking is only ever changed via
               /panel/management/orden. */}
           {visibleArtists.map((a) => (
-            <div key={a.id} className="mgrid-card">
+            <div key={a.id} className={`mgrid-card${a.nextRelease ? " mgrid-card-upcoming" : ""}`}>
               {a.chartPosition != null && <span className="mgrid-badge">#{a.chartPosition}</span>}
               <Link href={`/artistas/${encodeURIComponent(a.name)}`} className="mgrid-card-link">
                 <Avatar name={a.name} url={a.photoUrl} />
@@ -205,11 +207,6 @@ export default function ArtistGrid() {
               </Link>
               <div className="mgrid-card-foot">
                 <span>{a.monthlyListeners != null ? `${a.monthlyListeners.toLocaleString("es-AR")} oyentes/mes` : "Sin datos de oyentes"}</span>
-                <span>
-                  {a.nextRelease
-                    ? `Próximo: ${a.nextRelease.titulo} · ${new Date(a.nextRelease.fecha + "T00:00:00").toLocaleDateString("es-AR")}`
-                    : "Sin próximo lanzamiento"}
-                </span>
               </div>
               {a.estadoGeneral && <span className="mgrid-estado">{a.estadoGeneral}</span>}
               <button className="mgrid-edit-btn" onClick={() => setEditing(a)}>

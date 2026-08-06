@@ -177,3 +177,92 @@ export async function deleteShow(id: string): Promise<void> {
   await ensureBookingSchema();
   await sql`DELETE FROM booking_shows WHERE id = ${id}`;
 }
+
+export type BookingContact = {
+  id: string;
+  nombre: string;
+  apellido: string | null;
+  venueNombre: string | null;
+  telefono: string | null;
+  whatsapp: string | null;
+  instagram: string | null;
+  email: string | null;
+  observaciones: string | null;
+  createdAt: string;
+  updatedBy: string | null;
+  updatedAt: string | null;
+};
+
+function rowToContact(r: Record<string, unknown>): BookingContact {
+  return {
+    id: r.id as string,
+    nombre: r.nombre as string,
+    apellido: (r.apellido as string | null) ?? null,
+    venueNombre: (r.venue_nombre as string | null) ?? null,
+    telefono: (r.telefono as string | null) ?? null,
+    whatsapp: (r.whatsapp as string | null) ?? null,
+    instagram: (r.instagram as string | null) ?? null,
+    email: (r.email as string | null) ?? null,
+    observaciones: (r.observaciones as string | null) ?? null,
+    createdAt: r.created_at as string,
+    updatedBy: (r.updated_by as string | null) ?? null,
+    updatedAt: (r.updated_at as string | null) ?? null,
+  };
+}
+
+export async function listContacts(): Promise<BookingContact[]> {
+  await ensureBookingSchema();
+  const { rows } = await sql`SELECT * FROM booking_contacts ORDER BY nombre ASC`;
+  return rows.map(rowToContact);
+}
+
+export type NewContact = {
+  nombre: string;
+  apellido: string | null;
+  venueNombre: string | null;
+  telefono: string | null;
+  whatsapp: string | null;
+  instagram: string | null;
+  email: string | null;
+  observaciones: string | null;
+  createdBy: string;
+};
+
+export async function createContact(input: NewContact): Promise<BookingContact> {
+  await ensureBookingSchema();
+  const id = `contact-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const { rows } = await sql`
+    INSERT INTO booking_contacts
+      (id, nombre, apellido, venue_nombre, telefono, whatsapp, instagram, email, observaciones, updated_by, updated_at)
+    VALUES
+      (${id}, ${input.nombre}, ${input.apellido}, ${input.venueNombre}, ${input.telefono}, ${input.whatsapp},
+       ${input.instagram}, ${input.email}, ${input.observaciones}, ${input.createdBy}, now())
+    RETURNING *
+  `;
+  return rowToContact(rows[0]);
+}
+
+export async function updateContact(id: string, input: NewContact): Promise<BookingContact | null> {
+  await ensureBookingSchema();
+  const { rows } = await sql`
+    UPDATE booking_contacts SET
+      nombre = ${input.nombre},
+      apellido = ${input.apellido},
+      venue_nombre = ${input.venueNombre},
+      telefono = ${input.telefono},
+      whatsapp = ${input.whatsapp},
+      instagram = ${input.instagram},
+      email = ${input.email},
+      observaciones = ${input.observaciones},
+      updated_by = ${input.createdBy},
+      updated_at = now()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return rows[0] ? rowToContact(rows[0]) : null;
+}
+
+export async function deleteContact(id: string): Promise<void> {
+  await ensureBookingSchema();
+  await sql`DELETE FROM booking_contacts WHERE id = ${id}`;
+}

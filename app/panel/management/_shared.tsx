@@ -12,16 +12,16 @@ export const MANAGEMENT_STYLES = `
   }
   .mgmt-watermark {
     position: fixed; top: 0; left: 0; z-index: 0;
-    width: 100vw;
+    max-width: 50vw;
     overflow: hidden;
-    font-size: clamp(110px, 16vw, 240px);
+    font-size: clamp(48px, 6vw, 84px);
     font-weight: 800;
     letter-spacing: -.02em;
     line-height: 1;
     white-space: nowrap;
     color: var(--text-1);
     opacity: 0.05;
-    transform: translate(-3%, -16%);
+    transform: translate(-2%, -10%);
     pointer-events: none;
     user-select: none;
   }

@@ -1,3 +1,4 @@
+import { sql } from "@vercel/postgres";
 import { listAllArtists, slugify, type Artist } from "./artists";
 import { getRankingLatest } from "./listeners";
 import { getManagementReleaseEvents } from "./managementReleases";
@@ -73,14 +74,13 @@ export async function getManagementArtistOverview(): Promise<ManagementArtistRow
   // with real Spotify/Chartmetric data shows up regardless of roster source.
   const knownNames = new Set(artists.map((a) => normalize(a.name)));
   const streamingsArtists: Artist[] = [];
-  for (const r of ranking) {
-    if (r.sello !== "Streamings") continue;
-    const key = normalize(r.artist_name);
-    if (knownNames.has(key)) continue;
+  function addStreamingsArtist(name: string) {
+    const key = normalize(name);
+    if (knownNames.has(key)) return;
     knownNames.add(key);
     streamingsArtists.push({
-      id: slugify(r.artist_name),
-      name: r.artist_name,
+      id: slugify(name),
+      name,
       aliases: [],
       sello: "Streamings",
       instagram: null,
@@ -88,12 +88,27 @@ export async function getManagementArtistOverview(): Promise<ManagementArtistRow
       youtube: null,
       spotify: null,
       chartmetricId: null,
-      photoUrl: r.image_url,
+      photoUrl: imageByName.get(key) ?? null,
       chartPosition: null,
       estadoGeneral: null,
       genero: null,
       updatedAt: null,
     });
+  }
+  for (const r of ranking) {
+    if (r.sello === "Streamings") addStreamingsArtist(r.artist_name);
+  }
+  // Beyond the handful with real Chartmetric data, every other participant
+  // credited on a "Streamings" catalog track (e.g. a featured artist on a
+  // La Juntada De Los Artistas compilation) has no roster entry anywhere
+  // else in the app — surface them too, using a monogram fallback until a
+  // photo is set manually.
+  const { rows: streamingsParticipantRows } = await sql`
+    SELECT DISTINCT jsonb_array_elements_text(participants) AS artist
+    FROM catalog_tracks WHERE sello = 'Streamings'
+  `;
+  for (const r of streamingsParticipantRows) {
+    addStreamingsArtist(r.artist as string);
   }
   const allArtists = [...artists, ...streamingsArtists];
 

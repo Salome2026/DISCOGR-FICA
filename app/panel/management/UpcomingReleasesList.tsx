@@ -41,6 +41,8 @@ export default function UpcomingReleasesList() {
   const [error, setError] = useState<string | null>(null);
   const [sortMode, setSortMode] = useState<SortMode>("proximos");
   const [selected, setSelected] = useState<CalendarEvent | null>(null);
+  const [query, setQuery] = useState("");
+  const [selloFilter, setSelloFilter] = useState("");
 
   useEffect(() => {
     fetch("/api/management/releases")
@@ -114,6 +116,21 @@ export default function UpcomingReleasesList() {
     return sorted;
   }, [rows, sortMode]);
 
+  const selloOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const ev of events) if (ev.sello) set.add(ev.sello);
+    return [...set].sort((a, b) => a.localeCompare(b, "es"));
+  }, [events]);
+
+  const visibleEvents = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return events.filter((ev) => {
+      if (q && !ev.artista.toLowerCase().includes(q) && !ev.titulo.toLowerCase().includes(q)) return false;
+      if (selloFilter && ev.sello !== selloFilter) return false;
+      return true;
+    });
+  }, [events, query, selloFilter]);
+
   async function saveMarketingPlan() {
     // Read-only in Management — marketing plan editing lives in PM/Dashboard.
   }
@@ -125,6 +142,9 @@ export default function UpcomingReleasesList() {
         .mgupc-sort { display: flex; gap: 3px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-pill); padding: 3px; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); flex-wrap: wrap; }
         .mgupc-sort-btn { border: none; background: transparent; border-radius: var(--radius-pill); padding: 6px 13px; font-size: 12px; font-weight: 600; color: var(--text-2); cursor: pointer; }
         .mgupc-sort-btn.active { background: var(--accent-glass-bg); color: var(--text-1); }
+        .mgupc-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+        .mgupc-search { flex: 1; min-width: 200px; background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 8px 12px; color: var(--text-1); font-size: 13px; font-family: inherit; }
+        .mgupc-filters select { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 8px 12px; color: var(--text-1); font-size: 12.5px; font-family: inherit; }
         .mgupc-list { display: flex; flex-direction: column; gap: 10px; }
         .mgupc-row { display: flex; align-items: center; gap: 14px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: .9rem 1.1rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); }
         .mgupc-cover { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
@@ -149,13 +169,32 @@ export default function UpcomingReleasesList() {
         </div>
       </div>
 
+      <div className="mgupc-filters">
+        <input
+          className="mgupc-search"
+          type="text"
+          placeholder="Buscar por artista o título..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <select value={selloFilter} onChange={(e) => setSelloFilter(e.target.value)}>
+          <option value="">Todos los sellos</option>
+          {selloOptions.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+      </div>
+
       {error && <p className="mgupc-empty">Error: {error}</p>}
       {rows === null && !error && <p className="mgupc-empty">Cargando lanzamientos...</p>}
       {rows !== null && events.length === 0 && <p className="mgupc-empty">No hay lanzamientos próximos.</p>}
+      {events.length > 0 && visibleEvents.length === 0 && (
+        <p className="mgupc-empty">Ningún lanzamiento coincide con los filtros.</p>
+      )}
 
-      {events.length > 0 && (
+      {visibleEvents.length > 0 && (
         <div className="mgupc-list">
-          {events.map((ev) => (
+          {visibleEvents.map((ev) => (
             <div key={ev.key} className="mgupc-row">
               {ev.portadaUrl ? (
                 <img src={ev.portadaUrl} alt="" className="mgupc-cover" />

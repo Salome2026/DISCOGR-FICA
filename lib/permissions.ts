@@ -25,6 +25,8 @@ export const PERMISSIONS = [
   "editar_rizzvor_proyectos",
   "ver_management",
   "editar_management",
+  "ver_booking",
+  "editar_booking",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -35,6 +37,7 @@ export const ROLES = [
   "legal",
   "editorial",
   "management",
+  "booking",
   "distribucion",
   "marketing",
   "artista",
@@ -49,7 +52,7 @@ export type AccountType = "empresa" | "artista";
 // Roles available for each landing-page account type. An "artista" role only makes
 // sense behind the Artista card; company roles only behind the Empresa card.
 export const ROLES_BY_ACCOUNT_TYPE: Record<AccountType, Role[]> = {
-  empresa: ["admin", "project_manager", "legal", "editorial", "management", "distribucion", "marketing", "invitado"],
+  empresa: ["admin", "project_manager", "legal", "editorial", "management", "booking", "distribucion", "marketing", "invitado"],
   artista: ["artista", "representante"],
 };
 
@@ -79,6 +82,8 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   editorial: ["ver_publishing", "editar_publishing"],
   // Same isolation principle again — its own module, own permissions.
   management: ["ver_management", "editar_management"],
+  // Same isolation principle again — its own module, own permissions.
+  booking: ["ver_booking", "editar_booking"],
   distribucion: ["editar_acuerdos", "aprobar_releases", "ver_estadisticas"],
   marketing: ["ver_estadisticas", "exportar_datos"],
   artista: ["subir_audio", "subir_portada"],
@@ -93,6 +98,7 @@ export const ROLE_HOME: Record<Role, string> = {
   legal: "/panel/legal",
   editorial: "/panel/publishing",
   management: "/panel/management",
+  booking: "/panel/booking",
   distribucion: "/panel/distribucion",
   marketing: "/panel/marketing",
   artista: "/panel/artista",

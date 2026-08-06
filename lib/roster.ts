@@ -44,6 +44,7 @@ export const SELLO_ROSTERS: Partial<Record<Sello, RosterArtist[]>> = {
     { id: "matias-mareco", name: "Matias Mareco", aliases: ["matias mareco"] },
     { id: "sergio-ponce", name: "Sergio Ponce", aliases: ["sergio ponce"] },
     { id: "pola-dj", name: "Pola DJ", aliases: ["pola dj"] },
+    { id: "acit-x", name: "Acit x", aliases: ["acit x"] },
   ],
   // Caserio Records intentionally has no entry here. This roster only
   // classifies tracks in the static data/tracks.json snapshot (an old

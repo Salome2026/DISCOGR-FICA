@@ -51,6 +51,7 @@ export default function CatalogoDistribuido() {
           <CatalogTracksPanel
             apiUrl="/api/catalog/tracks?unassigned=1"
             emptyMessage="No hay fonogramas sin asignar. Todo el catálogo tiene un sello."
+            showEstado={false}
           />
         </div>
       </div>

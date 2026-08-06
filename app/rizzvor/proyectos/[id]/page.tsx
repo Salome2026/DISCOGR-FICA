@@ -194,11 +194,12 @@ export default function ProyectoDetailPage({ params }: { params: Promise<{ id: s
         .card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 1.4rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); box-shadow: var(--shadow-glass); }
         .card-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .07em; font-weight: 500; }
 
-        .rzd-header { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
-        .rzd-avatar-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
-        .rzd-avatar-img { width: 80px; height: 80px; border-radius: 16px; object-fit: cover; }
-        .rzd-avatar-fallback { width: 80px; height: 80px; border-radius: 16px; background: var(--accent-gradient); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 26px; }
+        .rzd-header { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+        .rzd-avatar-wrap { position: relative; width: 160px; height: 160px; flex-shrink: 0; }
+        .rzd-avatar-img { width: 160px; height: 160px; border-radius: 20px; object-fit: cover; }
+        .rzd-avatar-fallback { width: 160px; height: 160px; border-radius: 20px; background: var(--accent-gradient); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 48px; }
         .rzd-avatar-upload { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .rzd-notas { width: 100%; min-height: 110px; background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: 12px 14px; color: var(--text-1); font-size: 13.5px; line-height: 1.6; font-family: inherit; resize: vertical; }
         .rzd-name { font-size: 24px; font-weight: 700; margin: 0; }
         .rzd-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
         .rzd-chip { font-size: 11.5px; background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 100px; padding: 4px 11px; color: var(--text-2); }
@@ -310,6 +311,18 @@ export default function ProyectoDetailPage({ params }: { params: Promise<{ id: s
               <ConvertButton project={project} songs={songs} files={files} onConverted={reload} />
             </div>
           </div>
+        </div>
+
+        <div className="card">
+          <div className="card-label">Notas</div>
+          <textarea
+            className="rzd-notas"
+            style={{ marginTop: 8 }}
+            placeholder="Concepto, contexto, explicación del proyecto..."
+            defaultValue={project.notas ?? ""}
+            key={project.notas}
+            onBlur={(e) => patchProject({ notas: e.target.value || null })}
+          />
         </div>
 
         <div className="card">

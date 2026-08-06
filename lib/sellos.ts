@@ -6,6 +6,7 @@ export const SELLOS = [
   "Cach House",
   "Kids",
   "Sector Nine",
+  "Sigel",
   "Streamings",
 ] as const;
 
@@ -17,7 +18,7 @@ export type Sello = (typeof SELLOS)[number];
 // to" Streamings (sello field) and, within that, to one project
 // (streaming_project field) — same two-level split as sello vs distribuidora.
 
-const MAWZ_ARTISTS = ["lit killah", "gusty dj", "gusty djz"];
+const MAWZ_ARTISTS = ["lit killah", "gusty dj", "gusty djz", "juli savioli"];
 // Full Indyana Records roster, from the artist dropdown in the Finanzas Artista app.
 // Note: "gusty dj" is checked against MAWZ first (see assignSello order below), so it
 // resolves to MAWZ Records even though it also appears on Indyana's own roster.
@@ -48,6 +49,12 @@ const INDYANA_ARTISTS = [
   "matias mareco",
   "sergio ponce",
   "pola dj",
+  "franco arroyo",
+  "acit x",
+  "dina",
+  "dami bravo",
+  "maga",
+  "maxi y la champions liga",
 ];
 const CASERIO_ARTISTS = [
   "eze remix",
@@ -61,6 +68,8 @@ const CASERIO_ARTISTS = [
   "tomi rmx",
   "sossa",
 ];
+const SECTOR_NINE_ARTISTS = ["sector nine"];
+const SIGEL_ARTISTS = ["al rojo vivo", "los totora"];
 
 function norm(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
@@ -73,5 +82,7 @@ export function assignSello(artist: string): Sello | null {
   if (MAWZ_ARTISTS.some((n) => a.includes(n))) return "MAWZ Records";
   if (INDYANA_ARTISTS.some((n) => a.includes(n))) return "Indyana Records";
   if (CASERIO_ARTISTS.some((n) => a.includes(n))) return "Caserio Records";
+  if (SECTOR_NINE_ARTISTS.some((n) => a.includes(n))) return "Sector Nine";
+  if (SIGEL_ARTISTS.some((n) => a.includes(n))) return "Sigel";
   return null;
 }

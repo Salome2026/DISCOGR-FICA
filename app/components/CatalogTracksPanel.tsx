@@ -75,7 +75,15 @@ function withRows(list: Track[]) {
 
 type DrillState = { title: string; rows: Track[] } | null;
 
-export default function CatalogTracksPanel({ apiUrl, emptyMessage }: { apiUrl: string; emptyMessage: string }) {
+export default function CatalogTracksPanel({
+  apiUrl,
+  emptyMessage,
+  showEstado = true,
+}: {
+  apiUrl: string;
+  emptyMessage: string;
+  showEstado?: boolean;
+}) {
   const [tracks, setTracks] = useState<Track[] | null>(null);
   const [tracksError, setTracksError] = useState<string | null>(null);
   const [acuerdos, setAcuerdos] = useState<Release[] | null>(null);
@@ -266,27 +274,29 @@ export default function CatalogTracksPanel({ apiUrl, emptyMessage }: { apiUrl: s
             </div>
           </div>
 
-          <div className="card">
-            <div className="card-label" style={{ marginBottom: 8 }}>Estado de los acuerdos</div>
-            {!acuerdos ? (
-              <p className="empty">Cargando...</p>
-            ) : (
-              <div className="ctp-estado-bars">
-                {estadoOrder.map((label) => {
-                  const count = estadoCounts?.[label] ?? 0;
-                  return (
-                    <div className="ctp-ebar-row" key={label}>
-                      <span className="ctp-ebar-name">{label}</span>
-                      <div className="ctp-ebar-track">
-                        <div className="ctp-ebar-fill" style={{ width: `${(count / maxEstado) * 100}%`, background: estadoColor[label] || "var(--gold)" }} />
+          {showEstado && (
+            <div className="card">
+              <div className="card-label" style={{ marginBottom: 8 }}>Estado de los acuerdos</div>
+              {!acuerdos ? (
+                <p className="empty">Cargando...</p>
+              ) : (
+                <div className="ctp-estado-bars">
+                  {estadoOrder.map((label) => {
+                    const count = estadoCounts?.[label] ?? 0;
+                    return (
+                      <div className="ctp-ebar-row" key={label}>
+                        <span className="ctp-ebar-name">{label}</span>
+                        <div className="ctp-ebar-track">
+                          <div className="ctp-ebar-fill" style={{ width: `${(count / maxEstado) * 100}%`, background: estadoColor[label] || "var(--gold)" }} />
+                        </div>
+                        <span className="ctp-ebar-val">{count}</span>
                       </div>
-                      <span className="ctp-ebar-val">{count}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="ctp-toolbar">
             <input

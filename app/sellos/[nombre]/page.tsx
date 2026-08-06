@@ -22,8 +22,9 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
   // Lanzamientos — same module/data model for every sello here, just scoped
   // by the `sello` field (see lib/db/rizzvorProjects.ts).
   const hasProyectos = selloName === "Rizzvor" || selloName === "Kids";
+  // Proyectos is the default landing tab for these sellos — pass ?tab=lanzamientos to land there instead.
   const [tab, setTab] = useState<"lanzamientos" | "proyectos">(
-    hasProyectos && searchParams.get("tab") === "proyectos" ? "proyectos" : "lanzamientos"
+    hasProyectos && searchParams.get("tab") !== "lanzamientos" ? "proyectos" : "lanzamientos"
   );
 
   // Streamings became a container of projects (/streamings) and La Juntada de
@@ -94,16 +95,16 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
         {hasProyectos && canSeeProyectos && (
           <div className="sello-tabs">
             <button
-              className={`sello-tab${tab === "lanzamientos" ? " active" : ""}`}
-              onClick={() => setTab("lanzamientos")}
-            >
-              Lanzamientos
-            </button>
-            <button
               className={`sello-tab${tab === "proyectos" ? " active" : ""}`}
               onClick={() => setTab("proyectos")}
             >
               Proyectos
+            </button>
+            <button
+              className={`sello-tab${tab === "lanzamientos" ? " active" : ""}`}
+              onClick={() => setTab("lanzamientos")}
+            >
+              Lanzamientos
             </button>
           </div>
         )}

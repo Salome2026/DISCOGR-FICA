@@ -1,9 +1,25 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+
+// The calendar next to this map loads its shows asynchronously and grows
+// once they arrive, which resizes this map's container after Leaflet has
+// already measured it — Leaflet has no way to know that happened on its own,
+// so without this it leaves the newly-revealed area blank/gray instead of
+// drawing tiles into it.
+function ResizeHandler() {
+  const map = useMap();
+  useEffect(() => {
+    const container = map.getContainer();
+    const observer = new ResizeObserver(() => map.invalidateSize());
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [map]);
+  return null;
+}
 
 type BookingShow = {
   id: string;
@@ -104,6 +120,7 @@ export default function ShowMap() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
             url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
+          <ResizeHandler />
           {markers.map((s) => (
             <Marker key={s.id} position={[s.lat as number, s.lng as number]} icon={redIcon}>
               <Popup>

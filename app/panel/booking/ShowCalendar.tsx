@@ -144,7 +144,7 @@ export default function ShowCalendar() {
         .bkc-new-btn { background: var(--accent-gradient); border: none; border-radius: 8px; padding: 9px 16px; color: var(--accent-ink); font-weight: 700; cursor: pointer; font-size: 13px; }
         .bkc-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; flex: 1; }
         .bkc-dayname { font-size: 12px; color: var(--text-2); font-weight: 600; text-align: center; padding: 2px 0 8px; text-transform: uppercase; letter-spacing: .06em; }
-        .bkc-cell { min-height: 90px; border-radius: 10px; border: 1px solid var(--line-soft); padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+        .bkc-cell { height: 92px; border-radius: 10px; border: 1px solid var(--line-soft); padding: 6px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
         .bkc-cell.outside { opacity: .35; }
         .bkc-cell.today { border-color: var(--accent-color); background: rgba(63,198,209,0.06); }
         .bkc-daynum { font-size: 13px; font-weight: 600; color: var(--text-1); }
@@ -194,7 +194,7 @@ export default function ShowCalendar() {
           {monthDays.map((d) => {
             const dayShows = showsByDay.get(toKey(d)) ?? [];
             const outside = d.getMonth() !== cursor.getMonth();
-            const visible = dayShows.slice(0, 3);
+            const visible = dayShows.slice(0, 2);
             const extra = dayShows.length - visible.length;
             return (
               <div key={d.toISOString()} className={`bkc-cell${outside ? " outside" : ""}${isSameDay(d, today) ? " today" : ""}`}>

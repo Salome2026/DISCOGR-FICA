@@ -10,12 +10,13 @@ import {
   type RizzvorProject,
 } from "@/lib/db/rizzvorProjects";
 
-// Pipeline-progress color scale — index into RIZZVOR_PROJECT_STATUSES maps
-// to a position along it, so a project's pill gets visibly "further along"
-// as it moves through the stages.
+// Pipeline-progress scale — index into RIZZVOR_PROJECT_STATUSES maps to a
+// position along it, so a project's pill gets visibly brighter (not a
+// different hue) the further along it is. Monochrome only, same as the
+// rest of the design system — no per-module accent colors.
 const STATUS_COLORS = [
-  "#6b6152", "#8a7c62", "#a89a72", "#c9a668", "#d99a4e",
-  "#c96a5a", "#8aa0c9", "#7fae6f", "#dcdde2",
+  "#4a4a52", "#5a5a63", "#6b6b75", "#7c7c87", "#8d8d99",
+  "#9e9eab", "#b0b0bd", "#c5c5d0", "#dcdde2",
 ];
 
 function statusColor(status: string): string {

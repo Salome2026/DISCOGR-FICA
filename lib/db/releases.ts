@@ -293,34 +293,3 @@ export async function getReleaseHistory(id: number) {
   return rows;
 }
 
-export type NextReleaseRow = {
-  artist_name: string;
-  sello: string | null;
-  fonograma_nombre: string;
-  estado: string;
-  distribuidora: string | null;
-  fecha_lanzamiento: string;
-  hora_lanzamiento: string | null;
-  portada_url: string | null;
-  group_id: number | null;
-  group_tipo: string | null;
-  group_nombre: string | null;
-};
-
-// One row per artist — their single soonest upcoming (non-archived, future)
-// release. track_number as the tiebreaker deterministically picks "track 1"
-// as the representative row for an EP/album.
-export async function getNextReleasePerArtist(): Promise<NextReleaseRow[]> {
-  await ensureReleasesSchema();
-  const { rows } = await sql`
-    SELECT DISTINCT ON (lower(r.artist_name))
-      r.artist_name, r.sello, r.fonograma_nombre, r.estado, r.distribuidora,
-      r.fecha_lanzamiento, r.hora_lanzamiento, r.portada_url, r.group_id,
-      g.tipo AS group_tipo, g.nombre AS group_nombre
-    FROM pm_releases r
-    LEFT JOIN pm_release_groups g ON g.id = r.group_id
-    WHERE r.archived = false AND r.fecha_lanzamiento >= CURRENT_DATE
-    ORDER BY lower(r.artist_name), r.fecha_lanzamiento ASC, r.track_number ASC NULLS LAST
-  `;
-  return rows as unknown as NextReleaseRow[];
-}

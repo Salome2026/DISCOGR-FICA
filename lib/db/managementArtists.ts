@@ -1,6 +1,6 @@
 import { listAllArtists, type Artist } from "./artists";
 import { getRankingLatest } from "./listeners";
-import { getNextReleasePerArtist } from "./releases";
+import { getManagementReleaseEvents } from "./managementReleases";
 import { listContracts } from "./legalContracts";
 
 // No shared foreign key connects artists, artist_listeners_daily
@@ -32,10 +32,10 @@ export type ManagementArtistRow = {
 // manually ranked yet. A manually set chartPosition still always wins and is
 // never recomputed live — that's the whole point of a curated chart position.
 export async function getManagementArtistOverview(): Promise<ManagementArtistRow[]> {
-  const [artists, ranking, nextReleases, contracts] = await Promise.all([
+  const [artists, ranking, releaseEvents, contracts] = await Promise.all([
     listAllArtists(),
     getRankingLatest(),
-    getNextReleasePerArtist(),
+    getManagementReleaseEvents(),
     listContracts(),
   ]);
 
@@ -47,9 +47,17 @@ export async function getManagementArtistOverview(): Promise<ManagementArtistRow
     imageByName.set(key, r.image_url);
   }
 
+  // Soonest upcoming (today or later) event per artist — the merged event
+  // list also carries past pm_releases rows (the calendar needs those), so
+  // this filters and picks the earliest itself rather than trusting order.
+  const today = new Date().toISOString().slice(0, 10);
   const nextReleaseByName = new Map<string, ManagementArtistRow["nextRelease"]>();
-  for (const r of nextReleases) {
-    nextReleaseByName.set(normalize(r.artist_name), {
+  for (const r of releaseEvents) {
+    if (r.fecha_lanzamiento < today) continue;
+    const key = normalize(r.artist_name);
+    const existing = nextReleaseByName.get(key);
+    if (existing && existing.fecha <= r.fecha_lanzamiento) continue;
+    nextReleaseByName.set(key, {
       titulo: r.group_nombre ?? r.fonograma_nombre,
       fecha: r.fecha_lanzamiento,
       hora: r.hora_lanzamiento,

@@ -77,7 +77,15 @@ function publishStatus(fecha: string): { label: string; tone: "warn" | "good" } 
   return d.getTime() > today.getTime() ? { label: "Programado", tone: "warn" } : { label: "Publicado", tone: "good" };
 }
 
-export default function ReleaseCalendar({ className = "", readOnly = false }: { className?: string; readOnly?: boolean }) {
+export default function ReleaseCalendar({
+  className = "",
+  readOnly = false,
+  apiUrl = "/api/pm/releases",
+}: {
+  className?: string;
+  readOnly?: boolean;
+  apiUrl?: string;
+}) {
   const [rows, setRows] = useState<PmReleaseRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<"month" | "week" | "day">("month");
@@ -85,14 +93,14 @@ export default function ReleaseCalendar({ className = "", readOnly = false }: { 
   const [selected, setSelected] = useState<CalendarEvent | null>(null);
 
   useEffect(() => {
-    fetch("/api/pm/releases")
+    fetch(apiUrl)
       .then((r) => r.json())
       .then((d) => {
         if (d.error) setError(d.error);
         else setRows(d.releases);
       })
       .catch((e) => setError(String(e)));
-  }, []);
+  }, [apiUrl]);
 
   const events = useMemo(() => {
     if (!rows) return [] as CalendarEvent[];

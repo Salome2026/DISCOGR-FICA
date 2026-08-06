@@ -13,7 +13,7 @@ export default function ManagementHomePage() {
         <ArtistGrid />
         <div className="mgmt-section">
           <div className="mgmt-section-label">Calendario de lanzamientos</div>
-          <ReleaseCalendar readOnly />
+          <ReleaseCalendar readOnly apiUrl="/api/management/releases" />
         </div>
         <UpcomingReleasesList />
       </ManagementShell>

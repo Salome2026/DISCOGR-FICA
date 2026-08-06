@@ -106,7 +106,7 @@ export default function ArtistGrid() {
                 <span>{a.monthlyListeners != null ? `${a.monthlyListeners.toLocaleString("es-AR")} oyentes/mes` : "Sin datos de oyentes"}</span>
                 <span>
                   {a.nextRelease
-                    ? `Próximo: ${a.nextRelease.titulo} · ${new Date(a.nextRelease.fecha).toLocaleDateString("es-AR")}`
+                    ? `Próximo: ${a.nextRelease.titulo} · ${new Date(a.nextRelease.fecha + "T00:00:00").toLocaleDateString("es-AR")}`
                     : "Sin próximo lanzamiento"}
                 </span>
               </div>

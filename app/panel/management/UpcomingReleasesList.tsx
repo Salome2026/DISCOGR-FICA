@@ -43,7 +43,7 @@ export default function UpcomingReleasesList() {
   const [selected, setSelected] = useState<CalendarEvent | null>(null);
 
   useEffect(() => {
-    fetch("/api/pm/releases")
+    fetch("/api/management/releases")
       .then((r) => r.json())
       .then((d) => {
         if (d.error) setError(d.error);

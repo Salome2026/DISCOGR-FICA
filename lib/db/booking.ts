@@ -120,6 +120,15 @@ export async function listShows(): Promise<BookingShow[]> {
   return rows.map(rowToShow);
 }
 
+// Many sheet-imported shows are for DJs/performers who aren't on any label
+// roster and have no row in the shared `artists` table — this is how the
+// artist picker (and photo lookup) find out they exist at all.
+export async function listDistinctShowArtistNames(): Promise<string[]> {
+  await ensureBookingSchema();
+  const { rows } = await sql`SELECT DISTINCT artist_name FROM booking_shows ORDER BY artist_name ASC`;
+  return rows.map((r) => r.artist_name as string);
+}
+
 export async function getShow(id: string): Promise<BookingShow | null> {
   await ensureBookingSchema();
   const { rows } = await sql`SELECT * FROM booking_shows WHERE id = ${id}`;

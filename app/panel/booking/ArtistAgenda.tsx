@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { upload } from "@vercel/blob/client";
 
 type BookingShow = {
   id: string;
@@ -40,13 +41,38 @@ export default function ArtistAgenda() {
   const [artistName, setArtistName] = useState("");
   const [desde, setDesde] = useState(firstOfMonth());
   const [hasta, setHasta] = useState(lastOfMonth());
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  function reloadArtists() {
+    fetch("/api/booking/artists").then((r) => r.json()).then((d) => { if (!d.error) setArtists(d.artists); }).catch(() => {});
+  }
 
   useEffect(() => {
     fetch("/api/booking/shows").then((r) => r.json()).then((d) => { if (!d.error) setShows(d.shows); }).catch(() => {});
-    fetch("/api/booking/artists").then((r) => r.json()).then((d) => { if (!d.error) setArtists(d.artists); }).catch(() => {});
+    reloadArtists();
   }, []);
 
   const selectedArtist = artists.find((a) => normalize(a.name) === normalize(artistName)) ?? null;
+
+  async function handlePhotoChange(file: File) {
+    if (!artistName.trim()) return;
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const blob = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/booking/upload" });
+      await fetch("/api/booking/artists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: artistName, photoUrl: blob.url }),
+      });
+      reloadArtists();
+    } catch (err) {
+      setUploadError(String(err));
+    } finally {
+      setUploading(false);
+    }
+  }
 
   const showsInRange = useMemo(() => {
     if (!shows || !artistName) return [];
@@ -73,6 +99,10 @@ export default function ArtistAgenda() {
         .bkag-summary { display: flex; align-items: center; gap: 14px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 1rem 1.2rem; margin-bottom: 1rem; }
         .bkag-avatar-img { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
         .bkag-avatar-fallback { width: 44px; height: 44px; border-radius: 12px; background: var(--accent-gradient); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0; }
+        .bkag-avatar-upload { position: relative; cursor: pointer; flex-shrink: 0; }
+        .bkag-avatar-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+        .bkag-avatar-upload-hint { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); border-radius: 12px; color: #fff; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; opacity: 0; transition: opacity .15s; pointer-events: none; }
+        .bkag-avatar-upload:hover .bkag-avatar-upload-hint { opacity: 1; }
         .bkag-summary-text { font-size: 13.5px; color: var(--text-2); }
         .bkag-summary-text strong { color: var(--text-1); font-size: 15px; }
         .bkag-list { display: flex; flex-direction: column; gap: 8px; }
@@ -110,10 +140,24 @@ export default function ArtistAgenda() {
       {artistName && shows && (
         <>
           <div className="bkag-summary">
-            <Avatar name={artistName} url={selectedArtist?.photoUrl ?? null} />
+            <label className="bkag-avatar-upload" title="Cambiar foto">
+              <Avatar name={artistName} url={selectedArtist?.photoUrl ?? null} />
+              <span className="bkag-avatar-upload-hint">{uploading ? "..." : "Editar"}</span>
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                disabled={uploading}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handlePhotoChange(f);
+                  e.target.value = "";
+                }}
+              />
+            </label>
             <div className="bkag-summary-text">
               <strong>{showsInRange.length}</strong> show{showsInRange.length === 1 ? "" : "s"} en el período
               {" · "}{totalDiasRango - showsInRange.length} de {totalDiasRango} días libres
+              {uploadError && <div style={{ color: "var(--crit-ink)", fontSize: 12 }}>{uploadError}</div>}
             </div>
           </div>
 

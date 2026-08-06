@@ -249,26 +249,7 @@ function ShowModal({
 
   if (show && show.source === "sheet") {
     return (
-      <div className="bkc-modal-overlay" onClick={onClose}>
-        <div className="bkc-modal" onClick={(e) => e.stopPropagation()}>
-          <h2>{show.artistName}</h2>
-          <p style={{ fontSize: 12.5, color: "var(--text-3)" }}>
-            Importado de la planilla de Google Sheets — solo lectura. Para corregirlo, editá la celda en la planilla.
-          </p>
-          <div className="bkc-field">
-            <label>Fecha</label>
-            <div>{new Date(show.fecha + "T00:00:00").toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}</div>
-          </div>
-          <div className="bkc-field">
-            <label>Detalle (texto de la celda)</label>
-            <div style={{ whiteSpace: "pre-wrap", fontSize: 13.5 }}>{show.notas}</div>
-          </div>
-          <div className="bkc-modal-actions">
-            <span />
-            <button type="button" className="bkc-btn-ghost" onClick={onClose}>Cerrar</button>
-          </div>
-        </div>
-      </div>
+      <SheetShowModal show={show} onClose={onClose} onSaved={onSaved} />
     );
   }
 
@@ -383,6 +364,131 @@ function ShowModal({
           </div>
         </div>
       </form>
+    </div>
+  );
+}
+
+// Sheet-imported shows are read-only for artist/fecha/notas (the sheet owns
+// those — a re-sync would just overwrite local edits), but the sheet has no
+// ciudad/provincia/país at all, so a synced show can never get a map pin on
+// its own. Ubicación is the one thing worth letting the team fill in by
+// hand: the sync's upsert only ever touches artist_name/fecha/notas, so this
+// survives every future re-sync untouched.
+function SheetShowModal({
+  show,
+  onClose,
+  onSaved,
+}: {
+  show: BookingShow;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [editingLocation, setEditingLocation] = useState(false);
+  const [ciudad, setCiudad] = useState(show.ciudad ?? "");
+  const [provincia, setProvincia] = useState(show.provincia ?? "");
+  const [pais, setPais] = useState(show.pais ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSaveLocation(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/booking/shows/${encodeURIComponent(show.id)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          artistName: show.artistName,
+          fecha: show.fecha,
+          hora: show.hora,
+          venue: show.venue,
+          ciudad: ciudad || null,
+          provincia: provincia || null,
+          pais: pais || null,
+          estado: show.estado,
+          contactoId: null,
+          notas: show.notas,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "No se pudo guardar.");
+        setSaving(false);
+        return;
+      }
+      onSaved();
+    } catch (err) {
+      setError(String(err));
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="bkc-modal-overlay" onClick={onClose}>
+      <div className="bkc-modal" onClick={(e) => e.stopPropagation()}>
+        <h2>{show.artistName}</h2>
+        <p style={{ fontSize: 12.5, color: "var(--text-3)" }}>
+          Importado de la planilla de Google Sheets — el artista, la fecha y el detalle se editan ahí,
+          no acá. La ubicación sí se puede completar acá para que el show aparezca en el mapa.
+        </p>
+        <div className="bkc-field">
+          <label>Fecha</label>
+          <div>{new Date(show.fecha + "T00:00:00").toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}</div>
+        </div>
+        <div className="bkc-field">
+          <label>Detalle (texto de la celda)</label>
+          <div style={{ whiteSpace: "pre-wrap", fontSize: 13.5 }}>{show.notas}</div>
+        </div>
+
+        {!editingLocation ? (
+          <div className="bkc-field">
+            <label>Ubicación</label>
+            <div style={{ fontSize: 13.5 }}>
+              {show.ciudad || show.provincia || show.pais
+                ? [show.ciudad, show.provincia, show.pais].filter(Boolean).join(", ")
+                : <span style={{ color: "var(--text-3)" }}>Sin ubicación — no aparece en el mapa todavía.</span>}
+            </div>
+            <button type="button" className="bkc-btn-ghost" style={{ alignSelf: "flex-start", marginTop: 4 }} onClick={() => setEditingLocation(true)}>
+              {show.ciudad || show.provincia || show.pais ? "Editar ubicación" : "Agregar ubicación"}
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSaveLocation} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div className="bkc-field-row">
+              <div className="bkc-field">
+                <label>Ciudad</label>
+                <input value={ciudad} onChange={(e) => setCiudad(e.target.value)} />
+              </div>
+              <div className="bkc-field">
+                <label>Provincia</label>
+                <input value={provincia} onChange={(e) => setProvincia(e.target.value)} />
+              </div>
+              <div className="bkc-field">
+                <label>País</label>
+                <input value={pais} onChange={(e) => setPais(e.target.value)} />
+              </div>
+            </div>
+            {error && <p style={{ color: "var(--crit-ink)", fontSize: 12.5 }}>{error}</p>}
+            <div className="bkc-modal-actions">
+              <span />
+              <div style={{ display: "flex", gap: 10 }}>
+                <button type="button" className="bkc-btn-ghost" onClick={() => setEditingLocation(false)} disabled={saving}>Cancelar</button>
+                <button type="submit" className="bkc-btn-primary" disabled={saving}>
+                  {saving ? "Guardando..." : "Guardar ubicación"}
+                </button>
+              </div>
+            </div>
+          </form>
+        )}
+
+        {!editingLocation && (
+          <div className="bkc-modal-actions">
+            <span />
+            <button type="button" className="bkc-btn-ghost" onClick={onClose}>Cerrar</button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

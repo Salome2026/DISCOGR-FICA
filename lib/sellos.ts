@@ -55,6 +55,10 @@ const INDYANA_ARTISTS = [
   "dami bravo",
   "maga",
   "maxi y la champions liga",
+  "yankee",
+  "el retutu",
+  "soy tiara",
+  "paco remix",
 ];
 const CASERIO_ARTISTS = [
   "eze remix",

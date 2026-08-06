@@ -17,6 +17,7 @@ export type ManagementArtistRow = {
   photoUrl: string | null;
   chartPosition: number | null;
   estadoGeneral: string | null;
+  genero: string | null;
   monthlyListeners: number | null;
   nextRelease: {
     titulo: string;
@@ -83,6 +84,7 @@ export async function getManagementArtistOverview(): Promise<ManagementArtistRow
         photoUrl: a.photoUrl ?? imageByName.get(key) ?? null,
         chartPosition: a.chartPosition,
         estadoGeneral: a.estadoGeneral,
+        genero: a.genero,
         monthlyListeners: listenersByName.get(key) ?? null,
         nextRelease: nextReleaseByName.get(key) ?? null,
       };

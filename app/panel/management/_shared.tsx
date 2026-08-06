@@ -17,7 +17,7 @@ export const MANAGEMENT_STYLES = `
     color: var(--text-3);
     pointer-events: none;
   }
-  .mgmt-inner { max-width: 1180px; margin: 0 auto; padding: 7rem 2rem 0; }
+  .mgmt-inner { max-width: 1680px; margin: 0 auto; padding: 7rem 2.5rem 0; }
   .mgmt-topbar { display:flex; justify-content:space-between; align-items:flex-start; gap: 16px; margin-bottom: 2rem; flex-wrap: wrap; }
   .mgmt-kicker { font-size: 11px; color: var(--text-3); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; font-weight: 600; }
   .mgmt-title { font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -.02em; }

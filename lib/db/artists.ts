@@ -25,10 +25,13 @@ export function ensureArtistsSchema(): Promise<void> {
       `;
       // Management module fields — a fixed (manually curated, not
       // dynamically computed) chart position, a curation photo separate
-      // from Rizzvor's own per-project photos, and a general status.
+      // from Rizzvor's own per-project photos, a general status, and a
+      // musical genre (same GENEROS list as Rizzvor's per-project genero
+      // column, but this is a separate column on a different table).
       await sql`ALTER TABLE artists ADD COLUMN IF NOT EXISTS photo_url TEXT`;
       await sql`ALTER TABLE artists ADD COLUMN IF NOT EXISTS chart_position INTEGER`;
       await sql`ALTER TABLE artists ADD COLUMN IF NOT EXISTS estado_general TEXT`;
+      await sql`ALTER TABLE artists ADD COLUMN IF NOT EXISTS genero TEXT`;
       await sql`CREATE INDEX IF NOT EXISTS artists_chart_position_idx ON artists (chart_position) WHERE chart_position IS NOT NULL`;
     })();
   }
@@ -48,6 +51,7 @@ export type Artist = {
   photoUrl: string | null;
   chartPosition: number | null;
   estadoGeneral: string | null;
+  genero: string | null;
   updatedAt: string | null;
 };
 
@@ -88,6 +92,7 @@ function rowToArtist(r: Record<string, unknown>): Artist {
     photoUrl: (r.photo_url as string | null) ?? null,
     chartPosition: (r.chart_position as number | null) ?? null,
     estadoGeneral: (r.estado_general as string | null) ?? null,
+    genero: (r.genero as string | null) ?? null,
     updatedAt: (r.updated_at as string | null) ?? null,
   };
 }
@@ -120,6 +125,7 @@ export async function listAllArtists(): Promise<Artist[]> {
       photoUrl: null,
       chartPosition: null,
       estadoGeneral: null,
+      genero: null,
       updatedAt: null,
     }));
 
@@ -202,7 +208,7 @@ export async function upsertArtist(input: {
 export async function updateArtistManagementFields(
   id: string,
   name: string,
-  input: { photoUrl?: string | null; chartPosition?: number | null; estadoGeneral?: string | null },
+  input: { photoUrl?: string | null; chartPosition?: number | null; estadoGeneral?: string | null; genero?: string | null },
   actorEmail: string
 ): Promise<Artist> {
   await ensureArtistsSchema();
@@ -210,13 +216,15 @@ export async function updateArtistManagementFields(
   const photoUrl = input.photoUrl !== undefined ? input.photoUrl : current?.photoUrl ?? null;
   const chartPosition = input.chartPosition !== undefined ? input.chartPosition : current?.chartPosition ?? null;
   const estadoGeneral = input.estadoGeneral !== undefined ? input.estadoGeneral : current?.estadoGeneral ?? null;
+  const genero = input.genero !== undefined ? input.genero : current?.genero ?? null;
   const { rows } = await sql`
-    INSERT INTO artists (id, name, aliases, sello, photo_url, chart_position, estado_general, updated_by, updated_at)
-    VALUES (${id}, ${name}, '[]'::jsonb, ${current?.sello ?? null}, ${photoUrl}, ${chartPosition}, ${estadoGeneral}, ${actorEmail}, now())
+    INSERT INTO artists (id, name, aliases, sello, photo_url, chart_position, estado_general, genero, updated_by, updated_at)
+    VALUES (${id}, ${name}, '[]'::jsonb, ${current?.sello ?? null}, ${photoUrl}, ${chartPosition}, ${estadoGeneral}, ${genero}, ${actorEmail}, now())
     ON CONFLICT (id) DO UPDATE SET
       photo_url = EXCLUDED.photo_url,
       chart_position = EXCLUDED.chart_position,
       estado_general = EXCLUDED.estado_general,
+      genero = EXCLUDED.genero,
       updated_by = EXCLUDED.updated_by,
       updated_at = now()
     RETURNING *

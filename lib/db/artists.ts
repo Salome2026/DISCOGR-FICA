@@ -23,6 +23,13 @@ export function ensureArtistsSchema(): Promise<void> {
           updated_at TIMESTAMPTZ
         )
       `;
+      // Management module fields — a fixed (manually curated, not
+      // dynamically computed) chart position, a curation photo separate
+      // from Rizzvor's own per-project photos, and a general status.
+      await sql`ALTER TABLE artists ADD COLUMN IF NOT EXISTS photo_url TEXT`;
+      await sql`ALTER TABLE artists ADD COLUMN IF NOT EXISTS chart_position INTEGER`;
+      await sql`ALTER TABLE artists ADD COLUMN IF NOT EXISTS estado_general TEXT`;
+      await sql`CREATE INDEX IF NOT EXISTS artists_chart_position_idx ON artists (chart_position) WHERE chart_position IS NOT NULL`;
     })();
   }
   return ready;
@@ -38,6 +45,9 @@ export type Artist = {
   youtube: string | null;
   spotify: string | null;
   chartmetricId: number | null;
+  photoUrl: string | null;
+  chartPosition: number | null;
+  estadoGeneral: string | null;
   updatedAt: string | null;
 };
 
@@ -75,6 +85,9 @@ function rowToArtist(r: Record<string, unknown>): Artist {
     youtube: (r.youtube as string | null) ?? null,
     spotify: (r.spotify as string | null) ?? null,
     chartmetricId: (r.chartmetric_id as number | null) ?? null,
+    photoUrl: (r.photo_url as string | null) ?? null,
+    chartPosition: (r.chart_position as number | null) ?? null,
+    estadoGeneral: (r.estado_general as string | null) ?? null,
     updatedAt: (r.updated_at as string | null) ?? null,
   };
 }
@@ -104,6 +117,9 @@ export async function listAllArtists(): Promise<Artist[]> {
       youtube: null,
       spotify: null,
       chartmetricId: null,
+      photoUrl: null,
+      chartPosition: null,
+      estadoGeneral: null,
       updatedAt: null,
     }));
 
@@ -176,4 +192,58 @@ export async function upsertArtist(input: {
     RETURNING *
   `;
   return rowToArtist(rows[0]);
+}
+
+// Management-only fields, deliberately separate from upsertArtist (the
+// admin identity-CRUD path) — editar_management should never grant
+// rename/social-edit rights. Many artists returned by listAllArtists() are
+// "static roster only" with no row in this table yet, so this upserts a
+// minimal row rather than assuming one exists.
+export async function updateArtistManagementFields(
+  id: string,
+  name: string,
+  input: { photoUrl?: string | null; chartPosition?: number | null; estadoGeneral?: string | null },
+  actorEmail: string
+): Promise<Artist> {
+  await ensureArtistsSchema();
+  const current = await getArtist(id);
+  const photoUrl = input.photoUrl !== undefined ? input.photoUrl : current?.photoUrl ?? null;
+  const chartPosition = input.chartPosition !== undefined ? input.chartPosition : current?.chartPosition ?? null;
+  const estadoGeneral = input.estadoGeneral !== undefined ? input.estadoGeneral : current?.estadoGeneral ?? null;
+  const { rows } = await sql`
+    INSERT INTO artists (id, name, aliases, sello, photo_url, chart_position, estado_general, updated_by, updated_at)
+    VALUES (${id}, ${name}, '[]'::jsonb, ${current?.sello ?? null}, ${photoUrl}, ${chartPosition}, ${estadoGeneral}, ${actorEmail}, now())
+    ON CONFLICT (id) DO UPDATE SET
+      photo_url = EXCLUDED.photo_url,
+      chart_position = EXCLUDED.chart_position,
+      estado_general = EXCLUDED.estado_general,
+      updated_by = EXCLUDED.updated_by,
+      updated_at = now()
+    RETURNING *
+  `;
+  return rowToArtist(rows[0]);
+}
+
+// Whole-sequence rewrite so positions can never collide — simpler than a
+// two-step swap, and cheap enough at roster scale (tens of artists, not
+// thousands).
+export async function reorderArtistChartPositions(
+  ordered: { id: string; name: string; sello: string | null }[],
+  actorEmail: string
+): Promise<void> {
+  await ensureArtistsSchema();
+  for (let i = 0; i < ordered.length; i++) {
+    const { id, name, sello } = ordered[i];
+    // ON CONFLICT's UPDATE branch never touches `sello`, so this only seeds
+    // it on a genuinely new row (e.g. an artist that so far only existed in
+    // the static roster) — it can't clobber an existing DB row's value.
+    await sql`
+      INSERT INTO artists (id, name, aliases, sello, chart_position, updated_by, updated_at)
+      VALUES (${id}, ${name}, '[]'::jsonb, ${sello}, ${i + 1}, ${actorEmail}, now())
+      ON CONFLICT (id) DO UPDATE SET
+        chart_position = ${i + 1},
+        updated_by = ${actorEmail},
+        updated_at = now()
+    `;
+  }
 }

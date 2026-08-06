@@ -6,7 +6,7 @@ import { signIn } from "next-auth/react";
 import Image from "next/image";
 import VPOScrollHero from "./components/VPOScrollHero";
 
-type Card = "label" | "pm" | "legal" | "editorial" | null;
+type Card = "label" | "pm" | "legal" | "editorial" | "management" | null;
 
 export default function Landing() {
   const router = useRouter();
@@ -104,8 +104,7 @@ export default function Landing() {
         .landing-content{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;padding:2rem 2rem 6rem;}
         .landing-watermark{position:absolute;top:0;right:0;width:min(65vw, 820px);height:auto;opacity:.05;filter:grayscale(1) brightness(1.4);pointer-events:none;z-index:0;transform:translate(20%, -15%);}
         .landing-inner{position:relative;z-index:1;width:100%;max-width:1080px;}
-        .cards{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:1.25rem;}
-        @media (max-width:1020px){ .cards{grid-template-columns:1fr 1fr;} }
+        .cards{display:grid;grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));gap:1.25rem;}
         @media (max-width:640px){ .cards{grid-template-columns:1fr;} }
         .access-card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:2rem;text-align:center;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);transition:border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);}
         .access-card:hover{border-color:var(--accent-color-glow);box-shadow:var(--shadow-glass), 0 0 30px -10px var(--accent-color-glow);}
@@ -165,6 +164,13 @@ export default function Landing() {
                 Ingresar
               </button>
             </div>
+            <div className="access-card">
+              <h2>Management</h2>
+              <p>Acceso al roster, calendario y próximos lanzamientos.</p>
+              <button className="access-btn" onClick={() => setActive("management")}>
+                Ingresar
+              </button>
+            </div>
           </div>
         )}
 
@@ -182,7 +188,9 @@ export default function Landing() {
                 ? "Acceso Project Managers"
                 : active === "legal"
                 ? "Acceso Legales"
-                : "Acceso Editorial"}
+                : active === "editorial"
+                ? "Acceso Editorial"
+                : "Acceso Management"}
             </h2>
 
             {!forgotMode ? (

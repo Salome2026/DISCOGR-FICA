@@ -52,7 +52,7 @@ export default function ArtistaFicha({ params }: { params: Promise<{ nombre: str
     }) ?? [];
 
   return (
-    <RequireRole allow={["admin"]}>
+    <RequireRole allow={["admin", "management"]}>
       <div className="dash-root bg-atmosphere">
         <style>{`
           .dash-root {

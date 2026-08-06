@@ -17,9 +17,10 @@ type PmReleaseRow = {
   group_nombre: string | null;
   marketing_plan: boolean;
   marketing_plan_detalle: string | null;
+  portada_url: string | null;
 };
 
-type CalendarEvent = {
+export type CalendarEvent = {
   key: string;
   ids: number[];
   groupId: number | null;
@@ -34,6 +35,7 @@ type CalendarEvent = {
   marketingPlan: boolean;
   marketingPlanDetalle: string | null;
   tracks: string[];
+  portadaUrl: string | null;
 };
 
 const SELLO_COLORS: Record<string, string> = {
@@ -45,7 +47,7 @@ const SELLO_COLORS: Record<string, string> = {
   Streamings: "#c3c6cf",
 };
 const DEFAULT_COLOR = "#9a9da8";
-function selloColor(sello: string | null): string {
+export function selloColor(sello: string | null): string {
   return (sello && SELLO_COLORS[sello]) || DEFAULT_COLOR;
 }
 
@@ -128,6 +130,7 @@ export default function ReleaseCalendar({ className = "", readOnly = false }: { 
         marketingPlan: group.some((g) => g.marketing_plan),
         marketingPlanDetalle: group.find((g) => g.marketing_plan_detalle)?.marketing_plan_detalle ?? null,
         tracks: group.map((g) => g.fonograma_nombre),
+        portadaUrl: group.find((g) => g.portada_url)?.portada_url ?? null,
       });
     }
     out.sort((a, b) => a.fecha.localeCompare(b.fecha));
@@ -231,6 +234,7 @@ export default function ReleaseCalendar({ className = "", readOnly = false }: { 
         .cal-day-item:hover{background:var(--glass-bg-strong);transform:translateY(-2px);}
         .cal-day-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
         .cal-day-item .meta{font-size:11px;color:var(--text-3);margin-top:1px;}
+        .cal-day-cover{width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;}
         .cal-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:.75rem;border-top:1px solid var(--line-soft);}
         .cal-legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text-3);}
         .cal-legend-item .dot{width:7px;height:7px;border-radius:50%;}
@@ -317,7 +321,11 @@ export default function ReleaseCalendar({ className = "", readOnly = false }: { 
           )}
           {(eventsByDay.get(toKey(cursor)) ?? []).map((ev) => (
             <div key={ev.key} className="cal-day-item" onClick={() => setSelected(ev)}>
-              <span className="dot" style={{ background: selloColor(ev.sello) }} />
+              {ev.portadaUrl ? (
+                <img src={ev.portadaUrl} alt="" className="cal-day-cover" />
+              ) : (
+                <span className="dot" style={{ background: selloColor(ev.sello) }} />
+              )}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>{ev.titulo}</div>
                 <div className="meta">
@@ -346,7 +354,7 @@ export default function ReleaseCalendar({ className = "", readOnly = false }: { 
   );
 }
 
-function EventDetail({
+export function EventDetail({
   event,
   onClose,
   onSaveMarketing,
@@ -393,13 +401,22 @@ function EventDetail({
           maxHeight: "85vh", overflowY: "auto",
         }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-              <span style={{ width: 10, height: 10, borderRadius: "50%", background: selloColor(event.sello) }} />
-              <span style={{ fontSize: 12, color: "var(--text-3)" }}>{event.sello ?? "Sin sello"}</span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14 }}>
+          <div style={{ display: "flex", gap: 14, minWidth: 0 }}>
+            {event.portadaUrl && (
+              <img
+                src={event.portadaUrl}
+                alt=""
+                style={{ width: 64, height: 64, borderRadius: 12, objectFit: "cover", flexShrink: 0 }}
+              />
+            )}
+            <div style={{ minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: selloColor(event.sello) }} />
+                <span style={{ fontSize: 12, color: "var(--text-3)" }}>{event.sello ?? "Sin sello"}</span>
+              </div>
+              <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-.01em" }}>{event.titulo}</div>
             </div>
-            <div style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-.01em" }}>{event.titulo}</div>
           </div>
           <button
             onClick={onClose}

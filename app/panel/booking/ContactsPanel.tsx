@@ -24,6 +24,8 @@ export default function ContactsPanel() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<BookingContact | "new" | null>(null);
+  const [paisFilter, setPaisFilter] = useState<string | null>(null);
+  const [provinciaFilter, setProvinciaFilter] = useState<string | null>(null);
 
   function reload() {
     fetch("/api/booking/contacts")
@@ -48,11 +50,55 @@ export default function ContactsPanel() {
     );
   }, [contacts, query]);
 
+  // Chip options are derived from the search-filtered set (not the raw list)
+  // so they narrow along with a text search, and from the pre-país-filter
+  // set for provincia so switching país resets the visible provincia chips.
+  const paisOptions = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const c of filtered) {
+      const pais = c.pais?.trim() || SIN_PAIS;
+      counts.set(pais, (counts.get(pais) ?? 0) + 1);
+    }
+    return [...counts.entries()].sort(([a], [b]) => {
+      if (a === SIN_PAIS) return 1;
+      if (b === SIN_PAIS) return -1;
+      return a.localeCompare(b, "es");
+    });
+  }, [filtered]);
+
+  const provinciaOptions = useMemo(() => {
+    if (!paisFilter) return [];
+    const counts = new Map<string, number>();
+    for (const c of filtered) {
+      if ((c.pais?.trim() || SIN_PAIS) !== paisFilter) continue;
+      const provincia = c.provincia?.trim() || SIN_PROVINCIA;
+      counts.set(provincia, (counts.get(provincia) ?? 0) + 1);
+    }
+    return [...counts.entries()].sort(([a], [b]) => {
+      if (a === SIN_PROVINCIA) return 1;
+      if (b === SIN_PROVINCIA) return -1;
+      return a.localeCompare(b, "es");
+    });
+  }, [filtered, paisFilter]);
+
+  const geoFiltered = useMemo(() => {
+    return filtered.filter((c) => {
+      if (paisFilter && (c.pais?.trim() || SIN_PAIS) !== paisFilter) return false;
+      if (provinciaFilter && (c.provincia?.trim() || SIN_PROVINCIA) !== provinciaFilter) return false;
+      return true;
+    });
+  }, [filtered, paisFilter, provinciaFilter]);
+
+  function selectPais(pais: string | null) {
+    setPaisFilter(pais);
+    setProvinciaFilter(null);
+  }
+
   // Grouped by país → provincia, per module request — a flat list of 50+
   // venue contacts across several countries was unusable without this split.
   const grouped = useMemo(() => {
     const byPais = new Map<string, Map<string, BookingContact[]>>();
-    for (const c of filtered) {
+    for (const c of geoFiltered) {
       const pais = c.pais?.trim() || SIN_PAIS;
       const provincia = c.provincia?.trim() || SIN_PROVINCIA;
       if (!byPais.has(pais)) byPais.set(pais, new Map());
@@ -73,7 +119,7 @@ export default function ContactsPanel() {
         return a.localeCompare(b, "es");
       }),
     }));
-  }, [filtered]);
+  }, [geoFiltered]);
 
   return (
     <div className="card bkct-card">
@@ -84,6 +130,12 @@ export default function ContactsPanel() {
         .bkct-toolbar { display: flex; gap: 10px; flex-wrap: wrap; }
         .bkct-search { flex: 1; min-width: 200px; background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 9px 12px; color: var(--text-1); font-size: 13.5px; font-family: inherit; }
         .bkct-new-btn { background: var(--accent-gradient); border: none; border-radius: 8px; padding: 9px 16px; color: var(--accent-ink); font-weight: 700; cursor: pointer; font-size: 13px; }
+        .bkct-chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .bkct-chip { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-pill); padding: 6px 13px; font-size: 12.5px; font-weight: 600; color: var(--text-2); cursor: pointer; }
+        .bkct-chip:hover { color: var(--text-1); border-color: var(--accent-color-glow); }
+        .bkct-chip.active { background: var(--accent-glass-bg); color: var(--text-1); border-color: var(--accent-color-glow); }
+        .bkct-chip .n { color: var(--text-3); margin-left: 4px; }
+        .bkct-chip.active .n { color: inherit; opacity: .75; }
         .bkct-groups { display: flex; flex-direction: column; gap: 1.8rem; }
         .bkct-pais-group { display: flex; flex-direction: column; gap: 1rem; }
         .bkct-pais-title { font-size: 16px; font-weight: 700; letter-spacing: -.01em; padding-bottom: 8px; border-bottom: 1px solid var(--glass-border); }
@@ -131,14 +183,40 @@ export default function ContactsPanel() {
         <button className="bkct-new-btn" onClick={() => setEditing("new")}>+ Nuevo contacto</button>
       </div>
 
+      {paisOptions.length > 1 && (
+        <div className="bkct-chip-row">
+          <button className={`bkct-chip${!paisFilter ? " active" : ""}`} onClick={() => selectPais(null)}>
+            Todos<span className="n">({filtered.length})</span>
+          </button>
+          {paisOptions.map(([pais, n]) => (
+            <button key={pais} className={`bkct-chip${paisFilter === pais ? " active" : ""}`} onClick={() => selectPais(pais)}>
+              {pais}<span className="n">({n})</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {paisFilter && provinciaOptions.length > 1 && (
+        <div className="bkct-chip-row">
+          <button className={`bkct-chip${!provinciaFilter ? " active" : ""}`} onClick={() => setProvinciaFilter(null)}>
+            Todas<span className="n">({provinciaOptions.reduce((n, [, c]) => n + c, 0)})</span>
+          </button>
+          {provinciaOptions.map(([provincia, n]) => (
+            <button key={provincia} className={`bkct-chip${provinciaFilter === provincia ? " active" : ""}`} onClick={() => setProvinciaFilter(provincia)}>
+              {provincia}<span className="n">({n})</span>
+            </button>
+          ))}
+        </div>
+      )}
+
       {error && <p className="bkct-empty">Error: {error}</p>}
       {contacts === null && !error && <p className="bkct-empty">Cargando contactos...</p>}
       {contacts !== null && contacts.length === 0 && <p className="bkct-empty">No hay contactos todavía.</p>}
-      {contacts !== null && contacts.length > 0 && filtered.length === 0 && (
-        <p className="bkct-empty">Ningún contacto coincide con la búsqueda.</p>
+      {contacts !== null && contacts.length > 0 && geoFiltered.length === 0 && (
+        <p className="bkct-empty">Ningún contacto coincide con la búsqueda o el filtro.</p>
       )}
 
-      {filtered.length > 0 && (
+      {geoFiltered.length > 0 && (
         <div className="bkct-groups">
           {grouped.map(({ pais, provincias }) => {
             const totalPais = provincias.reduce((n, [, list]) => n + list.length, 0);

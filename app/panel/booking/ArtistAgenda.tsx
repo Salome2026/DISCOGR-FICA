@@ -39,8 +39,18 @@ export default function ArtistAgenda() {
   const [shows, setShows] = useState<BookingShow[] | null>(null);
   const [artists, setArtists] = useState<BookingArtist[]>([]);
   const [artistName, setArtistName] = useState("");
+  const [rangeMode, setRangeMode] = useState<"rango" | "dia">("rango");
   const [desde, setDesde] = useState(firstOfMonth());
   const [hasta, setHasta] = useState(lastOfMonth());
+
+  function handleDesdeChange(value: string) {
+    setDesde(value);
+    if (rangeMode === "dia") setHasta(value);
+  }
+  function switchMode(mode: "rango" | "dia") {
+    setRangeMode(mode);
+    if (mode === "dia") setHasta(desde);
+  }
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -96,6 +106,9 @@ export default function ArtistAgenda() {
         .bkag-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
         .bkag-controls input, .bkag-controls select { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 9px 12px; color: var(--text-1); font-size: 13.5px; font-family: inherit; }
         .bkag-artist-select { min-width: 220px; }
+        .bkag-mode-toggle { display: flex; gap: 3px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-pill); padding: 3px; }
+        .bkag-mode-toggle button { border: none; background: transparent; border-radius: var(--radius-pill); padding: 7px 14px; font-size: 12.5px; font-weight: 600; color: var(--text-2); cursor: pointer; }
+        .bkag-mode-toggle button.active { background: var(--accent-glass-bg); color: var(--text-1); }
         .bkag-summary { display: flex; align-items: center; gap: 14px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 1rem 1.2rem; margin-bottom: 1rem; }
         .bkag-avatar-img { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
         .bkag-avatar-fallback { width: 44px; height: 44px; border-radius: 12px; background: var(--accent-gradient); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0; }
@@ -130,9 +143,17 @@ export default function ArtistAgenda() {
         <datalist id="bkag-artist-list">
           {artists.map((a) => <option key={a.id} value={a.name} />)}
         </datalist>
-        <input type="date" value={desde} onChange={(e) => setDesde(e.target.value)} />
-        <span style={{ color: "var(--text-3)" }}>a</span>
-        <input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} />
+        <div className="bkag-mode-toggle">
+          <button type="button" className={rangeMode === "rango" ? "active" : ""} onClick={() => switchMode("rango")}>Rango</button>
+          <button type="button" className={rangeMode === "dia" ? "active" : ""} onClick={() => switchMode("dia")}>Un día</button>
+        </div>
+        <input type="date" value={desde} onChange={(e) => handleDesdeChange(e.target.value)} />
+        {rangeMode === "rango" && (
+          <>
+            <span style={{ color: "var(--text-3)" }}>a</span>
+            <input type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} />
+          </>
+        )}
       </div>
 
       {!artistName && <p className="bkag-empty">Elegí un artista para ver su agenda.</p>}

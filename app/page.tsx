@@ -158,7 +158,7 @@ export default function Landing() {
               </button>
             </div>
             <div className="access-card">
-              <h2>Editorial</h2>
+              <h2>Publishing</h2>
               <p>Acceso para Tango Made In Argentina Publishing.</p>
               <button className="access-btn" onClick={() => setActive("editorial")}>
                 Ingresar
@@ -189,7 +189,7 @@ export default function Landing() {
                 : active === "legal"
                 ? "Acceso Legales"
                 : active === "editorial"
-                ? "Acceso Editorial"
+                ? "Acceso Publishing"
                 : "Acceso Management"}
             </h2>
 

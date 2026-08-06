@@ -137,7 +137,7 @@ export default function Landing() {
         {active === null && (
           <div className="cards">
             <div className="access-card">
-              <h2>Label Management</h2>
+              <h2>Label</h2>
               <p>Acceso para administradores y gestión de sellos.</p>
               <button className="access-btn" onClick={() => setActive("label")}>
                 Ingresar
@@ -183,7 +183,7 @@ export default function Landing() {
               {forgotMode
                 ? "Restablecer contraseña"
                 : active === "label"
-                ? "Acceso Label Management"
+                ? "Acceso Label"
                 : active === "pm"
                 ? "Acceso Project Managers"
                 : active === "legal"

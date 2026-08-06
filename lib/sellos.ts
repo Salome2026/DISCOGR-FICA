@@ -7,6 +7,7 @@ export const SELLOS = [
   "Kids",
   "Sector Nine",
   "Sigel",
+  "Remix",
   "Streamings",
 ] as const;
 

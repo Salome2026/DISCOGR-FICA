@@ -92,19 +92,38 @@ export default function CatalogTracksPanel({
   const [drill, setDrill] = useState<DrillState>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    function loadTracks() {
+      fetch(apiUrl)
+        .then((r) => r.json())
+        .then((d) => {
+          if (cancelled) return;
+          if (d.error) setTracksError(d.error);
+          else setTracks(d.tracks);
+        })
+        .catch((e) => !cancelled && setTracksError(String(e)));
+    }
+
     setTracks(null);
     setTracksError(null);
-    fetch(apiUrl)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) setTracksError(d.error);
-        else setTracks(d.tracks);
-      })
-      .catch((e) => setTracksError(String(e)));
+    loadTracks();
     fetch("/api/acuerdos")
       .then((r) => r.json())
       .then((d) => !d.error && setAcuerdos(d.acuerdos))
       .catch(() => {});
+
+    // Keeps the catalog "live" without a manual reload — a teammate's
+    // upload shows up within 30s, or immediately when you switch back here.
+    const interval = setInterval(loadTracks, 30000);
+    function onVisible() {
+      if (document.visibilityState === "visible") loadTracks();
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [apiUrl]);
 
   const filteredTracks = useMemo(() => {

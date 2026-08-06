@@ -67,6 +67,18 @@ export default function ShowCalendar() {
         if (!d.error) setArtists(d.artists);
       })
       .catch(() => {});
+
+    // Keeps the calendar "live" without a manual reload — a teammate's edit
+    // shows up within 30s, or immediately when you switch back to this tab.
+    const interval = setInterval(reload, 30000);
+    function onVisible() {
+      if (document.visibilityState === "visible") reload();
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   const photoByName = useMemo(() => {

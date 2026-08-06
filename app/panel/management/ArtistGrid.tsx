@@ -105,8 +105,8 @@ export default function ArtistGrid() {
         .mgrid-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
         .mgrid-card { position: relative; display: flex; flex-direction: column; gap: 10px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 1.25rem; color: var(--text-1); box-shadow: var(--shadow-glass); backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out); }
         .mgrid-card:hover { transform: translateY(-2px); border-color: var(--accent-color-glow); }
-        .mgrid-card.mgrid-card-upcoming { border-color: var(--crit); background: var(--crit-bg); }
-        .mgrid-card.mgrid-card-upcoming:hover { border-color: var(--crit-ink); }
+        .mgrid-card.mgrid-card-upcoming { border-color: #e5484d; border-width: 2px; background: rgba(229, 72, 77, 0.16); box-shadow: var(--shadow-glass), 0 0 0 1px rgba(229, 72, 77, 0.25); }
+        .mgrid-card.mgrid-card-upcoming:hover { border-color: #ff5b60; }
         .mgrid-card-link { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
         .mgrid-avatar-img { width: 46px; height: 46px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
         .mgrid-avatar-fallback { width: 46px; height: 46px; border-radius: 12px; background: var(--accent-gradient); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; flex-shrink: 0; }

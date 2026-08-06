@@ -166,7 +166,7 @@ export default function ArtistGrid() {
           <option value="sin">Sin próximo lanzamiento</option>
         </select>
         <select value={sortMode} onChange={(e) => setSortMode(e.target.value as "ranking" | "oyentes" | "nombre")}>
-          <option value="ranking">Ordenar por: Ranking</option>
+          <option value="ranking">Ordenar por: Ranking (posición fija)</option>
           <option value="oyentes">Ordenar por: Oyentes mensuales</option>
           <option value="nombre">Ordenar por: Nombre</option>
         </select>

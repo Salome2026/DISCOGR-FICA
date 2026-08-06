@@ -1,4 +1,3 @@
-import { sql } from "@vercel/postgres";
 import { listAllArtists, slugify, type Artist } from "./artists";
 import { getRankingLatest } from "./listeners";
 import { getManagementReleaseEvents } from "./managementReleases";
@@ -72,15 +71,19 @@ export async function getManagementArtistOverview(): Promise<ManagementArtistRow
   // table, so listAllArtists() never surfaces them at all — pull in any such
   // artist directly from the Chartmetric ranking data instead, so anyone
   // with real Spotify/Chartmetric data shows up regardless of roster source.
+  // Deliberately NOT pulling in every catalog_tracks participant credited on
+  // a Streamings track — those are one-off featured artists on a compilation,
+  // not "Streamings" acts in their own right, and shouldn't get roster cards.
   const knownNames = new Set(artists.map((a) => normalize(a.name)));
   const streamingsArtists: Artist[] = [];
-  function addStreamingsArtist(name: string) {
-    const key = normalize(name);
-    if (knownNames.has(key)) return;
+  for (const r of ranking) {
+    if (r.sello !== "Streamings") continue;
+    const key = normalize(r.artist_name);
+    if (knownNames.has(key)) continue;
     knownNames.add(key);
     streamingsArtists.push({
-      id: slugify(name),
-      name,
+      id: slugify(r.artist_name),
+      name: r.artist_name,
       aliases: [],
       sello: "Streamings",
       instagram: null,
@@ -88,27 +91,12 @@ export async function getManagementArtistOverview(): Promise<ManagementArtistRow
       youtube: null,
       spotify: null,
       chartmetricId: null,
-      photoUrl: imageByName.get(key) ?? null,
+      photoUrl: r.image_url,
       chartPosition: null,
       estadoGeneral: null,
       genero: null,
       updatedAt: null,
     });
-  }
-  for (const r of ranking) {
-    if (r.sello === "Streamings") addStreamingsArtist(r.artist_name);
-  }
-  // Beyond the handful with real Chartmetric data, every other participant
-  // credited on a "Streamings" catalog track (e.g. a featured artist on a
-  // La Juntada De Los Artistas compilation) has no roster entry anywhere
-  // else in the app — surface them too, using a monogram fallback until a
-  // photo is set manually.
-  const { rows: streamingsParticipantRows } = await sql`
-    SELECT DISTINCT jsonb_array_elements_text(participants) AS artist
-    FROM catalog_tracks WHERE sello = 'Streamings'
-  `;
-  for (const r of streamingsParticipantRows) {
-    addStreamingsArtist(r.artist as string);
   }
   const allArtists = [...artists, ...streamingsArtists];
 

@@ -28,6 +28,19 @@ export function ensureBookingSchema(): Promise<void> {
       await sql`CREATE INDEX IF NOT EXISTS booking_shows_fecha_idx ON booking_shows (fecha)`;
       await sql`CREATE INDEX IF NOT EXISTS booking_shows_artist_idx ON booking_shows (artist_name)`;
 
+      // Sheet-imported rows: 'source' distinguishes them from manual entries so a
+      // re-sync only ever touches its own rows, never something the team typed in
+      // directly. sheet_row/sheet_col are the cell's position in the grid — the
+      // only stable identity a free-text calendar cell has (no id column exists
+      // in the source sheet), used as the upsert/dedup key across syncs.
+      await sql`ALTER TABLE booking_shows ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'manual'`;
+      await sql`ALTER TABLE booking_shows ADD COLUMN IF NOT EXISTS sheet_row INTEGER`;
+      await sql`ALTER TABLE booking_shows ADD COLUMN IF NOT EXISTS sheet_col INTEGER`;
+      await sql`
+        CREATE UNIQUE INDEX IF NOT EXISTS booking_shows_sheet_cell_idx
+        ON booking_shows (sheet_row, sheet_col) WHERE source = 'sheet'
+      `;
+
       await sql`
         CREATE TABLE IF NOT EXISTS booking_contacts (
           id TEXT PRIMARY KEY,
@@ -65,6 +78,7 @@ export type BookingShow = {
   estado: string;
   contactoId: string | null;
   notas: string | null;
+  source: string;
   createdAt: string;
   updatedBy: string | null;
   updatedAt: string | null;
@@ -93,6 +107,7 @@ function rowToShow(r: Record<string, unknown>): BookingShow {
     estado: r.estado as string,
     contactoId: (r.contacto_id as string | null) ?? null,
     notas: (r.notas as string | null) ?? null,
+    source: (r.source as string | null) ?? "manual",
     createdAt: r.created_at as string,
     updatedBy: (r.updated_by as string | null) ?? null,
     updatedAt: (r.updated_at as string | null) ?? null,
@@ -101,7 +116,7 @@ function rowToShow(r: Record<string, unknown>): BookingShow {
 
 export async function listShows(): Promise<BookingShow[]> {
   await ensureBookingSchema();
-  const { rows } = await sql`SELECT * FROM booking_shows ORDER BY fecha ASC`;
+  const { rows } = await sql`SELECT * FROM booking_shows ORDER BY fecha ASC, id ASC`;
   return rows.map(rowToShow);
 }
 
@@ -179,6 +194,44 @@ export async function setShowCoords(id: string, lat: number | null, lng: number 
 export async function deleteShow(id: string): Promise<void> {
   await ensureBookingSchema();
   await sql`DELETE FROM booking_shows WHERE id = ${id}`;
+}
+
+export type SheetShow = {
+  artistName: string;
+  fecha: string;
+  notas: string;
+  sheetRow: number;
+  sheetCol: number;
+};
+
+// Mirrors the Google Sheet's cells 1:1 into booking_shows rows tagged
+// source='sheet' — upserted by (sheetRow, sheetCol) since a free-text
+// calendar cell has no other stable identity. Any previously-synced row
+// whose cell is no longer present (cleared, or the whole sheet shrank) is
+// deleted, so the sheet stays the single source of truth for its own rows.
+// Manual rows (source='manual') are never touched by this function.
+export async function syncSheetShows(cells: SheetShow[]): Promise<{ upserted: number; removed: number }> {
+  await ensureBookingSchema();
+  for (const c of cells) {
+    const id = `sheet-${c.sheetRow}-${c.sheetCol}`;
+    await sql`
+      INSERT INTO booking_shows
+        (id, artist_name, fecha, estado, notas, source, sheet_row, sheet_col, updated_at)
+      VALUES
+        (${id}, ${c.artistName}, ${c.fecha}::date, 'Pendiente', ${c.notas}, 'sheet', ${c.sheetRow}, ${c.sheetCol}, now())
+      ON CONFLICT (sheet_row, sheet_col) WHERE source = 'sheet'
+      DO UPDATE SET artist_name = EXCLUDED.artist_name, fecha = EXCLUDED.fecha, notas = EXCLUDED.notas, updated_at = now()
+    `;
+  }
+  const keep = cells.map((c) => `sheet-${c.sheetRow}-${c.sheetCol}`);
+  const { rows } = await sql`SELECT id FROM booking_shows WHERE source = 'sheet'`;
+  const stale = rows.map((r) => r.id as string).filter((id) => !keep.includes(id));
+  let removed = 0;
+  for (const id of stale) {
+    await sql`DELETE FROM booking_shows WHERE id = ${id}`;
+    removed++;
+  }
+  return { upserted: cells.length, removed };
 }
 
 export type BookingContact = {

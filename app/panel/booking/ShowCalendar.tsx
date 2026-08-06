@@ -15,6 +15,7 @@ type BookingShow = {
   lng: number | null;
   estado: string;
   notas: string | null;
+  source: string;
 };
 
 type BookingArtist = { id: string; name: string; sello: string | null; photoUrl: string | null };
@@ -59,8 +60,17 @@ export default function ShowCalendar() {
       .catch((e) => setError(String(e)));
   }
 
+  // Pulls fresh cells from the team's Google Sheet (server-side rate-limited
+  // to once a minute regardless of how many tabs call this) before reloading,
+  // so the calendar reflects both manual edits and the live sheet.
+  function syncAndReload() {
+    fetch("/api/booking/sync-sheet", { method: "POST" })
+      .catch(() => {})
+      .finally(reload);
+  }
+
   useEffect(() => {
-    reload();
+    syncAndReload();
     fetch("/api/booking/artists")
       .then((r) => r.json())
       .then((d) => {
@@ -70,9 +80,9 @@ export default function ShowCalendar() {
 
     // Keeps the calendar "live" without a manual reload — a teammate's edit
     // shows up within 30s, or immediately when you switch back to this tab.
-    const interval = setInterval(reload, 30000);
+    const interval = setInterval(syncAndReload, 30000);
     function onVisible() {
-      if (document.visibilityState === "visible") reload();
+      if (document.visibilityState === "visible") syncAndReload();
     }
     document.addEventListener("visibilitychange", onVisible);
     return () => {
@@ -192,7 +202,7 @@ export default function ShowCalendar() {
                 {visible.map((s) => (
                   <button key={s.id} className="bkc-chip" onClick={() => setEditing(s)}>
                     <Avatar name={s.artistName} url={photoByName.get(normalize(s.artistName)) ?? null} />
-                    <span>{s.artistName}{s.ciudad ? ` · ${s.ciudad}` : ""}</span>
+                    <span>{s.artistName}{s.ciudad ? ` · ${s.ciudad}` : s.venue ? ` · ${s.venue}` : s.notas ? ` · ${s.notas}` : ""}</span>
                   </button>
                 ))}
                 {extra > 0 && <div className="bkc-more">+{extra} más</div>}
@@ -238,6 +248,31 @@ function ShowModal({
   const [lngOverride, setLngOverride] = useState(show?.lng != null ? String(show.lng) : "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  if (show && show.source === "sheet") {
+    return (
+      <div className="bkc-modal-overlay" onClick={onClose}>
+        <div className="bkc-modal" onClick={(e) => e.stopPropagation()}>
+          <h2>{show.artistName}</h2>
+          <p style={{ fontSize: 12.5, color: "var(--text-3)" }}>
+            Importado de la planilla de Google Sheets — solo lectura. Para corregirlo, editá la celda en la planilla.
+          </p>
+          <div className="bkc-field">
+            <label>Fecha</label>
+            <div>{new Date(show.fecha + "T00:00:00").toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}</div>
+          </div>
+          <div className="bkc-field">
+            <label>Detalle (texto de la celda)</label>
+            <div style={{ whiteSpace: "pre-wrap", fontSize: 13.5 }}>{show.notas}</div>
+          </div>
+          <div className="bkc-modal-actions">
+            <span />
+            <button type="button" className="bkc-btn-ghost" onClick={onClose}>Cerrar</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

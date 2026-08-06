@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { hasPermission, type SessionUser } from "@/lib/permissions";
-import { updateShow, deleteShow, ESTADOS_SHOW } from "@/lib/db/booking";
+import { updateShow, deleteShow, getShow, ESTADOS_SHOW } from "@/lib/db/booking";
+import { geocodeLocation } from "@/lib/geocoding";
 
 async function sessionUser(): Promise<SessionUser | null> {
   const session = await auth();
@@ -37,6 +38,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Estado inválido." }, { status: 400 });
   }
 
+  // Only re-geocode when the location text actually changed, or when the
+  // caller sent an explicit manual override — avoids a repeat Nominatim
+  // call on every unrelated edit (estado, notas, etc.).
+  let resolvedLat = lat;
+  let resolvedLng = lng;
+  if (lat === undefined && lng === undefined) {
+    const current = await getShow(id);
+    const locationChanged =
+      current && (current.ciudad !== (ciudad || null) || current.provincia !== (provincia || null) || current.pais !== (pais || null));
+    if (locationChanged && (ciudad || provincia || pais)) {
+      const coords = await geocodeLocation(ciudad ?? null, provincia ?? null, pais ?? null);
+      resolvedLat = coords?.lat ?? null;
+      resolvedLng = coords?.lng ?? null;
+    }
+  }
+
   const show = await updateShow(id, {
     artistName,
     fecha,
@@ -49,8 +66,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     contactoId: contactoId || null,
     notas: notas || null,
     createdBy: user.email,
-    lat,
-    lng,
+    lat: resolvedLat,
+    lng: resolvedLng,
   });
   if (!show) return NextResponse.json({ error: "No encontrado." }, { status: 404 });
   return NextResponse.json({ show });

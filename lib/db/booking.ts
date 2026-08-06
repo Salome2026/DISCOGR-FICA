@@ -123,6 +123,8 @@ export type NewShow = {
   contactoId: string | null;
   notas: string | null;
   createdBy: string;
+  lat?: number | null;
+  lng?: number | null;
 };
 
 export async function createShow(input: NewShow): Promise<BookingShow> {
@@ -130,10 +132,11 @@ export async function createShow(input: NewShow): Promise<BookingShow> {
   const id = `show-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const { rows } = await sql`
     INSERT INTO booking_shows
-      (id, artist_name, fecha, hora, venue, ciudad, provincia, pais, estado, contacto_id, notas, updated_by, updated_at)
+      (id, artist_name, fecha, hora, venue, ciudad, provincia, pais, lat, lng, estado, contacto_id, notas, updated_by, updated_at)
     VALUES
       (${id}, ${input.artistName}, ${input.fecha}::date, ${input.hora}, ${input.venue}, ${input.ciudad}, ${input.provincia},
-       ${input.pais}, ${input.estado}, ${input.contactoId}, ${input.notas}, ${input.createdBy}, now())
+       ${input.pais}, ${input.lat ?? null}, ${input.lng ?? null}, ${input.estado}, ${input.contactoId}, ${input.notas},
+       ${input.createdBy}, now())
     RETURNING *
   `;
   return rowToShow(rows[0]);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { hasPermission, type SessionUser } from "@/lib/permissions";
 import { listShows, createShow, ESTADOS_SHOW } from "@/lib/db/booking";
+import { geocodeLocation } from "@/lib/geocoding";
 
 async function sessionUser(): Promise<SessionUser | null> {
   const session = await auth();
@@ -43,6 +44,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Estado inválido." }, { status: 400 });
   }
 
+  const coords = ciudad || provincia || pais ? await geocodeLocation(ciudad ?? null, provincia ?? null, pais ?? null) : null;
+
   const show = await createShow({
     artistName,
     fecha,
@@ -55,6 +58,8 @@ export async function POST(req: NextRequest) {
     contactoId: contactoId || null,
     notas: notas || null,
     createdBy: user.email,
+    lat: coords?.lat ?? null,
+    lng: coords?.lng ?? null,
   });
   return NextResponse.json({ show });
 }

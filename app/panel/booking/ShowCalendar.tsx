@@ -11,6 +11,8 @@ type BookingShow = {
   ciudad: string | null;
   provincia: string | null;
   pais: string | null;
+  lat: number | null;
+  lng: number | null;
   estado: string;
   notas: string | null;
 };
@@ -220,6 +222,8 @@ function ShowModal({
   const [pais, setPais] = useState(show?.pais ?? "Argentina");
   const [estado, setEstado] = useState(show?.estado ?? "Pendiente");
   const [notas, setNotas] = useState(show?.notas ?? "");
+  const [latOverride, setLatOverride] = useState(show?.lat != null ? String(show.lat) : "");
+  const [lngOverride, setLngOverride] = useState(show?.lng != null ? String(show.lng) : "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -233,12 +237,17 @@ function ShowModal({
     setError(null);
     try {
       const url = show ? `/api/booking/shows/${encodeURIComponent(show.id)}` : "/api/booking/shows";
+      const manualCoords =
+        latOverride.trim() && lngOverride.trim()
+          ? { lat: parseFloat(latOverride), lng: parseFloat(lngOverride) }
+          : {};
       const res = await fetch(url, {
         method: show ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           artistName, fecha, hora: hora || null, venue: venue || null, ciudad: ciudad || null,
           provincia: provincia || null, pais: pais || null, estado, contactoId: null, notas: notas || null,
+          ...manualCoords,
         }),
       });
       const data = await res.json();
@@ -311,6 +320,17 @@ function ShowModal({
           <select value={estado} onChange={(e) => setEstado(e.target.value)}>
             {ESTADOS_SHOW.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
+        </div>
+
+        <div className="bkc-field-row">
+          <div className="bkc-field">
+            <label>Latitud (manual, opcional)</label>
+            <input value={latOverride} onChange={(e) => setLatOverride(e.target.value)} placeholder="Se ubica automático si lo dejás vacío" />
+          </div>
+          <div className="bkc-field">
+            <label>Longitud (manual, opcional)</label>
+            <input value={lngOverride} onChange={(e) => setLngOverride(e.target.value)} placeholder="Se ubica automático si lo dejás vacío" />
+          </div>
         </div>
 
         <div className="bkc-field">

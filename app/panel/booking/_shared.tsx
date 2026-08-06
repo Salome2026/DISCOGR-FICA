@@ -32,6 +32,8 @@ export const BOOKING_STYLES = `
   .bkg-signout { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 8px; padding: 9px 18px; color: var(--text-2); cursor: pointer; font-size: 13px; backdrop-filter: blur(20px) saturate(1.7); -webkit-backdrop-filter: blur(20px) saturate(1.7); }
   .bkg-section { margin-bottom: 2.5rem; }
   .bkg-section-label { font-size: 13px; color: var(--text-2); text-transform: uppercase; letter-spacing: .09em; font-weight: 600; margin-bottom: 1rem; }
+  .bkg-calendar-map-row { display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; align-items: stretch; }
+  @media (max-width: 1100px) { .bkg-calendar-map-row { grid-template-columns: 1fr; } }
 
   .card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl); padding: 1.6rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); box-shadow: var(--shadow-glass); }
   .card-label { font-size: 12px; color: var(--text-3); text-transform: uppercase; letter-spacing: .07em; font-weight: 500; }

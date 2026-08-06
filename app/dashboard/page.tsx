@@ -415,7 +415,7 @@ function DashboardInner() {
               {s}
             </Link>
           ))}
-          <Link href="/catalogo-distribuido" className="sello-btn" style={{ borderStyle: "dashed" }}>
+          <Link href="/catalogo-distribuido" className="sello-btn">
             Catálogo Distribuido
           </Link>
           <Link href="/streamings" className="sello-btn">

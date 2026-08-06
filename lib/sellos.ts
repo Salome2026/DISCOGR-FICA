@@ -59,6 +59,9 @@ const INDYANA_ARTISTS = [
   "el retutu",
   "soy tiara",
   "paco remix",
+  "luli barrio",
+  "federikita",
+  "coco palmer",
 ];
 const CASERIO_ARTISTS = [
   "eze remix",

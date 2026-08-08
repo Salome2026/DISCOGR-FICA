@@ -92,9 +92,10 @@ async function handleSingleCreate(
   sello: string | null,
   streamingProject: string | null
 ) {
-  const { artist, fonograma, estado, distribuidora, fecha, hora, autoresCompositores, colaboradores, audioUrl, portadaUrl } = body as {
+  const { artist, fonograma, estado, distribuidora, fecha, hora, autoresCompositores, colaboradores, isrc, genero, audioUrl, portadaUrl } = body as {
     artist?: string; fonograma?: string; estado?: string; distribuidora?: string;
-    fecha?: string; hora?: string; autoresCompositores?: string; colaboradores?: string; audioUrl?: string; portadaUrl?: string;
+    fecha?: string; hora?: string; autoresCompositores?: string; colaboradores?: string;
+    isrc?: string; genero?: string; audioUrl?: string; portadaUrl?: string;
   };
   const horaNorm = normalizeHora(hora);
 
@@ -133,6 +134,8 @@ async function handleSingleCreate(
     hora: horaNorm,
     autoresCompositores: autoresCompositores || null,
     colaboradores: colaboradores || null,
+    isrc: isrc?.trim() || null,
+    genero: genero || null,
     audioUrl: audioUrl || null,
     portadaUrl: portadaUrl || null,
     createdBy: email,
@@ -148,6 +151,8 @@ async function handleSingleCreate(
     participants: buildParticipants(artist, colaboradores || null),
     sello,
     streamingProject,
+    isrc: isrc?.trim() || null,
+    genero: genero || null,
   });
 
   // Fire-and-forget after the response is sent would get killed mid-flight
@@ -182,6 +187,7 @@ type TrackInput = {
   colaboradores?: string;
   productor?: string;
   isrc?: string;
+  genero?: string;
   audioUrl?: string;
   portadaUrl?: string;
   comentario?: string;
@@ -251,6 +257,7 @@ async function handleGroupedCreate(
       colaboradores: t.colaboradores?.trim() || null,
       productor: t.productor?.trim() || null,
       isrc: t.isrc?.trim() || null,
+      genero: t.genero || null,
       audioUrl: t.audioUrl || null,
       portadaUrl: t.portadaUrl || null,
       comentario: t.comentario?.trim() || null,
@@ -288,6 +295,8 @@ async function handleGroupedCreate(
       participants: buildParticipants(input.artist, input.colaboradores),
       sello,
       streamingProject,
+      isrc: input.isrc,
+      genero: input.genero,
     });
   }
 

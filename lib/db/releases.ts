@@ -74,6 +74,11 @@ export function ensureReleasesSchema(): Promise<void> {
       await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS hora_lanzamiento TEXT`;
       await sql`ALTER TABLE pm_release_groups ADD COLUMN IF NOT EXISTS hora_lanzamiento TEXT`;
 
+      // Género musical del track — mismo GENEROS que ya usa Rizzvor a nivel
+      // proyecto, acá a nivel de fila (single o canción de EP/álbum) para
+      // habilitar sugerencias de playlists de Spotify por género.
+      await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS genero TEXT`;
+
       await sql`
         CREATE TABLE IF NOT EXISTS pm_release_history (
           id BIGSERIAL PRIMARY KEY,
@@ -100,6 +105,8 @@ export type NewRelease = {
   hora: string | null;
   autoresCompositores: string | null;
   colaboradores: string | null;
+  isrc: string | null;
+  genero: string | null;
   audioUrl: string | null;
   portadaUrl: string | null;
   createdBy: string;
@@ -122,10 +129,10 @@ export async function createRelease(r: NewRelease) {
   const { rows } = await sql`
     INSERT INTO pm_releases
       (artist_name, sello, streaming_project, fonograma_nombre, estado, distribuidora, fecha_lanzamiento,
-       hora_lanzamiento, autores_compositores, colaboradores, audio_url, portada_url, created_by)
+       hora_lanzamiento, autores_compositores, colaboradores, isrc, genero, audio_url, portada_url, created_by)
     VALUES
       (${r.artist}, ${r.sello}, ${r.streamingProject}, ${r.fonograma}, ${r.estado}, ${r.distribuidora}, ${r.fecha},
-       ${r.hora}, ${r.autoresCompositores}, ${r.colaboradores}, ${r.audioUrl}, ${r.portadaUrl}, ${r.createdBy})
+       ${r.hora}, ${r.autoresCompositores}, ${r.colaboradores}, ${r.isrc}, ${r.genero}, ${r.audioUrl}, ${r.portadaUrl}, ${r.createdBy})
     RETURNING *
   `;
   const release = rows[0];
@@ -157,6 +164,7 @@ export type NewGroupTrack = {
   colaboradores: string | null;
   productor: string | null;
   isrc: string | null;
+  genero: string | null;
   audioUrl: string | null;
   portadaUrl: string | null;
   comentario: string | null;
@@ -179,11 +187,11 @@ export async function createGroupedRelease(group: NewReleaseGroup, tracks: NewGr
     const { rows } = await sql`
       INSERT INTO pm_releases
         (artist_name, sello, streaming_project, fonograma_nombre, estado, distribuidora, fecha_lanzamiento, hora_lanzamiento,
-         audio_url, portada_url, group_id, track_number, colaboradores, productor, isrc, comentario, created_by)
+         audio_url, portada_url, group_id, track_number, colaboradores, productor, isrc, genero, comentario, created_by)
       VALUES
         (${t.artist}, ${group.sello}, ${group.streamingProject}, ${t.fonograma}, ${group.estado}, ${group.distribuidora}, ${group.fecha}, ${group.hora},
          ${t.audioUrl}, ${t.portadaUrl}, ${groupRow.id}, ${t.trackNumber}, ${t.colaboradores},
-         ${t.productor}, ${t.isrc}, ${t.comentario}, ${group.createdBy})
+         ${t.productor}, ${t.isrc}, ${t.genero}, ${t.comentario}, ${group.createdBy})
       RETURNING *
     `;
     const track = rows[0];

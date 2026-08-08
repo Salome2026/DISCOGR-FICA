@@ -116,6 +116,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         hora: finalHora,
         autoresCompositores: song.autoresCompositores,
         colaboradores: song.colaboradores,
+        isrc: song.isrc,
+        genero: project.genero,
         audioUrl: wav.url,
         portadaUrl: portada.url,
         createdBy: user.email,
@@ -131,6 +133,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         participants: buildParticipants(project.artistName, song.colaboradores),
         sello: project.sello,
         streamingProject: null,
+        isrc: song.isrc,
+        genero: project.genero,
       });
       await setSongConvertedRelease(song.id, release.id);
       await finalizeConversion(id, { releaseId: release.id, groupId: null }, user.email);
@@ -173,6 +177,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         colaboradores: song.colaboradores,
         productor: song.productor,
         isrc: song.isrc,
+        genero: project.genero,
         audioUrl: wav.url,
         portadaUrl: portada.url,
         comentario: song.comentario,
@@ -210,6 +215,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         participants: buildParticipants(input.artist, input.colaboradores),
         sello: project.sello,
         streamingProject: null,
+        isrc: input.isrc,
+        genero: input.genero,
       });
       await setSongConvertedRelease(songs[i].id, saved.id);
     }

@@ -53,6 +53,8 @@ type TrackDraft = {
   artistaPrincipal: string;
   colaboradores: string;
   productor: string;
+  isrc: string;
+  genero: string;
   comentario: string;
   audioFile: File | null;
   portadaFile: File | null;
@@ -72,6 +74,8 @@ function emptyTrack(artistaPrincipal: string): TrackDraft {
     artistaPrincipal,
     colaboradores: "",
     productor: "",
+    isrc: "",
+    genero: "",
     comentario: "",
     audioFile: null,
     portadaFile: null,
@@ -120,6 +124,8 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   const [fonograma, setFonograma] = useState("");
   const [autores, setAutores] = useState("");
   const [featuring, setFeaturing] = useState("");
+  const [isrc, setIsrc] = useState("");
+  const [genero, setGenero] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [portadaFile, setPortadaFile] = useState<File | null>(null);
 
@@ -427,6 +433,8 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             hora: hora || null,
             autoresCompositores: autores || null,
             colaboradores: featuring || null,
+            isrc: isrc || null,
+            genero: genero || null,
             audioUrl,
             portadaUrl,
           }),
@@ -484,6 +492,8 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             artist: t.artistaPrincipal,
             colaboradores: t.colaboradores || null,
             productor: t.productor || null,
+            isrc: t.isrc || null,
+            genero: t.genero || null,
             comentario: t.comentario || null,
             audioUrl: uploaded[i].audioUrl,
             portadaUrl: uploaded[i].portadaUrl,
@@ -1160,6 +1170,33 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
               </div>
             )}
 
+            {tipo === "single" && (
+              <div style={{ display: "flex", gap: 10 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>
+                    ISRC <span style={{ color: "var(--text-3)", fontWeight: 400 }}>(opcional)</span>
+                  </label>
+                  <input
+                    value={isrc}
+                    onChange={(e) => setIsrc(e.target.value)}
+                    placeholder="Ej: ARXXX2500001"
+                    style={inputStyle}
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>
+                    Género <span style={{ color: "var(--text-3)", fontWeight: 400 }}>(opcional)</span>
+                  </label>
+                  <select value={genero} onChange={(e) => setGenero(e.target.value)} style={inputStyle}>
+                    <option value="">Elegir...</option>
+                    {GENEROS.map((g) => (
+                      <option key={g} value={g}>{g}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+
             <div>
               <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Estado del release</label>
               <select value={estado} onChange={(e) => setEstado(e.target.value as typeof estado)} style={inputStyle}>
@@ -1303,6 +1340,30 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                                 onChange={(e) => updateTrack(t.key, { productor: e.target.value })}
                                 style={inputStyle}
                               />
+                            </div>
+                            <div style={{ display: "flex", gap: 8 }}>
+                              <div style={{ flex: 1 }}>
+                                <label style={smallLabel}>ISRC (opcional)</label>
+                                <input
+                                  value={t.isrc}
+                                  onChange={(e) => updateTrack(t.key, { isrc: e.target.value })}
+                                  placeholder="Ej: ARXXX2500001"
+                                  style={inputStyle}
+                                />
+                              </div>
+                              <div style={{ flex: 1 }}>
+                                <label style={smallLabel}>Género (opcional)</label>
+                                <select
+                                  value={t.genero}
+                                  onChange={(e) => updateTrack(t.key, { genero: e.target.value })}
+                                  style={inputStyle}
+                                >
+                                  <option value="">Elegir...</option>
+                                  {GENEROS.map((g) => (
+                                    <option key={g} value={g}>{g}</option>
+                                  ))}
+                                </select>
+                              </div>
                             </div>
                             <div>
                               <label style={smallLabel}>Audio (.wav) — estado: {t.audioFile ? "Cargado" : "Pendiente"}</label>

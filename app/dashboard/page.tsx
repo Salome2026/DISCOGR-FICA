@@ -392,6 +392,7 @@ function DashboardInner() {
             <Link href="/pm" className="nav-pill">Project Managers</Link>
             <Link href="/admin/usuarios" className="nav-pill">Usuarios</Link>
             <Link href="/admin/artistas" className="nav-pill">Artistas</Link>
+            <Link href="/panel/playlists" className="nav-pill">Playlists</Link>
             <button
               type="button"
               className="nav-pill"

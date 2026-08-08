@@ -1,5 +1,5 @@
-import PanelPlaceholder from "@/app/components/PanelPlaceholder";
+import { redirect } from "next/navigation";
 
 export default function MarketingPanel() {
-  return <PanelPlaceholder role="marketing" title="Panel de Marketing" />;
+  redirect("/panel/playlists");
 }

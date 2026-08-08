@@ -27,6 +27,8 @@ export const PERMISSIONS = [
   "editar_management",
   "ver_booking",
   "editar_booking",
+  "ver_playlists",
+  "editar_playlists",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -70,6 +72,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "ver_estadisticas",
     "ver_rizzvor_proyectos",
     "editar_rizzvor_proyectos",
+    "ver_playlists",
   ],
   // Legal is a fully separate module — its own permissions, shared with no
   // other operational area (Label/PM/Distribución/Marketing/etc). It does
@@ -85,7 +88,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // Same isolation principle again — its own module, own permissions.
   booking: ["ver_booking", "editar_booking"],
   distribucion: ["editar_acuerdos", "aprobar_releases", "ver_estadisticas"],
-  marketing: ["ver_estadisticas", "exportar_datos"],
+  marketing: ["ver_estadisticas", "exportar_datos", "ver_playlists", "editar_playlists"],
   artista: ["subir_audio", "subir_portada"],
   representante: ["subir_audio", "subir_portada", "ver_estadisticas"],
   invitado: [],

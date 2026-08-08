@@ -49,6 +49,7 @@ export default function ShowCalendar() {
   const [error, setError] = useState<string | null>(null);
   const [cursor, setCursor] = useState(() => new Date());
   const [editing, setEditing] = useState<BookingShow | "new" | null>(null);
+  const [dayDetail, setDayDetail] = useState<string | null>(null);
 
   function reload() {
     fetch("/api/booking/shows")
@@ -148,12 +149,23 @@ export default function ShowCalendar() {
         .bkc-cell.outside { opacity: .35; }
         .bkc-cell.today { border-color: var(--accent-color); background: rgba(63,198,209,0.06); }
         .bkc-daynum { font-size: 13px; font-weight: 600; color: var(--text-1); }
+        .bkc-daynum-btn { background: none; border: none; padding: 0; text-align: left; cursor: pointer; }
+        .bkc-daynum-btn:hover { color: var(--accent-color); text-decoration: underline; }
         .bkc-chip { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; padding: 3px 6px; border-radius: 6px; background: var(--glass-bg); cursor: pointer; border: none; color: var(--text-1); width: 100%; text-align: left; overflow: hidden; }
         .bkc-chip:hover { background: var(--glass-bg-strong); }
         .bkc-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .bkc-avatar-img { width: 18px; height: 18px; border-radius: 5px; object-fit: cover; flex-shrink: 0; }
         .bkc-avatar-fallback { width: 18px; height: 18px; border-radius: 5px; background: var(--accent-gradient); color: var(--accent-ink); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 8px; flex-shrink: 0; }
-        .bkc-more { font-size: 11px; color: var(--text-2); padding: 0 5px; }
+        .bkc-more { font-size: 11px; color: var(--text-2); padding: 0 5px; background: none; border: none; text-align: left; cursor: pointer; font-family: inherit; }
+        .bkc-more:hover { color: var(--text-1); text-decoration: underline; }
+
+        .bkc-day-modal { max-width: 420px; max-height: 80vh; overflow-y: auto; }
+        .bkc-day-list { display: flex; flex-direction: column; gap: 8px; }
+        .bkc-day-row { display: flex; align-items: center; gap: 10px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 10px; padding: .6rem .8rem; cursor: pointer; text-align: left; width: 100%; border-style: solid; color: var(--text-1); font-family: inherit; }
+        .bkc-day-row:hover { background: var(--glass-bg-strong); }
+        .bkc-day-row-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+        .bkc-day-row-name { font-size: 13.5px; font-weight: 700; }
+        .bkc-day-row-meta { font-size: 12px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .bkc-empty { color: var(--text-3); font-size: 13.5px; padding: 1rem 0; }
 
         .bkc-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 2rem; overflow-y: auto; }
@@ -198,18 +210,34 @@ export default function ShowCalendar() {
             const extra = dayShows.length - visible.length;
             return (
               <div key={d.toISOString()} className={`bkc-cell${outside ? " outside" : ""}${isSameDay(d, today) ? " today" : ""}`}>
-                <div className="bkc-daynum">{d.getDate()}</div>
+                {dayShows.length > 0 ? (
+                  <button type="button" className="bkc-daynum bkc-daynum-btn" onClick={() => setDayDetail(toKey(d))}>{d.getDate()}</button>
+                ) : (
+                  <div className="bkc-daynum">{d.getDate()}</div>
+                )}
                 {visible.map((s) => (
                   <button key={s.id} className="bkc-chip" onClick={() => setEditing(s)}>
                     <Avatar name={s.artistName} url={photoByName.get(normalize(s.artistName)) ?? null} />
                     <span>{s.artistName}{s.ciudad ? ` · ${s.ciudad}` : s.venue ? ` · ${s.venue}` : s.notas ? ` · ${s.notas}` : ""}</span>
                   </button>
                 ))}
-                {extra > 0 && <div className="bkc-more">+{extra} más</div>}
+                {extra > 0 && (
+                  <button type="button" className="bkc-more" onClick={() => setDayDetail(toKey(d))}>+{extra} más</button>
+                )}
               </div>
             );
           })}
         </div>
+      )}
+
+      {dayDetail && (
+        <DayDetailModal
+          fecha={dayDetail}
+          shows={showsByDay.get(dayDetail) ?? []}
+          photoByName={photoByName}
+          onClose={() => setDayDetail(null)}
+          onSelectShow={(s) => { setDayDetail(null); setEditing(s); }}
+        />
       )}
 
       {editing && (
@@ -220,6 +248,46 @@ export default function ShowCalendar() {
           onSaved={() => { setEditing(null); reload(); }}
         />
       )}
+    </div>
+  );
+}
+
+function DayDetailModal({
+  fecha,
+  shows,
+  photoByName,
+  onClose,
+  onSelectShow,
+}: {
+  fecha: string;
+  shows: BookingShow[];
+  photoByName: Map<string, string | null>;
+  onClose: () => void;
+  onSelectShow: (show: BookingShow) => void;
+}) {
+  return (
+    <div className="bkc-modal-overlay" onClick={onClose}>
+      <div className="bkc-modal bkc-day-modal" onClick={(e) => e.stopPropagation()}>
+        <h2>{new Date(fecha + "T00:00:00").toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" })}</h2>
+        <div className="bkc-day-list">
+          {shows.map((s) => (
+            <button key={s.id} className="bkc-day-row" onClick={() => onSelectShow(s)}>
+              <Avatar name={s.artistName} url={photoByName.get(normalize(s.artistName)) ?? null} />
+              <div className="bkc-day-row-text">
+                <span className="bkc-day-row-name">{s.artistName}</span>
+                <span className="bkc-day-row-meta">
+                  {s.ciudad ? s.ciudad : s.venue ? s.venue : s.notas ? s.notas : "Sin detalle"}
+                  {s.hora ? ` · ${s.hora} hs` : ""} · {s.estado}
+                </span>
+              </div>
+            </button>
+          ))}
+        </div>
+        <div className="bkc-modal-actions">
+          <span />
+          <button type="button" className="bkc-btn-ghost" onClick={onClose}>Cerrar</button>
+        </div>
+      </div>
     </div>
   );
 }

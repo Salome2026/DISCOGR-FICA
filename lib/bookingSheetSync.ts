@@ -118,10 +118,27 @@ export function parseAgendaGrid(rows: string[][]): SheetShow[] {
       if (!fecha) continue;
       const text = (row[c] ?? "").trim();
       if (!text) continue;
-      cells.push({ artistName: currentArtist, fecha, notas: text, sheetRow: r, sheetCol: c });
+      cells.push({ artistName: currentArtist, fecha, notas: text, valor: extractValor(text), sheetRow: r, sheetCol: c });
     }
   }
   return cells;
+}
+
+// The team always writes a show's fee as a plain decimal ("1.5", "2,5"),
+// sometimes with a "k"/"m" shorthand suffix, mixed in with venue/deposit/time
+// text in the same cell — this is a best-effort pull of that one number, not
+// a full parse of the cell. It deliberately skips a number immediately
+// followed by "hs" (a time like "1,30hs", not a fee) and just returns the
+// first plausible match; nothing here ever touches the original notas text,
+// so a wrong extraction here is visible, not silently corrupting data.
+function extractValor(text: string): string | null {
+  const re = /\d{1,3}(?:[.,]\d{1,3})?\s*(?:k|m)\b|\d{1,3}[.,]\d{1,3}\b/gi;
+  for (const m of text.matchAll(re)) {
+    const after = text.slice(m.index + m[0].length, m.index + m[0].length + 2).toLowerCase();
+    if (after.startsWith("hs")) continue;
+    return m[0].trim();
+  }
+  return null;
 }
 
 async function fetchAgendaCSV(): Promise<string> {

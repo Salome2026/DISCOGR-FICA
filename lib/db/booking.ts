@@ -25,6 +25,10 @@ export function ensureBookingSchema(): Promise<void> {
           updated_at TIMESTAMPTZ
         )
       `;
+      // Best-effort fee extracted from the sheet cell's free text (e.g. "1.5",
+      // "4,5k") — shown alongside notas, never replacing it, since the
+      // extraction can't always tell a fee apart from a time or deposit.
+      await sql`ALTER TABLE booking_shows ADD COLUMN IF NOT EXISTS valor TEXT`;
       await sql`CREATE INDEX IF NOT EXISTS booking_shows_fecha_idx ON booking_shows (fecha)`;
       await sql`CREATE INDEX IF NOT EXISTS booking_shows_artist_idx ON booking_shows (artist_name)`;
 
@@ -82,6 +86,7 @@ export type BookingShow = {
   estado: string;
   contactoId: string | null;
   notas: string | null;
+  valor: string | null;
   source: string;
   createdAt: string;
   updatedBy: string | null;
@@ -111,6 +116,7 @@ function rowToShow(r: Record<string, unknown>): BookingShow {
     estado: r.estado as string,
     contactoId: (r.contacto_id as string | null) ?? null,
     notas: (r.notas as string | null) ?? null,
+    valor: (r.valor as string | null) ?? null,
     source: (r.source as string | null) ?? "manual",
     createdAt: r.created_at as string,
     updatedBy: (r.updated_by as string | null) ?? null,
@@ -213,6 +219,7 @@ export type SheetShow = {
   artistName: string;
   fecha: string;
   notas: string;
+  valor: string | null;
   sheetRow: number;
   sheetCol: number;
 };
@@ -229,11 +236,11 @@ export async function syncSheetShows(cells: SheetShow[]): Promise<{ upserted: nu
     const id = `sheet-${c.sheetRow}-${c.sheetCol}`;
     await sql`
       INSERT INTO booking_shows
-        (id, artist_name, fecha, estado, notas, source, sheet_row, sheet_col, updated_at)
+        (id, artist_name, fecha, estado, notas, valor, source, sheet_row, sheet_col, updated_at)
       VALUES
-        (${id}, ${c.artistName}, ${c.fecha}::date, 'Pendiente', ${c.notas}, 'sheet', ${c.sheetRow}, ${c.sheetCol}, now())
+        (${id}, ${c.artistName}, ${c.fecha}::date, 'Pendiente', ${c.notas}, ${c.valor}, 'sheet', ${c.sheetRow}, ${c.sheetCol}, now())
       ON CONFLICT (sheet_row, sheet_col) WHERE source = 'sheet'
-      DO UPDATE SET artist_name = EXCLUDED.artist_name, fecha = EXCLUDED.fecha, notas = EXCLUDED.notas, updated_at = now()
+      DO UPDATE SET artist_name = EXCLUDED.artist_name, fecha = EXCLUDED.fecha, notas = EXCLUDED.notas, valor = EXCLUDED.valor, updated_at = now()
     `;
   }
   const keep = cells.map((c) => `sheet-${c.sheetRow}-${c.sheetCol}`);

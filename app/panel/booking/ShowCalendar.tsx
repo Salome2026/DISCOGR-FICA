@@ -15,6 +15,7 @@ type BookingShow = {
   lng: number | null;
   estado: string;
   notas: string | null;
+  valor: string | null;
   source: string;
 };
 
@@ -163,9 +164,10 @@ export default function ShowCalendar() {
         .bkc-day-list { display: flex; flex-direction: column; gap: 8px; }
         .bkc-day-row { display: flex; align-items: center; gap: 10px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 10px; padding: .6rem .8rem; cursor: pointer; text-align: left; width: 100%; border-style: solid; color: var(--text-1); font-family: inherit; }
         .bkc-day-row:hover { background: var(--glass-bg-strong); }
-        .bkc-day-row-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+        .bkc-day-row-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
         .bkc-day-row-name { font-size: 13.5px; font-weight: 700; }
         .bkc-day-row-meta { font-size: 12px; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .bkc-day-row-valor { flex-shrink: 0; font-size: 12.5px; font-weight: 700; color: var(--text-1); background: var(--glass-bg-strong); border-radius: 6px; padding: 3px 8px; }
         .bkc-empty { color: var(--text-3); font-size: 13.5px; padding: 1rem 0; }
 
         .bkc-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 2rem; overflow-y: auto; }
@@ -280,6 +282,7 @@ function DayDetailModal({
                   {s.hora ? ` · ${s.hora} hs` : ""} · {s.estado}
                 </span>
               </div>
+              {s.valor && <span className="bkc-day-row-valor">{s.valor}</span>}
             </button>
           ))}
         </div>
@@ -508,6 +511,13 @@ function SheetShowModal({
           <label>Detalle (texto de la celda)</label>
           <div style={{ whiteSpace: "pre-wrap", fontSize: 13.5 }}>{show.notas}</div>
         </div>
+
+        {show.valor && (
+          <div className="bkc-field">
+            <label>Valor (extraído automáticamente del texto)</label>
+            <div style={{ fontSize: 14, fontWeight: 700 }}>{show.valor}</div>
+          </div>
+        )}
 
         {!editingLocation ? (
           <div className="bkc-field">

@@ -7,6 +7,24 @@ import { syncSheetShows, type SheetShow } from "@/lib/db/booking";
 const SHEET_ID = "1qlGsPv06U0_W7jyxshLWGG4FwiJF7zYQE3kXQev3Ygk";
 const AGENDA_GID = "0";
 
+// The sheet spells some names inconsistently across rows (e.g. "gusty" vs
+// "Gusty" vs the artist's actual full name) — without this, the same person
+// shows up as separate-looking entries in the calendar, the agenda picker,
+// and per-artist counts, and loses the photo already saved under their
+// canonical name (photo lookups match by normalized name).
+const ARTIST_ALIASES: Record<string, string> = {
+  gusty: "Gusty Dj",
+};
+
+function canonicalArtistName(name: string): string {
+  const key = name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .trim();
+  return ARTIST_ALIASES[key] ?? name;
+}
+
 const MONTH_NAMES: Record<string, number> = {
   enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6, julio: 7,
   agosto: 8, septiembre: 9, setiembre: 9, sept: 9, sep: 9, octubre: 10,
@@ -92,7 +110,7 @@ export function parseAgendaGrid(rows: string[][]): SheetShow[] {
   for (let r = 3; r < rows.length; r++) {
     const row = rows[r];
     const artistCell = (row[0] ?? "").trim();
-    if (artistCell) currentArtist = artistCell;
+    if (artistCell) currentArtist = canonicalArtistName(artistCell);
     if (!currentArtist) continue;
 
     for (let c = 1; c < row.length; c++) {

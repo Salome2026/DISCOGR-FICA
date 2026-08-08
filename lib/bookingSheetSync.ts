@@ -12,8 +12,15 @@ const AGENDA_GID = "0";
 // shows up as separate-looking entries in the calendar, the agenda picker,
 // and per-artist counts, and loses the photo already saved under their
 // canonical name (photo lookups match by normalized name).
+// Canonical names here deliberately match lib/roster.ts's spelling exactly
+// (not just any consistent casing) — the artists-table id is a slugified
+// version of whatever's stored here, and it needs to land on the same slug
+// as the roster entry or it silently creates a second, unlabeled artist row
+// instead of reusing the real one.
 const ARTIST_ALIASES: Record<string, string> = {
-  gusty: "Gusty Dj",
+  gusty: "Gusty DJ",
+  lazerk: "Lazer K",
+  "juana vincet": "Juana Vincent",
 };
 
 function canonicalArtistName(name: string): string {

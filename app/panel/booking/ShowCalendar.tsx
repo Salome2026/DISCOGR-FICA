@@ -38,6 +38,34 @@ function normalize(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
 }
 
+// The team's convention: a decimal number over 1.1 ("1.5", "2.5", "4.5k")
+// means millones regardless of any k/m letter tacked on, while a bare
+// integer with no decimal point ("900", "300") means miles. Anything that
+// doesn't clearly fit either case (small bare numbers, decimals at or under
+// 1.1) is shown as extracted rather than guessed at.
+function formatValorDisplay(raw: string): string {
+  const m = raw.match(/(\d{1,3}(?:[.,]\d{1,3})?)\s*(k|m)?/i);
+  if (!m) return raw;
+  const digits = m[1];
+  const suffix = m[2]?.toLowerCase();
+  const hasDecimal = /[.,]/.test(digits);
+  const num = parseFloat(digits.replace(",", "."));
+  if (!Number.isFinite(num)) return raw;
+
+  let pesos: number | null = null;
+  if (suffix === "k" || suffix === "m") {
+    // Both letters read as "millones" in this team's shorthand (a bare "2m"
+    // or "4k" is never 2 or 4 thousand pesos for a show).
+    pesos = num * 1_000_000;
+  } else if (!hasDecimal) {
+    if (num >= 100) pesos = num * 1000;
+  } else if (num > 1.1) {
+    pesos = num * 1_000_000;
+  }
+  if (pesos === null) return raw;
+  return `$${Math.round(pesos).toLocaleString("es-AR")}`;
+}
+
 function Avatar({ name, url }: { name: string; url: string | null }) {
   if (url) return <img src={url} alt={name} className="bkc-avatar-img" />;
   const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("");
@@ -282,7 +310,7 @@ function DayDetailModal({
                   {s.hora ? ` · ${s.hora} hs` : ""} · {s.estado}
                 </span>
               </div>
-              {s.valor && <span className="bkc-day-row-valor">{s.valor}</span>}
+              {s.valor && <span className="bkc-day-row-valor">{formatValorDisplay(s.valor)}</span>}
             </button>
           ))}
         </div>
@@ -515,7 +543,7 @@ function SheetShowModal({
         {show.valor && (
           <div className="bkc-field">
             <label>Valor (extraído automáticamente del texto)</label>
-            <div style={{ fontSize: 14, fontWeight: 700 }}>{show.valor}</div>
+            <div style={{ fontSize: 14, fontWeight: 700 }}>{formatValorDisplay(show.valor)}</div>
           </div>
         )}
 

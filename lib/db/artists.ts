@@ -217,9 +217,16 @@ export async function updateArtistManagementFields(
   const chartPosition = input.chartPosition !== undefined ? input.chartPosition : current?.chartPosition ?? null;
   const estadoGeneral = input.estadoGeneral !== undefined ? input.estadoGeneral : current?.estadoGeneral ?? null;
   const genero = input.genero !== undefined ? input.genero : current?.genero ?? null;
+  // An artist with no row yet (curation-only fields have never been touched
+  // for them) is often still "static roster only" — falling straight to
+  // null here silently detached them from their label the first time anyone
+  // set a photo/estado/genero, since the static roster's sello only applies
+  // via listAllArtists()'s merge and stops being consulted the moment a real
+  // row exists.
+  const sello = current?.sello ?? staticRosterIndex().find((a) => a.id === id)?.sello ?? null;
   const { rows } = await sql`
     INSERT INTO artists (id, name, aliases, sello, photo_url, chart_position, estado_general, genero, updated_by, updated_at)
-    VALUES (${id}, ${name}, '[]'::jsonb, ${current?.sello ?? null}, ${photoUrl}, ${chartPosition}, ${estadoGeneral}, ${genero}, ${actorEmail}, now())
+    VALUES (${id}, ${name}, '[]'::jsonb, ${sello}, ${photoUrl}, ${chartPosition}, ${estadoGeneral}, ${genero}, ${actorEmail}, now())
     ON CONFLICT (id) DO UPDATE SET
       photo_url = EXCLUDED.photo_url,
       chart_position = EXCLUDED.chart_position,

@@ -3,9 +3,27 @@ import { auth } from "@/auth";
 import { hasPermission, type SessionUser } from "@/lib/permissions";
 import { listAllArtists, slugify, updateArtistManagementFields } from "@/lib/db/artists";
 import { listDistinctShowArtistNames } from "@/lib/db/booking";
+import { SELLO_ROSTERS } from "@/lib/roster";
 
 function normalize(s: string): string {
   return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+}
+
+// A show-only name that only matches a roster artist's *alias* (not their
+// primary name) still needs to resolve to that artist, not a new one — this
+// is what actually went wrong for "Lazerk" (alias of roster's "Lazer K")
+// before this existed: listAllArtists() only exposes the primary name, so
+// the id ended up slugified straight from the sheet's spelling and created
+// a second, sello-less row for someone already on the roster.
+function knownRosterAliases(): Set<string> {
+  const out = new Set<string>();
+  for (const roster of Object.values(SELLO_ROSTERS)) {
+    for (const a of roster ?? []) {
+      out.add(normalize(a.name));
+      for (const alias of a.aliases) out.add(normalize(alias));
+    }
+  }
+  return out;
 }
 
 async function sessionUser(): Promise<SessionUser | null> {
@@ -21,6 +39,7 @@ export async function GET() {
   }
   const artists = await listAllArtists();
   const known = new Set(artists.map((a) => normalize(a.name)));
+  for (const alias of knownRosterAliases()) known.add(alias);
 
   // Booking shows (mostly sheet-imported) name plenty of DJs/performers with
   // no row anywhere in `artists` — surface them too, so they're pickable in

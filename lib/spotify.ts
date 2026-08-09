@@ -175,3 +175,138 @@ export type SpotifyPlaylistDetail = SpotifyPlaylistSummary & {
 export async function getPlaylist(id: string): Promise<SpotifyPlaylistDetail> {
   return spotifyJson<SpotifyPlaylistDetail>(`/playlists/${id}`);
 }
+
+// --- Search + track matching ---
+
+function normalizeText(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/\(.*?\)|\[.*?\]/g, " ")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function wordOverlapScore(a: string, b: string): number {
+  const wa = new Set(normalizeText(a).split(" ").filter(Boolean));
+  const wb = new Set(normalizeText(b).split(" ").filter(Boolean));
+  if (wa.size === 0 || wb.size === 0) return 0;
+  let inter = 0;
+  for (const w of wa) if (wb.has(w)) inter++;
+  return inter / new Set([...wa, ...wb]).size;
+}
+
+// "Feat. X" / "& Y" / ", Z" in the artist string is noise for a search
+// query — the first-listed artist is what actually drives a good match.
+function primaryArtist(artist: string): string {
+  return artist.split(/\bfeat\.?\b|\bft\.?\b|\bcon\b|,|&/i)[0].trim();
+}
+
+type RawSpotifyTrack = {
+  id: string;
+  uri: string;
+  name: string;
+  artists: { name: string }[];
+  album: { images: { url: string }[] };
+};
+
+function scoreTrack(track: RawSpotifyTrack, title: string, artist: string): number {
+  const titleScore = wordOverlapScore(track.name, title);
+  const artistNames = track.artists.map((a) => a.name).join(" ");
+  const artistScore = wordOverlapScore(artistNames, artist);
+  return titleScore * 0.65 + artistScore * 0.35;
+}
+
+export type SpotifyTrackMatch = {
+  id: string;
+  uri: string;
+  name: string;
+  artists: string[];
+  albumImageUrl: string | null;
+  score: number; // 0..1, not a Spotify field — our own title/artist overlap score
+};
+
+// Searches by title + artist (parsed from a Drive playlist doc, not
+// necessarily a VPO artist — these are curated best-of lists that can
+// include anyone's songs) and returns the best-scoring candidate, or null
+// if nothing crosses a sane relevance bar. Tries a field-filtered query
+// first (more precise when it works), falls back to a plain query if that
+// comes up empty or weak.
+export async function searchTrackByTitleArtist(title: string, artist: string): Promise<SpotifyTrackMatch | null> {
+  const primary = primaryArtist(artist);
+  const queries = [`track:${JSON.stringify(title)} artist:${JSON.stringify(primary)}`, `${title} ${primary}`];
+  let best: { track: RawSpotifyTrack; score: number } | null = null;
+  for (const q of queries) {
+    const data = await spotifyJson<{ tracks: { items: RawSpotifyTrack[] } }>(
+      `/search?type=track&limit=5&q=${encodeURIComponent(q)}`
+    );
+    for (const t of data.tracks?.items ?? []) {
+      const score = scoreTrack(t, title, artist);
+      if (!best || score > best.score) best = { track: t, score };
+    }
+    if (best && best.score > 0.75) break;
+  }
+  if (!best) return null;
+  return {
+    id: best.track.id,
+    uri: best.track.uri,
+    name: best.track.name,
+    artists: best.track.artists.map((a) => a.name),
+    albumImageUrl: best.track.album?.images?.[0]?.url ?? null,
+    score: Math.round(best.score * 100) / 100,
+  };
+}
+
+// --- Playlist write endpoints ---
+
+export type SpotifyPlaylistCreated = { id: string; external_urls: { spotify: string } };
+
+export async function createPlaylist(name: string, description: string, isPublic: boolean): Promise<SpotifyPlaylistCreated> {
+  const conn = await getSpotifyConnection();
+  if (!conn?.spotifyUserId) throw new Error("Spotify no está conectado todavía.");
+  const res = await spotifyFetch(`/users/${conn.spotifyUserId}/playlists`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, description, public: isPublic }),
+  });
+  if (!res.ok) throw new Error(`Spotify API error ${res.status} creando playlist: ${await res.text()}`);
+  return res.json();
+}
+
+export async function updatePlaylistDetails(
+  id: string,
+  patch: { name?: string; description?: string; public?: boolean }
+): Promise<void> {
+  const res = await spotifyFetch(`/playlists/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch),
+  });
+  if (!res.ok) throw new Error(`Spotify API error ${res.status} actualizando playlist: ${await res.text()}`);
+}
+
+// body is the raw base64 JPEG string (no data: prefix) — Spotify requires
+// Content-Type: image/jpeg with the base64 payload as the literal body.
+export async function uploadPlaylistCoverImage(id: string, base64Jpeg: string): Promise<void> {
+  const res = await spotifyFetch(`/playlists/${id}/images`, {
+    method: "PUT",
+    headers: { "Content-Type": "image/jpeg" },
+    body: base64Jpeg,
+  });
+  if (!res.ok) throw new Error(`Spotify API error ${res.status} subiendo portada: ${await res.text()}`);
+}
+
+// Spotify caps this endpoint at 100 URIs per call.
+export async function addTracksToPlaylist(id: string, trackUris: string[]): Promise<void> {
+  for (let i = 0; i < trackUris.length; i += 100) {
+    const batch = trackUris.slice(i, i + 100);
+    const res = await spotifyFetch(`/playlists/${id}/tracks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ uris: batch }),
+    });
+    if (!res.ok) throw new Error(`Spotify API error ${res.status} agregando tracks: ${await res.text()}`);
+  }
+}

@@ -88,6 +88,11 @@ function PlaylistsContent() {
             </p>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
+            {canEdit && (
+              <a href="/panel/playlists/ingest" style={{ ...ghostBtn, textDecoration: "none", display: "inline-block" }}>
+                Crear desde Drive
+              </a>
+            )}
             <button type="button" onClick={load} style={ghostBtn} disabled={loading}>
               {loading ? "Actualizando..." : "↻ Actualizar"}
             </button>

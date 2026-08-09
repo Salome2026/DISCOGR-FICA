@@ -1,0 +1,668 @@
+[
+  {
+    "docId": "1aT3bYIijTzCeJHr3d6hEEWQJspuxfD_ZfYuK5FkN3-k",
+    "genre": "CHINA",
+    "docName": "ALEGRES",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/china__alegres.jpg"
+  },
+  {
+    "docId": "1prgWrcOZxsaJ1kY93Cy41_PBQiVQbcYh4_ucaxFUZB4",
+    "genre": "CHINA",
+    "docName": "MAS ESCUCHADAS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/china__mas_escuchadas.jpg"
+  },
+  {
+    "docId": "1FwlX4pn4uLuHwK2vKAgBp4CKUKp5tetFSm5RPtNDh3Y",
+    "genre": "CHINA",
+    "docName": "TRISTES",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/china__tristes.jpg"
+  },
+  {
+    "docId": "1WsfwbqqUcI5AlguxyUSGGUqRXJGuY-Hx38ZHrad5n8g",
+    "genre": "CHINA",
+    "docName": "VIRALES",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/china__virales.jpg"
+  },
+  {
+    "docId": "1d3jXhoWVsVUOYzlw-wV11p6JfooTSOYUyy6p78_5YL8",
+    "genre": "CLASICA",
+    "docName": "BARROCO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/clasica__barroco.jpg"
+  },
+  {
+    "docId": "1aowX6oJsZsjL7uoF05FmZt45IwvFAiuF8ynPG0SBz2A",
+    "genre": "CLASICA",
+    "docName": "CLASICA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/clasica__clasica.jpg"
+  },
+  {
+    "docId": "12Y8sBPoANzBUh-_mFIPl7RMPnyZ4MNdrv_VoSjf684Y",
+    "genre": "CLASICA",
+    "docName": "CLASICISMO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/clasica__clasicismo.jpg"
+  },
+  {
+    "docId": "1kOVWwIUSJqb_p2pFUdGddFLLlnIc-eSUsJtKUt4jrT8",
+    "genre": "CLASICA",
+    "docName": "CONTEMPORANEA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/clasica__contemporanea.jpg"
+  },
+  {
+    "docId": "1G9v2azUF81LOr7qqtRGeHnQUTG15hDvd5AvDhUo-vDQ",
+    "genre": "CLASICA",
+    "docName": "ROMANTICISMO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/clasica__romanticismo.jpg"
+  },
+  {
+    "docId": "1ivpwtpsBgx_LTL237DDuAlbYOEiVQkqGeAH9jVqtt4Y",
+    "genre": "COUNTRY",
+    "docName": "COUNTRY",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/country__country_a.jpg"
+  },
+  {
+    "docId": "1Pmt1LrnOM4kFD4zrOwz225UuC4kASMD87gpZlb6Uxzc",
+    "genre": "COUNTRY",
+    "docName": "COUNTRY",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/country__country_b.jpg"
+  },
+  {
+    "docId": "1gCQ0KaRSS4eGeafJ2Loi9EN4Cz7j59i6SLyzWmV_gew",
+    "genre": "COUNTRY",
+    "docName": "COUNTRY INGLES",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/country__country_ingles.jpg"
+  },
+  {
+    "docId": "1T3Gc7JOSgN6e3RryE3LBljwqW0q0a1if58luaiW8ELQ",
+    "genre": "COUNTRY",
+    "docName": "EXITOS COUNTRY",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/country__exitos_country.jpg"
+  },
+  {
+    "docId": "12QtmzcYWPRMNG6W3domZ65jitYR4tKAgam3HNXQi8R0",
+    "genre": "CUARTETO",
+    "docName": "CUARTETO CLASICO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cuarteto__cuarteto_clasico.jpg"
+  },
+  {
+    "docId": "1CQ8JyUiIMPu3QcWoTt1R5EZ-INmqgYjzxfn88M4nDjs",
+    "genre": "CUARTETO",
+    "docName": "CUARTETO MODERNO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cuarteto__cuarteto_moderno.jpg"
+  },
+  {
+    "docId": "13scyOFjA9OFGXlQ9ggwumEZFZW2rjwvDV5jgUC7cdPs",
+    "genre": "CUARTETO",
+    "docName": "EXITOS CUARTETO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cuarteto__exitos_cuarteto.jpg"
+  },
+  {
+    "docId": "1Cd7Vw0PjFlb2myFQPZkFI9P72z89jw1YbpTwonFkzxI",
+    "genre": "CUARTETO",
+    "docName": "HISTORIA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cuarteto__historia.jpg"
+  },
+  {
+    "docId": "1-rikcACdlS3DN1Gqt9nAFUZnF9icYeqie4uGXtKhq2s",
+    "genre": "CUARTETO",
+    "docName": "SOLO RODRIGO Y NADA MAS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cuarteto__solo_rodrigo_y_nada_mas.jpg"
+  },
+  {
+    "docId": "1tj8M9o7-LZt5N2HaZm8k3CJiYSx9zk03CiSh0T-dJU0",
+    "genre": "CUMBIA",
+    "docName": "CUMBIA - EXITOS MEXICO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cumbia__cumbia_exitos_mexico.jpg"
+  },
+  {
+    "docId": "16DaawPEK9Xm2mDpw5g9c0J4ZDDvMfHXAkIuAqC4j_RQ",
+    "genre": "CUMBIA",
+    "docName": "CUMBIA 2000",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cumbia__cumbia_2000.jpg"
+  },
+  {
+    "docId": "1PdqUgHASZkdjSdrSaK-N566PMYF1mpbZ4ERaMqoyxz0",
+    "genre": "CUMBIA",
+    "docName": "CUMBIA 2024",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cumbia__cumbia_2024.jpg"
+  },
+  {
+    "docId": "1y_nXv1mGL_3DZyZWxBuo1Y0pMCHg6HWQyya2psrHQnM",
+    "genre": "CUMBIA",
+    "docName": "CUMBIA 2025",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cumbia__cumbia_2025.jpg"
+  },
+  {
+    "docId": "1va-WJuykOXwUZdAa_2EAjm3lEvA6t1-ec9Roa2gB6Hk",
+    "genre": "CUMBIA",
+    "docName": "CUMBIA 80-90",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cumbia__cumbia_80_90.jpg"
+  },
+  {
+    "docId": "1cb8IqmnKJuW0ew3s0dk5wvhi2BX41whGbPu-0F6dsms",
+    "genre": "CUMBIA",
+    "docName": "CUMBIA BASE",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cumbia__cumbia_base.jpg"
+  },
+  {
+    "docId": "1gyCG2ErO0RLbrPZJdf6n5NcSAiD4WAF4lPJy96Wqg3k",
+    "genre": "CUMBIA",
+    "docName": "CUMBIA DEL RECUERDO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cumbia__cumbia_del_recuerdo.jpg"
+  },
+  {
+    "docId": "1T45ZFpmrxD5SE3f1gsub3mKnb91AaBqCdRmuOoPBS3U",
+    "genre": "CUMBIA",
+    "docName": "CUMBIA MEXICANA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cumbia__cumbia_mexicana.jpg"
+  },
+  {
+    "docId": "1S_qgzS467laj8sSVrEgOsY7-4tXuPH3-xygDj9kbKc8",
+    "genre": "CUMBIA",
+    "docName": "CUMBIA VILLERA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/cumbia__cumbia_villera.jpg"
+  },
+  {
+    "docId": "1ivyDsnRMnpE3rig_iUXbnil1FKoF2OdmD6mvblDngNk",
+    "genre": "ELECTRONICA",
+    "docName": "AFRO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/electronica__afro.jpg"
+  },
+  {
+    "docId": "1jliY5VidZbQrFKSt0kzS_SltDHBI5la6kUzuBMSgrRQ",
+    "genre": "ELECTRONICA",
+    "docName": "AFRO HOUSE 2025",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/electronica__afro_house_2025.jpg"
+  },
+  {
+    "docId": "1g7P8_HkcuvLqQyNcnM7Xn5rEp3Wz7buavwwdvzQQXPs",
+    "genre": "ELECTRONICA",
+    "docName": "AMBIENTE",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/electronica__ambiente.jpg"
+  },
+  {
+    "docId": "1_q0tN3fdnZBc1-g_FPAm2djcQQl0xKKeWVVCHfMHK9E",
+    "genre": "ELECTRONICA",
+    "docName": "DANCE POP",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/electronica__dance_pop.jpg"
+  },
+  {
+    "docId": "15nYuxpjEda-pnZU7flZgIw7w7vnIC09C7W-Ha_YXhCA",
+    "genre": "ELECTRONICA",
+    "docName": "EDM",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/electronica__edm.jpg"
+  },
+  {
+    "docId": "1ycN-96kprhytuqHXxWQzo-kSPHvpv-CcAnPx9ZNz-7I",
+    "genre": "ELECTRONICA",
+    "docName": "ELECTRO POP",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/electronica__electro_pop.jpg"
+  },
+  {
+    "docId": "1xCWYBIzMb_z4-TaUTXQstBRTGETYnuw_SOdQ5_sBeRk",
+    "genre": "ELECTRONICA",
+    "docName": "ELECTRONIC TRANCE",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/electronica__electronic_trance.jpg"
+  },
+  {
+    "docId": "1cErfQ36KGfHc6oI0jP5_kWSGg9W8FAlI8vmceKGlJu8",
+    "genre": "ELECTRONICA",
+    "docName": "ELECTRONICA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/electronica__electronica.jpg"
+  },
+  {
+    "docId": "1hVTbf3hecfblRKDaRYW8jH5kUC3r8eVK-uToJ8MyX6g",
+    "genre": "ELECTRONICA",
+    "docName": "HOUSE",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/electronica__house.jpg"
+  },
+  {
+    "docId": "1CoSkEx-ou8PbnNBhvD6dy6TNB7Uix-dCafhay9gVYPA",
+    "genre": "ELECTRONICA",
+    "docName": "LATIN HOUSE",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/electronica__latin_house.jpg"
+  },
+  {
+    "docId": "10X1gC6X3jcQB_4wmyjjc-P5qpwYnjuszMajH8tDDPe8",
+    "genre": "ELECTRONICA",
+    "docName": "TECHNO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/electronica__techno.jpg"
+  },
+  {
+    "docId": "1L7vUgnZ0uQp8AZ29wqGIIjxjH8c5IuGX9i8fqf-U738",
+    "genre": "FOLKLORE",
+    "docName": "ARGENTINO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/folklore__argentino.jpg"
+  },
+  {
+    "docId": "1j3XMGTcy4cbQoOjUv2mTXElsP70l3oxUmQSWM7Xsa7o",
+    "genre": "FOLKLORE",
+    "docName": "EXITOS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/folklore__exitos.jpg"
+  },
+  {
+    "docId": "1xuJPAA45G3CeLr_R3m14wVtY743Y9H5cHpHXplTFOJI",
+    "genre": "FOLKLORE",
+    "docName": "FOLCKLORE - 50 AÑOS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/folklore__folcklore_50_anos.jpg"
+  },
+  {
+    "docId": "14DOWjQAiDMYA0a33TiOfDQD-Amf8YVOWrmp7DBMbBFQ",
+    "genre": "FOLKLORE",
+    "docName": "PEÑA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/folklore__pena.jpg"
+  },
+  {
+    "docId": "1TTLt-GuzZx_26a5k0MNeHM8l7xIHsJOjyV_VorRudLM",
+    "genre": "FOLKLORE",
+    "docName": "WORLD WIDE",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/folklore__world_wide.jpg"
+  },
+  {
+    "docId": "171sHqsmUGXSD6xbtU7sgYWbYHmzUwJ82Zs-OQNgb_x0",
+    "genre": "HIP HOP",
+    "docName": "EXITOS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/hip_hop__exitos.jpg"
+  },
+  {
+    "docId": "1Rn3R66EGcLyHHvJYfpMcEar3kbAVwkkSqnZO3kknyeg",
+    "genre": "HIP HOP",
+    "docName": "HIP HOP 2000 - 2025",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/hip_hop__hip_hop_2000_2025.jpg"
+  },
+  {
+    "docId": "1YdzqSAqUazpu79DnL9UFptF271bYR-0WWpHzazQ_EpI",
+    "genre": "HIP HOP",
+    "docName": "HIP HOP 80 USA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/hip_hop__hip_hop_80_usa.jpg"
+  },
+  {
+    "docId": "10DkbYbW3J60U5ZGnni8FlHs6C_JRMmD_zuYk1pwdwVQ",
+    "genre": "HIP HOP",
+    "docName": "HIP HOP 90 USA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/hip_hop__hip_hop_90_usa.jpg"
+  },
+  {
+    "docId": "1aBQvQfaqLIaVTpWm34AoaMiNrAP8Kmkm0Q9_qU7PCWE",
+    "genre": "HIP HOP",
+    "docName": "WORLD WIDE",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/hip_hop__world_wide.jpg"
+  },
+  {
+    "docId": "15e9hirPGx52qrw9qCyEsHP4xpwulv61mnMNArKpvRCE",
+    "genre": "LLUVIA",
+    "docName": "AGUS - RIOS Y ARROYOS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/lluvia__agus_rios_y_arroyos.jpg"
+  },
+  {
+    "docId": "17WgZS8SbJwp4EwN0qiegncm8xKX5tytxubsE5ozCdZo",
+    "genre": "LLUVIA",
+    "docName": "LLUVIA - CANCIONES PARA ESCUCHAR",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/lluvia__lluvia_canciones_para_escuchar.jpg"
+  },
+  {
+    "docId": "1_ieBPf1mKkbxK2cj27plTG8zDUAaEsF9AF7wPnwWQYg",
+    "genre": "LLUVIA",
+    "docName": "SONIDOS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/lluvia__sonidos.jpg"
+  },
+  {
+    "docId": "1J-G5XnbFPv9UYTeJxETDWZrd9a255SDUWDZfbqmncK0",
+    "genre": "MANTRAS",
+    "docName": "DIF FRECUENCIAS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/mantras__dif_frecuencias.jpg"
+  },
+  {
+    "docId": "12nFFryhVOHrhPjn9uSELZIYRHg9sLwmusYsRPbDRdo8",
+    "genre": "MANTRAS",
+    "docName": "MANTRAS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/mantras__mantras.jpg"
+  },
+  {
+    "docId": "1IyL_1DS4B8TxBVYHTzM_mXZ4mAt-73CieJkuzgEr6l4",
+    "genre": "MANTRAS",
+    "docName": "MEDITAR",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/mantras__meditar.jpg"
+  },
+  {
+    "docId": "1OZ4g3exMhtkMP65yOkPMX1Y1aAItAWFN9a1MwW9gsz4",
+    "genre": "MANTRAS",
+    "docName": "PURIFICACION",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/mantras__purificacion.jpg"
+  },
+  {
+    "docId": "1oCOkrA70WytEONG0YGVwq1x5mMXh6KbsjQPH6c_ZezA",
+    "genre": "MANTRAS",
+    "docName": "WORLD WIDE",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/mantras__world_wide.jpg"
+  },
+  {
+    "docId": "1GaGD2DvgX9petvLneFoH2rixIKeLy9y0qMn0MEncz_s",
+    "genre": "MINDFULLNESS",
+    "docName": "MINDFULLNESS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/mindfullness__mindfullness.jpg"
+  },
+  {
+    "docId": "1PcbQ4erPBb9UXFTYr28SPe1hLZQ3nrfZBjsmVzq0prA",
+    "genre": "MUSICA ALEGRE",
+    "docName": "2025",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/musica_alegre__2025.jpg"
+  },
+  {
+    "docId": "1MUfsMbnRh8lkvcgogjZCTvGnzoUEnqp_SxsK-9qSQMo",
+    "genre": "MUSICA ALEGRE",
+    "docName": "MOVIDAS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/musica_alegre__movidas.jpg"
+  },
+  {
+    "docId": "1Ce7LXWg7QOGHcg6M0tO_aKGpfOR1T8bsKzZp1NUT8AE",
+    "genre": "POP",
+    "docName": "2025",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/pop__2025.jpg"
+  },
+  {
+    "docId": "1X8PXhFnEPEAYD15D1Rh8GZ1TqGJexJb9jp_tKzfjt3c",
+    "genre": "POP",
+    "docName": "POP INGLES",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/pop__pop_ingles.jpg"
+  },
+  {
+    "docId": "1AsWhxca_CtSsgzE10rTzIpQlfirNhsCyF0i2Gj9xJws",
+    "genre": "PREVIA",
+    "docName": "ACTUALIZADAS - 2025",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/previa__actualizadas_2025.jpg"
+  },
+  {
+    "docId": "13sD6OAIUe1giXS2W2zhWvuCIc-shHSx3iCwI9LCg-gY",
+    "genre": "PREVIA",
+    "docName": "EXITOS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/previa__exitos.jpg"
+  },
+  {
+    "docId": "1iVGH6Z68DZU1xYh9hxgTkdJpFM9fp31K0HVerpVcUEM",
+    "genre": "PREVIA",
+    "docName": "PREVIA - URBANO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/previa__previa_urbano.jpg"
+  },
+  {
+    "docId": "12Zhgr2zu_qO6BG1Jxg2O_VhYvooeLD40TgoXVyx07tQ",
+    "genre": "PREVIA",
+    "docName": "PREVIA VIRAL",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/previa__previa_viral.jpg"
+  },
+  {
+    "docId": "1JQmc6lqwT6uK8tPxltRy7igGtXp_2PlbDCoI-GjNiVU",
+    "genre": "PREVIA",
+    "docName": "RKT - REGGAETON",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/previa__rkt_reggaeton.jpg"
+  },
+  {
+    "docId": "1Qx4AY0Zk9qcY7nXnlWnIrRD091c_GgNoTeay-pEqSGk",
+    "genre": "REGGAETON",
+    "docName": "EXITOS REGGAETON",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/reggaeton__exitos_reggaeton.jpg"
+  },
+  {
+    "docId": "1t0JHa84pkDfJ4eaxd4ZocnHuDB0vqkcLCzb5Mf6ah84",
+    "genre": "REGGAETON",
+    "docName": "REGGAETON 2021 a 2023",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/reggaeton__reggaeton_2021_a_2023.jpg"
+  },
+  {
+    "docId": "1SZr4Hz4dRaflvrpjYvY2nSs7Fa07k0EL5dvc1FHLd7E",
+    "genre": "REGGAETON",
+    "docName": "REGGAETON 2024 - 2025",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/reggaeton__reggaeton_2024_2025.jpg"
+  },
+  {
+    "docId": "1izWJ5LECRD0kVac54O6eiCNPzOuo9l8PImyQwz1JQGI",
+    "genre": "REGGAETON",
+    "docName": "REGGAETON ARGENTINO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/reggaeton__reggaeton_argentino.jpg"
+  },
+  {
+    "docId": "1nxkxQadu0jD1nmGg8M7AkizpjOXbXd-TAnc8afHAU54",
+    "genre": "REGGAETON",
+    "docName": "REGGAETON LATINO 2020 - 2023",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/reggaeton__reggaeton_latino_2020_2023.jpg"
+  },
+  {
+    "docId": "1tXIDfXvCDIDZ-ZHCEI8brxEcXiWV4JdIsKl2WL1CPwo",
+    "genre": "REIKI",
+    "docName": "JUVENIL",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/reiki__juvenil.jpg"
+  },
+  {
+    "docId": "1_nSJHdU_jUc5mwSBDtnHsKbHTSRYZF6SmDZDTNgyMpo",
+    "genre": "REIKI",
+    "docName": "MAS ESCUCHADAS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/reiki__mas_escuchadas.jpg"
+  },
+  {
+    "docId": "1EzYM01cgcd1YrqayZ3nV4J_jzqn7G6jAL5lo4luIDR8",
+    "genre": "REIKI",
+    "docName": "REIKI",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/reiki__reiki.jpg"
+  },
+  {
+    "docId": "1PD2QFkRAqR-TWEo5y2ZCdbAvFVAJ3uRKtJXFBnriAgM",
+    "genre": "REIKI",
+    "docName": "SANACION",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/reiki__sanacion.jpg"
+  },
+  {
+    "docId": "1Bl7g7y4mUgg94GlECjvbXWqP4Qsej52hkUIFXv04Waw",
+    "genre": "REIKI",
+    "docName": "TERCERA EDAD",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/reiki__tercera_edad.jpg"
+  },
+  {
+    "docId": "1PAOfclb7APeoiLa3lRpfMzIUEvLWIuUSfG0-xK7ei0Q",
+    "genre": "RKT",
+    "docName": "EXITOS RKT",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rkt__exitos_rkt.jpg"
+  },
+  {
+    "docId": "1yt9v2cxAkQW0bI6G9o2ZIPeIU9qYiaory1YSQu__9_Q",
+    "genre": "RKT",
+    "docName": "RKT 2023",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rkt__rkt_2023.jpg"
+  },
+  {
+    "docId": "1mqp6OmA6a_yfdB5hfMEaAtKVHJF27ySfIRK-446j258",
+    "genre": "RKT",
+    "docName": "RKT 2024",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rkt__rkt_2024.jpg"
+  },
+  {
+    "docId": "1zBTFM0W0V2pxbbnBq8QKTRwS5jxw73v0ycJFR-8_Cs8",
+    "genre": "RKT",
+    "docName": "RKT 2025",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rkt__rkt_2025.jpg"
+  },
+  {
+    "docId": "1W7E6q5oJN_3JkdrliyGlwr4uu66C3od3o7D_shJIv_8",
+    "genre": "RKT",
+    "docName": "TURREO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rkt__turreo.jpg"
+  },
+  {
+    "docId": "1aWqoZ57OuOm7rBBursOzVYOriIyYhj1YbkI-0FRa5Q8",
+    "genre": "ROCK",
+    "docName": "ROCK ESTADOUNIDENSE ULT 60 AÑOS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rock__rock_estadounidense_ult_60_anos.jpg"
+  },
+  {
+    "docId": "1MVw_gBhVaRaVkrxU5HOO2YbFb6dPynsELySq7yblTdg",
+    "genre": "ROCK",
+    "docName": "ROCK INGLES - 2000",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rock__rock_ingles_2000.jpg"
+  },
+  {
+    "docId": "1tWuDYvJjmxRfkdIWfK5XQt63WNDZvd--s0R_KBj3CBg",
+    "genre": "ROCK",
+    "docName": "ROCK INGLES - 70",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rock__rock_ingles_70.jpg"
+  },
+  {
+    "docId": "1xwX7TKpKKO54LcJXhANqoDx9kV3DI9_vkwoooUd0BA8",
+    "genre": "ROCK",
+    "docName": "ROCK INGLES - 80",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rock__rock_ingles_80.jpg"
+  },
+  {
+    "docId": "1feWOUi3gOlz2Sru0QPs0MLbYPZ3HKbiWflDPW7gr6gs",
+    "genre": "ROCK",
+    "docName": "ROCK INGLES - 90",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rock__rock_ingles_90.jpg"
+  },
+  {
+    "docId": "1KGoJbFcJfU7RNhS0uXEnJ4qguPOmtlBfXkuj6kMU-7s",
+    "genre": "ROCK",
+    "docName": "ROCK INGLES - ULT 60 AÑOS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rock__rock_ingles_ult_60_anos.jpg"
+  },
+  {
+    "docId": "1GTrgeQXsPj-_--hLf73YZCSpNjyDFU32r642T7v5nMw",
+    "genre": "ROCK",
+    "docName": "ROCK INGLES 2010",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rock__rock_ingles_2010.jpg"
+  },
+  {
+    "docId": "1v8b8WBbFnhJ2Q8ijwHcU-RS4N9mZDnBBjbmojJc3eXs",
+    "genre": "ROCK",
+    "docName": "ROCK NACIONAL 2000 - 2020",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rock__rock_nacional_2000_2020.jpg"
+  },
+  {
+    "docId": "1mPP8KH3WF8cnq0YmrONWLC7GajGqCr4qvs5b08xKDpg",
+    "genre": "ROCK",
+    "docName": "ROCK NACIONAL 60 - 70 -80",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rock__rock_nacional_60_70_80.jpg"
+  },
+  {
+    "docId": "152mgxJnZ2ACRCGofKxIAKoWXbll4TS__8DqhODTCIM8",
+    "genre": "ROCK",
+    "docName": "ROCK NACIONAL 80 - 2000",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/rock__rock_nacional_80_2000.jpg"
+  },
+  {
+    "docId": "1c0bC4JIRxSu8VS-ABKuOvr9EDHsktyLtJLpY3N8STZ8",
+    "genre": "TANGO",
+    "docName": "HABLA HISPANA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/tango__habla_hispana.jpg"
+  },
+  {
+    "docId": "1UOA-vy5L97FV9lyk-Pog0_x2k9Voxg3wJbmTdBMoudc",
+    "genre": "TANGO",
+    "docName": "INEDITOS -?",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/tango__ineditos.jpg"
+  },
+  {
+    "docId": "1xVNB_jyH4ooNLwn-8kQBvnnK0X9Yh3tpCJby0fkXrEk",
+    "genre": "TANGO",
+    "docName": "MAS ESCUCHADOS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/tango__mas_escuchados.jpg"
+  },
+  {
+    "docId": "1Z-7oy3PqV6VPbjJg-dEbBqXthgxsJ0dNlU4mD2Bo3yo",
+    "genre": "TANGO",
+    "docName": "TANGO ARGENITNO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/tango__tango_argenitno.jpg"
+  },
+  {
+    "docId": "1sKBe1HLvY2SiCTKU877LKlT9cx2kCxpK3f6R4nxeaTw",
+    "genre": "TANGO",
+    "docName": "WORLD WIDE",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/tango__world_wide.jpg"
+  },
+  {
+    "docId": "1uqtGUHTlWm7z3HymGXruWx7zl3UajCNYFYR6nWEZ_qo",
+    "genre": "TRAP",
+    "docName": "TRAP AMERICANO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/trap__trap_americano.jpg"
+  },
+  {
+    "docId": "1ijjqlrkEa-6o8tlhdYJut3Nh3Kp0MOBOD5hzHbCbfhg",
+    "genre": "TRAP",
+    "docName": "TRAP ARGENTINO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/trap__trap_argentino.jpg"
+  },
+  {
+    "docId": "1vNbNx40H_bHpbUsJnBnHCi4OcLS3CicY0Awsi1HNjks",
+    "genre": "TRAP",
+    "docName": "TRAP CHILENO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/trap__trap_chileno.jpg"
+  },
+  {
+    "docId": "1F-nsT9lGIHJ2WeTxOT4oYMILYxMbuQfvKYcT0wmBnY4",
+    "genre": "TRAP",
+    "docName": "TRAP LATINOAMERICANO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/trap__trap_latinoamericano.jpg"
+  },
+  {
+    "docId": "1Zb981MyOlt_AmTprwEBUFH84uRfrLlP21-zMQLpKK48",
+    "genre": "TRAP",
+    "docName": "TRAP MUNDIAL",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/trap__trap_mundial.jpg"
+  },
+  {
+    "docId": "1rHyof1ksteOof_0gE--cJGIDcsO0QEC7KotnGAsI3rM",
+    "genre": "URBANO",
+    "docName": "EXITOS URBANOS",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/urbano__exitos_urbanos.jpg"
+  },
+  {
+    "docId": "1Y6bClvXnpXl8NQs_8gj_L0W40ATg72grm7sFbPk9JUk",
+    "genre": "URBANO",
+    "docName": "URBANO - 2005 a 2018",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/urbano__urbano_2005_a_2018.jpg"
+  },
+  {
+    "docId": "1B3iR3qkubvNQth8CotLPaqdcPKka2ORc_xlmpQ_6wQU",
+    "genre": "URBANO",
+    "docName": "URBANO - HASTA 2010",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/urbano__urbano_hasta_2010.jpg"
+  },
+  {
+    "docId": "1zvip_dPuIIn0HYmHcFjhl6NROe5aJx9PKZ34jiPM1XI",
+    "genre": "URBANO",
+    "docName": "URBANO ARGENTINO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/urbano__urbano_argentino.jpg"
+  },
+  {
+    "docId": "1M1XsX_4TqNRNHhpENy0VNSvTZyfFx2OBIf9eOI2bfOg",
+    "genre": "VIRALES",
+    "docName": "CHINA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/virales__china.jpg"
+  },
+  {
+    "docId": "1baeFKgsGoVpIBFPgC6KZmhCEOLMBUg5uh9DRBK7pf0I",
+    "genre": "VIRALES",
+    "docName": "VIRALES ARGENTINA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/virales__virales_argentina.jpg"
+  },
+  {
+    "docId": "1y4aLqK5RZWTLAShcs27hBXcBQP8GjnXSqhQVCB1sc5s",
+    "genre": "VIRALES",
+    "docName": "VIRALES ESPAÑA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/virales__virales_espana.jpg"
+  },
+  {
+    "docId": "1doR-mWc6Jzfe0dlnL3NGBhgTrCmlIi53rEsu9DMZDX4",
+    "genre": "VIRALES",
+    "docName": "VIRALES MEXICO",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/virales__virales_mexico.jpg"
+  },
+  {
+    "docId": "13-RIqyUb8hx6RSDVXbk8rf4SLD9t2-zzJcMkIbOM9I0",
+    "genre": "VIRALES",
+    "docName": "VIRALES WORLD WIDE",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/virales__virales_world_wide.jpg"
+  },
+  {
+    "docId": "1lrtSDpy3ISbnopdc0_b-eBfC6jnxt7e6DkPaqynxvwU",
+    "genre": "YOGA",
+    "docName": "YOGA",
+    "url": "https://eujemi6snrepvjvw.public.blob.vercel-storage.com/spotify-covers/yoga__yoga.jpg"
+  }
+]

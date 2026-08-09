@@ -31,6 +31,11 @@ export function ensureSpotifyPlaylistsSchema(): Promise<void> {
           updated_at TIMESTAMPTZ
         )
       `;
+      // Tracks which Drive doc a given playlist came from, so the ingestion
+      // route can skip docs it already processed on a re-run instead of
+      // creating duplicate playlists.
+      await sql`ALTER TABLE spotify_playlists ADD COLUMN IF NOT EXISTS drive_doc_id TEXT`;
+      await sql`CREATE UNIQUE INDEX IF NOT EXISTS spotify_playlists_drive_doc_idx ON spotify_playlists (drive_doc_id) WHERE drive_doc_id IS NOT NULL`;
     })();
   }
   return ready;
@@ -53,6 +58,7 @@ export type SpotifyPlaylistRow = {
   reviewStatus: string;
   reviewedBy: string | null;
   reviewedAt: string | null;
+  driveDocId: string | null;
   lastSyncedAt: string | null;
   lastTrackAddedAt: string | null;
   createdBy: string | null;
@@ -79,6 +85,7 @@ function rowToPlaylist(r: Record<string, unknown>): SpotifyPlaylistRow {
     reviewStatus: r.review_status as string,
     reviewedBy: (r.reviewed_by as string | null) ?? null,
     reviewedAt: (r.reviewed_at as string | null) ?? null,
+    driveDocId: (r.drive_doc_id as string | null) ?? null,
     lastSyncedAt: (r.last_synced_at as string | null) ?? null,
     lastTrackAddedAt: (r.last_track_added_at as string | null) ?? null,
     createdBy: (r.created_by as string | null) ?? null,
@@ -123,4 +130,62 @@ export async function upsertPlaylistFromSpotify(p: {
 export async function updateFollowerCount(id: string, followerCount: number): Promise<void> {
   await ensureSpotifyPlaylistsSchema();
   await sql`UPDATE spotify_playlists SET follower_count = ${followerCount}, last_synced_at = now() WHERE id = ${id}`;
+}
+
+// Has this Drive doc already been turned into a playlist? Lets the
+// ingestion route be re-run safely — it just skips docs it already did.
+export async function findPlaylistByDriveDocId(driveDocId: string): Promise<string | null> {
+  await ensureSpotifyPlaylistsSchema();
+  const { rows } = await sql`SELECT id FROM spotify_playlists WHERE drive_doc_id = ${driveDocId}`;
+  return (rows[0]?.id as string | undefined) ?? null;
+}
+
+// Records a playlist just created in Spotify from a Drive doc — always
+// review_status='pending' (the ingestion gate); the manual-create path in
+// the admin UI (Fase 2) inserts rows directly with 'approved' instead.
+export async function insertIngestedPlaylist(p: {
+  id: string;
+  name: string;
+  genre: string;
+  driveFolderId: string;
+  driveFolderPath: string;
+  driveDocId: string;
+  coverImageUrl: string | null;
+  coverSource: string | null;
+  spotifyUrl: string | null;
+  trackCount: number;
+  createdBy: string;
+}): Promise<void> {
+  await ensureSpotifyPlaylistsSchema();
+  await sql`
+    INSERT INTO spotify_playlists
+      (id, name, genre, drive_folder_id, drive_folder_path, drive_doc_id, cover_image_url, cover_source,
+       spotify_url, track_count, status, review_status, created_by)
+    VALUES
+      (${p.id}, ${p.name}, ${p.genre}, ${p.driveFolderId}, ${p.driveFolderPath}, ${p.driveDocId}, ${p.coverImageUrl},
+       ${p.coverSource}, ${p.spotifyUrl}, ${p.trackCount}, 'active', 'pending', ${p.createdBy})
+  `;
+}
+
+export async function listPendingReview(): Promise<SpotifyPlaylistRow[]> {
+  await ensureSpotifyPlaylistsSchema();
+  const { rows } = await sql`
+    SELECT * FROM spotify_playlists WHERE review_status = 'pending' ORDER BY genre ASC, name ASC
+  `;
+  return rows.map(rowToPlaylist);
+}
+
+export async function getPlaylistById(id: string): Promise<SpotifyPlaylistRow | null> {
+  await ensureSpotifyPlaylistsSchema();
+  const { rows } = await sql`SELECT * FROM spotify_playlists WHERE id = ${id}`;
+  return rows[0] ? rowToPlaylist(rows[0]) : null;
+}
+
+export async function approvePlaylist(id: string, actorEmail: string): Promise<void> {
+  await ensureSpotifyPlaylistsSchema();
+  await sql`
+    UPDATE spotify_playlists
+    SET review_status = 'approved', reviewed_by = ${actorEmail}, reviewed_at = now()
+    WHERE id = ${id}
+  `;
 }

@@ -10,7 +10,7 @@ const FIELDS: { key: keyof PublishingArtist; label: string }[] = [
   { key: "apellido", label: "Apellido" },
   { key: "dni", label: "DNI" },
   { key: "cuil", label: "CUIL" },
-  { key: "sadaic", label: "Número de SADAIC" },
+  { key: "sadaic", label: "N° de SADAIC / IPI" },
   { key: "direccion", label: "Dirección" },
   { key: "localidad", label: "Localidad" },
   { key: "provincia", label: "Provincia" },

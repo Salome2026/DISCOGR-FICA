@@ -234,7 +234,7 @@ export function ArtistForm({
             <Field label="DNI"><input value={dni} onChange={(e) => setDni(e.target.value)} style={inputStyle} /></Field>
           </div>
           <div style={{ flex: 1 }}>
-            <Field label="Número de SADAIC"><input value={sadaic} onChange={(e) => setSadaic(e.target.value)} style={inputStyle} /></Field>
+            <Field label="N° de SADAIC / IPI"><input value={sadaic} onChange={(e) => setSadaic(e.target.value)} style={inputStyle} /></Field>
           </div>
         </div>
         <Field label="CUIL">

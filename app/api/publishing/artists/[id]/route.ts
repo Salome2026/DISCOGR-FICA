@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const body = await req.json();
   const {
-    nombreArtistico, nombreCompleto, apellido, dni, sadaic, direccion, nacionalidad,
+    nombreArtistico, nombreCompleto, apellido, dni, cuil, sadaic, direccion, localidad, provincia, nacionalidad,
     fechaNacimiento, email, telefono, sello, tipo, observaciones, documentoUrl, documentoNombre,
   } = body as Record<string, string | null | undefined>;
 
@@ -45,8 +45,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     nombreCompleto: nombreCompleto || null,
     apellido: apellido || null,
     dni: dni || null,
+    cuil: cuil || null,
     sadaic: sadaic || null,
     direccion: direccion || null,
+    localidad: localidad || null,
+    provincia: provincia || null,
     nacionalidad: nacionalidad || null,
     fechaNacimiento: fechaNacimiento || null,
     email: email || null,

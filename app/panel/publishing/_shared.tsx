@@ -144,8 +144,11 @@ export function ArtistForm({
   const [nombreCompleto, setNombreCompleto] = useState(artist?.nombreCompleto ?? "");
   const [apellido, setApellido] = useState(artist?.apellido ?? "");
   const [dni, setDni] = useState(artist?.dni ?? "");
+  const [cuil, setCuil] = useState(artist?.cuil ?? "");
   const [sadaic, setSadaic] = useState(artist?.sadaic ?? "");
   const [direccion, setDireccion] = useState(artist?.direccion ?? "");
+  const [localidad, setLocalidad] = useState(artist?.localidad ?? "");
+  const [provincia, setProvincia] = useState(artist?.provincia ?? "");
   const [nacionalidad, setNacionalidad] = useState(artist?.nacionalidad ?? "");
   const [fechaNacimiento, setFechaNacimiento] = useState(artist?.fechaNacimiento ?? "");
   const [email, setEmail] = useState(artist?.email ?? "");
@@ -185,7 +188,8 @@ export function ArtistForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nombreArtistico, nombreCompleto: nombreCompleto || null, apellido: apellido || null,
-          dni: dni || null, sadaic: sadaic || null, direccion: direccion || null,
+          dni: dni || null, cuil: cuil || null, sadaic: sadaic || null, direccion: direccion || null,
+          localidad: localidad || null, provincia: provincia || null,
           nacionalidad: nacionalidad || null, fechaNacimiento: fechaNacimiento || null,
           email: email || null, telefono: telefono || null, sello: sello || null, tipo,
           observaciones: observaciones || null, documentoUrl: documentoUrl || null,
@@ -233,9 +237,20 @@ export function ArtistForm({
             <Field label="Número de SADAIC"><input value={sadaic} onChange={(e) => setSadaic(e.target.value)} style={inputStyle} /></Field>
           </div>
         </div>
+        <Field label="CUIL">
+          <input value={cuil} onChange={(e) => setCuil(e.target.value)} style={inputStyle} />
+        </Field>
         <Field label="Dirección">
           <input value={direccion} onChange={(e) => setDireccion(e.target.value)} style={inputStyle} />
         </Field>
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ flex: 1 }}>
+            <Field label="Localidad"><input value={localidad} onChange={(e) => setLocalidad(e.target.value)} style={inputStyle} /></Field>
+          </div>
+          <div style={{ flex: 1 }}>
+            <Field label="Provincia"><input value={provincia} onChange={(e) => setProvincia(e.target.value)} style={inputStyle} /></Field>
+          </div>
+        </div>
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1 }}>
             <Field label="Nacionalidad"><input value={nacionalidad} onChange={(e) => setNacionalidad(e.target.value)} style={inputStyle} /></Field>

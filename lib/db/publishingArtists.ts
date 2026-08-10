@@ -29,6 +29,12 @@ export function ensurePublishingArtistsSchema(): Promise<void> {
         )
       `;
       await sql`CREATE INDEX IF NOT EXISTS publishing_artists_nombre_idx ON publishing_artists (nombre_artistico)`;
+      // CUIL (identificador fiscal, distinto del DNI) y localidad/provincia
+      // como campos propios en vez de mezclados dentro de direccion — la
+      // planilla de carga masiva del sello los trae ya separados.
+      await sql`ALTER TABLE publishing_artists ADD COLUMN IF NOT EXISTS cuil TEXT`;
+      await sql`ALTER TABLE publishing_artists ADD COLUMN IF NOT EXISTS localidad TEXT`;
+      await sql`ALTER TABLE publishing_artists ADD COLUMN IF NOT EXISTS provincia TEXT`;
     })();
   }
   return ready;
@@ -42,8 +48,11 @@ export type PublishingArtist = {
   nombreCompleto: string | null;
   apellido: string | null;
   dni: string | null;
+  cuil: string | null;
   sadaic: string | null;
   direccion: string | null;
+  localidad: string | null;
+  provincia: string | null;
   nacionalidad: string | null;
   fechaNacimiento: string | null;
   email: string | null;
@@ -65,8 +74,11 @@ function rowToArtist(r: Record<string, unknown>): PublishingArtist {
     nombreCompleto: (r.nombre_completo as string | null) ?? null,
     apellido: (r.apellido as string | null) ?? null,
     dni: (r.dni as string | null) ?? null,
+    cuil: (r.cuil as string | null) ?? null,
     sadaic: (r.sadaic as string | null) ?? null,
     direccion: (r.direccion as string | null) ?? null,
+    localidad: (r.localidad as string | null) ?? null,
+    provincia: (r.provincia as string | null) ?? null,
     nacionalidad: (r.nacionalidad as string | null) ?? null,
     fechaNacimiento: (r.fecha_nacimiento as string | null) ?? null,
     email: (r.email as string | null) ?? null,
@@ -99,8 +111,11 @@ type ArtistInput = {
   nombreCompleto: string | null;
   apellido: string | null;
   dni: string | null;
+  cuil: string | null;
   sadaic: string | null;
   direccion: string | null;
+  localidad: string | null;
+  provincia: string | null;
   nacionalidad: string | null;
   fechaNacimiento: string | null;
   email: string | null;
@@ -118,14 +133,14 @@ export async function createPublishingArtist(input: ArtistInput): Promise<Publis
   const id = `pub-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const { rows } = await sql`
     INSERT INTO publishing_artists
-      (id, nombre_artistico, nombre_completo, apellido, dni, sadaic, direccion, nacionalidad,
-       fecha_nacimiento, email, telefono, sello, tipo, observaciones, documento_url, documento_nombre,
+      (id, nombre_artistico, nombre_completo, apellido, dni, cuil, sadaic, direccion, localidad, provincia,
+       nacionalidad, fecha_nacimiento, email, telefono, sello, tipo, observaciones, documento_url, documento_nombre,
        updated_by, updated_at)
     VALUES
-      (${id}, ${input.nombreArtistico}, ${input.nombreCompleto}, ${input.apellido}, ${input.dni}, ${input.sadaic},
-       ${input.direccion}, ${input.nacionalidad}, ${input.fechaNacimiento}, ${input.email}, ${input.telefono},
-       ${input.sello}, ${input.tipo}, ${input.observaciones}, ${input.documentoUrl}, ${input.documentoNombre},
-       ${input.actorEmail}, now())
+      (${id}, ${input.nombreArtistico}, ${input.nombreCompleto}, ${input.apellido}, ${input.dni}, ${input.cuil}, ${input.sadaic},
+       ${input.direccion}, ${input.localidad}, ${input.provincia}, ${input.nacionalidad}, ${input.fechaNacimiento},
+       ${input.email}, ${input.telefono}, ${input.sello}, ${input.tipo}, ${input.observaciones}, ${input.documentoUrl},
+       ${input.documentoNombre}, ${input.actorEmail}, now())
     RETURNING *
   `;
   return rowToArtist(rows[0]);
@@ -139,8 +154,11 @@ export async function updatePublishingArtist(id: string, input: ArtistInput): Pr
       nombre_completo = ${input.nombreCompleto},
       apellido = ${input.apellido},
       dni = ${input.dni},
+      cuil = ${input.cuil},
       sadaic = ${input.sadaic},
       direccion = ${input.direccion},
+      localidad = ${input.localidad},
+      provincia = ${input.provincia},
       nacionalidad = ${input.nacionalidad},
       fecha_nacimiento = ${input.fechaNacimiento},
       email = ${input.email},

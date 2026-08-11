@@ -1,0 +1,10 @@
+{
+  "name": "@discografica/shared",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    "./permissions": "./src/permissions.ts",
+    "./types/*": "./src/types/*.ts",
+    "./api/*": "./src/api/*.ts"
+  }
+}

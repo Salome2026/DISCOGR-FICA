@@ -76,64 +76,11 @@ export function ensureTourManagerSchema(): Promise<void> {
   return ready;
 }
 
-export const ESTADOS_HOJA = ["Borrador", "Confirmado"] as const;
-
-export type HojaDeRuta = {
-  id: string;
-  artistName: string;
-  fecha: string;
-  horaShow: string | null;
-  tipoEvento: string | null;
-  venue: string | null;
-  venueDireccion: string | null;
-  origenDireccion: string | null;
-  origenLabel: string | null;
-
-  distanciaIdaKm: number | null;
-  duracionIdaMin: number | null;
-  distanciaVueltaKm: number | null;
-  duracionVueltaMin: number | null;
-  horaSalida: string | null;
-  horaLlegadaVenue: string | null;
-  horaSalidaVenue: string | null;
-  horaLlegadaDestino: string | null;
-
-  duracionShowMin: number | null;
-  pax: number | null;
-  venueContactoNombre: string | null;
-  venueContactoTelefono: string | null;
-  contactoArtistaNombre: string | null;
-  contactoArtistaTelefono: string | null;
-  artistLiaisonNombre: string | null;
-  artistLiaisonTelefono: string | null;
-  driverNombre: string | null;
-  driverTelefono: string | null;
-  runningOrder: string | null;
-  notas: string | null;
-
-  estado: string;
-
-  venueLat: number | null;
-  venueLng: number | null;
-  venueFullAddress: string | null;
-  venueCiudad: string | null;
-  venueProvincia: string | null;
-  venuePais: string | null;
-  origenLat: number | null;
-  origenLng: number | null;
-  origenFullAddress: string | null;
-
-  bufferPrepMin: number;
-  rutaIdaGeojson: unknown | null;
-  rutaVueltaGeojson: unknown | null;
-
-  bookingShowId: string | null;
-  artistId: string | null;
-
-  createdAt: string;
-  updatedBy: string | null;
-  updatedAt: string | null;
-};
+// Types live in packages/shared (not here) so the Expo mobile app can import
+// the exact same HojaDeRuta/HojaInput shapes without dragging in
+// @vercel/postgres — this file keeps 100% of the actual DB logic.
+export { ESTADOS_HOJA, type HojaDeRuta, type HojaInput, type HojaBody } from "@discografica/shared/types/tourManager";
+import type { HojaDeRuta, HojaInput } from "@discografica/shared/types/tourManager";
 
 function toDateKey(v: unknown): string {
   if (v instanceof Date) return v.toISOString().slice(0, 10);
@@ -210,59 +157,6 @@ export async function getHoja(id: string): Promise<HojaDeRuta | null> {
   const { rows } = await sql`SELECT * FROM tourmanager_hojas WHERE id = ${id}`;
   return rows[0] ? rowToHoja(rows[0]) : null;
 }
-
-export type HojaInput = {
-  artistName: string;
-  fecha: string;
-  horaShow: string | null;
-  tipoEvento: string | null;
-  venue: string | null;
-  venueDireccion: string | null;
-  origenDireccion: string | null;
-  origenLabel: string | null;
-
-  distanciaIdaKm: number | null;
-  duracionIdaMin: number | null;
-  distanciaVueltaKm: number | null;
-  duracionVueltaMin: number | null;
-  horaSalida: string | null;
-  horaLlegadaVenue: string | null;
-  horaSalidaVenue: string | null;
-  horaLlegadaDestino: string | null;
-
-  duracionShowMin: number | null;
-  pax: number | null;
-  venueContactoNombre: string | null;
-  venueContactoTelefono: string | null;
-  contactoArtistaNombre: string | null;
-  contactoArtistaTelefono: string | null;
-  artistLiaisonNombre: string | null;
-  artistLiaisonTelefono: string | null;
-  driverNombre: string | null;
-  driverTelefono: string | null;
-  runningOrder: string | null;
-  notas: string | null;
-  estado: string;
-
-  venueLat?: number | null;
-  venueLng?: number | null;
-  venueFullAddress?: string | null;
-  venueCiudad?: string | null;
-  venueProvincia?: string | null;
-  venuePais?: string | null;
-  origenLat?: number | null;
-  origenLng?: number | null;
-  origenFullAddress?: string | null;
-
-  bufferPrepMin?: number;
-  rutaIdaGeojson?: unknown | null;
-  rutaVueltaGeojson?: unknown | null;
-
-  bookingShowId?: string | null;
-  artistId?: string | null;
-
-  actorEmail: string;
-};
 
 export async function createHoja(input: HojaInput): Promise<HojaDeRuta> {
   await ensureTourManagerSchema();

@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
   // directly (which correctly falls through to the CommonJS branch) avoids
   // that entirely.
   serverExternalPackages: ["docusign-esign"],
+  // packages/shared is a raw-TypeScript workspace package (no build step —
+  // the Expo mobile app consumes the same source via Metro) — this tells
+  // Next to transpile it inline instead of expecting compiled JS.
+  transpilePackages: ["@discografica/shared"],
 };
 
 export default nextConfig;

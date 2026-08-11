@@ -1,19 +1,9 @@
 import React from "react";
 import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack } from "expo-router";
 import { CatalogTracksPanel } from "@/components/catalog-tracks-panel";
 
-// Live catalog_tracks view, filtered by sello — same data source as the web's
-// CatalogTracksPanel (not the frozen data/tracks.json snapshot RosterSelloView
-// still uses; the dashboard already moved off that same frozen file for the
-// same reason, see app/dashboard/page.tsx's liveArtistRows comment). The
-// Rizzvor/Kids "Proyectos" pre-production pipeline (checklists, comments,
-// audio player, convert-to-lanzamiento) is its own large module and stays
-// web-only for now.
-export default function SelloDetailScreen() {
-  const { nombre } = useLocalSearchParams<{ nombre: string }>();
-  const selloName = decodeURIComponent(nombre ?? "");
-
+export default function CatalogoDistribuidoScreen() {
   return (
     <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: 48 }}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -21,10 +11,11 @@ export default function SelloDetailScreen() {
         <Pressable onPress={() => router.back()} style={styles.backButton}>
           <Text style={styles.backText}>‹ Atrás</Text>
         </Pressable>
-        <Text style={styles.title}>{selloName}</Text>
+        <Text style={styles.title}>Catálogo Distribuido</Text>
+        <Text style={styles.subtitle}>Fonogramas distribuidos por VPO sin sello asignado</Text>
       </View>
 
-      <CatalogTracksPanel sello={selloName} emptyMessage={`Todavía no hay fonogramas asignados a ${selloName}.`} />
+      <CatalogTracksPanel unassigned emptyMessage="No hay fonogramas sin asignar. Todo el catálogo tiene un sello." />
     </ScrollView>
   );
 }
@@ -35,4 +26,5 @@ const styles = StyleSheet.create({
   backButton: { alignSelf: "flex-start", marginBottom: 8 },
   backText: { color: "#8b8e97", fontSize: 14 },
   title: { color: "#fff", fontSize: 22, fontWeight: "700" },
+  subtitle: { color: "#8b8e97", fontSize: 12.5, marginTop: 4, lineHeight: 17 },
 });

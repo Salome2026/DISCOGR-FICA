@@ -3,16 +3,13 @@ import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { CatalogTracksPanel } from "@/components/catalog-tracks-panel";
 
-// Live catalog_tracks view, filtered by sello — same data source as the web's
-// CatalogTracksPanel (not the frozen data/tracks.json snapshot RosterSelloView
-// still uses; the dashboard already moved off that same frozen file for the
-// same reason, see app/dashboard/page.tsx's liveArtistRows comment). The
-// Rizzvor/Kids "Proyectos" pre-production pipeline (checklists, comments,
-// audio player, convert-to-lanzamiento) is its own large module and stays
-// web-only for now.
-export default function SelloDetailScreen() {
-  const { nombre } = useLocalSearchParams<{ nombre: string }>();
-  const selloName = decodeURIComponent(nombre ?? "");
+// "La Juntada de los Artistas" also shows a linked acuerdos section on the
+// web (app/streamings/[proyecto]/page.tsx) — that's Notion/acuerdos data
+// specific to that one project, skipped here to keep this screen generic
+// across every streaming project; the catalog view below covers all of them.
+export default function StreamingProjectScreen() {
+  const { proyecto } = useLocalSearchParams<{ proyecto: string }>();
+  const proyectoName = decodeURIComponent(proyecto ?? "");
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: 48 }}>
@@ -21,10 +18,10 @@ export default function SelloDetailScreen() {
         <Pressable onPress={() => router.back()} style={styles.backButton}>
           <Text style={styles.backText}>‹ Atrás</Text>
         </Pressable>
-        <Text style={styles.title}>{selloName}</Text>
+        <Text style={styles.title}>{proyectoName}</Text>
       </View>
 
-      <CatalogTracksPanel sello={selloName} emptyMessage={`Todavía no hay fonogramas asignados a ${selloName}.`} />
+      <CatalogTracksPanel project={proyectoName} emptyMessage={`Todavía no hay fonogramas en ${proyectoName}.`} />
     </ScrollView>
   );
 }

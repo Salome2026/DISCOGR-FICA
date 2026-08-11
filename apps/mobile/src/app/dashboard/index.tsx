@@ -181,6 +181,24 @@ export default function LabelDashboardScreen() {
         <Text style={styles.subtitle}>Dashboard</Text>
       </View>
 
+      <View style={styles.navRow}>
+        <Pressable onPress={() => router.push("/catalogo" as never)} style={styles.navPill}>
+          <Text style={styles.navPillText}>Catálogo</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push("/nuevo" as never)} style={styles.navPill}>
+          <Text style={styles.navPillText}>+ Nuevo acuerdo</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push("/pm" as never)} style={styles.navPill}>
+          <Text style={styles.navPillText}>Project Managers</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push("/admin/usuarios" as never)} style={styles.navPill}>
+          <Text style={styles.navPillText}>Usuarios</Text>
+        </Pressable>
+        <Pressable onPress={() => router.push("/admin/artistas" as never)} style={styles.navPill}>
+          <Text style={styles.navPillText}>Artistas</Text>
+        </Pressable>
+      </View>
+
       <View style={styles.selloRow}>
         {SELLOS.filter((s) => s !== "Streamings").map((s) => (
           <Pressable key={s} onPress={() => router.push(`/sellos/${encodeURIComponent(s)}` as never)} style={styles.selloButton}>
@@ -258,6 +276,9 @@ const styles = StyleSheet.create({
   backText: { color: "#8b8e97", fontSize: 14 },
   title: { color: "#fff", fontSize: 22, fontWeight: "700" },
   subtitle: { color: "#8b8e97", fontSize: 12.5, marginTop: 2 },
+  navRow: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 20, gap: 6, marginBottom: 10 },
+  navPill: { backgroundColor: "#0c0c0e", borderWidth: 1, borderColor: "#2a2b30", borderRadius: 100, paddingHorizontal: 12, paddingVertical: 6 },
+  navPillText: { color: "#8b8e97", fontSize: 11, fontWeight: "600" },
   selloRow: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 20, gap: 8, marginBottom: 16 },
   selloButton: { backgroundColor: "#15161a", borderWidth: 1, borderColor: "#2a2b30", borderRadius: 10, paddingVertical: 10, paddingHorizontal: 12, minWidth: "30%", flexGrow: 1, alignItems: "center", justifyContent: "center" },
   selloButtonText: { color: "#fff", fontSize: 11, fontWeight: "600", textAlign: "center" },

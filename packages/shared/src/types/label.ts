@@ -35,6 +35,28 @@ export type CatalogTrack = {
   updated_at: string | null;
 };
 
+// Extracted from lib/db/royalties.ts.
+export type PartyType = "sello" | "artista";
+export type RoyaltySplit = {
+  id: number;
+  track_id: string;
+  party_type: PartyType;
+  party_name: string;
+  percentage: number;
+  created_at: string;
+  updated_by: string | null;
+};
+
+// Extracted from lib/db/streamingProjects.ts.
+export type StreamingProjectRow = {
+  id: number;
+  name: string;
+  active: boolean;
+  sort_order: number;
+  created_at: string;
+  created_by: string | null;
+};
+
 // Extracted from app/components/RankingListeners.tsx — matches GET /api/ranking.
 export type RankingRow = {
   artist_id: string;

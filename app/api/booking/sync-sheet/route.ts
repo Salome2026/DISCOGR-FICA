@@ -1,16 +1,10 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { hasPermission, type SessionUser } from "@/lib/permissions";
+import { NextRequest, NextResponse } from "next/server";
+import { getSessionUser } from "@/lib/session";
+import { hasPermission } from "@/lib/permissions";
 import { syncAgendaFromSheet } from "@/lib/bookingSheetSync";
 
-async function sessionUser(): Promise<SessionUser | null> {
-  const session = await auth();
-  if (!session?.user?.email) return null;
-  return session.user as unknown as SessionUser;
-}
-
-export async function POST() {
-  const user = await sessionUser();
+export async function POST(req: NextRequest) {
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "ver_booking")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

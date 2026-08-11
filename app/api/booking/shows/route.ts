@@ -1,17 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { hasPermission, type SessionUser } from "@/lib/permissions";
+import { getSessionUser } from "@/lib/session";
+import { hasPermission } from "@/lib/permissions";
 import { listShows, createShow, ESTADOS_SHOW } from "@/lib/db/booking";
 import { geocodeLocation } from "@/lib/geocoding";
 
-async function sessionUser(): Promise<SessionUser | null> {
-  const session = await auth();
-  if (!session?.user?.email) return null;
-  return session.user as unknown as SessionUser;
-}
-
-export async function GET() {
-  const user = await sessionUser();
+export async function GET(req: NextRequest) {
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "ver_booking")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
@@ -20,7 +14,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await sessionUser();
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "editar_booking")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

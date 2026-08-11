@@ -1,17 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { hasPermission, type SessionUser } from "@/lib/permissions";
+import { getSessionUser } from "@/lib/session";
+import { hasPermission } from "@/lib/permissions";
 import { updateShow, deleteShow, getShow, ESTADOS_SHOW } from "@/lib/db/booking";
 import { geocodeLocation } from "@/lib/geocoding";
 
-async function sessionUser(): Promise<SessionUser | null> {
-  const session = await auth();
-  if (!session?.user?.email) return null;
-  return session.user as unknown as SessionUser;
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getSessionUser(req);
+  if (!user || !hasPermission(user, "ver_booking")) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+  const { id } = await params;
+  const show = await getShow(id);
+  if (!show) return NextResponse.json({ error: "No encontrado." }, { status: 404 });
+  return NextResponse.json({ show });
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await sessionUser();
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "editar_booking")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
@@ -73,8 +78,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   return NextResponse.json({ show });
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await sessionUser();
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "editar_booking")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

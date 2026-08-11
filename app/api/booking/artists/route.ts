@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { hasPermission, type SessionUser } from "@/lib/permissions";
+import { getSessionUser } from "@/lib/session";
+import { hasPermission } from "@/lib/permissions";
 import { listAllArtists, slugify, updateArtistManagementFields } from "@/lib/db/artists";
 import { listDistinctShowArtistNames } from "@/lib/db/booking";
 import { SELLO_ROSTERS } from "@/lib/roster";
@@ -26,14 +26,8 @@ function knownRosterAliases(): Set<string> {
   return out;
 }
 
-async function sessionUser(): Promise<SessionUser | null> {
-  const session = await auth();
-  if (!session?.user?.email) return null;
-  return session.user as unknown as SessionUser;
-}
-
-export async function GET() {
-  const user = await sessionUser();
+export async function GET(req: NextRequest) {
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "ver_booking")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
@@ -68,7 +62,7 @@ export async function GET() {
 // (and upsert-a-minimal-row-if-needed behavior) Management already curates,
 // so there's one photo per artist name across both modules, never a duplicate.
 export async function POST(req: NextRequest) {
-  const user = await sessionUser();
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "editar_booking")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

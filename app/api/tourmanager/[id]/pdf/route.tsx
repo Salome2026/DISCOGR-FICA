@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
-import { auth } from "@/auth";
-import { hasPermission, type SessionUser } from "@/lib/permissions";
+import { getSessionUser } from "@/lib/session";
+import { hasPermission } from "@/lib/permissions";
 import { getHoja } from "@/lib/db/tourManager";
 import { getArtist } from "@/lib/db/artists";
 import { buildStaticMapPng } from "@/lib/staticMap";
@@ -11,9 +11,8 @@ function sanitizeFilename(s: string): string {
   return s.replace(/[^a-z0-9\-_. ]/gi, "").trim() || "hoja-de-ruta";
 }
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-  const user = session?.user as unknown as SessionUser | undefined;
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getSessionUser(req);
   if (!user?.email || !hasPermission(user, "ver_tourmanager")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

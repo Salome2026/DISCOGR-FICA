@@ -1,18 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { getSessionUser } from "@/lib/session";
-import { hasPermission, type SessionUser } from "@/lib/permissions";
+import { hasPermission } from "@/lib/permissions";
 import { getHoja, updateHoja, deleteHoja, ESTADOS_HOJA, type HojaInput } from "@/lib/db/tourManager";
-
-async function sessionUser(): Promise<SessionUser | null> {
-  const session = await auth();
-  if (!session?.user?.email) return null;
-  return session.user as unknown as SessionUser;
-}
 
 type HojaBody = Omit<HojaInput, "actorEmail" | "estado"> & { estado?: string };
 
-// GET accepts either the web cookie session or a mobile Bearer token.
+// All handlers accept either the web cookie session or a mobile Bearer token.
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "ver_tourmanager")) {
@@ -25,7 +18,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await sessionUser();
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "editar_tourmanager")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
@@ -47,8 +40,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   return NextResponse.json({ hoja });
 }
 
-export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await sessionUser();
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "editar_tourmanager")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getSessionUser } from "@/lib/session";
 import { searchArtists } from "@/lib/db/artists";
 
-// Typeahead used by the AI marketing-plan form so nobody has to leave the
-// platform to go find an artist's Instagram/TikTok/YouTube link.
+// Typeahead used by the AI marketing-plan form (and Tour Manager, web + mobile)
+// so nobody has to leave the platform to go find an artist.
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user?.email || role === "sin_acceso" || !role) {
+  const user = await getSessionUser(req);
+  if (!user?.email || !user.role) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

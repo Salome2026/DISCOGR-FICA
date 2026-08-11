@@ -1,14 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { hasPermission, type SessionUser } from "@/lib/permissions";
+import { getSessionUser } from "@/lib/session";
+import { hasPermission } from "@/lib/permissions";
 import { looksLikeGoogleMapsLink, parseGoogleMapsLink } from "@/lib/googleMapsLink";
 import { geocodeAddress, reverseGeocode } from "@/lib/geocoding";
-
-async function sessionUser(): Promise<SessionUser | null> {
-  const session = await auth();
-  if (!session?.user?.email) return null;
-  return session.user as unknown as SessionUser;
-}
 
 // Accepts either a free-text address or a Google Maps share link, resolves
 // it to coordinates, then always reverse-geocodes those coordinates too —
@@ -17,7 +11,7 @@ async function sessionUser(): Promise<SessionUser | null> {
 // (never Promise.all'd) per its ~1 req/sec usage policy — this one request
 // can already trigger up to 2 Nominatim calls.
 export async function POST(req: NextRequest) {
-  const user = await sessionUser();
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "editar_tourmanager")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

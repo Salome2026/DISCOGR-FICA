@@ -1,20 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { getSessionUser } from "@/lib/session";
-import { hasPermission, type SessionUser } from "@/lib/permissions";
+import { hasPermission } from "@/lib/permissions";
 import { listHojas, createHoja, ESTADOS_HOJA, type HojaInput } from "@/lib/db/tourManager";
-
-async function sessionUser(): Promise<SessionUser | null> {
-  const session = await auth();
-  if (!session?.user?.email) return null;
-  return session.user as unknown as SessionUser;
-}
 
 type HojaBody = Omit<HojaInput, "actorEmail" | "estado"> & { estado?: string };
 
-// GET accepts either the web cookie session or a mobile Bearer token
-// (getSessionUser) — mutations below still use the cookie-only sessionUser()
-// until they're migrated too (see lib/session.ts's header comment).
+// Both GET and POST accept either the web cookie session or a mobile
+// Bearer token via getSessionUser.
 export async function GET(req: NextRequest) {
   const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "ver_tourmanager")) {
@@ -25,7 +17,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await sessionUser();
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "editar_tourmanager")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

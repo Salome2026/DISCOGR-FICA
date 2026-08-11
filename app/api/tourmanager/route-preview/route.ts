@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { hasPermission, type SessionUser } from "@/lib/permissions";
+import { getSessionUser } from "@/lib/session";
+import { hasPermission } from "@/lib/permissions";
 import { getRoute } from "@/lib/routing";
 
-async function sessionUser(): Promise<SessionUser | null> {
-  const session = await auth();
-  if (!session?.user?.email) return null;
-  return session.user as unknown as SessionUser;
-}
-
 export async function POST(req: NextRequest) {
-  const user = await sessionUser();
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "editar_tourmanager")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

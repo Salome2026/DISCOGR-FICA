@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
   rowValue: { fontSize: 9.5, color: INK, fontFamily: "Helvetica-Bold", textAlign: "right", maxWidth: "60%" },
   freeText: { fontSize: 9.5, color: INK, lineHeight: 1.5 },
   mapsLink: { fontSize: 8.5, color: TEAL, marginTop: 4 },
+  mapImage: { width: "100%", height: 200, borderRadius: 6, marginBottom: 14, objectFit: "cover" },
 
   footer: { position: "absolute", bottom: 24, left: 44, right: 44, flexDirection: "row", justifyContent: "space-between", fontSize: 8, color: "#9a9da8", borderTopWidth: 1, borderTopColor: LINE, paddingTop: 8 },
 });
@@ -69,7 +70,15 @@ function Footer({ artist }: { artist: string }) {
   );
 }
 
-export default function HojaDeRutaDoc({ hoja, artistPhotoUrl }: { hoja: HojaDeRuta; artistPhotoUrl?: string | null }) {
+export default function HojaDeRutaDoc({
+  hoja,
+  artistPhotoUrl,
+  mapImageDataUri,
+}: {
+  hoja: HojaDeRuta;
+  artistPhotoUrl?: string | null;
+  mapImageDataUri?: string | null;
+}) {
   const hasOrigen = hoja.origenLat != null && hoja.origenLng != null;
   const hasVenue = hoja.venueLat != null && hoja.venueLng != null;
   const mapsUrl =
@@ -94,6 +103,8 @@ export default function HojaDeRutaDoc({ hoja, artistPhotoUrl }: { hoja: HojaDeRu
           {artistPhotoUrl ? <Image src={artistPhotoUrl} style={styles.photo} /> : null}
         </View>
         <View style={styles.hRule} />
+
+        {mapImageDataUri && <Image src={mapImageDataUri} style={styles.mapImage} />}
 
         <View style={styles.grid}>
           <Section label="Información general">

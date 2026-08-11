@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { hasPermission, type SessionUser } from "@/lib/permissions";
 import { getHoja } from "@/lib/db/tourManager";
 import { getArtist } from "@/lib/db/artists";
+import { buildStaticMapPng } from "@/lib/staticMap";
 import HojaDeRutaDoc from "@/lib/pdf/HojaDeRutaDoc";
 
 function sanitizeFilename(s: string): string {
@@ -23,8 +24,22 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   const artist = hoja.artistId ? await getArtist(hoja.artistId).catch(() => null) : null;
 
+  const hasOrigen = hoja.origenLat != null && hoja.origenLng != null;
+  const hasVenue = hoja.venueLat != null && hoja.venueLng != null;
+  const mapPng =
+    hasOrigen || hasVenue
+      ? await buildStaticMapPng({
+          origin: hasOrigen ? { lat: hoja.origenLat as number, lng: hoja.origenLng as number } : null,
+          venue: hasVenue ? { lat: hoja.venueLat as number, lng: hoja.venueLng as number } : null,
+          routeGeojson: hoja.rutaIdaGeojson,
+        })
+      : null;
+  const mapImageDataUri = mapPng ? `data:image/png;base64,${mapPng.toString("base64")}` : null;
+
   try {
-    const buffer = await renderToBuffer(<HojaDeRutaDoc hoja={hoja} artistPhotoUrl={artist?.photoUrl ?? null} />);
+    const buffer = await renderToBuffer(
+      <HojaDeRutaDoc hoja={hoja} artistPhotoUrl={artist?.photoUrl ?? null} mapImageDataUri={mapImageDataUri} />
+    );
     const filename = `Hoja-de-Ruta-${sanitizeFilename(hoja.artistName)}-${hoja.fecha}.pdf`;
     return new NextResponse(new Uint8Array(buffer), {
       status: 200,

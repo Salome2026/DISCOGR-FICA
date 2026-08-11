@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getSessionUser } from "@/lib/session";
 import { hasPermission, type SessionUser } from "@/lib/permissions";
 import { getPublishingArtist, updatePublishingArtist, TIPOS_ARTISTA_PUBLISHING } from "@/lib/db/publishingArtists";
 
@@ -9,8 +10,8 @@ async function sessionUser(): Promise<SessionUser | null> {
   return session.user as unknown as SessionUser;
 }
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await sessionUser();
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "ver_publishing")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

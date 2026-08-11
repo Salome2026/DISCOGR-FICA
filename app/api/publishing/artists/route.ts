@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getSessionUser } from "@/lib/session";
 import { hasPermission, type SessionUser } from "@/lib/permissions";
 import { listPublishingArtists, createPublishingArtist, TIPOS_ARTISTA_PUBLISHING } from "@/lib/db/publishingArtists";
 
@@ -9,8 +10,11 @@ async function sessionUser(): Promise<SessionUser | null> {
   return session.user as unknown as SessionUser;
 }
 
-export async function GET() {
-  const user = await sessionUser();
+// GET accepts either the web cookie session or a mobile Bearer token — the
+// mobile Publishing module is read-only for now (viewer only), so POST
+// stays cookie-only until mobile actually needs to write.
+export async function GET(req: NextRequest) {
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "ver_publishing")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

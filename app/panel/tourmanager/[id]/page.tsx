@@ -2,10 +2,14 @@
 
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import RequireRole from "@/app/components/RequireRole";
 import { TourManagerShell } from "../_shared";
 import HojaForm from "../HojaForm";
 import type { HojaDeRuta } from "@/lib/db/tourManager";
+
+// Leaflet touches window/document at import time — must never run during SSR.
+const RouteMap = dynamic(() => import("../RouteMap"), { ssr: false });
 
 function formatFecha(fecha: string): string {
   const [y, m, d] = fecha.split("-");
@@ -79,6 +83,10 @@ function HojaDetail({ id }: { id: string }) {
         >
           Borrar
         </button>
+      </div>
+
+      <div style={{ marginBottom: 14 }}>
+        <RouteMap hoja={hoja} />
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>

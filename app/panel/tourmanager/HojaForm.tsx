@@ -45,6 +45,51 @@ export default function HojaForm({
   const [origenLabel, setOrigenLabel] = useState(hoja?.origenLabel ?? "");
   const [origenDireccion, setOrigenDireccion] = useState(hoja?.origenDireccion ?? "");
 
+  // --- Direcciones resueltas (Fase 3) — geocoding automático al salir del campo ---
+  const [venueResolving, setVenueResolving] = useState(false);
+  const [venueLat, setVenueLat] = useState<number | null>(hoja?.venueLat ?? null);
+  const [venueLng, setVenueLng] = useState<number | null>(hoja?.venueLng ?? null);
+  const [venueFullAddress, setVenueFullAddress] = useState(hoja?.venueFullAddress ?? "");
+  const [venueCiudad, setVenueCiudad] = useState(hoja?.venueCiudad ?? "");
+  const [venueProvincia, setVenueProvincia] = useState(hoja?.venueProvincia ?? "");
+  const [venuePais, setVenuePais] = useState(hoja?.venuePais ?? "");
+
+  const [origenResolving, setOrigenResolving] = useState(false);
+  const [origenLat, setOrigenLat] = useState<number | null>(hoja?.origenLat ?? null);
+  const [origenLng, setOrigenLng] = useState<number | null>(hoja?.origenLng ?? null);
+  const [origenFullAddress, setOrigenFullAddress] = useState(hoja?.origenFullAddress ?? "");
+
+  async function resolveAddress(kind: "venue" | "origen", value: string) {
+    if (!value.trim()) return;
+    const setResolving = kind === "venue" ? setVenueResolving : setOrigenResolving;
+    setResolving(true);
+    try {
+      const res = await fetch("/api/tourmanager/resolve-address", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: value }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.resolved) return;
+      if (kind === "venue") {
+        setVenueLat(data.lat);
+        setVenueLng(data.lng);
+        setVenueFullAddress(data.fullAddress ?? "");
+        setVenueCiudad(data.ciudad ?? "");
+        setVenueProvincia(data.provincia ?? "");
+        setVenuePais(data.pais ?? "");
+      } else {
+        setOrigenLat(data.lat);
+        setOrigenLng(data.lng);
+        setOrigenFullAddress(data.fullAddress ?? "");
+      }
+    } catch {
+      // silencioso — el campo sigue disponible para carga manual
+    } finally {
+      setResolving(false);
+    }
+  }
+
   // --- Todo lo demás: opcional, colapsado por default ---
   const [showDetails, setShowDetails] = useState(!!hoja);
   const [duracionShowMin, setDuracionShowMin] = useState(hoja?.duracionShowMin?.toString() ?? "");
@@ -106,6 +151,13 @@ export default function HojaForm({
           venueDireccion: venueDireccion || null,
           origenLabel: origenLabel || null,
           origenDireccion: origenDireccion || null,
+          venueLat, venueLng,
+          venueFullAddress: venueFullAddress || null,
+          venueCiudad: venueCiudad || null,
+          venueProvincia: venueProvincia || null,
+          venuePais: venuePais || null,
+          origenLat, origenLng,
+          origenFullAddress: origenFullAddress || null,
           distanciaIdaKm: toNumOrNull(distanciaIdaKm),
           duracionIdaMin: toIntOrNull(duracionIdaMin),
           distanciaVueltaKm: toNumOrNull(distanciaVueltaKm),
@@ -181,7 +233,19 @@ export default function HojaForm({
           <input value={venue} onChange={(e) => setVenue(e.target.value)} style={inputStyle} />
         </Field>
         <Field label="Dirección del venue (o link de Google Maps)">
-          <input value={venueDireccion} onChange={(e) => setVenueDireccion(e.target.value)} placeholder="Dirección o link de Maps" style={inputStyle} />
+          <input
+            value={venueDireccion}
+            onChange={(e) => setVenueDireccion(e.target.value)}
+            onBlur={(e) => resolveAddress("venue", e.target.value)}
+            placeholder="Dirección o link de Maps"
+            style={inputStyle}
+          />
+          {venueResolving && <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 4 }}>Resolviendo dirección...</div>}
+          {!venueResolving && venueFullAddress && (
+            <div style={{ fontSize: 11, color: "var(--good-ink)", marginTop: 4 }}>
+              ✓ {venueFullAddress}{venueCiudad ? ` — ${venueCiudad}` : ""}{venueProvincia ? `, ${venueProvincia}` : ""}
+            </div>
+          )}
         </Field>
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1 }}>
@@ -196,7 +260,17 @@ export default function HojaForm({
           </div>
           <div style={{ flex: 2 }}>
             <Field label="Dirección de salida (o link de Google Maps)">
-              <input value={origenDireccion} onChange={(e) => setOrigenDireccion(e.target.value)} placeholder="Dirección o link de Maps" style={inputStyle} />
+              <input
+                value={origenDireccion}
+                onChange={(e) => setOrigenDireccion(e.target.value)}
+                onBlur={(e) => resolveAddress("origen", e.target.value)}
+                placeholder="Dirección o link de Maps"
+                style={inputStyle}
+              />
+              {origenResolving && <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 4 }}>Resolviendo dirección...</div>}
+              {!origenResolving && origenFullAddress && (
+                <div style={{ fontSize: 11, color: "var(--good-ink)", marginTop: 4 }}>✓ {origenFullAddress}</div>
+              )}
             </Field>
           </div>
         </div>

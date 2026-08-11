@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { waitUntil } from "@vercel/functions";
 import { auth } from "@/auth";
+import { getSessionUser } from "@/lib/session";
 import {
   createRelease,
   createGroupedRelease,
@@ -20,14 +21,13 @@ function normalizeHora(hora: unknown): string {
   return typeof hora === "string" && HORA_RE.test(hora) ? hora : "00:00";
 }
 
-export async function GET() {
-  const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  const email = session?.user?.email;
-  if (!email || role === "sin_acceso" || !role) {
+// Accepts either the web cookie session or a mobile Bearer token.
+export async function GET(req: NextRequest) {
+  const user = await getSessionUser(req);
+  if (!user?.email || !user.role) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  const releases = await listReleasesFor(email, role);
+  const releases = await listReleasesFor(user.email, user.role);
   return NextResponse.json({ releases });
 }
 

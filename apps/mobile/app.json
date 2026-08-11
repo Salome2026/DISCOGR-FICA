@@ -35,8 +35,7 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 220
         }
-      ],
-      "expo-sharing"
+      ]
     ],
     "extra": {
       "apiUrl": "https://www.vpocorp.com"

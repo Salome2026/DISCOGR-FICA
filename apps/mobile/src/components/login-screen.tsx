@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Image,
   KeyboardAvoidingView,
+  ScrollView,
   Platform,
   ActivityIndicator,
 } from "react-native";
@@ -34,7 +35,7 @@ export function LoginScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <View style={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Image source={require("@/assets/images/icon.png")} style={styles.logo} resizeMode="contain" />
         <Text style={styles.title}>Centro de control</Text>
         <Text style={styles.subtitle}>Acceso interno</Text>
@@ -63,14 +64,14 @@ export function LoginScreen() {
         <Pressable style={styles.button} onPress={handleSubmit} disabled={submitting}>
           {submitting ? <ActivityIndicator color="#000" /> : <Text style={styles.buttonText}>Ingresar</Text>}
         </Pressable>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#000000" },
-  content: { flex: 1, justifyContent: "center", paddingHorizontal: 32 },
+  content: { flexGrow: 1, justifyContent: "center", paddingHorizontal: 32, paddingVertical: 40 },
   logo: { width: 160, height: 84, alignSelf: "center", marginBottom: 24 },
   title: { color: "#fff", fontSize: 20, fontWeight: "700", textAlign: "center" },
   subtitle: { color: "#8b8e97", fontSize: 13, textAlign: "center", marginBottom: 32 },

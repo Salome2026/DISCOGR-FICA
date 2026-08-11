@@ -1,12 +1,11 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { hasPermission, type SessionUser } from "@/lib/permissions";
+import { NextRequest, NextResponse } from "next/server";
+import { getSessionUser } from "@/lib/session";
+import { hasPermission } from "@/lib/permissions";
 import { spotifyConfigured, listMyPlaylists } from "@/lib/spotify";
 import { listPlaylists, upsertPlaylistFromSpotify } from "@/lib/db/spotifyPlaylists";
 
-export async function GET() {
-  const session = await auth();
-  const user = session?.user as unknown as SessionUser | undefined;
+export async function GET(req: NextRequest) {
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "ver_playlists")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

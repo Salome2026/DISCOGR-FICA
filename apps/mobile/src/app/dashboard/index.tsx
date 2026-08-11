@@ -197,6 +197,9 @@ export default function LabelDashboardScreen() {
         <Pressable onPress={() => router.push("/admin/artistas" as never)} style={styles.navPill}>
           <Text style={styles.navPillText}>Artistas</Text>
         </Pressable>
+        <Pressable onPress={() => router.push("/playlists" as never)} style={styles.navPill}>
+          <Text style={styles.navPillText}>Playlists</Text>
+        </Pressable>
       </View>
 
       <View style={styles.selloRow}>

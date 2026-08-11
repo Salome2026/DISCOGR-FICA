@@ -29,6 +29,7 @@ const MODULES: { key: string; label: string; route: string; check: (u: SessionUs
   { key: "management", label: "Management", route: "/management", check: (u) => hasPermission(u, "ver_management") },
   { key: "publishing", label: "Publishing", route: "/publishing", check: (u) => hasPermission(u, "ver_publishing") },
   { key: "pm", label: "PM", route: "/pm", check: (u) => u.role === "admin" || u.role === "project_manager" },
+  { key: "playlists", label: "Playlists", route: "/playlists", check: (u) => hasPermission(u, "ver_playlists") },
   { key: "dashboard", label: "Label (Dashboard)", route: "/dashboard", check: (u) => u.role === "admin" },
 ];
 

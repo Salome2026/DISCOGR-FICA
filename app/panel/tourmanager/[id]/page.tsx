@@ -39,6 +39,7 @@ function HojaDetail({ id }: { id: string }) {
   const router = useRouter();
   const [hoja, setHoja] = useState<HojaDeRuta | null | undefined>(undefined);
   const [editing, setEditing] = useState(false);
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
 
   function load() {
     fetch(`/api/tourmanager/${id}`)
@@ -51,6 +52,27 @@ function HojaDetail({ id }: { id: string }) {
     if (!confirm("¿Borrar esta hoja de ruta?")) return;
     await fetch(`/api/tourmanager/${id}`, { method: "DELETE" });
     router.push("/panel/tourmanager");
+  }
+
+  async function handleDownloadPdf() {
+    setDownloadingPdf(true);
+    try {
+      const res = await fetch(`/api/tourmanager/${id}/pdf`);
+      if (!res.ok) throw new Error("No se pudo generar el PDF.");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Hoja-de-Ruta-${hoja?.artistName ?? id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("No se pudo generar el PDF.");
+    } finally {
+      setDownloadingPdf(false);
+    }
   }
 
   if (hoja === undefined) {
@@ -82,6 +104,13 @@ function HojaDetail({ id }: { id: string }) {
           style={{ background: "var(--crit-bg)", border: "1px solid transparent", borderRadius: 8, padding: "8px 16px", color: "var(--crit-ink)", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
         >
           Borrar
+        </button>
+        <button
+          onClick={handleDownloadPdf}
+          disabled={downloadingPdf}
+          style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 16px", color: "var(--text-1)", fontWeight: 600, fontSize: 13, cursor: downloadingPdf ? "default" : "pointer", opacity: downloadingPdf ? 0.6 : 1 }}
+        >
+          {downloadingPdf ? "Generando..." : "Descargar PDF"}
         </button>
       </div>
 

@@ -1,24 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getSessionUser } from "@/lib/session";
 import { createUser, listUsers } from "@/lib/db/users";
 import { ROLES, type AccountType, type Role } from "@/lib/permissions";
 
-async function requireAdmin() {
-  const session = await auth();
-  const user = session?.user as { email?: string; role?: string } | undefined;
+async function requireAdmin(req: NextRequest): Promise<string | null> {
+  const user = await getSessionUser(req);
   if (!user?.email || user.role !== "admin") return null;
   return user.email;
 }
 
-export async function GET() {
-  const admin = await requireAdmin();
+export async function GET(req: NextRequest) {
+  const admin = await requireAdmin(req);
   if (!admin) return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   const users = await listUsers();
   return NextResponse.json({ users });
 }
 
 export async function POST(req: NextRequest) {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin(req);
   if (!admin) return NextResponse.json({ error: "No autorizado" }, { status: 403 });
 
   const body = await req.json();

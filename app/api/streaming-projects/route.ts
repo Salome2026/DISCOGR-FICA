@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getSessionUser } from "@/lib/session";
 import {
   listActiveStreamingProjects,
   listAllStreamingProjects,
@@ -7,15 +7,14 @@ import {
 } from "@/lib/db/streamingProjects";
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user?.email || role === "sin_acceso" || !role) {
+  const user = await getSessionUser(req);
+  if (!user?.email || !user.role) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   const { searchParams } = new URL(req.url);
   const all = searchParams.get("all") === "1";
-  if (all && role !== "admin") {
+  if (all && user.role !== "admin") {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
@@ -24,10 +23,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  const email = session?.user?.email;
-  if (!email || role !== "admin") {
+  const user = await getSessionUser(req);
+  const email = user?.email;
+  if (!email || user?.role !== "admin") {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

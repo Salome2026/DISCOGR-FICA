@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getSessionUser } from "@/lib/session";
 import { listAllArtists, upsertArtist } from "@/lib/db/artists";
 import { SELLOS } from "@/lib/sellos";
 
-async function requireAdmin() {
-  const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user?.email || role !== "admin") return null;
-  return session.user.email;
+async function requireAdmin(req: NextRequest): Promise<string | null> {
+  const user = await getSessionUser(req);
+  if (!user?.email || user.role !== "admin") return null;
+  return user.email;
 }
 
-export async function GET() {
-  const email = await requireAdmin();
+export async function GET(req: NextRequest) {
+  const email = await requireAdmin(req);
   if (!email) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const artists = await listAllArtists();
@@ -19,7 +18,7 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const email = await requireAdmin();
+  const email = await requireAdmin(req);
   if (!email) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const body = await req.json();

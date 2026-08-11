@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getSessionUser } from "@/lib/session";
 import {
   updateUserRole,
   setUserActive,
@@ -9,15 +9,14 @@ import {
 } from "@/lib/db/users";
 import { ROLES, PERMISSIONS, type Permission, type Role } from "@/lib/permissions";
 
-async function requireAdmin() {
-  const session = await auth();
-  const user = session?.user as { email?: string; role?: string } | undefined;
+async function requireAdmin(req: NextRequest): Promise<string | null> {
+  const user = await getSessionUser(req);
   if (!user?.email || user.role !== "admin") return null;
   return user.email;
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ email: string }> }) {
-  const admin = await requireAdmin();
+  const admin = await requireAdmin(req);
   if (!admin) return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   const { email } = await params;
   const body = await req.json();

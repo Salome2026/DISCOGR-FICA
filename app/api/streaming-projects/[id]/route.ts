@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getSessionUser } from "@/lib/session";
 import { updateStreamingProject } from "@/lib/db/streamingProjects";
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user?.email || role !== "admin") {
+  const user = await getSessionUser(req);
+  if (!user?.email || user.role !== "admin") {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

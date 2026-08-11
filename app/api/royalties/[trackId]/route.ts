@@ -1,21 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getSessionUser } from "@/lib/session";
 import { getSplitsForTrack, setSplitsForTrack, type PartyType } from "@/lib/db/royalties";
 import { getTrack } from "@/lib/db/catalog";
 
-async function requireAdmin() {
-  const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  const email = session?.user?.email;
-  if (!email || role !== "admin") return null;
-  return email;
+async function requireAdmin(req: NextRequest): Promise<string | null> {
+  const user = await getSessionUser(req);
+  if (!user?.email || user.role !== "admin") return null;
+  return user.email;
 }
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ trackId: string }> }
 ) {
-  const email = await requireAdmin();
+  const email = await requireAdmin(req);
   if (!email) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const { trackId } = await params;
@@ -30,7 +28,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ trackId: string }> }
 ) {
-  const email = await requireAdmin();
+  const email = await requireAdmin(req);
   if (!email) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
   const { trackId } = await params;

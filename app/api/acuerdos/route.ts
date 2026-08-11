@@ -1,11 +1,10 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getSessionUser } from "@/lib/session";
 import { listReleases } from "@/lib/notion";
 
-export async function GET() {
-  const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user?.email || role === "sin_acceso" || !role) {
+export async function GET(req: NextRequest) {
+  const user = await getSessionUser(req);
+  if (!user?.email || !user.role) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

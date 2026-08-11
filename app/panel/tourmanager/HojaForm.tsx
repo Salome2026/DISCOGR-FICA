@@ -26,6 +26,18 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const TIPOS_EVENTO = ["Show", "Boliche", "Festival", "Evento privado", "Radio", "TV", "Prensa", "Otro"];
 const ORIGEN_LABELS = ["Domicilio Artista", "Hotel", "Aeropuerto", "Otro"];
 
+function timeToMinutes(t: string): number | null {
+  const m = t.match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return null;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
+function minutesToTime(mins: number): string {
+  const norm = ((mins % 1440) + 1440) % 1440;
+  const h = Math.floor(norm / 60);
+  const m = norm % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
 export default function HojaForm({
   hoja,
   onClose,
@@ -115,9 +127,73 @@ export default function HojaForm({
   const [duracionIdaMin, setDuracionIdaMin] = useState(hoja?.duracionIdaMin?.toString() ?? "");
   const [distanciaVueltaKm, setDistanciaVueltaKm] = useState(hoja?.distanciaVueltaKm?.toString() ?? "");
   const [duracionVueltaMin, setDuracionVueltaMin] = useState(hoja?.duracionVueltaMin?.toString() ?? "");
+  const [bufferPrepMin, setBufferPrepMin] = useState((hoja?.bufferPrepMin ?? 30).toString());
+  const [rutaIdaGeojson, setRutaIdaGeojson] = useState<unknown | null>(hoja?.rutaIdaGeojson ?? null);
+  const [rutaVueltaGeojson, setRutaVueltaGeojson] = useState<unknown | null>(hoja?.rutaVueltaGeojson ?? null);
+  const [calculatingRoute, setCalculatingRoute] = useState(false);
+  const [routeMsg, setRouteMsg] = useState<string | null>(null);
 
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  async function handleCalculateRoute() {
+    setRouteMsg(null);
+    if (venueLat == null || venueLng == null || origenLat == null || origenLng == null) {
+      setRouteMsg("Necesitás resolver la dirección del venue y del origen primero (esperá a que termine de resolver, o pegá una dirección más específica).");
+      return;
+    }
+    setCalculatingRoute(true);
+    try {
+      const [idaRes, vueltaRes] = await Promise.all([
+        fetch("/api/tourmanager/route-preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ origin: { lat: origenLat, lng: origenLng }, destination: { lat: venueLat, lng: venueLng } }),
+        }).then((r) => r.json()),
+        fetch("/api/tourmanager/route-preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ origin: { lat: venueLat, lng: venueLng }, destination: { lat: origenLat, lng: origenLng } }),
+        }).then((r) => r.json()),
+      ]);
+
+      let idaMin: number | null = null;
+      let vueltaMin: number | null = null;
+      if (idaRes.resolved) {
+        setDistanciaIdaKm(String(idaRes.distanceKm));
+        setDuracionIdaMin(String(idaRes.durationMin));
+        setRutaIdaGeojson(idaRes.geometry);
+        idaMin = idaRes.durationMin;
+      }
+      if (vueltaRes.resolved) {
+        setDistanciaVueltaKm(String(vueltaRes.distanceKm));
+        setDuracionVueltaMin(String(vueltaRes.durationMin));
+        setRutaVueltaGeojson(vueltaRes.geometry);
+        vueltaMin = vueltaRes.durationMin;
+      }
+      if (!idaRes.resolved && !vueltaRes.resolved) {
+        setRouteMsg("No se pudo calcular la ruta automáticamente — completá los horarios manualmente.");
+        return;
+      }
+
+      // Horarios sugeridos — solo completan campos vacíos, nunca pisan algo
+      // ya tipeado a mano.
+      const showMin = timeToMinutes(horaShow);
+      const buffer = parseInt(bufferPrepMin, 10) || 0;
+      const showDuration = parseInt(duracionShowMin, 10) || 0;
+      if (showMin != null) {
+        const llegadaVenue = showMin - buffer;
+        if (!horaLlegadaVenue) setHoraLlegadaVenue(minutesToTime(llegadaVenue));
+        if (idaMin != null && !horaSalida) setHoraSalida(minutesToTime(llegadaVenue - idaMin));
+        const salidaVenue = showMin + showDuration;
+        if (!horaSalidaVenue) setHoraSalidaVenue(minutesToTime(salidaVenue));
+        if (vueltaMin != null && !horaLlegadaDestino) setHoraLlegadaDestino(minutesToTime(salidaVenue + vueltaMin));
+      }
+      setRouteMsg("Ruta calculada.");
+    } finally {
+      setCalculatingRoute(false);
+    }
+  }
 
   function toIntOrNull(v: string): number | null {
     const n = parseInt(v, 10);
@@ -179,6 +255,9 @@ export default function HojaForm({
           runningOrder: runningOrder || null,
           notas: notas || null,
           estado,
+          bufferPrepMin: parseInt(bufferPrepMin, 10) || 30,
+          rutaIdaGeojson,
+          rutaVueltaGeojson,
         }),
       });
       const data = await res.json();
@@ -301,6 +380,22 @@ export default function HojaForm({
             </Field>
 
             <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-2)", marginTop: 4 }}>Cronograma de traslados</div>
+            <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
+              <div style={{ flex: 1 }}>
+                <Field label="Minutos de margen antes del show">
+                  <input type="number" value={bufferPrepMin} onChange={(e) => setBufferPrepMin(e.target.value)} style={inputStyle} />
+                </Field>
+              </div>
+              <button
+                type="button"
+                onClick={handleCalculateRoute}
+                disabled={calculatingRoute}
+                style={{ background: "var(--accent-glass-bg)", border: "1px solid var(--accent-glass-border)", borderRadius: 8, padding: "9px 14px", color: "var(--text-1)", fontWeight: 600, fontSize: 12.5, cursor: calculatingRoute ? "default" : "pointer", whiteSpace: "nowrap" }}
+              >
+                {calculatingRoute ? "Calculando..." : "Calcular ruta automáticamente"}
+              </button>
+            </div>
+            {routeMsg && <div style={{ fontSize: 11.5, color: "var(--text-3)" }}>{routeMsg}</div>}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <Field label="Salida"><input type="time" value={horaSalida} onChange={(e) => setHoraSalida(e.target.value)} style={inputStyle} /></Field>
               <Field label="Llegada al venue"><input type="time" value={horaLlegadaVenue} onChange={(e) => setHoraLlegadaVenue(e.target.value)} style={inputStyle} /></Field>

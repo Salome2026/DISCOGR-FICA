@@ -90,11 +90,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   management: ["ver_management", "editar_management"],
   // Same isolation principle again — its own module, own permissions.
   booking: ["ver_booking", "editar_booking"],
-  // Same isolation principle again — its own module, own permissions. It
-  // still reads Booking/artists data through its own bridge routes (see
-  // app/api/tourmanager/booking-shows/*), gated only by ver_tourmanager —
-  // lib/db/*.ts functions carry no permission checks of their own, only the
-  // calling route does, so this doesn't leak ver_booking access.
+  // Same isolation principle again — its own module, own permissions.
   tourmanager: ["ver_tourmanager", "editar_tourmanager"],
   distribucion: ["editar_acuerdos", "aprobar_releases", "ver_estadisticas"],
   marketing: ["ver_estadisticas", "exportar_datos", "ver_playlists", "editar_playlists"],

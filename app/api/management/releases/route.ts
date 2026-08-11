@@ -1,11 +1,10 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { hasPermission, type SessionUser } from "@/lib/permissions";
+import { NextRequest, NextResponse } from "next/server";
+import { getSessionUser } from "@/lib/session";
+import { hasPermission } from "@/lib/permissions";
 import { getManagementReleaseEvents } from "@/lib/db/managementReleases";
 
-export async function GET() {
-  const session = await auth();
-  const user = session?.user as unknown as SessionUser | undefined;
+export async function GET(req: NextRequest) {
+  const user = await getSessionUser(req);
   if (!user?.email || !hasPermission(user, "ver_management")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

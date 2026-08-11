@@ -51,6 +51,10 @@ export default function HomeScreen() {
         <Pressable style={styles.moduleButton} onPress={() => router.push("/legal")}>
           <Text style={styles.moduleButtonText}>Ir a Legales</Text>
         </Pressable>
+      ) : user.role === "management" ? (
+        <Pressable style={styles.moduleButton} onPress={() => router.push("/management")}>
+          <Text style={styles.moduleButtonText}>Ir a Management</Text>
+        </Pressable>
       ) : (
         <Text style={styles.note}>
           Esqueleto de la app — el módulo de {roleLabel} todavía no tiene pantallas propias acá.

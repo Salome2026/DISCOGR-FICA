@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet, Image } from "react-native";
+import { router } from "expo-router";
 import { useAuth } from "@/lib/auth-context";
 import { homeFor } from "@discografica/shared/permissions";
 
@@ -38,9 +39,15 @@ export default function HomeScreen() {
         <Text style={styles.cardValueMuted}>{homeFor(user.role)}</Text>
       </View>
 
-      <Text style={styles.note}>
-        Esqueleto de la app — el módulo de {roleLabel} todavía no tiene pantallas propias acá.
-      </Text>
+      {user.role === "tourmanager" ? (
+        <Pressable style={styles.moduleButton} onPress={() => router.push("/tourmanager")}>
+          <Text style={styles.moduleButtonText}>Ir a Tour Manager</Text>
+        </Pressable>
+      ) : (
+        <Text style={styles.note}>
+          Esqueleto de la app — el módulo de {roleLabel} todavía no tiene pantallas propias acá.
+        </Text>
+      )}
 
       <Pressable style={styles.logoutButton} onPress={() => logout()}>
         <Text style={styles.logoutText}>Cerrar sesión</Text>
@@ -60,6 +67,8 @@ const styles = StyleSheet.create({
   cardValueMuted: { color: "#8b8e97", fontSize: 13 },
   divider: { height: 1, backgroundColor: "#2a2b30", marginVertical: 12 },
   note: { color: "#5a5d68", fontSize: 12, textAlign: "center", marginTop: 24, lineHeight: 18 },
+  moduleButton: { marginTop: 24, backgroundColor: "#3fc6d1", borderRadius: 10, paddingVertical: 13, paddingHorizontal: 28 },
+  moduleButtonText: { color: "#000", fontWeight: "700", fontSize: 14.5 },
   logoutButton: { marginTop: 32, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 10, borderWidth: 1, borderColor: "#2a2b30" },
   logoutText: { color: "#8b8e97", fontSize: 14, fontWeight: "600" },
 });

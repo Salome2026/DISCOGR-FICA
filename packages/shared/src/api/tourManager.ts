@@ -24,3 +24,31 @@ export function updateHoja(id: string, input: HojaBody): Promise<{ hoja: HojaDeR
 export function deleteHoja(id: string): Promise<{ ok: true }> {
   return apiFetch(`/api/tourmanager/${id}`, { method: "DELETE" });
 }
+
+export type ResolvedAddress = {
+  resolved: boolean;
+  lat?: number;
+  lng?: number;
+  fullAddress?: string | null;
+  ciudad?: string | null;
+  provincia?: string | null;
+  pais?: string | null;
+};
+
+export function resolveAddress(input: string): Promise<ResolvedAddress> {
+  return apiFetch("/api/tourmanager/resolve-address", { method: "POST", body: JSON.stringify({ input }) });
+}
+
+export type RoutePreview = {
+  resolved: boolean;
+  distanceKm?: number;
+  durationMin?: number;
+  geometry?: unknown;
+};
+
+export function previewRoute(
+  origin: { lat: number; lng: number },
+  destination: { lat: number; lng: number }
+): Promise<RoutePreview> {
+  return apiFetch("/api/tourmanager/route-preview", { method: "POST", body: JSON.stringify({ origin, destination }) });
+}

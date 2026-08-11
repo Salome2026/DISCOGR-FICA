@@ -1,7 +1,7 @@
 import "@/lib/api"; // wires up the shared API client (configureApiClient) before anything else fetches
 import React from "react";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { LoginScreen } from "@/components/login-screen";
@@ -19,7 +19,7 @@ function Gate() {
   if (status === "signedOut") {
     return <LoginScreen />;
   }
-  return <Slot />;
+  return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#000000" } }} />;
 }
 
 export default function RootLayout() {

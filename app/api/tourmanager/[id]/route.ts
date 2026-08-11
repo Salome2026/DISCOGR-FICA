@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { getSessionUser } from "@/lib/session";
 import { hasPermission, type SessionUser } from "@/lib/permissions";
 import { getHoja, updateHoja, deleteHoja, ESTADOS_HOJA, type HojaInput } from "@/lib/db/tourManager";
 
@@ -11,8 +12,9 @@ async function sessionUser(): Promise<SessionUser | null> {
 
 type HojaBody = Omit<HojaInput, "actorEmail" | "estado"> & { estado?: string };
 
-export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const user = await sessionUser();
+// GET accepts either the web cookie session or a mobile Bearer token.
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "ver_tourmanager")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

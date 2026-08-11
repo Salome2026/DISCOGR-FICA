@@ -7,7 +7,19 @@ import { SELLOS } from "@/lib/sellos";
 import type { LegalContract } from "@/lib/db/legalContracts";
 import { LegalShell, DocusignImportModal } from "../_shared";
 
-type Artist = { id: string; name: string; sello: string | null };
+type Artist = { id: string; name: string; sello: string | null; photoUrl: string | null };
+
+// Case/accent/whitespace-insensitive — un contrato guardado como "Candu
+// Dominguez" (sin acento) tiene que seguir matcheando al artista del roster
+// "Candu Domínguez", si no el contrato queda invisible pese a existir.
+function normalizeName(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ");
+}
 
 export default function ContratosGridPage() {
   return (
@@ -42,13 +54,32 @@ function ArtistGrid() {
     loadContracts();
   }, []);
 
+  // Muchos contratos son de artistas "Potencial" (prospectos) que todavía no
+  // tienen fila en el roster oficial — sin esto, esos contratos quedan sin
+  // ninguna tarjeta para acceder a ellos, aunque existan en la base.
+  const allArtists = useMemo(() => {
+    const base = artists ?? [];
+    if (!contracts) return base;
+    const known = new Set(base.map((a) => normalizeName(a.name)));
+    const orphans = new Map<string, Artist>();
+    for (const c of contracts) {
+      const key = normalizeName(c.artist);
+      if (known.has(key) || orphans.has(key)) continue;
+      orphans.set(key, { id: `orphan-${key}`, name: c.artist, sello: null, photoUrl: null });
+    }
+    return [...base, ...orphans.values()];
+  }, [artists, contracts]);
+
   const contractCountByArtist = useMemo(() => {
     const map = new Map<string, number>();
-    for (const c of contracts ?? []) map.set(c.artist, (map.get(c.artist) ?? 0) + 1);
+    for (const c of contracts ?? []) {
+      const key = normalizeName(c.artist);
+      map.set(key, (map.get(key) ?? 0) + 1);
+    }
     return map;
   }, [contracts]);
 
-  const visible = (artists ?? []).filter(
+  const visible = allArtists.filter(
     (a) => a.name.toLowerCase().includes(filter.toLowerCase()) && (!selloFilter || a.sello === selloFilter)
   );
 
@@ -83,10 +114,12 @@ function ArtistGrid() {
       ) : (
         <div className="legal-artist-grid">
           {visible.map((a) => {
-            const count = contractCountByArtist.get(a.name) ?? 0;
+            const count = contractCountByArtist.get(normalizeName(a.name)) ?? 0;
             return (
               <Link key={a.id} href={`/panel/legal/contratos/${encodeURIComponent(a.name)}`} className="legal-artist-card">
-                <div className="legal-artist-avatar">{a.name.charAt(0).toUpperCase()}</div>
+                <div className="legal-artist-avatar">
+                  {a.photoUrl ? <img src={a.photoUrl} alt={a.name} /> : a.name.charAt(0).toUpperCase()}
+                </div>
                 <div className="legal-artist-name">{a.name}</div>
                 <div className="legal-artist-meta">{a.sello ?? "Sin sello"}</div>
                 <div className="legal-artist-count">{count > 0 ? `${count} contrato${count > 1 ? "s" : ""}` : "Sin contratos"}</div>

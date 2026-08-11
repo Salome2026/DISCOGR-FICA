@@ -102,7 +102,9 @@ export const LEGAL_STYLES = `
   .legal-artist-avatar {
     width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
     font-size: 17px; font-weight: 700; background: var(--accent-gradient); color: var(--legal-accent-ink);
+    overflow: hidden; flex-shrink: 0;
   }
+  .legal-artist-avatar img { width: 100%; height: 100%; object-fit: cover; }
   .legal-artist-name { font-size: 13px; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .legal-artist-meta { font-size: 10.5px; color: var(--text-3); }
   .legal-artist-count { font-size: 9.5px; color: var(--legal-accent); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }

@@ -5,6 +5,18 @@ import RequireRole from "@/app/components/RequireRole";
 import { TIPOS_CONTRATO, type LegalContract } from "@/lib/db/legalContracts";
 import { LegalShell, Badge, ContractForm } from "../../_shared";
 
+// Mismo criterio que la grilla (app/panel/legal/contratos/page.tsx) — sin
+// esto, un contrato guardado con una grafía levemente distinta del artista
+// (acentos, mayúsculas) queda invisible en su propia ficha.
+function normalizeName(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
 function isVencido(fechaVencimiento: string | null): boolean {
   if (!fechaVencimiento) return false;
   return new Date(fechaVencimiento) < new Date(new Date().toDateString());
@@ -37,7 +49,7 @@ function ArtistFicha({ artist }: { artist: string }) {
   }
   useEffect(load, []);
 
-  const forArtist = (contracts ?? []).filter((c) => c.artist === artist);
+  const forArtist = (contracts ?? []).filter((c) => normalizeName(c.artist) === normalizeName(artist));
 
   function contractsFor(tipo: string): LegalContract[] {
     return forArtist

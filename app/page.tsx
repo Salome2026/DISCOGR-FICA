@@ -6,7 +6,7 @@ import { signIn } from "next-auth/react";
 import Image from "next/image";
 import VPOScrollHero from "./components/VPOScrollHero";
 
-type Card = "label" | "pm" | "legal" | "editorial" | "management" | "booking" | null;
+type Card = "label" | "pm" | "legal" | "editorial" | "management" | "booking" | "tourmanager" | null;
 
 export default function Landing() {
   const router = useRouter();
@@ -178,6 +178,13 @@ export default function Landing() {
                 Ingresar
               </button>
             </div>
+            <div className="access-card">
+              <h2>Tour Manager</h2>
+              <p>Acceso para quienes acompañan a los artistas de gira.</p>
+              <button className="access-btn" onClick={() => setActive("tourmanager")}>
+                Ingresar
+              </button>
+            </div>
           </div>
         )}
 
@@ -199,7 +206,9 @@ export default function Landing() {
                 ? "Acceso Publishing"
                 : active === "management"
                 ? "Acceso Management"
-                : "Acceso Booking"}
+                : active === "booking"
+                ? "Acceso Booking"
+                : "Acceso Tour Manager"}
             </h2>
 
             {!forgotMode ? (

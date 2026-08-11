@@ -29,6 +29,8 @@ export const PERMISSIONS = [
   "editar_booking",
   "ver_playlists",
   "editar_playlists",
+  "ver_tourmanager",
+  "editar_tourmanager",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -40,6 +42,7 @@ export const ROLES = [
   "editorial",
   "management",
   "booking",
+  "tourmanager",
   "distribucion",
   "marketing",
   "artista",
@@ -54,7 +57,7 @@ export type AccountType = "empresa" | "artista";
 // Roles available for each landing-page account type. An "artista" role only makes
 // sense behind the Artista card; company roles only behind the Empresa card.
 export const ROLES_BY_ACCOUNT_TYPE: Record<AccountType, Role[]> = {
-  empresa: ["admin", "project_manager", "legal", "editorial", "management", "booking", "distribucion", "marketing", "invitado"],
+  empresa: ["admin", "project_manager", "legal", "editorial", "management", "booking", "tourmanager", "distribucion", "marketing", "invitado"],
   artista: ["artista", "representante"],
 };
 
@@ -87,6 +90,12 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   management: ["ver_management", "editar_management"],
   // Same isolation principle again — its own module, own permissions.
   booking: ["ver_booking", "editar_booking"],
+  // Same isolation principle again — its own module, own permissions. It
+  // still reads Booking/artists data through its own bridge routes (see
+  // app/api/tourmanager/booking-shows/*), gated only by ver_tourmanager —
+  // lib/db/*.ts functions carry no permission checks of their own, only the
+  // calling route does, so this doesn't leak ver_booking access.
+  tourmanager: ["ver_tourmanager", "editar_tourmanager"],
   distribucion: ["editar_acuerdos", "aprobar_releases", "ver_estadisticas"],
   marketing: ["ver_estadisticas", "exportar_datos", "ver_playlists", "editar_playlists"],
   artista: ["subir_audio", "subir_portada"],
@@ -102,6 +111,7 @@ export const ROLE_HOME: Record<Role, string> = {
   editorial: "/panel/publishing",
   management: "/panel/management",
   booking: "/panel/booking",
+  tourmanager: "/panel/tourmanager",
   distribucion: "/panel/distribucion",
   marketing: "/panel/marketing",
   artista: "/panel/artista",

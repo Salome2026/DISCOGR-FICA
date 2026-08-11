@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { HojaDeRuta } from "@/lib/db/tourManager";
 import ArtistPicker, { type ArtistResult } from "./ArtistPicker";
 import BookingShowPicker, { type BookingShowLite } from "./BookingShowPicker";
@@ -27,6 +27,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const TIPOS_EVENTO = ["Show", "Boliche", "Festival", "Evento privado", "Radio", "TV", "Prensa", "Otro"];
 const ORIGEN_LABELS = ["Domicilio Artista", "Hotel", "Aeropuerto", "Otro"];
+const BUFFER_PRESETS = [
+  { value: 30, label: "30 minutos" },
+  { value: 45, label: "45 minutos" },
+  { value: 60, label: "1 hora" },
+  { value: 90, label: "1 hora 30" },
+  { value: 120, label: "2 horas" },
+];
 
 function timeToMinutes(t: string): number | null {
   const m = t.match(/^(\d{1,2}):(\d{2})$/);
@@ -155,6 +162,10 @@ export default function HojaForm({
   const [distanciaVueltaKm, setDistanciaVueltaKm] = useState(hoja?.distanciaVueltaKm?.toString() ?? "");
   const [duracionVueltaMin, setDuracionVueltaMin] = useState(hoja?.duracionVueltaMin?.toString() ?? "");
   const [bufferPrepMin, setBufferPrepMin] = useState((hoja?.bufferPrepMin ?? 30).toString());
+  const [bufferPreset, setBufferPreset] = useState<string>(() => {
+    const initial = hoja?.bufferPrepMin ?? 30;
+    return BUFFER_PRESETS.some((p) => p.value === initial) ? String(initial) : "custom";
+  });
   const [rutaIdaGeojson, setRutaIdaGeojson] = useState<unknown | null>(hoja?.rutaIdaGeojson ?? null);
   const [rutaVueltaGeojson, setRutaVueltaGeojson] = useState<unknown | null>(hoja?.rutaVueltaGeojson ?? null);
   const [calculatingRoute, setCalculatingRoute] = useState(false);
@@ -163,64 +174,86 @@ export default function HojaForm({
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  async function handleCalculateRoute() {
-    setRouteMsg(null);
-    if (venueLat == null || venueLng == null || origenLat == null || origenLng == null) {
-      setRouteMsg("Necesitás resolver la dirección del venue y del origen primero (esperá a que termine de resolver, o pegá una dirección más específica).");
-      return;
-    }
-    setCalculatingRoute(true);
-    try {
-      const [idaRes, vueltaRes] = await Promise.all([
-        fetch("/api/tourmanager/route-preview", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ origin: { lat: origenLat, lng: origenLng }, destination: { lat: venueLat, lng: venueLng } }),
-        }).then((r) => r.json()),
-        fetch("/api/tourmanager/route-preview", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ origin: { lat: venueLat, lng: venueLng }, destination: { lat: origenLat, lng: origenLng } }),
-        }).then((r) => r.json()),
-      ]);
-
-      let idaMin: number | null = null;
-      let vueltaMin: number | null = null;
-      if (idaRes.resolved) {
-        setDistanciaIdaKm(String(idaRes.distanceKm));
-        setDuracionIdaMin(String(idaRes.durationMin));
-        setRutaIdaGeojson(idaRes.geometry);
-        idaMin = idaRes.durationMin;
-      }
-      if (vueltaRes.resolved) {
-        setDistanciaVueltaKm(String(vueltaRes.distanceKm));
-        setDuracionVueltaMin(String(vueltaRes.durationMin));
-        setRutaVueltaGeojson(vueltaRes.geometry);
-        vueltaMin = vueltaRes.durationMin;
-      }
-      if (!idaRes.resolved && !vueltaRes.resolved) {
-        setRouteMsg("No se pudo calcular la ruta automáticamente — completá los horarios manualmente.");
-        return;
-      }
-
-      // Horarios sugeridos — solo completan campos vacíos, nunca pisan algo
-      // ya tipeado a mano.
-      const showMin = timeToMinutes(horaShow);
-      const buffer = parseInt(bufferPrepMin, 10) || 0;
-      const showDuration = parseInt(duracionShowMin, 10) || 0;
-      if (showMin != null) {
-        const llegadaVenue = showMin - buffer;
-        if (!horaLlegadaVenue) setHoraLlegadaVenue(minutesToTime(llegadaVenue));
-        if (idaMin != null && !horaSalida) setHoraSalida(minutesToTime(llegadaVenue - idaMin));
-        const salidaVenue = showMin + showDuration;
-        if (!horaSalidaVenue) setHoraSalidaVenue(minutesToTime(salidaVenue));
-        if (vueltaMin != null && !horaLlegadaDestino) setHoraLlegadaDestino(minutesToTime(salidaVenue + vueltaMin));
-      }
-      setRouteMsg("Ruta calculada.");
-    } finally {
-      setCalculatingRoute(false);
-    }
+  function handleBufferPresetChange(v: string) {
+    setBufferPreset(v);
+    if (v !== "custom") setBufferPrepMin(v);
   }
+
+  // Se recalcula solo — sin botón — cada vez que cambia el horario del show,
+  // el origen, el destino o el tiempo de anticipación, como pidió el usuario.
+  // Llegada al venue y Salida se pisan siempre (son 100% derivados); Salida
+  // del venue / Llegada a destino solo se sugieren si están vacíos, porque
+  // dependen de una decisión humana (cuánto se queda el artista).
+  useEffect(() => {
+    if (venueLat == null || venueLng == null || origenLat == null || origenLng == null) return;
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      setCalculatingRoute(true);
+      setRouteMsg(null);
+      try {
+        const [idaRes, vueltaRes] = await Promise.all([
+          fetch("/api/tourmanager/route-preview", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ origin: { lat: origenLat, lng: origenLng }, destination: { lat: venueLat, lng: venueLng } }),
+          }).then((r) => r.json()),
+          fetch("/api/tourmanager/route-preview", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ origin: { lat: venueLat, lng: venueLng }, destination: { lat: origenLat, lng: origenLng } }),
+          }).then((r) => r.json()),
+        ]);
+        if (cancelled) return;
+
+        let idaMin: number | null = null;
+        let vueltaMin: number | null = null;
+        if (idaRes.resolved) {
+          setDistanciaIdaKm(String(idaRes.distanceKm));
+          setDuracionIdaMin(String(idaRes.durationMin));
+          setRutaIdaGeojson(idaRes.geometry);
+          idaMin = idaRes.durationMin;
+        }
+        if (vueltaRes.resolved) {
+          setDistanciaVueltaKm(String(vueltaRes.distanceKm));
+          setDuracionVueltaMin(String(vueltaRes.durationMin));
+          setRutaVueltaGeojson(vueltaRes.geometry);
+          vueltaMin = vueltaRes.durationMin;
+        }
+        if (!idaRes.resolved && !vueltaRes.resolved) {
+          setRouteMsg("No se pudo calcular la ruta automáticamente — completá los horarios manualmente.");
+          return;
+        }
+
+        const showMin = timeToMinutes(horaShow);
+        const buffer = parseInt(bufferPrepMin, 10) || 0;
+        if (showMin != null) {
+          const llegadaVenue = showMin - buffer;
+          setHoraLlegadaVenue(minutesToTime(llegadaVenue));
+          if (idaMin != null) setHoraSalida(minutesToTime(llegadaVenue - idaMin));
+        }
+      } finally {
+        if (!cancelled) setCalculatingRoute(false);
+      }
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [horaShow, bufferPrepMin, venueLat, venueLng, origenLat, origenLng]);
+
+  // Salida del venue / Llegada a destino: solo se sugieren si están vacíos
+  // (dependen de cuánto se queda el artista, una decisión humana), no forman
+  // parte del recálculo en vivo de arriba.
+  useEffect(() => {
+    const showMin = timeToMinutes(horaShow);
+    if (showMin == null) return;
+    const showDuration = parseInt(duracionShowMin, 10) || 0;
+    const salidaVenue = showMin + showDuration;
+    if (!horaSalidaVenue) setHoraSalidaVenue(minutesToTime(salidaVenue));
+    const vueltaMin = toIntOrNull(duracionVueltaMin);
+    if (vueltaMin != null && !horaLlegadaDestino) setHoraLlegadaDestino(minutesToTime(salidaVenue + vueltaMin));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [horaShow, duracionShowMin, duracionVueltaMin]);
 
   function toIntOrNull(v: string): number | null {
     const n = parseInt(v, 10);
@@ -394,6 +427,41 @@ export default function HojaForm({
           </div>
         </div>
 
+        {(venueLat != null && origenLat != null) && (
+          <div style={{ background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: ".04em" }}>
+              Cronograma calculado
+            </div>
+            {calculatingRoute ? (
+              <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>Calculando...</div>
+            ) : routeMsg ? (
+              <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>{routeMsg}</div>
+            ) : (
+              <>
+                {duracionIdaMin && (
+                  <div style={{ fontSize: 13, color: "var(--text-2)" }}>
+                    Tiempo de viaje: <strong style={{ color: "var(--text-1)" }}>{duracionIdaMin} min</strong>
+                    {distanciaIdaKm ? ` (${distanciaIdaKm} km)` : ""}
+                  </div>
+                )}
+                {horaLlegadaVenue && (
+                  <div style={{ fontSize: 13, color: "var(--text-2)" }}>
+                    Llegada al venue: <strong style={{ color: "var(--text-1)" }}>{horaLlegadaVenue}</strong>
+                  </div>
+                )}
+                {horaSalida && (
+                  <div style={{ fontSize: 15, color: "var(--good-ink)", fontWeight: 700 }}>
+                    Salida recomendada: {horaSalida}
+                  </div>
+                )}
+                {!duracionIdaMin && !horaLlegadaVenue && !horaSalida && (
+                  <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>Cargá el horario del show para calcular la salida.</div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
         <button
           type="button"
           onClick={() => setShowDetails((s) => !s)}
@@ -420,22 +488,28 @@ export default function HojaForm({
             </Field>
 
             <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-2)", marginTop: 4 }}>Cronograma de traslados</div>
-            <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
+            <div style={{ display: "flex", gap: 10 }}>
               <div style={{ flex: 1 }}>
-                <Field label="Minutos de margen antes del show">
-                  <input type="number" value={bufferPrepMin} onChange={(e) => setBufferPrepMin(e.target.value)} style={inputStyle} />
+                <Field label="Tiempo de anticipación (llegar al venue X antes del show)">
+                  <select value={bufferPreset} onChange={(e) => handleBufferPresetChange(e.target.value)} style={inputStyle}>
+                    {BUFFER_PRESETS.map((p) => (
+                      <option key={p.value} value={String(p.value)}>{p.label}</option>
+                    ))}
+                    <option value="custom">Personalizado</option>
+                  </select>
                 </Field>
               </div>
-              <button
-                type="button"
-                onClick={handleCalculateRoute}
-                disabled={calculatingRoute}
-                style={{ background: "var(--accent-glass-bg)", border: "1px solid var(--accent-glass-border)", borderRadius: 8, padding: "9px 14px", color: "var(--text-1)", fontWeight: 600, fontSize: 12.5, cursor: calculatingRoute ? "default" : "pointer", whiteSpace: "nowrap" }}
-              >
-                {calculatingRoute ? "Calculando..." : "Calcular ruta automáticamente"}
-              </button>
+              {bufferPreset === "custom" && (
+                <div style={{ flex: 1 }}>
+                  <Field label="Minutos personalizados">
+                    <input type="number" min={0} value={bufferPrepMin} onChange={(e) => setBufferPrepMin(e.target.value)} style={inputStyle} />
+                  </Field>
+                </div>
+              )}
             </div>
-            {routeMsg && <div style={{ fontSize: 11.5, color: "var(--text-3)" }}>{routeMsg}</div>}
+            <p style={{ fontSize: 11.5, color: "var(--text-3)", margin: 0 }}>
+              El tiempo de viaje y la salida recomendada se recalculan solos apenas cambia el horario del show, el origen, el venue o la anticipación — ver "Cronograma calculado" arriba.
+            </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <Field label="Salida"><input type="time" value={horaSalida} onChange={(e) => setHoraSalida(e.target.value)} style={inputStyle} /></Field>
               <Field label="Llegada al venue"><input type="time" value={horaLlegadaVenue} onChange={(e) => setHoraLlegadaVenue(e.target.value)} style={inputStyle} /></Field>

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import type { HojaDeRuta } from "@/lib/db/tourManager";
+import ArtistPicker, { type ArtistResult } from "./ArtistPicker";
+import BookingShowPicker, { type BookingShowLite } from "./BookingShowPicker";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -57,6 +59,10 @@ export default function HojaForm({
   const [origenLabel, setOrigenLabel] = useState(hoja?.origenLabel ?? "");
   const [origenDireccion, setOrigenDireccion] = useState(hoja?.origenDireccion ?? "");
 
+  // --- Integraciones (Fase 6) — links suaves, nunca bloquean la carga manual ---
+  const [bookingShowId, setBookingShowId] = useState<string | null>(hoja?.bookingShowId ?? null);
+  const [artistId, setArtistId] = useState<string | null>(hoja?.artistId ?? null);
+
   // --- Direcciones resueltas (Fase 3) — geocoding automático al salir del campo ---
   const [venueResolving, setVenueResolving] = useState(false);
   const [venueLat, setVenueLat] = useState<number | null>(hoja?.venueLat ?? null);
@@ -100,6 +106,27 @@ export default function HojaForm({
     } finally {
       setResolving(false);
     }
+  }
+
+  // Booking ya resolvió ciudad/provincia/país/lat/lng para este show — se
+  // reusan directo (sin volver a geocodificar) y se guarda booking_show_id
+  // para dejar el vínculo. Origen nunca viene de Booking (no lo trackea).
+  function handleSelectBookingShow(show: BookingShowLite) {
+    setBookingShowId(show.id);
+    setArtistName(show.artistName);
+    setFecha(show.fecha);
+    if (show.hora) setHoraShow(show.hora);
+    if (show.venue) setVenue(show.venue);
+    const direccionResumen = [show.venue, show.ciudad, show.provincia, show.pais].filter(Boolean).join(", ");
+    if (direccionResumen) setVenueDireccion(direccionResumen);
+    if (show.lat != null && show.lng != null) {
+      setVenueLat(show.lat);
+      setVenueLng(show.lng);
+    }
+    setVenueCiudad(show.ciudad ?? "");
+    setVenueProvincia(show.provincia ?? "");
+    setVenuePais(show.pais ?? "");
+    setVenueFullAddress([show.ciudad, show.provincia, show.pais].filter(Boolean).join(", "));
   }
 
   // --- Todo lo demás: opcional, colapsado por default ---
@@ -258,6 +285,8 @@ export default function HojaForm({
           bufferPrepMin: parseInt(bufferPrepMin, 10) || 30,
           rutaIdaGeojson,
           rutaVueltaGeojson,
+          bookingShowId,
+          artistId,
         }),
       });
       const data = await res.json();
@@ -285,8 +314,19 @@ export default function HojaForm({
           Cargá solo lo esencial — el resto se puede completar después o se autocompleta más adelante.
         </p>
 
+        <Field label="¿Ya existe este show en Booking? (opcional — autocompleta abajo)">
+          <BookingShowPicker onSelect={handleSelectBookingShow} />
+          {bookingShowId && (
+            <div style={{ fontSize: 11, color: "var(--good-ink)", marginTop: 4 }}>✓ Vinculado a un show de Booking.</div>
+          )}
+        </Field>
+
         <Field label="Artista">
-          <input value={artistName} onChange={(e) => setArtistName(e.target.value)} required style={inputStyle} />
+          <ArtistPicker
+            value={artistName}
+            onChange={setArtistName}
+            onSelect={(a) => setArtistId(a?.id ?? null)}
+          />
         </Field>
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1 }}>

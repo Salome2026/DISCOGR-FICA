@@ -4,6 +4,7 @@
   "private": true,
   "exports": {
     "./permissions": "./src/permissions.ts",
+    "./sellos": "./src/sellos.ts",
     "./types/*": "./src/types/*.ts",
     "./api/*": "./src/api/*.ts"
   }

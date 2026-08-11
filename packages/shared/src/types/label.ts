@@ -34,3 +34,19 @@ export type CatalogTrack = {
   updated_by: string | null;
   updated_at: string | null;
 };
+
+// Extracted from app/components/RankingListeners.tsx — matches GET /api/ranking.
+export type RankingRow = {
+  artist_id: string;
+  artist_name: string;
+  sello: string | null;
+  monthly_listeners: number | null;
+  followers: number | null;
+  monthly_listeners_rank: number | null;
+  artist_rank: number | null;
+  image_url: string | null;
+  measured_at: string;
+  prev_day: number | null;
+  prev_7d: number | null;
+  prev_30d: number | null;
+};

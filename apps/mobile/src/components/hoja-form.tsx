@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
+import { theme } from "@discografica/shared/theme";
 import { createHoja, updateHoja, resolveAddress, previewRoute } from "@discografica/shared/api/tourManager";
 import type { HojaDeRuta } from "@discografica/shared/types/tourManager";
 import { ArtistPicker } from "./artist-picker";
+import { Collapsible } from "./collapsible";
 import type { ArtistResult } from "@discografica/shared/api/artists";
 
 const TIPOS_EVENTO = ["Show", "Boliche", "Festival", "Evento privado", "Radio", "TV", "Prensa", "Otro"];
@@ -32,7 +34,7 @@ function toNumOrNull(v: string): number | null {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <View style={{ marginBottom: 12 }}>
+    <View style={{ marginBottom: theme.space.md }}>
       <Text style={styles.label}>{label}</Text>
       {children}
     </View>
@@ -101,7 +103,6 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
     }
   }
 
-  const [showDetails, setShowDetails] = useState(!!hoja);
   const [duracionShowMin, setDuracionShowMin] = useState(hoja?.duracionShowMin?.toString() ?? "");
   const [pax, setPax] = useState(hoja?.pax?.toString() ?? "");
   const [venueContactoNombre, setVenueContactoNombre] = useState(hoja?.venueContactoNombre ?? "");
@@ -263,16 +264,16 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
         <ArtistPicker value={artistName} onChange={setArtistName} onSelect={(a: ArtistResult | null) => setArtistId(a?.id ?? null)} />
       </Field>
       <Field label="Fecha (AAAA-MM-DD)">
-        <TextInput value={fecha} onChangeText={setFecha} placeholder="2026-08-20" placeholderTextColor="#5a5d68" style={styles.input} />
+        <TextInput value={fecha} onChangeText={setFecha} placeholder="2026-08-20" placeholderTextColor={theme.text3} style={styles.input} />
       </Field>
       <Field label="Horario del show (HH:MM)">
-        <TextInput value={horaShow} onChangeText={setHoraShow} placeholder="21:30" placeholderTextColor="#5a5d68" style={styles.input} />
+        <TextInput value={horaShow} onChangeText={setHoraShow} placeholder="21:30" placeholderTextColor={theme.text3} style={styles.input} />
       </Field>
       <Field label="Tipo de evento">
         <ChipRow options={TIPOS_EVENTO} value={tipoEvento} onChange={setTipoEvento} />
       </Field>
       <Field label="Venue">
-        <TextInput value={venue} onChangeText={setVenue} placeholderTextColor="#5a5d68" style={styles.input} />
+        <TextInput value={venue} onChangeText={setVenue} placeholderTextColor={theme.text3} style={styles.input} />
       </Field>
       <Field label="Dirección del venue (o link de Google Maps)">
         <TextInput
@@ -280,7 +281,7 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
           onChangeText={setVenueDireccion}
           onBlur={() => handleResolveAddress("venue", venueDireccion)}
           placeholder="Dirección o link de Maps"
-          placeholderTextColor="#5a5d68"
+          placeholderTextColor={theme.text3}
           style={styles.input}
         />
         {venueResolving && <Text style={styles.hint}>Resolviendo dirección...</Text>}
@@ -301,7 +302,7 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
           onChangeText={setOrigenDireccion}
           onBlur={() => handleResolveAddress("origen", origenDireccion)}
           placeholder="Dirección o link de Maps"
-          placeholderTextColor="#5a5d68"
+          placeholderTextColor={theme.text3}
           style={styles.input}
         />
         {origenResolving && <Text style={styles.hint}>Resolviendo dirección...</Text>}
@@ -312,7 +313,7 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
         <View style={styles.scheduleCard}>
           <Text style={styles.scheduleLabel}>Cronograma calculado</Text>
           {calculatingRoute ? (
-            <ActivityIndicator color="#3fc6d1" style={{ alignSelf: "flex-start" }} />
+            <ActivityIndicator color={theme.accentColor} style={{ alignSelf: "flex-start" }} />
           ) : routeMsg ? (
             <Text style={styles.hint}>{routeMsg}</Text>
           ) : (
@@ -334,75 +335,71 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
         </View>
       )}
 
-      <Pressable onPress={() => setShowDetails((s) => !s)} style={styles.detailsToggle}>
-        <Text style={styles.detailsToggleText}>{showDetails ? "▾ Ocultar detalles adicionales" : "▸ Agregar detalles adicionales (opcional)"}</Text>
-      </Pressable>
-
-      {showDetails && (
-        <>
-          <Text style={styles.sectionTitle}>Venue</Text>
+      <View style={styles.collapsibles}>
+        <Collapsible title="Venue">
           <Field label="Contacto del venue">
-            <TextInput value={venueContactoNombre} onChangeText={setVenueContactoNombre} placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={venueContactoNombre} onChangeText={setVenueContactoNombre} placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
           <Field label="Tel. contacto venue">
-            <TextInput value={venueContactoTelefono} onChangeText={setVenueContactoTelefono} keyboardType="phone-pad" placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={venueContactoTelefono} onChangeText={setVenueContactoTelefono} keyboardType="phone-pad" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
           <Field label="Duración del show (min)">
-            <TextInput value={duracionShowMin} onChangeText={setDuracionShowMin} keyboardType="number-pad" placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={duracionShowMin} onChangeText={setDuracionShowMin} keyboardType="number-pad" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
+        </Collapsible>
 
-          <Text style={styles.sectionTitle}>Cronograma de traslados</Text>
+        <Collapsible title="Cronograma de traslados">
           <Field label="Tiempo de anticipación">
             <ChipRow options={BUFFER_PRESETS.map(String)} value={bufferPrepMin} onChange={(v) => setBufferPrepMin(v || "30")} />
           </Field>
           <Text style={styles.hint}>El tiempo de viaje y la salida recomendada se recalculan solos — ver &quot;Cronograma calculado&quot; arriba.</Text>
           <Field label="Salida">
-            <TextInput value={horaSalida} onChangeText={setHoraSalida} placeholder="HH:MM" placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={horaSalida} onChangeText={setHoraSalida} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
           <Field label="Llegada al venue">
-            <TextInput value={horaLlegadaVenue} onChangeText={setHoraLlegadaVenue} placeholder="HH:MM" placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={horaLlegadaVenue} onChangeText={setHoraLlegadaVenue} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
           <Field label="Salida del venue">
-            <TextInput value={horaSalidaVenue} onChangeText={setHoraSalidaVenue} placeholder="HH:MM" placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={horaSalidaVenue} onChangeText={setHoraSalidaVenue} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
           <Field label="Llegada a destino">
-            <TextInput value={horaLlegadaDestino} onChangeText={setHoraLlegadaDestino} placeholder="HH:MM" placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={horaLlegadaDestino} onChangeText={setHoraLlegadaDestino} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
           <Field label="Pax">
-            <TextInput value={pax} onChangeText={setPax} keyboardType="number-pad" placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={pax} onChangeText={setPax} keyboardType="number-pad" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
           <Field label="Driver">
-            <TextInput value={driverNombre} onChangeText={setDriverNombre} placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={driverNombre} onChangeText={setDriverNombre} placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
           <Field label="Tel. driver">
-            <TextInput value={driverTelefono} onChangeText={setDriverTelefono} keyboardType="phone-pad" placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={driverTelefono} onChangeText={setDriverTelefono} keyboardType="phone-pad" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
+        </Collapsible>
 
-          <Text style={styles.sectionTitle}>Contactos</Text>
+        <Collapsible title="Contactos y notas">
           <Field label="Contacto artista">
-            <TextInput value={contactoArtistaNombre} onChangeText={setContactoArtistaNombre} placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={contactoArtistaNombre} onChangeText={setContactoArtistaNombre} placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
           <Field label="Tel. contacto artista">
-            <TextInput value={contactoArtistaTelefono} onChangeText={setContactoArtistaTelefono} keyboardType="phone-pad" placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={contactoArtistaTelefono} onChangeText={setContactoArtistaTelefono} keyboardType="phone-pad" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
           <Field label="Artist Liaison">
-            <TextInput value={artistLiaisonNombre} onChangeText={setArtistLiaisonNombre} placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={artistLiaisonNombre} onChangeText={setArtistLiaisonNombre} placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
           <Field label="Tel. Artist Liaison">
-            <TextInput value={artistLiaisonTelefono} onChangeText={setArtistLiaisonTelefono} keyboardType="phone-pad" placeholderTextColor="#5a5d68" style={styles.input} />
+            <TextInput value={artistLiaisonTelefono} onChangeText={setArtistLiaisonTelefono} keyboardType="phone-pad" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
-
           <Field label="Running Order">
-            <TextInput value={runningOrder} onChangeText={setRunningOrder} multiline numberOfLines={2} placeholder="Ej: Sofi B: 03.30" placeholderTextColor="#5a5d68" style={[styles.input, styles.textarea]} />
+            <TextInput value={runningOrder} onChangeText={setRunningOrder} multiline numberOfLines={2} placeholder="Ej: Sofi B: 03.30" placeholderTextColor={theme.text3} style={[styles.input, styles.textarea]} />
           </Field>
           <Field label="Notas">
-            <TextInput value={notas} onChangeText={setNotas} multiline numberOfLines={3} placeholderTextColor="#5a5d68" style={[styles.input, styles.textarea]} />
+            <TextInput value={notas} onChangeText={setNotas} multiline numberOfLines={3} placeholderTextColor={theme.text3} style={[styles.input, styles.textarea]} />
           </Field>
           <Field label="Estado">
             <ChipRow options={["Borrador", "Confirmado"]} value={estado} onChange={(v) => setEstado(v || "Borrador")} />
           </Field>
-        </>
-      )}
+        </Collapsible>
+      </View>
 
       {error && (
         <View style={styles.errorBox}>
@@ -423,42 +420,40 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#000000" },
-  content: { padding: 20, paddingBottom: 48 },
-  title: { color: "#fff", fontSize: 19, fontWeight: "700" },
-  subtitle: { color: "#8b8e97", fontSize: 12.5, marginBottom: 18 },
-  label: { color: "#8b8e97", fontSize: 12.5, marginBottom: 4 },
+  root: { flex: 1, backgroundColor: theme.bg0 },
+  content: { padding: theme.space.xl, paddingBottom: theme.space["3xl"] },
+  title: { color: theme.text1, ...theme.type.h1 },
+  subtitle: { color: theme.text3, ...theme.type.small, marginBottom: theme.space.lg },
+  label: { color: theme.text2, ...theme.type.small, marginBottom: theme.space.xs },
   input: {
-    backgroundColor: "#15161a",
+    backgroundColor: theme.bg2,
     borderWidth: 1,
-    borderColor: "#2a2b30",
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: "#fff",
+    borderColor: theme.lineSoft,
+    borderRadius: theme.radiusSm,
+    paddingHorizontal: theme.space.lg,
+    paddingVertical: theme.space.md,
+    color: theme.text1,
     fontSize: 15,
   },
   textarea: { minHeight: 70, textAlignVertical: "top" },
-  hint: { color: "#5a5d68", fontSize: 11.5, marginTop: 4 },
-  hintGood: { color: "#3fc6d1", fontSize: 11.5, marginTop: 4 },
-  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: { borderWidth: 1, borderColor: "#2a2b30", borderRadius: 20, paddingHorizontal: 12, paddingVertical: 7, backgroundColor: "#15161a" },
-  chipActive: { backgroundColor: "#3fc6d1", borderColor: "#3fc6d1" },
-  chipText: { color: "#8b8e97", fontSize: 12.5 },
+  hint: { color: theme.text3, ...theme.type.caption, marginTop: theme.space.xs },
+  hintGood: { color: theme.accentColor, ...theme.type.caption, marginTop: theme.space.xs },
+  chipRow: { flexDirection: "row", flexWrap: "wrap", gap: theme.space.sm },
+  chip: { borderWidth: 1, borderColor: theme.lineSoft, borderRadius: theme.radiusPill, paddingHorizontal: theme.space.md, paddingVertical: theme.space.sm, backgroundColor: theme.bg2 },
+  chipActive: { backgroundColor: theme.accentColor, borderColor: theme.accentColor },
+  chipText: { color: theme.text2, ...theme.type.small },
   chipTextActive: { color: "#000", fontWeight: "700" },
-  scheduleCard: { backgroundColor: "#15161a", borderWidth: 1, borderColor: "#2a2b30", borderRadius: 10, padding: 14, marginBottom: 16, gap: 4 },
-  scheduleLabel: { color: "#5a5d68", fontSize: 10.5, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 },
-  scheduleRow: { color: "#8b8e97", fontSize: 13 },
-  scheduleStrong: { color: "#fff", fontWeight: "700" },
-  scheduleHighlight: { color: "#3fc6d1", fontSize: 15, fontWeight: "700", marginTop: 2 },
-  detailsToggle: { borderWidth: 1, borderColor: "#2a2b30", borderStyle: "dashed", borderRadius: 8, paddingVertical: 10, alignItems: "center", marginBottom: 16 },
-  detailsToggleText: { color: "#8b8e97", fontSize: 12.5 },
-  sectionTitle: { color: "#8b8e97", fontSize: 12.5, fontWeight: "700", marginTop: 4, marginBottom: 10 },
-  errorBox: { backgroundColor: "rgba(229,72,77,0.12)", borderRadius: 8, padding: 12, marginBottom: 12 },
-  errorText: { color: "#e5484d", fontSize: 12.5 },
-  actions: { flexDirection: "row", gap: 10, marginTop: 8 },
-  cancelButton: { flex: 1, borderWidth: 1, borderColor: "#2a2b30", borderRadius: 10, paddingVertical: 13, alignItems: "center" },
-  cancelText: { color: "#8b8e97", fontWeight: "600", fontSize: 14 },
-  saveButton: { flex: 1, backgroundColor: "#3fc6d1", borderRadius: 10, paddingVertical: 13, alignItems: "center" },
+  scheduleCard: { backgroundColor: theme.bg1, borderWidth: 1, borderColor: theme.lineSoft, borderRadius: theme.radiusSm, padding: theme.space.lg, marginBottom: theme.space.lg, gap: theme.space.xs },
+  scheduleLabel: { color: theme.text3, ...theme.type.label, marginBottom: theme.space.xs },
+  scheduleRow: { color: theme.text2, ...theme.type.small },
+  scheduleStrong: { color: theme.text1, fontWeight: "700" },
+  scheduleHighlight: { color: theme.accentColor, fontSize: 15, fontWeight: "700", marginTop: theme.space.xs },
+  collapsibles: { gap: theme.space.sm, marginBottom: theme.space.lg },
+  errorBox: { backgroundColor: theme.critBg, borderRadius: theme.radiusSm, padding: theme.space.md, marginBottom: theme.space.md },
+  errorText: { color: theme.critInk, ...theme.type.small },
+  actions: { flexDirection: "row", gap: theme.space.sm, marginTop: theme.space.xs },
+  cancelButton: { flex: 1, borderWidth: 1, borderColor: theme.lineSoft, borderRadius: theme.radiusSm, paddingVertical: theme.space.md, alignItems: "center" },
+  cancelText: { color: theme.text2, fontWeight: "600", fontSize: 14 },
+  saveButton: { flex: 1, backgroundColor: theme.accentColor, borderRadius: theme.radiusSm, paddingVertical: theme.space.md, alignItems: "center" },
   saveText: { color: "#000", fontWeight: "700", fontSize: 14 },
 });

@@ -72,6 +72,47 @@ export const theme = {
   // file to bundle. Android falls back to Roboto (its own system font);
   // RN doesn't support the web's full font-family fallback chain.
   fontFamily: undefined as string | undefined,
+
+  // 8pt-grid spacing scale — every margin/padding/gap in the app should
+  // pull from here instead of a one-off number, so rhythm stays consistent
+  // across every module instead of each screen inventing its own numbers.
+  space: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 20,
+    "2xl": 24,
+    "3xl": 32,
+    "4xl": 40,
+    "5xl": 48,
+  },
+
+  // Typography scale — one place that defines every text role in the app.
+  // Screens should reach for type.h1/type.label/etc. instead of picking
+  // their own fontSize/fontWeight per screen, which is what produced the
+  // "every module feels like a different app" inconsistency.
+  type: {
+    display: { fontSize: 28, fontWeight: "700" as const, letterSpacing: -0.3 },
+    h1: { fontSize: 22, fontWeight: "700" as const, letterSpacing: -0.2 },
+    h2: { fontSize: 17, fontWeight: "700" as const },
+    h3: { fontSize: 15, fontWeight: "600" as const },
+    body: { fontSize: 14, fontWeight: "400" as const },
+    bodyStrong: { fontSize: 14, fontWeight: "600" as const },
+    small: { fontSize: 12.5, fontWeight: "400" as const },
+    smallStrong: { fontSize: 12.5, fontWeight: "600" as const },
+    label: { fontSize: 11, fontWeight: "700" as const, letterSpacing: 0.4, textTransform: "uppercase" as const },
+    caption: { fontSize: 10.5, fontWeight: "500" as const },
+  },
+
+  // Responsive breakpoints, in dp — same three-tier split the web's own
+  // @media queries use in spirit (phone / tablet / wide), so a grid of
+  // cards can grow from 1-2 columns on a phone to 3-4 on an iPad instead
+  // of staying phone-width forever on a bigger screen.
+  breakpoint: {
+    tablet: 700,
+    desktop: 1024,
+  },
 } as const;
 
 export type Theme = typeof theme;

@@ -1,21 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, ScrollView, StyleSheet, ActivityIndicator, Alert } from "react-native";
+import { View, Text, Pressable, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { router, Stack, useLocalSearchParams } from "expo-router";
+import { theme } from "@discografica/shared/theme";
 import { getHoja, deleteHoja } from "@discografica/shared/api/tourManager";
 import type { HojaDeRuta } from "@discografica/shared/types/tourManager";
+import { Screen } from "@/components/screen";
+import { Collapsible } from "@/components/collapsible";
 
 function formatFecha(fecha: string): string {
   const [y, m, d] = fecha.split("-");
   return `${d}/${m}/${y}`;
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      {children}
-    </View>
-  );
 }
 
 function Row({ label, value }: { label: string; value: string | null | undefined }) {
@@ -63,7 +57,7 @@ export default function HojaDetailScreen() {
     return (
       <View style={styles.root}>
         <Stack.Screen options={{ headerShown: false }} />
-        <ActivityIndicator color="#3fc6d1" style={{ marginTop: 60 }} />
+        <ActivityIndicator color={theme.accentColor} style={{ marginTop: 60 }} />
       </View>
     );
   }
@@ -71,118 +65,140 @@ export default function HojaDetailScreen() {
     return (
       <View style={styles.root}>
         <Stack.Screen options={{ headerShown: false }} />
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backText}>‹ Atrás</Text>
-        </Pressable>
-        <Text style={styles.empty}>Hoja de ruta no encontrada.</Text>
+        <Screen onBack={() => router.back()} scroll={false}>
+          <Text style={styles.empty}>Hoja de ruta no encontrada.</Text>
+        </Screen>
       </View>
     );
   }
 
+  const hasSchedule = hoja.horaSalida || hoja.horaLlegadaVenue;
+
   return (
-    <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: 48 }}>
+    <View style={styles.root}>
       <Stack.Screen options={{ headerShown: false }} />
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backText}>‹ Atrás</Text>
-        </Pressable>
-        <Text style={styles.title}>{hoja.artistName}</Text>
-        <Text style={styles.subtitle}>Itinerario y Hospitality</Text>
-      </View>
+      <Screen title={hoja.artistName} subtitle={formatFecha(hoja.fecha)} onBack={() => router.back()}>
+        <View style={styles.badgeRow}>
+          <View style={[styles.badge, hoja.estado === "Confirmado" && styles.badgeConfirmado]}>
+            <Text style={[styles.badgeText, hoja.estado === "Confirmado" && styles.badgeTextConfirmado]}>{hoja.estado}</Text>
+          </View>
+          {hoja.tipoEvento ? <Text style={styles.badgeMeta}>{hoja.tipoEvento}</Text> : null}
+          {hoja.horaShow ? <Text style={styles.badgeMeta}>· {hoja.horaShow} hs</Text> : null}
+        </View>
 
-      <View style={styles.actions}>
-        <Pressable onPress={() => router.push(`/tourmanager/${hoja.id}/edit`)} style={styles.editButton}>
-          <Text style={styles.editText}>Editar</Text>
-        </Pressable>
-        <Pressable onPress={confirmDelete} disabled={deleting} style={styles.deleteButton}>
-          <Text style={styles.deleteText}>{deleting ? "Borrando..." : "Borrar"}</Text>
-        </Pressable>
-      </View>
+        <View style={styles.actions}>
+          <Pressable onPress={() => router.push(`/tourmanager/${hoja.id}/edit`)} style={styles.editButton}>
+            <Text style={styles.editText}>Editar</Text>
+          </Pressable>
+          <Pressable onPress={confirmDelete} disabled={deleting} style={styles.deleteButton}>
+            <Text style={styles.deleteText}>{deleting ? "Borrando..." : "Borrar"}</Text>
+          </Pressable>
+        </View>
 
-      <View style={styles.sections}>
-        <Section title="Información general">
-          <Row label="Artista" value={hoja.artistName} />
-          <Row label="Evento" value={hoja.tipoEvento} />
-          <Row label="Fecha" value={formatFecha(hoja.fecha)} />
-          <Row label="Horario del show" value={hoja.horaShow} />
-          <Row label="Ciudad" value={hoja.venueCiudad} />
-          <Row label="País" value={hoja.venuePais} />
-        </Section>
+        {hasSchedule && (
+          <View style={styles.heroCard}>
+            <Text style={styles.heroLabel}>Cronograma</Text>
+            {hoja.horaSalida ? (
+              <Text style={styles.heroRow}>
+                Salida: <Text style={styles.heroStrong}>{hoja.horaSalida}</Text>
+                {hoja.origenLabel ? ` (${hoja.origenLabel})` : ""}
+              </Text>
+            ) : null}
+            {hoja.horaLlegadaVenue ? (
+              <Text style={styles.heroRow}>Llegada al venue: <Text style={styles.heroStrong}>{hoja.horaLlegadaVenue}</Text></Text>
+            ) : null}
+            {hoja.venue ? <Text style={styles.heroVenue}>{hoja.venue}{hoja.venueCiudad ? ` · ${hoja.venueCiudad}` : ""}</Text> : null}
+          </View>
+        )}
 
-        <Section title="Venue">
-          <Row label="Nombre" value={hoja.venue} />
-          <Row label="Dirección" value={hoja.venueFullAddress ?? hoja.venueDireccion} />
-          <Row label="Contacto" value={hoja.venueContactoNombre} />
-          <Row label="Teléfono" value={hoja.venueContactoTelefono} />
-          <Row label="Duración del show" value={hoja.duracionShowMin ? `${hoja.duracionShowMin} min` : null} />
-        </Section>
+        <View style={styles.sections}>
+          <Collapsible title="Venue" defaultOpen>
+            <Row label="Nombre" value={hoja.venue} />
+            <Row label="Dirección" value={hoja.venueFullAddress ?? hoja.venueDireccion} />
+            <Row label="Ciudad" value={hoja.venueCiudad} />
+            <Row label="País" value={hoja.venuePais} />
+            <Row label="Contacto" value={hoja.venueContactoNombre} />
+            <Row label="Teléfono" value={hoja.venueContactoTelefono} />
+            <Row label="Duración del show" value={hoja.duracionShowMin ? `${hoja.duracionShowMin} min` : null} />
+          </Collapsible>
 
-        <Section title="Cronograma de traslados">
-          <Row label="Salida" value={hoja.horaSalida ? `${hoja.horaSalida} (${hoja.origenLabel ?? hoja.origenDireccion ?? "origen"})` : null} />
-          <Row label="Llegada al venue" value={hoja.horaLlegadaVenue} />
-          <Row label="Presentación" value={hoja.horaShow} />
-          <Row label="Salida del venue" value={hoja.horaSalidaVenue} />
-          <Row label="Llegada a destino" value={hoja.horaLlegadaDestino} />
-        </Section>
+          <Collapsible title="Cronograma de traslados">
+            <Row label="Salida" value={hoja.horaSalida ? `${hoja.horaSalida} (${hoja.origenLabel ?? hoja.origenDireccion ?? "origen"})` : null} />
+            <Row label="Llegada al venue" value={hoja.horaLlegadaVenue} />
+            <Row label="Presentación" value={hoja.horaShow} />
+            <Row label="Salida del venue" value={hoja.horaSalidaVenue} />
+            <Row label="Llegada a destino" value={hoja.horaLlegadaDestino} />
+            <Row
+              label="Origen → Venue"
+              value={hoja.distanciaIdaKm != null || hoja.duracionIdaMin != null ? `${hoja.duracionIdaMin ?? "—"} min (${hoja.distanciaIdaKm ?? "—"} km)` : null}
+            />
+            <Row
+              label="Venue → Origen"
+              value={hoja.distanciaVueltaKm != null || hoja.duracionVueltaMin != null ? `${hoja.duracionVueltaMin ?? "—"} min (${hoja.distanciaVueltaKm ?? "—"} km)` : null}
+            />
+          </Collapsible>
 
-        <Section title="Traslados detallados">
-          <Row label="Pax" value={hoja.pax != null ? String(hoja.pax) : null} />
-          <Row label="Driver" value={hoja.driverNombre} />
-          <Row label="Tel. driver" value={hoja.driverTelefono} />
-        </Section>
+          <Collapsible title="Traslados detallados">
+            <Row label="Pax" value={hoja.pax != null ? String(hoja.pax) : null} />
+            <Row label="Driver" value={hoja.driverNombre} />
+            <Row label="Tel. driver" value={hoja.driverTelefono} />
+          </Collapsible>
 
-        <Section title="Contactos">
-          <Row label="Contacto artista" value={hoja.contactoArtistaNombre} />
-          <Row label="Tel. artista" value={hoja.contactoArtistaTelefono} />
-          <Row label="Artist Liaison" value={hoja.artistLiaisonNombre} />
-          <Row label="Tel. liaison" value={hoja.artistLiaisonTelefono} />
-        </Section>
+          <Collapsible title="Contactos">
+            <Row label="Contacto artista" value={hoja.contactoArtistaNombre} />
+            <Row label="Tel. artista" value={hoja.contactoArtistaTelefono} />
+            <Row label="Artist Liaison" value={hoja.artistLiaisonNombre} />
+            <Row label="Tel. liaison" value={hoja.artistLiaisonTelefono} />
+          </Collapsible>
 
-        <Section title="Distancias">
-          <Row
-            label="Origen → Venue"
-            value={hoja.distanciaIdaKm != null || hoja.duracionIdaMin != null ? `${hoja.duracionIdaMin ?? "—"} min (${hoja.distanciaIdaKm ?? "—"} km)` : null}
-          />
-          <Row
-            label="Venue → Origen"
-            value={hoja.distanciaVueltaKm != null || hoja.duracionVueltaMin != null ? `${hoja.duracionVueltaMin ?? "—"} min (${hoja.distanciaVueltaKm ?? "—"} km)` : null}
-          />
-        </Section>
+          {hoja.runningOrder ? (
+            <Collapsible title="Running Order">
+              <Text style={styles.freeText}>{hoja.runningOrder}</Text>
+            </Collapsible>
+          ) : null}
 
-        {hoja.runningOrder ? (
-          <Section title="Running Order">
-            <Text style={styles.freeText}>{hoja.runningOrder}</Text>
-          </Section>
-        ) : null}
-
-        {hoja.notas ? (
-          <Section title="Notas">
-            <Text style={styles.freeText}>{hoja.notas}</Text>
-          </Section>
-        ) : null}
-      </View>
-    </ScrollView>
+          {hoja.notas ? (
+            <Collapsible title="Notas">
+              <Text style={styles.freeText}>{hoja.notas}</Text>
+            </Collapsible>
+          ) : null}
+        </View>
+      </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#000000" },
-  header: { paddingHorizontal: 20, paddingTop: 8, paddingBottom: 4 },
-  backButton: { alignSelf: "flex-start", marginBottom: 8, paddingHorizontal: 20, marginTop: 8 },
-  backText: { color: "#8b8e97", fontSize: 14 },
-  title: { color: "#fff", fontSize: 20, fontWeight: "700" },
-  subtitle: { color: "#8b8e97", fontSize: 12.5, marginTop: 2 },
-  actions: { flexDirection: "row", gap: 8, paddingHorizontal: 20, marginTop: 12, marginBottom: 16 },
-  editButton: { backgroundColor: "#3fc6d1", borderRadius: 10, paddingHorizontal: 18, paddingVertical: 10 },
-  editText: { color: "#000", fontWeight: "700", fontSize: 13.5 },
-  deleteButton: { backgroundColor: "rgba(229,72,77,0.14)", borderRadius: 10, paddingHorizontal: 18, paddingVertical: 10 },
-  deleteText: { color: "#e5484d", fontWeight: "700", fontSize: 13.5 },
-  sections: { paddingHorizontal: 20, gap: 12 },
-  section: { backgroundColor: "#15161a", borderWidth: 1, borderColor: "#2a2b30", borderRadius: 12, padding: 14, gap: 7 },
-  sectionTitle: { color: "#5a5d68", fontSize: 10.5, fontWeight: "700", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 2 },
-  row: { flexDirection: "row", justifyContent: "space-between", gap: 12 },
-  rowLabel: { color: "#8b8e97", fontSize: 13 },
-  rowValue: { color: "#fff", fontSize: 13, textAlign: "right", flexShrink: 1 },
-  freeText: { color: "#fff", fontSize: 13, lineHeight: 19 },
-  empty: { color: "#5a5d68", fontSize: 13, textAlign: "center", marginTop: 40 },
+  root: { flex: 1, backgroundColor: theme.bg0 },
+  badgeRow: { flexDirection: "row", alignItems: "center", gap: theme.space.sm, paddingHorizontal: theme.space.xl, marginBottom: theme.space.lg },
+  badge: { paddingHorizontal: theme.space.sm, paddingVertical: 3, borderRadius: theme.radiusPill, backgroundColor: theme.bg2 },
+  badgeConfirmado: { backgroundColor: "rgba(63,198,209,0.16)" },
+  badgeText: { color: theme.text2, ...theme.type.caption, fontWeight: "700" },
+  badgeTextConfirmado: { color: theme.accentColor },
+  badgeMeta: { color: theme.text3, ...theme.type.small },
+  actions: { flexDirection: "row", gap: theme.space.sm, paddingHorizontal: theme.space.xl, marginBottom: theme.space.lg },
+  editButton: { backgroundColor: theme.accentColor, borderRadius: theme.radiusSm, paddingHorizontal: theme.space.lg, paddingVertical: theme.space.md },
+  editText: { color: "#000", ...theme.type.smallStrong },
+  deleteButton: { backgroundColor: theme.critBg, borderRadius: theme.radiusSm, paddingHorizontal: theme.space.lg, paddingVertical: theme.space.md },
+  deleteText: { color: theme.critInk, ...theme.type.smallStrong },
+  heroCard: {
+    marginHorizontal: theme.space.xl,
+    marginBottom: theme.space.lg,
+    backgroundColor: "rgba(63,198,209,0.08)",
+    borderWidth: 1,
+    borderColor: theme.accentColorGlow,
+    borderRadius: theme.radiusLg,
+    padding: theme.space.lg,
+    gap: theme.space.xs,
+  },
+  heroLabel: { color: theme.accentColor, ...theme.type.label, marginBottom: theme.space.xs },
+  heroRow: { color: theme.text2, ...theme.type.body },
+  heroStrong: { color: theme.text1, fontWeight: "700" },
+  heroVenue: { color: theme.text3, ...theme.type.small, marginTop: theme.space.xs },
+  sections: { paddingHorizontal: theme.space.xl, gap: theme.space.sm },
+  row: { flexDirection: "row", justifyContent: "space-between", gap: theme.space.md },
+  rowLabel: { color: theme.text2, ...theme.type.small },
+  rowValue: { color: theme.text1, ...theme.type.small, textAlign: "right", flexShrink: 1 },
+  freeText: { color: theme.text1, ...theme.type.small, lineHeight: 19 },
+  empty: { color: theme.text3, ...theme.type.small, textAlign: "center", marginTop: 40 },
 });

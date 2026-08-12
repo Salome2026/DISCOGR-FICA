@@ -36,6 +36,7 @@ export const PERMISSIONS = [
   "editar_playlists",
   "ver_tourmanager",
   "editar_tourmanager",
+  "crear_split_editorial",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -81,6 +82,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "ver_rizzvor_proyectos",
     "editar_rizzvor_proyectos",
     "ver_playlists",
+    "crear_split_editorial",
   ],
   // Legal is a fully separate module — its own permissions, shared with no
   // other operational area (Label/PM/Distribución/Marketing/etc). It does

@@ -70,6 +70,27 @@ export const PUBLISHING_STYLES = `
 
   .card-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .07em; font-weight: 500; }
   .kpi-chip { font-size: 10px; padding: 2px 7px; border-radius: 100px; font-weight: 600; }
+
+  .split-list { display: flex; flex-direction: column; gap: 10px; }
+  .split-card {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
+    padding: 1.1rem 1.4rem; text-decoration: none; color: var(--text-1); cursor: pointer;
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7);
+    box-shadow: var(--shadow-glass); transition: border-color var(--dur-base) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  }
+  .split-card:hover { border-color: var(--pub-accent); transform: translateY(-1px); }
+  .split-card-title { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .split-card-meta { font-size: 12px; color: var(--text-3); }
+  .split-badge { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 3px 10px; border-radius: 100px; flex-shrink: 0; }
+  .split-badge.pendiente { background: var(--warn-bg); color: var(--warn-ink); }
+  .split-badge.enviado { background: var(--good-bg); color: var(--good-ink); }
+  .split-empty { color: var(--text-3); font-size: 13.5px; text-align: center; padding: 2.5rem 0; }
+
+  .split-detail-section { margin-top: 1.25rem; }
+  .split-detail-title { font-size: 14px; font-weight: 700; letter-spacing: .02em; margin-bottom: 8px; }
+  .split-person-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+  .split-total-row { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 700; padding: 8px 0 0; color: var(--good-ink); }
 `;
 
 export function PublishingShell({

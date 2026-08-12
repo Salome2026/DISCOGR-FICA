@@ -100,6 +100,19 @@ export async function listPublishingArtists(): Promise<PublishingArtist[]> {
   return rows.map(rowToArtist);
 }
 
+export async function searchPublishingArtists(q: string, limit = 20): Promise<PublishingArtist[]> {
+  await ensurePublishingArtistsSchema();
+  const query = q.trim();
+  if (!query) return [];
+  const { rows } = await sql`
+    SELECT * FROM publishing_artists
+    WHERE nombre_artistico ILIKE ${"%" + query + "%"}
+    ORDER BY nombre_artistico ASC
+    LIMIT ${limit}
+  `;
+  return rows.map(rowToArtist);
+}
+
 export async function getPublishingArtist(id: string): Promise<PublishingArtist | null> {
   await ensurePublishingArtistsSchema();
   const { rows } = await sql`SELECT * FROM publishing_artists WHERE id = ${id}`;

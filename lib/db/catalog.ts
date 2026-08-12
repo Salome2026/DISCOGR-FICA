@@ -82,6 +82,19 @@ export async function listTracks(opts?: {
   return rows as CatalogTrack[];
 }
 
+export async function searchTracks(q: string, limit = 20): Promise<CatalogTrack[]> {
+  await ensureCatalogSchema();
+  const query = q.trim();
+  if (!query) return [];
+  const { rows } = await sql`
+    SELECT * FROM catalog_tracks
+    WHERE track ILIKE ${"%" + query + "%"} OR artist_display ILIKE ${"%" + query + "%"}
+    ORDER BY release_date DESC NULLS LAST, track ASC
+    LIMIT ${limit}
+  `;
+  return rows as CatalogTrack[];
+}
+
 export async function getTrack(id: string): Promise<CatalogTrack | null> {
   await ensureCatalogSchema();
   const { rows } = await sql`SELECT * FROM catalog_tracks WHERE id = ${id}`;

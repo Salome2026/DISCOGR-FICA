@@ -48,16 +48,11 @@ export function LoginScreen() {
   const [forgotMsg, setForgotMsg] = useState<string | null>(null);
 
   const scrollY = useRef(new Animated.Value(0)).current;
-  const scrollRef = useRef<ScrollView>(null);
   const pinDistance = usePinDistance();
   const insets = useSafeAreaInsets();
 
-  // Same as the web's panelRef.scrollIntoView when a card is tapped —
-  // reaching the login panel means scrolling past the full hero, so bring
-  // it into view instead of leaving the user to find it themselves.
   function selectCard(key: Exclude<Card, null>) {
     setActive(key);
-    scrollRef.current?.scrollTo({ y: pinDistance, animated: true });
   }
 
   function backToCards() {
@@ -97,19 +92,17 @@ export function LoginScreen() {
 
   const activeCard = CARDS.find((c) => c.key === active);
 
-  return (
-    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollHero scrollY={scrollY} />
-      <Animated.ScrollView
-        ref={scrollRef}
-        contentContainerStyle={styles.content}
-        keyboardShouldPersistTaps="handled"
-        scrollEventThrottle={16}
-        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
-      >
-        <ScrollHeroSpacer height={pinDistance} />
-
-        {active === null ? (
+  if (active === null) {
+    return (
+      <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <ScrollHero scrollY={scrollY} />
+        <Animated.ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          scrollEventThrottle={16}
+          onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+        >
+          <ScrollHeroSpacer height={pinDistance} />
           <View style={[styles.cards, { paddingTop: insets.top + theme.space.lg }]}>
             {CARDS.map((c) => (
               <GlassCard key={c.key} radius={theme.radiusXl} style={styles.card}>
@@ -121,81 +114,95 @@ export function LoginScreen() {
               </GlassCard>
             ))}
           </View>
-        ) : (
-          <GlassCard strong radius={theme.radiusXl} style={[styles.panel, { marginTop: insets.top + theme.space.lg }]}>
-            <Pressable onPress={backToCards} style={styles.backLink}>
-              <Text style={styles.backLinkText}>← Volver</Text>
-            </Pressable>
-            <Text style={styles.panelTitle}>{forgotMode ? "Restablecer contraseña" : activeCard?.panelTitle}</Text>
+        </Animated.ScrollView>
+      </KeyboardAvoidingView>
+    );
+  }
 
-            {!forgotMode ? (
-              <>
-                <View style={styles.field}>
-                  <Text style={styles.fieldLabel}>Usuario o email</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    keyboardType="email-address"
-                  />
-                </View>
-                <View style={styles.field}>
-                  <Text style={styles.fieldLabel}>Contraseña</Text>
-                  <TextInput style={styles.input} value={password} onChangeText={setPassword} secureTextEntry />
-                </View>
+  // Deliberately a separate, un-pinned screen (no ScrollHero/spacer sharing
+  // the cards' ScrollView): the panel's content is much shorter than the
+  // 7-card list, and reusing the same scroll position across that height
+  // change was snapping the view back toward the top — right back to the
+  // hero — instead of landing on the form.
+  return (
+    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingTop: insets.top + theme.space.lg }]}
+        keyboardShouldPersistTaps="handled"
+      >
+        <GlassCard strong radius={theme.radiusXl} style={styles.panel}>
+          <Pressable onPress={backToCards} style={styles.backLink}>
+            <Text style={styles.backLinkText}>← Volver</Text>
+          </Pressable>
+          <Text style={styles.panelTitle}>{forgotMode ? "Restablecer contraseña" : activeCard?.panelTitle}</Text>
 
-                {error && <Text style={styles.error}>{error}</Text>}
+          {!forgotMode ? (
+            <>
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>Usuario o email</Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                />
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>Contraseña</Text>
+                <TextInput style={styles.input} value={password} onChangeText={setPassword} secureTextEntry />
+              </View>
 
-                <Pressable style={styles.accessButton} onPress={handleSubmit} disabled={submitting}>
-                  {submitting ? <ActivityIndicator color={theme.text1} /> : <Text style={styles.accessButtonText}>Ingresar</Text>}
+              {error && <Text style={styles.error}>{error}</Text>}
+
+              <Pressable style={styles.accessButton} onPress={handleSubmit} disabled={submitting}>
+                {submitting ? <ActivityIndicator color={theme.text1} /> : <Text style={styles.accessButtonText}>Ingresar</Text>}
+              </Pressable>
+
+              <Pressable
+                onPress={() => {
+                  setForgotMode(true);
+                  setForgotEmail(email);
+                  setForgotMsg(null);
+                }}
+                style={styles.forgotLink}
+              >
+                <Text style={styles.forgotLinkText}>¿Olvidaste tu contraseña?</Text>
+              </Pressable>
+
+              <Text style={styles.footnote}>No hay registro público — tu cuenta la crea un administrador.</Text>
+            </>
+          ) : (
+            <>
+              <Text style={styles.forgotIntro}>
+                Ingresá tu correo electrónico y, si está registrado, te enviamos un enlace para restablecer tu contraseña.
+              </Text>
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>Correo electrónico</Text>
+                <TextInput
+                  style={styles.input}
+                  value={forgotEmail}
+                  onChangeText={setForgotEmail}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  editable={!forgotMsg}
+                />
+              </View>
+              {forgotMsg && <Text style={styles.forgotSuccess}>{forgotMsg}</Text>}
+              {!forgotMsg && (
+                <Pressable style={styles.accessButton} onPress={handleForgotSubmit} disabled={forgotSubmitting}>
+                  {forgotSubmitting ? <ActivityIndicator color={theme.text1} /> : <Text style={styles.accessButtonText}>Enviar enlace</Text>}
                 </Pressable>
-
-                <Pressable
-                  onPress={() => {
-                    setForgotMode(true);
-                    setForgotEmail(email);
-                    setForgotMsg(null);
-                  }}
-                  style={styles.forgotLink}
-                >
-                  <Text style={styles.forgotLinkText}>¿Olvidaste tu contraseña?</Text>
-                </Pressable>
-
-                <Text style={styles.footnote}>No hay registro público — tu cuenta la crea un administrador.</Text>
-              </>
-            ) : (
-              <>
-                <Text style={styles.forgotIntro}>
-                  Ingresá tu correo electrónico y, si está registrado, te enviamos un enlace para restablecer tu contraseña.
-                </Text>
-                <View style={styles.field}>
-                  <Text style={styles.fieldLabel}>Correo electrónico</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={forgotEmail}
-                    onChangeText={setForgotEmail}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    keyboardType="email-address"
-                    editable={!forgotMsg}
-                  />
-                </View>
-                {forgotMsg && <Text style={styles.forgotSuccess}>{forgotMsg}</Text>}
-                {!forgotMsg && (
-                  <Pressable style={styles.accessButton} onPress={handleForgotSubmit} disabled={forgotSubmitting}>
-                    {forgotSubmitting ? <ActivityIndicator color={theme.text1} /> : <Text style={styles.accessButtonText}>Enviar enlace</Text>}
-                  </Pressable>
-                )}
-                <Pressable onPress={() => { setForgotMode(false); setForgotMsg(null); }} style={styles.forgotLink}>
-                  <Text style={styles.forgotLinkText}>← Volver a iniciar sesión</Text>
-                </Pressable>
-              </>
-            )}
-          </GlassCard>
-        )}
-      </Animated.ScrollView>
+              )}
+              <Pressable onPress={() => { setForgotMode(false); setForgotMsg(null); }} style={styles.forgotLink}>
+                <Text style={styles.forgotLinkText}>← Volver a iniciar sesión</Text>
+              </Pressable>
+            </>
+          )}
+        </GlassCard>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }

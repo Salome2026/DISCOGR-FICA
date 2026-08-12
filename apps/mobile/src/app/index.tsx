@@ -1,8 +1,10 @@
 import React from "react";
 import { View, Text, Pressable, StyleSheet, Image, ScrollView } from "react-native";
 import { router } from "expo-router";
+import { theme } from "@discografica/shared/theme";
 import { useAuth } from "@/lib/auth-context";
 import { hasPermission, type SessionUser } from "@discografica/shared/permissions";
+import { GlassCard } from "@/components/glass-card";
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Label",
@@ -46,10 +48,10 @@ export default function HomeScreen() {
       <Text style={styles.name}>{user.name}</Text>
       <Text style={styles.email}>{user.email}</Text>
 
-      <View style={styles.card}>
+      <GlassCard style={styles.card}>
         <Text style={styles.cardLabel}>Rol</Text>
         <Text style={styles.cardValue}>{roleLabel}</Text>
-      </View>
+      </GlassCard>
 
       {availableModules.length > 0 ? (
         <View style={styles.moduleList}>
@@ -73,18 +75,18 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#000000" },
+  root: { flex: 1, backgroundColor: theme.bg0 },
   content: { flexGrow: 1, alignItems: "center", paddingHorizontal: 32, paddingTop: 60, paddingBottom: 40 },
   logo: { width: 140, height: 74, marginBottom: 20 },
-  name: { color: "#fff", fontSize: 20, fontWeight: "700" },
-  email: { color: "#8b8e97", fontSize: 13, marginBottom: 28 },
-  card: { width: "100%", backgroundColor: "#15161a", borderRadius: 12, borderWidth: 1, borderColor: "#2a2b30", padding: 16 },
-  cardLabel: { color: "#5a5d68", fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 },
-  cardValue: { color: "#fff", fontSize: 15, fontWeight: "600" },
-  note: { color: "#5a5d68", fontSize: 12, textAlign: "center", marginTop: 24, lineHeight: 18 },
+  name: { color: theme.text1, fontSize: 20, fontWeight: "700" },
+  email: { color: theme.text2, fontSize: 13, marginBottom: 28 },
+  card: { width: "100%", padding: 16 },
+  cardLabel: { color: theme.text3, fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 },
+  cardValue: { color: theme.text1, fontSize: 15, fontWeight: "600" },
+  note: { color: theme.text3, fontSize: 12, textAlign: "center", marginTop: 24, lineHeight: 18 },
   moduleList: { width: "100%", marginTop: 20, gap: 10 },
-  moduleButton: { backgroundColor: "#3fc6d1", borderRadius: 10, paddingVertical: 13, alignItems: "center" },
-  moduleButtonText: { color: "#000", fontWeight: "700", fontSize: 14.5 },
-  logoutButton: { marginTop: 28, paddingVertical: 12, paddingHorizontal: 24, borderRadius: 10, borderWidth: 1, borderColor: "#2a2b30" },
-  logoutText: { color: "#8b8e97", fontSize: 14, fontWeight: "600" },
+  moduleButton: { backgroundColor: theme.accentGlassBg, borderWidth: 1, borderColor: theme.accentGlassBorder, borderRadius: theme.radiusSm, paddingVertical: 13, alignItems: "center" },
+  moduleButtonText: { color: theme.text1, fontWeight: "600", fontSize: 14.5 },
+  logoutButton: { marginTop: 28, paddingVertical: 12, paddingHorizontal: 24, borderRadius: theme.radiusSm, borderWidth: 1, borderColor: theme.lineSoft },
+  logoutText: { color: theme.text2, fontSize: 14, fontWeight: "600" },
 });

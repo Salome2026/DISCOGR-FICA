@@ -5,6 +5,7 @@
   "exports": {
     "./permissions": "./src/permissions.ts",
     "./sellos": "./src/sellos.ts",
+    "./theme": "./src/theme.ts",
     "./types/*": "./src/types/*.ts",
     "./api/*": "./src/api/*.ts"
   }

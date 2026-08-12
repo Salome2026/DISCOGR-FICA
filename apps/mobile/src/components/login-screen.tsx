@@ -4,21 +4,57 @@ import {
   Text,
   TextInput,
   Pressable,
+  ScrollView,
   StyleSheet,
   Image,
   KeyboardAvoidingView,
-  ScrollView,
   Platform,
   ActivityIndicator,
 } from "react-native";
+import { theme } from "@discografica/shared/theme";
 import { useAuth, loginErrorMessage } from "@/lib/auth-context";
+import { forgotPasswordRequest } from "@/lib/api";
+import { GlassCard } from "./glass-card";
+
+// Mirrors app/page.tsx's Landing component exactly: the same 7 access
+// cards (title + description + Ingresar), the same expanding glass login
+// panel with the same field labels/copy/forgot-password flow. The web's
+// full scroll-driven hero (VPOScrollHero) is replaced with its own
+// documented static fallback (.vpo-hero-static — same logo + tagline, no
+// scroll parallax), since a phone screen doesn't have the same scroll
+// real estate a desktop landing page does.
+type Card = "label" | "pm" | "legal" | "editorial" | "management" | "booking" | "tourmanager" | null;
+
+const CARDS: { key: Exclude<Card, null>; title: string; description: string; panelTitle: string }[] = [
+  { key: "label", title: "Label", description: "Acceso para administradores y gestión de sellos.", panelTitle: "Acceso Label" },
+  { key: "pm", title: "Project Managers", description: "Acceso para project managers y seguimiento de releases.", panelTitle: "Acceso Project Managers" },
+  { key: "legal", title: "Legales", description: "Acceso para el equipo legal y aprobación de lanzamientos.", panelTitle: "Acceso Legales" },
+  { key: "editorial", title: "Publishing", description: "Acceso para Tango Made In Argentina Publishing.", panelTitle: "Acceso Publishing" },
+  { key: "management", title: "Management", description: "Acceso al roster, calendario y próximos lanzamientos.", panelTitle: "Acceso Management" },
+  { key: "booking", title: "Booking", description: "Acceso a la agenda de shows, mapa y contactos.", panelTitle: "Acceso Booking" },
+  { key: "tourmanager", title: "Tour Manager", description: "Acceso para quienes acompañan a los artistas de gira.", panelTitle: "Acceso Tour Manager" },
+];
 
 export function LoginScreen() {
   const { login } = useAuth();
+  const [active, setActive] = useState<Card>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const [forgotMode, setForgotMode] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSubmitting, setForgotSubmitting] = useState(false);
+  const [forgotMsg, setForgotMsg] = useState<string | null>(null);
+
+  function backToCards() {
+    setActive(null);
+    setForgotMode(false);
+    setForgotEmail("");
+    setForgotMsg(null);
+    setError(null);
+  }
 
   async function handleSubmit() {
     if (!email.trim() || !password) return;
@@ -33,66 +69,144 @@ export function LoginScreen() {
     }
   }
 
+  async function handleForgotSubmit() {
+    if (!forgotEmail.trim()) return;
+    setForgotSubmitting(true);
+    setForgotMsg(null);
+    try {
+      const res = await forgotPasswordRequest(forgotEmail.trim());
+      setForgotMsg(res.message);
+    } catch {
+      setForgotMsg("Hubo un error de conexión. Intentá de nuevo en unos minutos.");
+    } finally {
+      setForgotSubmitting(false);
+    }
+  }
+
+  const activeCard = CARDS.find((c) => c.key === active);
+
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Image source={require("@/assets/images/icon.png")} style={styles.logo} resizeMode="contain" />
-        <Text style={styles.title}>Centro de control</Text>
-        <Text style={styles.subtitle}>Acceso interno</Text>
+        <View style={styles.hero}>
+          <Image source={require("@/assets/images/icon.png")} style={styles.logo} resizeMode="contain" />
+          <Text style={styles.tagline}>Centro de control · acceso interno</Text>
+        </View>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#5a5d68"
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          placeholderTextColor="#5a5d68"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+        {active === null ? (
+          <View style={styles.cards}>
+            {CARDS.map((c) => (
+              <GlassCard key={c.key} radius={theme.radiusXl} style={styles.card}>
+                <Text style={styles.cardTitle}>{c.title}</Text>
+                <Text style={styles.cardDescription}>{c.description}</Text>
+                <Pressable style={styles.accessButton} onPress={() => setActive(c.key)}>
+                  <Text style={styles.accessButtonText}>Ingresar</Text>
+                </Pressable>
+              </GlassCard>
+            ))}
+          </View>
+        ) : (
+          <GlassCard strong radius={theme.radiusXl} style={styles.panel}>
+            <Pressable onPress={backToCards} style={styles.backLink}>
+              <Text style={styles.backLinkText}>← Volver</Text>
+            </Pressable>
+            <Text style={styles.panelTitle}>{forgotMode ? "Restablecer contraseña" : activeCard?.panelTitle}</Text>
 
-        {error && <Text style={styles.error}>{error}</Text>}
+            {!forgotMode ? (
+              <>
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>Usuario o email</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="email-address"
+                  />
+                </View>
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>Contraseña</Text>
+                  <TextInput style={styles.input} value={password} onChangeText={setPassword} secureTextEntry />
+                </View>
 
-        <Pressable style={styles.button} onPress={handleSubmit} disabled={submitting}>
-          {submitting ? <ActivityIndicator color="#000" /> : <Text style={styles.buttonText}>Ingresar</Text>}
-        </Pressable>
+                {error && <Text style={styles.error}>{error}</Text>}
+
+                <Pressable style={styles.accessButton} onPress={handleSubmit} disabled={submitting}>
+                  {submitting ? <ActivityIndicator color={theme.text1} /> : <Text style={styles.accessButtonText}>Ingresar</Text>}
+                </Pressable>
+
+                <Pressable
+                  onPress={() => {
+                    setForgotMode(true);
+                    setForgotEmail(email);
+                    setForgotMsg(null);
+                  }}
+                  style={styles.forgotLink}
+                >
+                  <Text style={styles.forgotLinkText}>¿Olvidaste tu contraseña?</Text>
+                </Pressable>
+
+                <Text style={styles.footnote}>No hay registro público — tu cuenta la crea un administrador.</Text>
+              </>
+            ) : (
+              <>
+                <Text style={styles.forgotIntro}>
+                  Ingresá tu correo electrónico y, si está registrado, te enviamos un enlace para restablecer tu contraseña.
+                </Text>
+                <View style={styles.field}>
+                  <Text style={styles.fieldLabel}>Correo electrónico</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={forgotEmail}
+                    onChangeText={setForgotEmail}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="email-address"
+                    editable={!forgotMsg}
+                  />
+                </View>
+                {forgotMsg && <Text style={styles.forgotSuccess}>{forgotMsg}</Text>}
+                {!forgotMsg && (
+                  <Pressable style={styles.accessButton} onPress={handleForgotSubmit} disabled={forgotSubmitting}>
+                    {forgotSubmitting ? <ActivityIndicator color={theme.text1} /> : <Text style={styles.accessButtonText}>Enviar enlace</Text>}
+                  </Pressable>
+                )}
+                <Pressable onPress={() => { setForgotMode(false); setForgotMsg(null); }} style={styles.forgotLink}>
+                  <Text style={styles.forgotLinkText}>← Volver a iniciar sesión</Text>
+                </Pressable>
+              </>
+            )}
+          </GlassCard>
+        )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#000000" },
-  content: { flexGrow: 1, justifyContent: "center", paddingHorizontal: 32, paddingVertical: 40 },
-  logo: { width: 160, height: 84, alignSelf: "center", marginBottom: 24 },
-  title: { color: "#fff", fontSize: 20, fontWeight: "700", textAlign: "center" },
-  subtitle: { color: "#8b8e97", fontSize: 13, textAlign: "center", marginBottom: 32 },
-  input: {
-    backgroundColor: "#15161a",
-    borderWidth: 1,
-    borderColor: "#2a2b30",
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    color: "#fff",
-    fontSize: 15,
-    marginBottom: 12,
-  },
-  error: { color: "#e5484d", fontSize: 13, marginBottom: 12, textAlign: "center" },
-  button: {
-    backgroundColor: "#3fc6d1",
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginTop: 8,
-  },
-  buttonText: { color: "#000", fontWeight: "700", fontSize: 15 },
+  root: { flex: 1, backgroundColor: theme.bg0 },
+  content: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 56, paddingBottom: 48 },
+  hero: { alignItems: "center", gap: 10, marginBottom: 32 },
+  logo: { width: 200, height: 100 },
+  tagline: { color: theme.text3, fontSize: 13, letterSpacing: 0.2 },
+  cards: { gap: 14 },
+  card: { padding: 24, alignItems: "center" },
+  cardTitle: { color: theme.text1, fontSize: 17, fontWeight: "600", marginBottom: 6, textAlign: "center" },
+  cardDescription: { color: theme.text2, fontSize: 13, lineHeight: 18, textAlign: "center", marginBottom: 18 },
+  accessButton: { width: "100%", backgroundColor: theme.accentGlassBg, borderWidth: 1, borderColor: theme.accentGlassBorder, borderRadius: 10, paddingVertical: 12, alignItems: "center" },
+  accessButtonText: { color: theme.text1, fontWeight: "600", fontSize: 13.5 },
+  panel: { padding: 28 },
+  backLink: { alignSelf: "flex-start", marginBottom: 16 },
+  backLinkText: { color: theme.text3, fontSize: 12.5 },
+  panelTitle: { color: theme.text1, fontSize: 16, fontWeight: "600", marginBottom: 16 },
+  field: { marginBottom: 14 },
+  fieldLabel: { color: theme.text2, fontSize: 12.5, marginBottom: 6 },
+  input: { backgroundColor: theme.bg2, borderWidth: 1, borderColor: theme.lineSoft, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, color: theme.text1, fontSize: 13.5 },
+  error: { color: theme.critInk, fontSize: 12.5, marginBottom: 14 },
+  forgotLink: { marginTop: 14, alignItems: "center" },
+  forgotLinkText: { color: theme.text3, fontSize: 12, textDecorationLine: "underline" },
+  footnote: { color: theme.text3, fontSize: 11.5, marginTop: 16, textAlign: "center", lineHeight: 16 },
+  forgotIntro: { color: theme.text3, fontSize: 12.5, marginBottom: 14, lineHeight: 17 },
+  forgotSuccess: { color: theme.goodInk, fontSize: 12.5 },
 });

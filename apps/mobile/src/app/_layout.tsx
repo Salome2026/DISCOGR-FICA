@@ -3,6 +3,7 @@ import React from "react";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { theme } from "@discografica/shared/theme";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { LoginScreen } from "@/components/login-screen";
 
@@ -12,14 +13,14 @@ function Gate() {
   if (status === "loading") {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color="#3fc6d1" />
+        <ActivityIndicator color={theme.accentColor} />
       </View>
     );
   }
   if (status === "signedOut") {
     return <LoginScreen />;
   }
-  return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "#000000" } }} />;
+  return <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: theme.bg0 } }} />;
 }
 
 export default function RootLayout() {
@@ -34,6 +35,6 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#000000" },
-  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#000000" },
+  root: { flex: 1, backgroundColor: theme.bg0 },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: theme.bg0 },
 });

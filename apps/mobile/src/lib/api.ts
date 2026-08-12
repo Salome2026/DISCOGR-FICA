@@ -42,3 +42,13 @@ export async function loadStoredSession(): Promise<MobileUser | null> {
 export async function logoutRequest(): Promise<void> {
   await Promise.all([SecureStore.deleteItemAsync(TOKEN_KEY), SecureStore.deleteItemAsync(USER_KEY)]);
 }
+
+// Mirrors app/page.tsx's handleForgotSubmit — same public, no-auth endpoint,
+// always returns the same generic message regardless of whether the email
+// exists (no account-enumeration).
+export async function forgotPasswordRequest(email: string): Promise<{ message: string }> {
+  return apiFetch<{ message: string }>("/api/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}

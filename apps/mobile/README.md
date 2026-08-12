@@ -1,56 +1,83 @@
-# Welcome to your Expo app 👋
+# VPO Corp — app móvil
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App [Expo](https://expo.dev) (SDK 54, expo-router) que replica el panel web.
+Consume la misma API que la web: el dominio sale de `extra.apiUrl` en `app.json`.
 
-## Get started
+Comparte tipos y permisos con la web a través de `packages/shared`, que Metro
+resuelve directo al código fuente (ver `metro.config.js`) — `apps/mobile`
+deliberadamente **no** es miembro del workspace npm de la raíz, así que sus
+dependencias se instalan aparte.
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Levantar el entorno de desarrollo
 
 ```bash
-npm run reset-project
+cd apps/mobile
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+El QR aparece dibujado en la terminal. Escanealo con la cámara (iOS) o desde
+adentro de Expo Go (Android). El celular y la computadora tienen que estar en
+la misma red Wi-Fi.
 
-### Other setup steps
+Si la red bloquea la conexión entre dispositivos (Wi-Fi de invitados,
+corporativas, redes con aislamiento de clientes), usá un túnel:
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+npx expo start --tunnel
+```
 
-## Learn more
+> El QR sólo vive mientras el servidor está corriendo. Expo Go no guarda
+> proyectos: si cerrás la terminal, la app desaparece de la lista. Eso es
+> normal, no se pierde nada.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Expo Go soporta un solo SDK a la vez
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Este proyecto está fijado a **SDK 54** a propósito (ver `AGENTS.md`). Expo Go
+sólo soporta la versión de SDK que trae la build publicada en la tienda, así
+que cuando Expo Go se actualiza a un SDK más nuevo, este proyecto deja de
+abrir con el error:
 
-## Join the community
+```
+Project is incompatible with this version of Expo Go
+```
 
-Join our community of developers creating universal apps.
+Si eso pasa, la salida no es bajar de versión Expo Go — es usar un
+development build.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Development build (la app instalada de verdad)
+
+Un development build se instala en el celular como una app propia, con su
+ícono, y **no depende de la versión de Expo Go**. También habilita módulos
+nativos que Expo Go no incluye (`@expo/ui`, `expo-glass-effect`).
+
+Requiere una cuenta de Expo (el plan gratuito alcanza):
+
+```bash
+npm install -g eas-cli
+eas login
+eas init          # crea el projectId y lo escribe en app.json
+eas build --profile development --platform android
+```
+
+Al terminar, EAS devuelve un QR y un enlace de instalación que funcionan desde
+cualquier red — no hace falta tener la computadora prendida.
+
+Los perfiles están definidos en `eas.json`:
+
+| Perfil | Para qué sirve |
+| --- | --- |
+| `development` | Development build con el cliente de desarrollo incluido. Se usa junto con `npx expo start`. |
+| `preview` | APK instalable para compartir y probar, sin servidor de desarrollo. |
+| `production` | Build para publicar en las tiendas. |
+
+Para iOS, `--platform ios` en un build de `development` o `preview` requiere
+cuenta de Apple Developer para registrar el dispositivo.
+
+## Estructura
+
+```
+src/app/        pantallas (expo-router, ruteo por archivos)
+src/components/ componentes compartidos entre pantallas
+src/lib/        cliente de API, sesión, helpers
+```

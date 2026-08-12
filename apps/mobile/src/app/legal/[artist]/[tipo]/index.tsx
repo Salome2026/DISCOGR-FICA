@@ -52,7 +52,7 @@ export default function LegalCategoryScreen() {
     if (!c.documentoUrl) return;
     setOpeningId(c.id);
     try {
-      await openDocument(c.documentoUrl);
+      await openDocument(`/api/legal/file?url=${encodeURIComponent(c.documentoUrl)}`);
     } catch {
       Alert.alert("Error", "No se pudo abrir el documento.");
     } finally {

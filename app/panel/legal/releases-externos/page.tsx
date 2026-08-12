@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import RequireRole from "@/app/components/RequireRole";
 import type { ExternalRelease } from "@/lib/db/externalReleases";
-import { LegalShell, Field, inputStyle } from "../_shared";
+import { LegalShell, Field, inputStyle, legalFileUrl } from "../_shared";
 
 export default function ReleasesExternosPage() {
   return (
@@ -77,7 +77,7 @@ function ExternalReleasesTab() {
                 <td className="muted">{r.vinculo ?? "—"}</td>
                 <td>
                   {r.documentoUrl ? (
-                    <a className="legal-doc-link" href={r.documentoUrl} target="_blank" rel="noreferrer">
+                    <a className="legal-doc-link" href={legalFileUrl(r.documentoUrl)} target="_blank" rel="noreferrer">
                       {r.documentoNombre || "Ver PDF"}
                     </a>
                   ) : (
@@ -142,7 +142,7 @@ function ExternalReleaseForm({
     setUploading(true);
     setError(null);
     try {
-      const blob = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/legal/upload" });
+      const blob = await upload(file.name, file, { access: "private", handleUploadUrl: "/api/legal/upload" });
       setDocumentoUrl(blob.url);
       setDocumentoNombre(file.name);
     } catch (err) {

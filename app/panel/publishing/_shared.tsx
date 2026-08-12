@@ -7,6 +7,11 @@ import { upload } from "@vercel/blob/client";
 import { SELLOS } from "@/lib/sellos";
 import { TIPOS_ARTISTA_PUBLISHING, type PublishingArtist } from "@/lib/db/publishingArtists";
 
+// Documents are private blobs now — this is the only way to reach one.
+export function publishingFileUrl(documentUrl: string): string {
+  return `/api/publishing/file?url=${encodeURIComponent(documentUrl)}`;
+}
+
 export const PUBLISHING_STYLES = `
   .pub-root {
     --pub-accent: var(--accent);
@@ -192,7 +197,7 @@ export function ArtistForm({
     setUploading(true);
     setError(null);
     try {
-      const blob = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/publishing/upload" });
+      const blob = await upload(file.name, file, { access: "private", handleUploadUrl: "/api/publishing/upload" });
       setDocumentoUrl(blob.url);
       setDocumentoNombre(file.name);
     } catch (err) {

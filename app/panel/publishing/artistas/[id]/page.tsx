@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import RequireRole from "@/app/components/RequireRole";
 import type { PublishingArtist } from "@/lib/db/publishingArtists";
-import { PublishingShell, ArtistForm } from "../../_shared";
+import { PublishingShell, ArtistForm, publishingFileUrl } from "../../_shared";
 
 const FIELDS: { key: keyof PublishingArtist; label: string }[] = [
   { key: "nombreCompleto", label: "Nombre completo" },
@@ -82,7 +82,7 @@ function ArtistFicha({ id }: { id: string }) {
           <div style={{ marginTop: 16 }}>
             <div className="card-label">Documentación adjunta</div>
             {artist.documentoUrl ? (
-              <a href={artist.documentoUrl} target="_blank" rel="noopener noreferrer" className="pub-doc-link">
+              <a href={publishingFileUrl(artist.documentoUrl)} target="_blank" rel="noopener noreferrer" className="pub-doc-link">
                 {artist.documentoNombre ?? "Ver documento"}
               </a>
             ) : (

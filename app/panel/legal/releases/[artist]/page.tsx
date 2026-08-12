@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import RequireRole from "@/app/components/RequireRole";
 import type { SignedRelease } from "@/lib/db/legalSignedReleases";
-import { LegalShell, SignedReleaseForm } from "../../_shared";
+import { LegalShell, SignedReleaseForm, legalFileUrl } from "../../_shared";
 
 export default function ArtistReleasesPage({ params }: { params: Promise<{ artist: string }> }) {
   const { artist: artistParam } = use(params);
@@ -95,7 +95,7 @@ function ReleaseCard({ release, onEdit }: { release: SignedRelease; onEdit: () =
 
   if (release.documentoUrl) {
     return (
-      <a href={release.documentoUrl} target="_blank" rel="noreferrer" className="legal-release-card">
+      <a href={legalFileUrl(release.documentoUrl)} target="_blank" rel="noreferrer" className="legal-release-card">
         {content}
       </a>
     );

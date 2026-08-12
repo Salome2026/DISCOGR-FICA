@@ -8,6 +8,13 @@ import { SELLOS } from "@/lib/sellos";
 import { TIPOS_CONTRATO, ESTADOS_CONTRATO, type LegalContract } from "@/lib/db/legalContracts";
 import type { SignedRelease } from "@/lib/db/legalSignedReleases";
 
+// Documents are private blobs now — this is the only way to reach one,
+// server-checks permission on every request instead of trusting a public
+// URL that, once known, would work forever for anyone who had it.
+export function legalFileUrl(documentUrl: string): string {
+  return `/api/legal/file?url=${encodeURIComponent(documentUrl)}`;
+}
+
 export const ESTADO_BADGE: Record<string, { bg: string; ink: string }> = {
   Vigente: { bg: "var(--good-bg)", ink: "var(--good-ink)" },
   Vencido: { bg: "var(--crit-bg)", ink: "var(--crit-ink)" },
@@ -227,7 +234,7 @@ export function ContractForm({
     setUploading(true);
     setError(null);
     try {
-      const blob = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/legal/upload" });
+      const blob = await upload(file.name, file, { access: "private", handleUploadUrl: "/api/legal/upload" });
       setDocumentoUrl(blob.url);
       setDocumentoNombre(file.name);
     } catch (err) {
@@ -671,7 +678,7 @@ export function SignedReleaseForm({
     setUploading(true);
     setError(null);
     try {
-      const blob = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/legal/upload" });
+      const blob = await upload(file.name, file, { access: "private", handleUploadUrl: "/api/legal/upload" });
       setDocumentoUrl(blob.url);
       setDocumentoNombre(file.name);
     } catch (err) {

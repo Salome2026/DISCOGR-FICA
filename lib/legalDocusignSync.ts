@@ -83,7 +83,7 @@ async function importOneEnvelope(envelope: DocusignEnvelope, roster: string[]): 
 
   const safeSubject = envelope.subject.replace(/[^a-z0-9\-_. ]/gi, "").trim() || "documento";
   const blob = await put(`legal/docusign/${envelope.envelopeId}-${safeSubject}.pdf`, pdf, {
-    access: "public",
+    access: "private",
     contentType: "application/pdf",
   });
 

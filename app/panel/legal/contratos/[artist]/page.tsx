@@ -3,7 +3,7 @@
 import { use, useEffect, useState } from "react";
 import RequireRole from "@/app/components/RequireRole";
 import { TIPOS_CONTRATO, type LegalContract } from "@/lib/db/legalContracts";
-import { LegalShell, Badge, ContractForm } from "../../_shared";
+import { LegalShell, Badge, ContractForm, legalFileUrl } from "../../_shared";
 
 // Mismo criterio que la grilla (app/panel/legal/contratos/page.tsx) — sin
 // esto, un contrato guardado con una grafía levemente distinta del artista
@@ -182,10 +182,10 @@ function CategoryModal({
             {c.notas && <div style={{ fontSize: 12, color: "var(--text-2)" }}>{c.notas}</div>}
             {c.documentoUrl ? (
               <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
-                <a className="legal-doc-link" href={c.documentoUrl} target="_blank" rel="noreferrer">
+                <a className="legal-doc-link" href={legalFileUrl(c.documentoUrl)} target="_blank" rel="noreferrer">
                   Ver documento
                 </a>
-                <a className="legal-doc-link" href={c.documentoUrl} download={c.documentoNombre || undefined}>
+                <a className="legal-doc-link" href={legalFileUrl(c.documentoUrl)} download={c.documentoNombre || undefined}>
                   Descargar
                 </a>
               </div>

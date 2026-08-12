@@ -44,7 +44,7 @@ export default function PublishingArtistFichaScreen() {
     if (!artist?.documentoUrl) return;
     setOpening(true);
     try {
-      await openDocument(artist.documentoUrl);
+      await openDocument(`/api/publishing/file?url=${encodeURIComponent(artist.documentoUrl)}`);
     } catch {
       Alert.alert("Error", "No se pudo abrir el documento.");
     } finally {

@@ -13,6 +13,15 @@ configureApiClient({
   getToken: () => SecureStore.getItemAsync(TOKEN_KEY),
 });
 
+// Exposed for lib/pdf-viewer.ts, which downloads through expo-file-system
+// rather than apiFetch (it needs a raw file on disk to hand to the share
+// sheet) — so it builds its own Authorization header instead of going
+// through the shared api client.
+export const apiBaseUrl = apiUrl;
+export function getAuthToken(): Promise<string | null> {
+  return SecureStore.getItemAsync(TOKEN_KEY);
+}
+
 export type MobileUser = { email: string; name: string; role: Role; accountType: AccountType };
 
 export async function loginRequest(email: string, password: string): Promise<MobileUser> {

@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Faltan credenciales." }, { status: 400 });
   }
 
-  const result = await verifyCredentials(email, password);
+  const result = await verifyCredentials(email, password, undefined, { peek: true });
 
   if (result.status === "locked") {
     return NextResponse.json({ error: "Demasiados intentos. Probá de nuevo en unos minutos." }, { status: 429 });

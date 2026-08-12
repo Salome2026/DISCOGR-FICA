@@ -109,7 +109,20 @@ export type LoginOutcome =
 // Shared by both the web login (auth.ts's authorize()) and the mobile
 // login route — a single choke point, so the lockout check (and now 2FA)
 // protects both without needing to be wired in twice.
-export async function verifyCredentials(email: string, password: string, totpCode?: string): Promise<LoginOutcome> {
+//
+// opts.peek: used by /api/auth/login-check, which validates password+2FA
+// one step before the real NextAuth signIn() so the web form can ask for a
+// code without a session existing yet. A peek still counts failures toward
+// the lockout (skipping that would let someone brute-force for free via
+// the peek endpoint) but does NOT clear attempts / bump last_login / log
+// "login" — only the real call that follows does, so a normal login (no
+// 2FA) doesn't end up logged twice for one submit.
+export async function verifyCredentials(
+  email: string,
+  password: string,
+  totpCode?: string,
+  opts?: { peek?: boolean }
+): Promise<LoginOutcome> {
   await ensureUsersSchema();
   const normalized = normalizeEmail(email);
 
@@ -146,6 +159,10 @@ export async function verifyCredentials(email: string, password: string, totpCod
       await alertOnFailedLogin(normalized);
       return { status: "invalid_totp" };
     }
+  }
+
+  if (opts?.peek) {
+    return { status: "ok", user: toAppUser(user) };
   }
 
   await clearLoginAttempts(normalized);

@@ -48,3 +48,49 @@ export async function sendPasswordResetEmail(email: string, resetUrl: string) {
   }
   return { sent: true };
 }
+
+const SECURITY_ALERT_TO = "salome@mawzrecords.com";
+
+// Fires once per lockout, not once per failed attempt — see the call site
+// in lib/db/users.ts (only when the failure count first crosses the
+// threshold). Alerting on every single wrong password would just be noise;
+// alerting on an actual lockout is a real signal.
+export async function sendSecurityAlert(details: { email: string; reason: string; attempts: number }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const domain = process.env.RESEND_EMAIL_DOMAIN;
+  if (!apiKey || !domain) {
+    console.warn("RESEND_API_KEY / RESEND_EMAIL_DOMAIN no configurados — no se envió la alerta de seguridad.");
+    return { sent: false, reason: "not_configured" as const };
+  }
+
+  const resend = new Resend(apiKey);
+  const when = new Date().toLocaleString("es-AR", { dateStyle: "medium", timeStyle: "medium" });
+
+  const html = `
+    <div style="font-family: -apple-system, Helvetica, Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 28px; background:#ffffff; color:#111114;">
+      <div style="font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#c94b4b; margin-bottom:20px;">VPO Corp · Alerta de seguridad</div>
+      <h1 style="font-size:20px; margin:0 0 14px; font-weight:700;">${details.reason}</h1>
+      <p style="font-size:14px; line-height:1.6; color:#44444c;">
+        Cuenta afectada: <strong>${details.email}</strong><br/>
+        Intentos fallidos: <strong>${details.attempts}</strong><br/>
+        Fecha y hora: ${when}
+      </p>
+      <p style="font-size:12px; line-height:1.6; color:#8a8a95; margin-top:20px;">
+        La cuenta quedó bloqueada temporalmente para nuevos intentos. Si reconocés esta actividad (por ejemplo, alguien del equipo se equivocó de contraseña varias veces), no hace falta hacer nada.
+      </p>
+    </div>
+  `;
+
+  const { error } = await resend.emails.send({
+    from: `VPO Corp Seguridad <no-reply@${domain}>`,
+    to: [SECURITY_ALERT_TO],
+    subject: `⚠ Posible intento de acceso no autorizado — ${details.email}`,
+    html,
+  });
+
+  if (error) {
+    console.error("Error enviando alerta de seguridad:", error);
+    return { sent: false, reason: error.message };
+  }
+  return { sent: true };
+}

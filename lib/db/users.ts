@@ -2,6 +2,7 @@ import { sql } from "@vercel/postgres";
 import bcrypt from "bcryptjs";
 import type { AccountType, Permission, Role } from "@/lib/permissions";
 import { getSharedPasswordHash } from "@/lib/db/settings";
+import { sendSecurityAlert } from "@/lib/emailAuth";
 
 // Email is the primary key and login identifier, so it must be treated as
 // case-insensitive everywhere: "Usuario@Empresa.com" and "usuario@empresa.com"
@@ -102,7 +103,7 @@ export async function verifyCredentials(email: string, password: string): Promis
   const { rows } = await sql`SELECT * FROM app_users WHERE lower(email) = ${normalized}`;
   const user = rows[0];
   if (!user || !user.active) {
-    await recordFailedLogin(normalized, null);
+    await alertOnFailedLogin(normalized);
     return null;
   }
 
@@ -114,7 +115,7 @@ export async function verifyCredentials(email: string, password: string): Promis
     ok = await bcrypt.compare(password, user.password_hash);
   }
   if (!ok) {
-    await recordFailedLogin(normalized, null);
+    await alertOnFailedLogin(normalized);
     return null;
   }
 
@@ -345,16 +346,41 @@ export async function isLoginLocked(email: string): Promise<boolean> {
   return Number(rows[0]?.n ?? 0) >= LOGIN_ATTEMPT_LIMIT;
 }
 
-export async function recordFailedLogin(email: string, ip: string | null): Promise<void> {
+// Returns the attempt count within the current window right after
+// inserting, so the caller can tell exactly when a lockout is newly
+// triggered (count === LOGIN_ATTEMPT_LIMIT) versus already in effect —
+// used to fire the security-alert email exactly once per lockout instead
+// of once per attempt.
+export async function recordFailedLogin(email: string, ip: string | null): Promise<number> {
   await ensureUsersSchema();
   const normalized = normalizeEmail(email);
   await sql`INSERT INTO login_attempts (email, ip) VALUES (${normalized}, ${ip})`;
+  const { rows } = await sql`
+    SELECT count(*) AS n FROM login_attempts
+    WHERE email = ${normalized} AND created_at > now() - (${LOGIN_ATTEMPT_WINDOW_MINUTES} * interval '1 minute')
+  `;
+  return Number(rows[0]?.n ?? 0);
 }
 
 export async function clearLoginAttempts(email: string): Promise<void> {
   await ensureUsersSchema();
   const normalized = normalizeEmail(email);
   await sql`DELETE FROM login_attempts WHERE email = ${normalized}`;
+}
+
+// Records the failure and, exactly on the attempt that crosses the lockout
+// threshold, emails salome@mawzrecords.com. Fire-and-forget on purpose —
+// a Resend hiccup should never be the reason a login request hangs or
+// fails differently than normal.
+async function alertOnFailedLogin(normalizedEmail: string): Promise<void> {
+  const attempts = await recordFailedLogin(normalizedEmail, null);
+  if (attempts === LOGIN_ATTEMPT_LIMIT) {
+    sendSecurityAlert({
+      email: normalizedEmail,
+      reason: "Cuenta bloqueada por intentos de inicio de sesión repetidos",
+      attempts,
+    }).catch((err) => console.error("No se pudo enviar la alerta de seguridad:", err));
+  }
 }
 
 export async function getAssignedArtists(email: string): Promise<string[]> {

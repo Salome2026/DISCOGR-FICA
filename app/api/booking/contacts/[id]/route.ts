@@ -54,6 +54,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const { id } = await params;
-  await deleteContact(id);
+  await deleteContact(id, user.email);
   return NextResponse.json({ ok: true });
 }

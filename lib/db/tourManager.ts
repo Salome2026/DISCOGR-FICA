@@ -1,4 +1,5 @@
 import { sql } from "@vercel/postgres";
+import { recordAudit } from "./users";
 
 let ready: Promise<void> | null = null;
 
@@ -71,6 +72,10 @@ export function ensureTourManagerSchema(): Promise<void> {
       // criterio que contacto_id en booking_shows).
       await sql`ALTER TABLE tourmanager_hojas ADD COLUMN IF NOT EXISTS booking_show_id TEXT`;
       await sql`ALTER TABLE tourmanager_hojas ADD COLUMN IF NOT EXISTS artist_id TEXT`;
+      // "Borrar" archiva en vez de eliminar el registro — es información
+      // histórica de una gira ya realizada, no un borrador descartable.
+      await sql`ALTER TABLE tourmanager_hojas ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ`;
+      await sql`ALTER TABLE tourmanager_hojas ADD COLUMN IF NOT EXISTS archived_by TEXT`;
     })();
   }
   return ready;
@@ -148,7 +153,7 @@ function rowToHoja(r: Record<string, unknown>): HojaDeRuta {
 
 export async function listHojas(): Promise<HojaDeRuta[]> {
   await ensureTourManagerSchema();
-  const { rows } = await sql`SELECT * FROM tourmanager_hojas ORDER BY fecha ASC, id ASC`;
+  const { rows } = await sql`SELECT * FROM tourmanager_hojas WHERE archived_at IS NULL ORDER BY fecha ASC, id ASC`;
   return rows.map(rowToHoja);
 }
 
@@ -266,7 +271,8 @@ export async function updateHoja(id: string, input: HojaInput): Promise<HojaDeRu
   return rows[0] ? rowToHoja(rows[0]) : null;
 }
 
-export async function deleteHoja(id: string): Promise<void> {
+export async function deleteHoja(id: string, actorEmail: string): Promise<void> {
   await ensureTourManagerSchema();
-  await sql`DELETE FROM tourmanager_hojas WHERE id = ${id}`;
+  await sql`UPDATE tourmanager_hojas SET archived_at = now(), archived_by = ${actorEmail} WHERE id = ${id}`;
+  await recordAudit({ actorEmail, action: "hoja_archived", entityType: "tourmanager_hoja", entityId: id });
 }

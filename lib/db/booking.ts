@@ -1,4 +1,5 @@
 import { sql } from "@vercel/postgres";
+import { recordAudit } from "./users";
 
 let ready: Promise<void> | null = null;
 
@@ -44,6 +45,11 @@ export function ensureBookingSchema(): Promise<void> {
         CREATE UNIQUE INDEX IF NOT EXISTS booking_shows_sheet_cell_idx
         ON booking_shows (sheet_row, sheet_col) WHERE source = 'sheet'
       `;
+      // "Eliminar" archives instead of hard-deleting — a show/contact is a
+      // historical record, not a scratch row. archived_at IS NULL is the
+      // "still active" filter everywhere below.
+      await sql`ALTER TABLE booking_shows ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ`;
+      await sql`ALTER TABLE booking_shows ADD COLUMN IF NOT EXISTS archived_by TEXT`;
 
       await sql`
         CREATE TABLE IF NOT EXISTS booking_contacts (
@@ -65,6 +71,8 @@ export function ensureBookingSchema(): Promise<void> {
       `;
       await sql`ALTER TABLE booking_contacts ADD COLUMN IF NOT EXISTS provincia TEXT`;
       await sql`ALTER TABLE booking_contacts ADD COLUMN IF NOT EXISTS pais TEXT`;
+      await sql`ALTER TABLE booking_contacts ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ`;
+      await sql`ALTER TABLE booking_contacts ADD COLUMN IF NOT EXISTS archived_by TEXT`;
     })();
   }
   return ready;
@@ -126,7 +134,7 @@ function rowToShow(r: Record<string, unknown>): BookingShow {
 
 export async function listShows(): Promise<BookingShow[]> {
   await ensureBookingSchema();
-  const { rows } = await sql`SELECT * FROM booking_shows ORDER BY fecha ASC, id ASC`;
+  const { rows } = await sql`SELECT * FROM booking_shows WHERE archived_at IS NULL ORDER BY fecha ASC, id ASC`;
   return rows.map(rowToShow);
 }
 
@@ -135,7 +143,7 @@ export async function listShows(): Promise<BookingShow[]> {
 // artist picker (and photo lookup) find out they exist at all.
 export async function listDistinctShowArtistNames(): Promise<string[]> {
   await ensureBookingSchema();
-  const { rows } = await sql`SELECT DISTINCT artist_name FROM booking_shows ORDER BY artist_name ASC`;
+  const { rows } = await sql`SELECT DISTINCT artist_name FROM booking_shows WHERE archived_at IS NULL ORDER BY artist_name ASC`;
   return rows.map((r) => r.artist_name as string);
 }
 
@@ -210,9 +218,10 @@ export async function setShowCoords(id: string, lat: number | null, lng: number 
   await sql`UPDATE booking_shows SET lat = ${lat}, lng = ${lng} WHERE id = ${id}`;
 }
 
-export async function deleteShow(id: string): Promise<void> {
+export async function deleteShow(id: string, actorEmail: string): Promise<void> {
   await ensureBookingSchema();
-  await sql`DELETE FROM booking_shows WHERE id = ${id}`;
+  await sql`UPDATE booking_shows SET archived_at = now(), archived_by = ${actorEmail} WHERE id = ${id}`;
+  await recordAudit({ actorEmail, action: "show_archived", entityType: "booking_show", entityId: id });
 }
 
 export type SheetShow = {
@@ -292,7 +301,7 @@ function rowToContact(r: Record<string, unknown>): BookingContact {
 
 export async function listContacts(): Promise<BookingContact[]> {
   await ensureBookingSchema();
-  const { rows } = await sql`SELECT * FROM booking_contacts ORDER BY nombre ASC`;
+  const { rows } = await sql`SELECT * FROM booking_contacts WHERE archived_at IS NULL ORDER BY nombre ASC`;
   return rows.map(rowToContact);
 }
 
@@ -346,7 +355,8 @@ export async function updateContact(id: string, input: NewContact): Promise<Book
   return rows[0] ? rowToContact(rows[0]) : null;
 }
 
-export async function deleteContact(id: string): Promise<void> {
+export async function deleteContact(id: string, actorEmail: string): Promise<void> {
   await ensureBookingSchema();
-  await sql`DELETE FROM booking_contacts WHERE id = ${id}`;
+  await sql`UPDATE booking_contacts SET archived_at = now(), archived_by = ${actorEmail} WHERE id = ${id}`;
+  await recordAudit({ actorEmail, action: "contact_archived", entityType: "booking_contact", entityId: id });
 }

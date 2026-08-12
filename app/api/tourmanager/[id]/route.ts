@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 import { hasPermission } from "@/lib/permissions";
 import { getHoja, updateHoja, deleteHoja, ESTADOS_HOJA, type HojaInput } from "@/lib/db/tourManager";
+import { computeRutaCompleta } from "@/lib/tourManagerRoute";
 
 type HojaBody = Omit<HojaInput, "actorEmail" | "estado"> & { estado?: string };
 
@@ -31,8 +32,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Estado inválido." }, { status: 400 });
   }
 
+  // Only overwritten when recalculation actually resolves something — a
+  // transient OSRM hiccup on this save should never wipe out a route that
+  // computed fine on a previous one (updateHoja preserves it whenever this
+  // key is left out of the payload entirely).
+  const rutaCompletaGeojson = await computeRutaCompleta(body);
+
   const hoja = await updateHoja(id, {
     ...body,
+    ...(rutaCompletaGeojson != null ? { rutaCompletaGeojson } : {}),
     estado: body.estado || "Borrador",
     actorEmail: user.email,
   });

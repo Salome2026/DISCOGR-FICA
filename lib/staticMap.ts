@@ -1,163 +1,212 @@
 import sharp from "sharp";
 
-// Server-side static map for the hoja de ruta PDF — no Google Maps API, no key,
-// no billing dependency (same CARTO free tile server Fase 5's interactive Leaflet
-// map already uses). Stitches raster tiles with sharp, then composites an SVG
-// overlay (markers + route line) on top. Every failure path returns null instead
-// of throwing — a broken/slow tile fetch must never block PDF generation.
+// Renders a static PNG of the full route — same free CARTO tiles the
+// interactive Leaflet map already uses (app/panel/tourmanager/RouteMap.tsx),
+// stitched server-side with sharp instead of a browser. This is what makes
+// "el mapa debe aparecer arriba de todo en el PDF, sin depender de abrir
+// enlaces externos" possible — @react-pdf/renderer can only embed a raster
+// image, never a live map component.
 
-const TILE_URL = (z: number, x: number, y: number) => `https://a.basemaps.cartocdn.com/dark_all/${z}/${x}/${y}.png`;
 const TILE_SIZE = 256;
-const MIN_ZOOM = 4;
+const CANVAS_WIDTH = 1000;
+const CANVAS_HEIGHT = 640;
 const MAX_ZOOM = 17;
 
-type LatLng = { lat: number; lng: number };
-
-function lonToWorldX(lon: number, zoom: number): number {
-  return ((lon + 180) / 360) * Math.pow(2, zoom) * TILE_SIZE;
+function lonToWorldX(lon: number, z: number): number {
+  return ((lon + 180) / 360) * TILE_SIZE * 2 ** z;
 }
-function latToWorldY(lat: number, zoom: number): number {
+function latToWorldY(lat: number, z: number): number {
   const rad = (lat * Math.PI) / 180;
-  return ((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2) * Math.pow(2, zoom) * TILE_SIZE;
+  return ((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2) * TILE_SIZE * 2 ** z;
 }
 
-function geojsonToLatLngs(geojson: unknown): LatLng[] {
-  const coords = (geojson as { coordinates?: [number, number][] } | null)?.coordinates;
-  if (!Array.isArray(coords)) return [];
-  return coords.map(([lng, lat]) => ({ lat, lng }));
-}
-
-// Highest zoom where every point's world-pixel position still fits inside the
-// canvas (with padding) — the "fit bounds" a real map does when framing a route.
-function pickZoom(points: LatLng[], width: number, height: number, padding: number): number {
-  for (let zoom = MAX_ZOOM; zoom >= MIN_ZOOM; zoom--) {
-    const xs = points.map((p) => lonToWorldX(p.lng, zoom));
-    const ys = points.map((p) => latToWorldY(p.lat, zoom));
-    const spanX = Math.max(...xs) - Math.min(...xs);
-    const spanY = Math.max(...ys) - Math.min(...ys);
-    if (spanX <= width - padding * 2 && spanY <= height - padding * 2) return zoom;
+function chooseZoom(minLat: number, maxLat: number, minLon: number, maxLon: number): number {
+  for (let z = MAX_ZOOM; z >= 0; z--) {
+    const spanX = lonToWorldX(maxLon, z) - lonToWorldX(minLon, z);
+    const spanY = latToWorldY(minLat, z) - latToWorldY(maxLat, z);
+    if (spanX <= CANVAS_WIDTH * 0.82 && spanY <= CANVAS_HEIGHT * 0.82) return z;
   }
-  return MIN_ZOOM;
+  return 0;
 }
 
-export async function buildStaticMapPng(input: {
-  origin?: LatLng | null;
-  venue?: LatLng | null;
-  routeGeojson?: unknown;
-  width?: number;
-  height?: number;
-}): Promise<Buffer | null> {
-  const width = input.width ?? 600;
-  const height = input.height ?? 320;
-  const padding = 36;
+async function fetchTile(z: number, x: number, y: number): Promise<Buffer | null> {
+  const max = 2 ** z;
+  const wrappedX = ((x % max) + max) % max;
+  if (y < 0 || y >= max) return null;
+  try {
+    const res = await fetch(`https://a.basemaps.cartocdn.com/dark_all/${z}/${wrappedX}/${y}.png`, {
+      headers: { "User-Agent": "DISCOGR-FICA Tour Manager (internal tool, contact: salome@mawzrecords.com)" },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!res.ok) return null;
+    return Buffer.from(await res.arrayBuffer());
+  } catch {
+    return null;
+  }
+}
 
-  const routeLine = geojsonToLatLngs(input.routeGeojson);
-  const points: LatLng[] = [
-    ...(input.origin ? [input.origin] : []),
-    ...(input.venue ? [input.venue] : []),
-    ...routeLine,
-  ];
+function escapeXml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+export type StaticMapPoint = { lat: number; lng: number; label: string; kind: "start" | "end" | "stop" };
+
+// input.waypoints drives the numbered markers (in travel order); input.route
+// is the actual road geometry to draw as the path — they're separate because
+// a leg OSRM couldn't resolve still gets its marker, just no line segment.
+export async function renderStaticRouteMap(input: {
+  waypoints: StaticMapPoint[];
+  routeCoordinates: [number, number][]; // [lng, lat], as returned by OSRM/getMultiLegRoute
+}): Promise<Buffer | null> {
+  const points = input.waypoints.filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng));
   if (points.length === 0) return null;
 
-  try {
-    const zoom = points.length > 1 ? pickZoom(points, width, height, padding) : 14;
-    const xs = points.map((p) => lonToWorldX(p.lng, zoom));
-    const ys = points.map((p) => latToWorldY(p.lat, zoom));
-    const centerX = (Math.min(...xs) + Math.max(...xs)) / 2;
-    const centerY = (Math.min(...ys) + Math.max(...ys)) / 2;
-    // Top-left world-pixel corner of the crop we actually want to show.
-    const originX = centerX - width / 2;
-    const originY = centerY - height / 2;
+  const lats = points.map((p) => p.lat);
+  const lons = points.map((p) => p.lng);
+  const latPad = Math.max((Math.max(...lats) - Math.min(...lats)) * 0.15, 0.01);
+  const lonPad = Math.max((Math.max(...lons) - Math.min(...lons)) * 0.15, 0.01);
+  const minLat = Math.min(...lats) - latPad;
+  const maxLat = Math.max(...lats) + latPad;
+  const minLon = Math.min(...lons) - lonPad;
+  const maxLon = Math.max(...lons) + lonPad;
 
-    const firstTileX = Math.floor(originX / TILE_SIZE);
-    const firstTileY = Math.floor(originY / TILE_SIZE);
-    const lastTileX = Math.floor((originX + width) / TILE_SIZE);
-    const lastTileY = Math.floor((originY + height) / TILE_SIZE);
-    const tileCols = lastTileX - firstTileX + 1;
-    const tileRows = lastTileY - firstTileY + 1;
-    const maxTile = Math.pow(2, zoom);
+  const zoom = chooseZoom(minLat, maxLat, minLon, maxLon);
 
-    const fetchTile = (tx: number, ty: number) =>
-      fetch(TILE_URL(zoom, ((tx % maxTile) + maxTile) % maxTile, ty), {
-        headers: { "User-Agent": "DISCOGR-FICA Tour Manager (internal tool, contact: salome@mawzrecords.com)" },
-        signal: AbortSignal.timeout(6000),
-      })
-        .then((r) => (r.ok ? r.arrayBuffer() : null))
-        .then((buf) => (buf ? Buffer.from(buf) : null))
-        .catch(() => null);
+  const centerWorldX = (lonToWorldX(minLon, zoom) + lonToWorldX(maxLon, zoom)) / 2;
+  const centerWorldY = (latToWorldY(minLat, zoom) + latToWorldY(maxLat, zoom)) / 2;
+  const originX = centerWorldX - CANVAS_WIDTH / 2;
+  const originY = centerWorldY - CANVAS_HEIGHT / 2;
 
-    const tileCoords: { tx: number; ty: number }[] = [];
-    for (let ty = firstTileY; ty <= lastTileY; ty++) {
-      for (let tx = firstTileX; tx <= lastTileX; tx++) tileCoords.push({ tx, ty });
+  const toCanvas = (lat: number, lon: number) => ({
+    x: lonToWorldX(lon, zoom) - originX,
+    y: latToWorldY(lat, zoom) - originY,
+  });
+
+  const tileXStart = Math.floor(originX / TILE_SIZE);
+  const tileXEnd = Math.floor((originX + CANVAS_WIDTH) / TILE_SIZE);
+  const tileYStart = Math.floor(originY / TILE_SIZE);
+  const tileYEnd = Math.floor((originY + CANVAS_HEIGHT) / TILE_SIZE);
+
+  const tileJobs: { x: number; y: number }[] = [];
+  for (let tx = tileXStart; tx <= tileXEnd; tx++) {
+    for (let ty = tileYStart; ty <= tileYEnd; ty++) {
+      tileJobs.push({ x: tx, y: ty });
     }
-    const tileBuffers = await Promise.all(tileCoords.map((t) => fetchTile(t.tx, t.ty)));
-
-    const mosaicWidth = tileCols * TILE_SIZE;
-    const mosaicHeight = tileRows * TILE_SIZE;
-    const composites: { input: Buffer; left: number; top: number }[] = [];
-    tileCoords.forEach((t, i) => {
-      const buf = tileBuffers[i];
-      if (buf) composites.push({ input: buf, left: (t.tx - firstTileX) * TILE_SIZE, top: (t.ty - firstTileY) * TILE_SIZE });
-    });
-
-    if (composites.length === 0) return null; // every tile fetch failed — no point in a blank map
-
-    // World-pixel -> position within the mosaic, for the SVG overlay below.
-    const toMosaicPoint = (p: LatLng) => ({
-      x: lonToWorldX(p.lng, zoom) - firstTileX * TILE_SIZE,
-      y: latToWorldY(p.lat, zoom) - firstTileY * TILE_SIZE,
-    });
-
-    const routeSvgPoints = routeLine.map(toMosaicPoint);
-    const routePath = routeSvgPoints.length > 1
-      ? `<polyline points="${routeSvgPoints.map((p) => `${p.x},${p.y}`).join(" ")}" fill="none" stroke="#3fc6d1" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />`
-      : "";
-    const originMarker = input.origin
-      ? markerSvg(toMosaicPoint(input.origin), "#3fc6d1")
-      : "";
-    const venueMarker = input.venue
-      ? markerSvg(toMosaicPoint(input.venue), "#e5484d")
-      : "";
-    const overlaySvg = `<svg width="${mosaicWidth}" height="${mosaicHeight}" xmlns="http://www.w3.org/2000/svg">${routePath}${originMarker}${venueMarker}</svg>`;
-    // librsvg doesn't guarantee the rasterized SVG comes out at exactly the
-    // declared width/height (rounding) — sharp's composite() rejects an
-    // overlay even 1px larger than the base, so force the exact pixel size
-    // before compositing instead of trusting the SVG's own dimensions.
-    const overlayPng = await sharp(Buffer.from(overlaySvg))
-      .resize(mosaicWidth, mosaicHeight, { fit: "fill" })
-      .png()
-      .toBuffer();
-
-    const cropLeft = Math.round(originX - firstTileX * TILE_SIZE);
-    const cropTop = Math.round(originY - firstTileY * TILE_SIZE);
-
-    // Composite and crop in two separate sharp() calls, not chained — sharp's
-    // pipeline planner can apply an extract() that follows composite() in the
-    // same chain before the composite finishes, which then rejects the
-    // full-size overlay as "larger than" the already-shrunk canvas. Forcing
-    // the composite to materialize into a buffer first avoids that reordering.
-    const composited = await sharp({ create: { width: mosaicWidth, height: mosaicHeight, channels: 3, background: "#0c0c0e" } })
-      .composite([...composites, { input: overlayPng, left: 0, top: 0 }])
-      .png()
-      .toBuffer();
-
-    return await sharp(composited)
-      .extract({
-        left: Math.max(0, Math.min(cropLeft, mosaicWidth - width)),
-        top: Math.max(0, Math.min(cropTop, mosaicHeight - height)),
-        width: Math.min(width, mosaicWidth),
-        height: Math.min(height, mosaicHeight),
-      })
-      .png()
-      .toBuffer();
-  } catch {
-    return null; // caller falls back to the text-only distances block — a map outage never blocks the PDF
   }
+  const tileBuffers = await Promise.all(tileJobs.map((t) => fetchTile(zoom, t.x, t.y)));
+
+  const composites: { input: Buffer; left: number; top: number }[] = [];
+  tileJobs.forEach((t, i) => {
+    const buf = tileBuffers[i];
+    if (!buf) return;
+    composites.push({ input: buf, left: Math.round(t.x * TILE_SIZE - originX), top: Math.round(t.y * TILE_SIZE - originY) });
+  });
+
+  // Route line first (under the markers), then numbered markers on top —
+  // same visual language as the interactive map (accent teal line, start
+  // green, end red, everything else a numbered accent dot).
+  const routePoints = input.routeCoordinates.map(([lng, lat]) => toCanvas(lat, lng));
+  const routePath = routePoints.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+
+  const markers = points
+    .map((p, i) => {
+      const { x, y } = toCanvas(p.lat, p.lng);
+      const fill = p.kind === "start" ? "#3fc6d1" : p.kind === "end" ? "#e5484d" : "#f4f4f5";
+      const textFill = p.kind === "stop" ? "#111114" : "#00181a";
+      const label = p.kind === "start" ? "A" : p.kind === "end" ? "B" : String(i);
+      return `
+        <circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="11" fill="${fill}" stroke="#0a0a0c" stroke-width="2.5" />
+        <text x="${x.toFixed(1)}" y="${(y + 4.5).toFixed(1)}" font-size="12" font-weight="700" text-anchor="middle" fill="${textFill}" font-family="Helvetica, Arial, sans-serif">${label}</text>
+        <text x="${x.toFixed(1)}" y="${(y + 26).toFixed(1)}" font-size="12" text-anchor="middle" fill="#f4f4f5" font-family="Helvetica, Arial, sans-serif" style="paint-order: stroke; stroke: #0a0a0c; stroke-width: 3px;">${escapeXml(p.label).slice(0, 24)}</text>
+      `;
+    })
+    .join("");
+
+  const svg = `
+    <svg width="${CANVAS_WIDTH}" height="${CANVAS_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
+      ${routePoints.length > 1 ? `<polyline points="${routePath}" fill="none" stroke="#3fc6d1" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" opacity="0.92" />` : ""}
+      ${markers}
+    </svg>
+  `;
+  composites.push({ input: Buffer.from(svg), left: 0, top: 0 });
+
+  const png = await sharp({
+    create: { width: CANVAS_WIDTH, height: CANVAS_HEIGHT, channels: 4, background: { r: 10, g: 10, b: 12, alpha: 1 } },
+  })
+    .composite(composites)
+    .png()
+    .toBuffer();
+
+  return png;
 }
 
-function markerSvg(p: { x: number; y: number }, color: string): string {
-  return `<g transform="translate(${p.x},${p.y})">
-    <path d="M0 -22C-6.6 -22 -12 -16.6 -12 -10C-12 -0.5 0 12 0 12S12 -0.5 12 -10C12 -16.6 6.6 -22 0 -22Z" fill="${color}" stroke="#0c0c0e" stroke-width="1.5" />
-    <circle cx="0" cy="-10" r="4.5" fill="#0c0c0e" />
-  </g>`;
+// Builds the ordered waypoint list + combined route from a hoja, ready to
+// hand to renderStaticRouteMap — shared by the PDF route and the "Ver mapa"
+// preview route so both always draw the exact same map. Rendered fresh on
+// every request from the hoja's stored coordinates/ruta_completa_geojson
+// (not cached as a file) — that's what makes it always current: change an
+// address and save, and the very next PDF/preview reflects it.
+export function buildWaypoints(hoja: {
+  origenFullAddress: string | null;
+  origenDireccion: string | null;
+  origenLabel: string | null;
+  origenLat: number | null;
+  origenLng: number | null;
+  puntoEncuentroNombre: string | null;
+  puntoEncuentroLat: number | null;
+  puntoEncuentroLng: number | null;
+  busquedaArtistaFullAddress: string | null;
+  busquedaArtistaLat: number | null;
+  busquedaArtistaLng: number | null;
+  venue: string | null;
+  venueLat: number | null;
+  venueLng: number | null;
+  lugarPruebaSonido: string | null;
+  pruebaSonidoLat: number | null;
+  pruebaSonidoLng: number | null;
+  hotelNombre: string | null;
+  hotelLat: number | null;
+  hotelLng: number | null;
+  paradas: { nombre: string; lat: number | null; lng: number | null }[];
+}): StaticMapPoint[] {
+  const points: StaticMapPoint[] = [];
+  const has = (lat: number | null, lng: number | null) => lat != null && lng != null;
+
+  if (has(hoja.origenLat, hoja.origenLng)) {
+    points.push({ lat: hoja.origenLat as number, lng: hoja.origenLng as number, label: hoja.origenLabel || "Salida", kind: "start" });
+  }
+  if (has(hoja.puntoEncuentroLat, hoja.puntoEncuentroLng)) {
+    points.push({ lat: hoja.puntoEncuentroLat as number, lng: hoja.puntoEncuentroLng as number, label: hoja.puntoEncuentroNombre || "Punto de encuentro", kind: "stop" });
+  }
+  if (has(hoja.busquedaArtistaLat, hoja.busquedaArtistaLng)) {
+    points.push({ lat: hoja.busquedaArtistaLat as number, lng: hoja.busquedaArtistaLng as number, label: "Búsqueda del artista", kind: "stop" });
+  }
+  if (has(hoja.venueLat, hoja.venueLng)) {
+    points.push({ lat: hoja.venueLat as number, lng: hoja.venueLng as number, label: hoja.venue || "Show", kind: "stop" });
+  }
+  // Prueba de sonido solo suma un punto propio si tiene coordenadas
+  // distintas al venue — si comparte dirección, ya está representado.
+  if (
+    has(hoja.pruebaSonidoLat, hoja.pruebaSonidoLng) &&
+    (hoja.pruebaSonidoLat !== hoja.venueLat || hoja.pruebaSonidoLng !== hoja.venueLng)
+  ) {
+    points.push({ lat: hoja.pruebaSonidoLat as number, lng: hoja.pruebaSonidoLng as number, label: hoja.lugarPruebaSonido || "Prueba de sonido", kind: "stop" });
+  }
+  if (has(hoja.hotelLat, hoja.hotelLng)) {
+    points.push({ lat: hoja.hotelLat as number, lng: hoja.hotelLng as number, label: hoja.hotelNombre || "Hotel", kind: "stop" });
+  }
+  for (const parada of hoja.paradas) {
+    if (has(parada.lat, parada.lng)) {
+      points.push({ lat: parada.lat as number, lng: parada.lng as number, label: parada.nombre || "Parada", kind: "stop" });
+    }
+  }
+  // Vuelta al origen (regreso) — mismo punto que la salida, pero marcado
+  // como destino final en vez de repetir el marcador de salida.
+  if (has(hoja.origenLat, hoja.origenLng) && points.length > 1) {
+    points.push({ lat: hoja.origenLat as number, lng: hoja.origenLng as number, label: "Regreso", kind: "end" });
+  } else if (points.length > 0) {
+    points[points.length - 1] = { ...points[points.length - 1], kind: "end" };
+  }
+
+  return points;
 }

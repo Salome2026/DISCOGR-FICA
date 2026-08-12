@@ -6,40 +6,21 @@ import dynamic from "next/dynamic";
 import RequireRole from "@/app/components/RequireRole";
 import { TourManagerShell } from "../_shared";
 import HojaForm from "../HojaForm";
+import HojaSummary from "../HojaSummary";
 import type { HojaDeRuta } from "@/lib/db/tourManager";
 
 // Leaflet touches window/document at import time — must never run during SSR.
 const RouteMap = dynamic(() => import("../RouteMap"), { ssr: false });
-
-function formatFecha(fecha: string): string {
-  const [y, m, d] = fecha.split("-");
-  return `${d}/${m}/${y}`;
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="tm-card" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <div className="tm-card-label">{title}</div>
-      {children}
-    </div>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string | null | undefined }) {
-  if (!value) return null;
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, gap: 12 }}>
-      <span style={{ color: "var(--text-3)" }}>{label}</span>
-      <span style={{ textAlign: "right" }}>{value}</span>
-    </div>
-  );
-}
 
 function HojaDetail({ id }: { id: string }) {
   const router = useRouter();
   const [hoja, setHoja] = useState<HojaDeRuta | null | undefined>(undefined);
   const [editing, setEditing] = useState(false);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   function load() {
     fetch(`/api/tourmanager/${id}`)
@@ -75,6 +56,35 @@ function HojaDetail({ id }: { id: string }) {
     }
   }
 
+  async function handleDuplicate() {
+    setDuplicating(true);
+    try {
+      const res = await fetch(`/api/tourmanager/${id}/duplicate`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo duplicar.");
+      router.push(`/panel/tourmanager/${data.hoja.id}`);
+    } catch {
+      alert("No se pudo duplicar la hoja de ruta.");
+    } finally {
+      setDuplicating(false);
+    }
+  }
+
+  async function handleShare() {
+    setSharing(true);
+    setCopied(false);
+    try {
+      const res = await fetch(`/api/tourmanager/${id}/share`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo generar el link.");
+      setShareUrl(`${window.location.origin}/hoja-de-ruta/${data.token}`);
+    } catch {
+      alert("No se pudo generar el link para compartir.");
+    } finally {
+      setSharing(false);
+    }
+  }
+
   if (hoja === undefined) {
     return (
       <TourManagerShell backHref="/panel/tourmanager">
@@ -91,19 +101,13 @@ function HojaDetail({ id }: { id: string }) {
   }
 
   return (
-    <TourManagerShell backHref="/panel/tourmanager" title={hoja.artistName} subtitle={`Itinerario y Hospitality`}>
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+    <TourManagerShell backHref="/panel/tourmanager" title={hoja.artistName} subtitle="Itinerario y Hospitality">
+      <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
         <button
           onClick={() => setEditing(true)}
           style={{ background: "var(--accent-glass-bg)", border: "1px solid var(--accent-glass-border)", borderRadius: 8, padding: "8px 16px", color: "var(--text-1)", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
         >
           Editar
-        </button>
-        <button
-          onClick={handleDelete}
-          style={{ background: "var(--crit-bg)", border: "1px solid transparent", borderRadius: 8, padding: "8px 16px", color: "var(--crit-ink)", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
-        >
-          Borrar
         </button>
         <button
           onClick={handleDownloadPdf}
@@ -112,68 +116,47 @@ function HojaDetail({ id }: { id: string }) {
         >
           {downloadingPdf ? "Generando..." : "Descargar PDF"}
         </button>
+        <button
+          onClick={handleDuplicate}
+          disabled={duplicating}
+          style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 16px", color: "var(--text-1)", fontWeight: 600, fontSize: 13, cursor: duplicating ? "default" : "pointer", opacity: duplicating ? 0.6 : 1 }}
+        >
+          {duplicating ? "Duplicando..." : "Duplicar"}
+        </button>
+        <button
+          onClick={handleShare}
+          disabled={sharing}
+          style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 16px", color: "var(--text-1)", fontWeight: 600, fontSize: 13, cursor: sharing ? "default" : "pointer", opacity: sharing ? 0.6 : 1 }}
+        >
+          {sharing ? "Generando..." : "Compartir"}
+        </button>
+        <button
+          onClick={handleDelete}
+          style={{ background: "var(--crit-bg)", border: "1px solid transparent", borderRadius: 8, padding: "8px 16px", color: "var(--crit-ink)", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
+        >
+          Borrar
+        </button>
       </div>
+
+      {shareUrl && (
+        <div style={{ background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 12.5, color: "var(--text-2)" }}>Link de solo lectura, sin login:</span>
+          <a href={shareUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12.5, color: "var(--accent-color)", wordBreak: "break-all" }}>{shareUrl}</a>
+          <button
+            type="button"
+            onClick={() => { navigator.clipboard.writeText(shareUrl); setCopied(true); }}
+            style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 6, padding: "4px 10px", color: "var(--text-2)", fontSize: 11.5, cursor: "pointer" }}
+          >
+            {copied ? "✓ Copiado" : "Copiar"}
+          </button>
+        </div>
+      )}
 
       <div style={{ marginBottom: 14 }}>
         <RouteMap hoja={hoja} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 }}>
-        <Section title="Información general">
-          <Row label="Artista" value={hoja.artistName} />
-          <Row label="Evento" value={hoja.tipoEvento} />
-          <Row label="Fecha" value={formatFecha(hoja.fecha)} />
-          <Row label="Horario del show" value={hoja.horaShow} />
-          <Row label="Ciudad" value={hoja.venueCiudad} />
-          <Row label="País" value={hoja.venuePais} />
-        </Section>
-
-        <Section title="Venue">
-          <Row label="Nombre" value={hoja.venue} />
-          <Row label="Dirección" value={hoja.venueFullAddress ?? hoja.venueDireccion} />
-          <Row label="Contacto" value={hoja.venueContactoNombre} />
-          <Row label="Teléfono" value={hoja.venueContactoTelefono} />
-          <Row label="Duración del show" value={hoja.duracionShowMin ? `${hoja.duracionShowMin} min` : null} />
-        </Section>
-
-        <Section title="Cronograma de traslados">
-          <Row label="Salida" value={hoja.horaSalida ? `${hoja.horaSalida} (${hoja.origenLabel ?? hoja.origenDireccion ?? "origen"})` : null} />
-          <Row label="Llegada al venue" value={hoja.horaLlegadaVenue} />
-          <Row label="Presentación" value={hoja.horaShow} />
-          <Row label="Salida del venue" value={hoja.horaSalidaVenue} />
-          <Row label="Llegada a destino" value={hoja.horaLlegadaDestino} />
-        </Section>
-
-        <Section title="Traslados detallados">
-          <Row label="Pax" value={hoja.pax != null ? String(hoja.pax) : null} />
-          <Row label="Driver" value={hoja.driverNombre} />
-          <Row label="Tel. driver" value={hoja.driverTelefono} />
-        </Section>
-
-        <Section title="Contactos">
-          <Row label="Contacto artista" value={hoja.contactoArtistaNombre} />
-          <Row label="Tel. artista" value={hoja.contactoArtistaTelefono} />
-          <Row label="Artist Liaison" value={hoja.artistLiaisonNombre} />
-          <Row label="Tel. liaison" value={hoja.artistLiaisonTelefono} />
-        </Section>
-
-        <Section title="Distancias">
-          <Row label="Origen → Venue" value={hoja.distanciaIdaKm != null || hoja.duracionIdaMin != null ? `${hoja.duracionIdaMin ?? "—"} min (${hoja.distanciaIdaKm ?? "—"} km)` : null} />
-          <Row label="Venue → Origen" value={hoja.distanciaVueltaKm != null || hoja.duracionVueltaMin != null ? `${hoja.duracionVueltaMin ?? "—"} min (${hoja.distanciaVueltaKm ?? "—"} km)` : null} />
-        </Section>
-
-        {hoja.runningOrder && (
-          <Section title="Running Order">
-            <div style={{ fontSize: 13, whiteSpace: "pre-wrap" }}>{hoja.runningOrder}</div>
-          </Section>
-        )}
-
-        {hoja.notas && (
-          <Section title="Notas">
-            <div style={{ fontSize: 13, whiteSpace: "pre-wrap" }}>{hoja.notas}</div>
-          </Section>
-        )}
-      </div>
+      <HojaSummary hoja={hoja} />
 
       {editing && (
         <HojaForm

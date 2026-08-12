@@ -4,7 +4,7 @@ import { getSessionUser } from "@/lib/session";
 import { hasPermission } from "@/lib/permissions";
 import { getHoja } from "@/lib/db/tourManager";
 import { getArtist } from "@/lib/db/artists";
-import { buildStaticMapPng } from "@/lib/staticMap";
+import { renderStaticRouteMap, buildWaypoints } from "@/lib/staticMap";
 import HojaDeRutaDoc from "@/lib/pdf/HojaDeRutaDoc";
 
 function sanitizeFilename(s: string): string {
@@ -23,15 +23,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const artist = hoja.artistId ? await getArtist(hoja.artistId).catch(() => null) : null;
 
-  const hasOrigen = hoja.origenLat != null && hoja.origenLng != null;
-  const hasVenue = hoja.venueLat != null && hoja.venueLng != null;
+  // Rendered fresh from the hoja's current data on every download — nothing
+  // cached, so an address/horario change is reflected the very next PDF.
+  const waypoints = buildWaypoints(hoja);
+  const routeGeometry = hoja.rutaCompletaGeojson as { coordinates?: [number, number][] } | null;
   const mapPng =
-    hasOrigen || hasVenue
-      ? await buildStaticMapPng({
-          origin: hasOrigen ? { lat: hoja.origenLat as number, lng: hoja.origenLng as number } : null,
-          venue: hasVenue ? { lat: hoja.venueLat as number, lng: hoja.venueLng as number } : null,
-          routeGeojson: hoja.rutaIdaGeojson,
-        })
+    waypoints.length > 0
+      ? await renderStaticRouteMap({ waypoints, routeCoordinates: routeGeometry?.coordinates ?? [] })
       : null;
   const mapImageDataUri = mapPng ? `data:image/png;base64,${mapPng.toString("base64")}` : null;
 

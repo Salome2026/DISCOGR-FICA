@@ -5,11 +5,25 @@
 
 export const ESTADOS_HOJA = ["Borrador", "Confirmado"] as const;
 
+// One extra stop the team makes along the way (e.g. a fuel stop, a second
+// pickup) — free-form, not everyone needs one, so it lives as an array
+// instead of a fixed set of columns. Comes after the hotel in the route
+// order (closest fit to "camino de regreso").
+export type ParadaIntermedia = {
+  nombre: string;
+  direccion: string | null;
+  fullAddress: string | null;
+  lat: number | null;
+  lng: number | null;
+  hora: string | null;
+};
+
 export type HojaDeRuta = {
   id: string;
   artistName: string;
   fecha: string;
   horaShow: string | null;
+  horaAperturaPuertas: string | null;
   tipoEvento: string | null;
   venue: string | null;
   venueDireccion: string | null;
@@ -50,9 +64,54 @@ export type HojaDeRuta = {
   origenLng: number | null;
   origenFullAddress: string | null;
 
+  // Punto de encuentro del equipo técnico — puede ser distinto de "origen"
+  // (origen = de dónde sale, encuentro = dónde se junta el equipo antes de salir).
+  puntoEncuentroNombre: string | null;
+  puntoEncuentroDireccion: string | null;
+  puntoEncuentroFullAddress: string | null;
+  puntoEncuentroLat: number | null;
+  puntoEncuentroLng: number | null;
+  horaEncuentroEquipo: string | null;
+
+  // Búsqueda del artista por su domicilio.
+  direccionBusquedaArtista: string | null;
+  busquedaArtistaFullAddress: string | null;
+  busquedaArtistaLat: number | null;
+  busquedaArtistaLng: number | null;
+  horaBusquedaArtista: string | null;
+
+  // Llegada a la ciudad — distinto de la llegada puntual al venue.
+  horaLlegadaCiudad: string | null;
+
+  // Prueba de sonido — con dirección propia solo si es distinta al venue.
+  lugarPruebaSonido: string | null;
+  direccionPruebaSonido: string | null;
+  pruebaSonidoFullAddress: string | null;
+  pruebaSonidoLat: number | null;
+  pruebaSonidoLng: number | null;
+  horaPruebaSonido: string | null;
+  duracionPruebaSonidoMin: number | null;
+
+  horaComida: string | null;
+
+  // Hotel.
+  hotelNombre: string | null;
+  hotelDireccion: string | null;
+  hotelFullAddress: string | null;
+  hotelLat: number | null;
+  hotelLng: number | null;
+  horaLlegadaHotel: string | null;
+  horaCheckin: string | null;
+  horaCheckout: string | null;
+
+  paradas: ParadaIntermedia[];
+
   bufferPrepMin: number;
   rutaIdaGeojson: unknown | null;
   rutaVueltaGeojson: unknown | null;
+  rutaCompletaGeojson: unknown | null;
+
+  shareToken: string | null;
 
   bookingShowId: string | null;
   artistId: string | null;
@@ -105,9 +164,48 @@ export type HojaInput = {
   origenLng?: number | null;
   origenFullAddress?: string | null;
 
+  horaAperturaPuertas?: string | null;
+
+  puntoEncuentroNombre?: string | null;
+  puntoEncuentroDireccion?: string | null;
+  puntoEncuentroFullAddress?: string | null;
+  puntoEncuentroLat?: number | null;
+  puntoEncuentroLng?: number | null;
+  horaEncuentroEquipo?: string | null;
+
+  direccionBusquedaArtista?: string | null;
+  busquedaArtistaFullAddress?: string | null;
+  busquedaArtistaLat?: number | null;
+  busquedaArtistaLng?: number | null;
+  horaBusquedaArtista?: string | null;
+
+  horaLlegadaCiudad?: string | null;
+
+  lugarPruebaSonido?: string | null;
+  direccionPruebaSonido?: string | null;
+  pruebaSonidoFullAddress?: string | null;
+  pruebaSonidoLat?: number | null;
+  pruebaSonidoLng?: number | null;
+  horaPruebaSonido?: string | null;
+  duracionPruebaSonidoMin?: number | null;
+
+  horaComida?: string | null;
+
+  hotelNombre?: string | null;
+  hotelDireccion?: string | null;
+  hotelFullAddress?: string | null;
+  hotelLat?: number | null;
+  hotelLng?: number | null;
+  horaLlegadaHotel?: string | null;
+  horaCheckin?: string | null;
+  horaCheckout?: string | null;
+
+  paradas?: ParadaIntermedia[];
+
   bufferPrepMin?: number;
   rutaIdaGeojson?: unknown | null;
   rutaVueltaGeojson?: unknown | null;
+  rutaCompletaGeojson?: unknown | null;
 
   bookingShowId?: string | null;
   artistId?: string | null;

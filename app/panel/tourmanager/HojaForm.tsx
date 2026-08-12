@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { HojaDeRuta } from "@/lib/db/tourManager";
+import type { ParadaIntermedia } from "@discografica/shared/types/tourManager";
 import ArtistPicker, { type ArtistResult } from "./ArtistPicker";
 
 const inputStyle: React.CSSProperties = {
@@ -21,6 +22,68 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>{label}</label>
       {children}
     </div>
+  );
+}
+
+// Un input de dirección con autocompletado (pega texto o link de Maps,
+// resuelve al salir del campo) — el mismo comportamiento para cada punto
+// del recorrido, así que vive una sola vez en vez de repetirse 6 veces.
+function AddressField({
+  label,
+  value,
+  onChange,
+  onResolved,
+  resolvedAddress,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  onResolved: (data: { lat: number; lng: number; fullAddress: string | null; ciudad: string | null; provincia: string | null; pais: string | null } | null) => void;
+  resolvedAddress: string | null;
+}) {
+  const [resolving, setResolving] = useState(false);
+  const [notFound, setNotFound] = useState(false);
+
+  async function handleBlur(v: string) {
+    if (!v.trim()) return;
+    setResolving(true);
+    setNotFound(false);
+    try {
+      const res = await fetch("/api/tourmanager/resolve-address", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: v }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.resolved) {
+        setNotFound(true);
+        onResolved(null);
+        return;
+      }
+      onResolved({ lat: data.lat, lng: data.lng, fullAddress: data.fullAddress ?? null, ciudad: data.ciudad ?? null, provincia: data.provincia ?? null, pais: data.pais ?? null });
+    } catch {
+      setNotFound(true);
+      onResolved(null);
+    } finally {
+      setResolving(false);
+    }
+  }
+
+  return (
+    <Field label={label}>
+      <input
+        value={value}
+        onChange={(e) => { onChange(e.target.value); setNotFound(false); }}
+        onBlur={(e) => handleBlur(e.target.value)}
+        placeholder="Dirección o link de Google Maps"
+        style={inputStyle}
+      />
+      {resolving && <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 4 }}>Resolviendo dirección...</div>}
+      {!resolving && resolvedAddress && <div style={{ fontSize: 11, color: "var(--good-ink)", marginTop: 4 }}>✓ {resolvedAddress}</div>}
+      {!resolving && notFound && value.trim() && (
+        <div style={{ fontSize: 11, color: "var(--warn-ink)", marginTop: 4 }}>No pudimos ubicar esta dirección — revisala o probá con un link de Maps.</div>
+      )}
+    </Field>
   );
 }
 
@@ -45,6 +108,14 @@ function minutesToTime(mins: number): string {
   const m = norm % 60;
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
+function toIntOrNull(v: string): number | null {
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? n : null;
+}
+function toNumOrNull(v: string): number | null {
+  const n = parseFloat(v);
+  return Number.isFinite(n) ? n : null;
+}
 
 export default function HojaForm({
   hoja,
@@ -55,21 +126,20 @@ export default function HojaForm({
   onClose: () => void;
   onSaved: () => void;
 }) {
-  // --- Los 7 campos mínimos que pide el spec ---
+  // --- Lo esencial ---
   const [artistName, setArtistName] = useState(hoja?.artistName ?? "");
   const [fecha, setFecha] = useState(hoja?.fecha ?? "");
   const [horaShow, setHoraShow] = useState(hoja?.horaShow ?? "");
+  const [horaAperturaPuertas, setHoraAperturaPuertas] = useState(hoja?.horaAperturaPuertas ?? "");
   const [tipoEvento, setTipoEvento] = useState(hoja?.tipoEvento ?? "");
   const [venue, setVenue] = useState(hoja?.venue ?? "");
   const [venueDireccion, setVenueDireccion] = useState(hoja?.venueDireccion ?? "");
   const [origenLabel, setOrigenLabel] = useState(hoja?.origenLabel ?? "");
   const [origenDireccion, setOrigenDireccion] = useState(hoja?.origenDireccion ?? "");
 
-  // --- Integraciones (Fase 6) — links suaves, nunca bloquean la carga manual ---
   const [artistId, setArtistId] = useState<string | null>(hoja?.artistId ?? null);
 
-  // --- Direcciones resueltas (Fase 3) — geocoding automático al salir del campo ---
-  const [venueResolving, setVenueResolving] = useState(false);
+  // --- Direcciones resueltas ---
   const [venueLat, setVenueLat] = useState<number | null>(hoja?.venueLat ?? null);
   const [venueLng, setVenueLng] = useState<number | null>(hoja?.venueLng ?? null);
   const [venueFullAddress, setVenueFullAddress] = useState(hoja?.venueFullAddress ?? "");
@@ -77,43 +147,65 @@ export default function HojaForm({
   const [venueProvincia, setVenueProvincia] = useState(hoja?.venueProvincia ?? "");
   const [venuePais, setVenuePais] = useState(hoja?.venuePais ?? "");
 
-  const [origenResolving, setOrigenResolving] = useState(false);
   const [origenLat, setOrigenLat] = useState<number | null>(hoja?.origenLat ?? null);
   const [origenLng, setOrigenLng] = useState<number | null>(hoja?.origenLng ?? null);
   const [origenFullAddress, setOrigenFullAddress] = useState(hoja?.origenFullAddress ?? "");
 
-  async function resolveAddress(kind: "venue" | "origen", value: string) {
-    if (!value.trim()) return;
-    const setResolving = kind === "venue" ? setVenueResolving : setOrigenResolving;
-    setResolving(true);
-    try {
-      const res = await fetch("/api/tourmanager/resolve-address", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input: value }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.resolved) return;
-      if (kind === "venue") {
-        setVenueLat(data.lat);
-        setVenueLng(data.lng);
-        setVenueFullAddress(data.fullAddress ?? "");
-        setVenueCiudad(data.ciudad ?? "");
-        setVenueProvincia(data.provincia ?? "");
-        setVenuePais(data.pais ?? "");
-      } else {
-        setOrigenLat(data.lat);
-        setOrigenLng(data.lng);
-        setOrigenFullAddress(data.fullAddress ?? "");
-      }
-    } catch {
-      // silencioso — el campo sigue disponible para carga manual
-    } finally {
-      setResolving(false);
-    }
+  function resolveVenue(v: string) {
+    setVenueDireccion(v);
   }
 
-  // --- Todo lo demás: opcional, colapsado por default ---
+  // --- Punto de encuentro del equipo ---
+  const [puntoEncuentroNombre, setPuntoEncuentroNombre] = useState(hoja?.puntoEncuentroNombre ?? "");
+  const [puntoEncuentroDireccion, setPuntoEncuentroDireccion] = useState(hoja?.puntoEncuentroDireccion ?? "");
+  const [puntoEncuentroFullAddress, setPuntoEncuentroFullAddress] = useState(hoja?.puntoEncuentroFullAddress ?? "");
+  const [puntoEncuentroLat, setPuntoEncuentroLat] = useState<number | null>(hoja?.puntoEncuentroLat ?? null);
+  const [puntoEncuentroLng, setPuntoEncuentroLng] = useState<number | null>(hoja?.puntoEncuentroLng ?? null);
+  const [horaEncuentroEquipo, setHoraEncuentroEquipo] = useState(hoja?.horaEncuentroEquipo ?? "");
+
+  // --- Búsqueda del artista ---
+  const [direccionBusquedaArtista, setDireccionBusquedaArtista] = useState(hoja?.direccionBusquedaArtista ?? "");
+  const [busquedaArtistaFullAddress, setBusquedaArtistaFullAddress] = useState(hoja?.busquedaArtistaFullAddress ?? "");
+  const [busquedaArtistaLat, setBusquedaArtistaLat] = useState<number | null>(hoja?.busquedaArtistaLat ?? null);
+  const [busquedaArtistaLng, setBusquedaArtistaLng] = useState<number | null>(hoja?.busquedaArtistaLng ?? null);
+  const [horaBusquedaArtista, setHoraBusquedaArtista] = useState(hoja?.horaBusquedaArtista ?? "");
+
+  const [horaLlegadaCiudad, setHoraLlegadaCiudad] = useState(hoja?.horaLlegadaCiudad ?? "");
+
+  // --- Prueba de sonido ---
+  const [lugarPruebaSonido, setLugarPruebaSonido] = useState(hoja?.lugarPruebaSonido ?? "");
+  const [direccionPruebaSonido, setDireccionPruebaSonido] = useState(hoja?.direccionPruebaSonido ?? "");
+  const [pruebaSonidoFullAddress, setPruebaSonidoFullAddress] = useState(hoja?.pruebaSonidoFullAddress ?? "");
+  const [pruebaSonidoLat, setPruebaSonidoLat] = useState<number | null>(hoja?.pruebaSonidoLat ?? null);
+  const [pruebaSonidoLng, setPruebaSonidoLng] = useState<number | null>(hoja?.pruebaSonidoLng ?? null);
+  const [horaPruebaSonido, setHoraPruebaSonido] = useState(hoja?.horaPruebaSonido ?? "");
+  const [duracionPruebaSonidoMin, setDuracionPruebaSonidoMin] = useState(hoja?.duracionPruebaSonidoMin?.toString() ?? "");
+
+  const [horaComida, setHoraComida] = useState(hoja?.horaComida ?? "");
+
+  // --- Hotel ---
+  const [hotelNombre, setHotelNombre] = useState(hoja?.hotelNombre ?? "");
+  const [hotelDireccion, setHotelDireccion] = useState(hoja?.hotelDireccion ?? "");
+  const [hotelFullAddress, setHotelFullAddress] = useState(hoja?.hotelFullAddress ?? "");
+  const [hotelLat, setHotelLat] = useState<number | null>(hoja?.hotelLat ?? null);
+  const [hotelLng, setHotelLng] = useState<number | null>(hoja?.hotelLng ?? null);
+  const [horaLlegadaHotel, setHoraLlegadaHotel] = useState(hoja?.horaLlegadaHotel ?? "");
+  const [horaCheckin, setHoraCheckin] = useState(hoja?.horaCheckin ?? "");
+  const [horaCheckout, setHoraCheckout] = useState(hoja?.horaCheckout ?? "");
+
+  // --- Paradas intermedias ---
+  const [paradas, setParadas] = useState<ParadaIntermedia[]>(hoja?.paradas ?? []);
+  function addParada() {
+    setParadas((ps) => [...ps, { nombre: "", direccion: "", fullAddress: null, lat: null, lng: null, hora: null }]);
+  }
+  function updateParada(i: number, patch: Partial<ParadaIntermedia>) {
+    setParadas((ps) => ps.map((p, idx) => (idx === i ? { ...p, ...patch } : p)));
+  }
+  function removeParada(i: number) {
+    setParadas((ps) => ps.filter((_, idx) => idx !== i));
+  }
+
+  // --- Todo lo demás: opcional ---
   const [showDetails, setShowDetails] = useState(!!hoja);
   const [duracionShowMin, setDuracionShowMin] = useState(hoja?.duracionShowMin?.toString() ?? "");
   const [pax, setPax] = useState(hoja?.pax?.toString() ?? "");
@@ -129,7 +221,7 @@ export default function HojaForm({
   const [notas, setNotas] = useState(hoja?.notas ?? "");
   const [estado, setEstado] = useState(hoja?.estado ?? "Borrador");
 
-  // --- Horarios/distancias: manuales por ahora, la Fase 3/4 los autocompleta ---
+  // --- Horarios/distancias ida-vuelta ---
   const [horaSalida, setHoraSalida] = useState(hoja?.horaSalida ?? "");
   const [horaLlegadaVenue, setHoraLlegadaVenue] = useState(hoja?.horaLlegadaVenue ?? "");
   const [horaSalidaVenue, setHoraSalidaVenue] = useState(hoja?.horaSalidaVenue ?? "");
@@ -156,11 +248,46 @@ export default function HojaForm({
     if (v !== "custom") setBufferPrepMin(v);
   }
 
+  async function resolveVenueAddress(value: string) {
+    if (!value.trim()) return;
+    try {
+      const res = await fetch("/api/tourmanager/resolve-address", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: value }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.resolved) return;
+      setVenueLat(data.lat);
+      setVenueLng(data.lng);
+      setVenueFullAddress(data.fullAddress ?? "");
+      setVenueCiudad(data.ciudad ?? "");
+      setVenueProvincia(data.provincia ?? "");
+      setVenuePais(data.pais ?? "");
+    } catch {
+      // silencioso — el campo sigue disponible para carga manual
+    }
+  }
+  async function resolveOrigenAddress(value: string) {
+    if (!value.trim()) return;
+    try {
+      const res = await fetch("/api/tourmanager/resolve-address", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: value }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.resolved) return;
+      setOrigenLat(data.lat);
+      setOrigenLng(data.lng);
+      setOrigenFullAddress(data.fullAddress ?? "");
+    } catch {
+      // silencioso
+    }
+  }
+
   // Se recalcula solo — sin botón — cada vez que cambia el horario del show,
-  // el origen, el destino o el tiempo de anticipación, como pidió el usuario.
-  // Llegada al venue y Salida se pisan siempre (son 100% derivados); Salida
-  // del venue / Llegada a destino solo se sugieren si están vacíos, porque
-  // dependen de una decisión humana (cuánto se queda el artista).
+  // el origen, el destino o el tiempo de anticipación.
   useEffect(() => {
     if (venueLat == null || venueLng == null || origenLat == null || origenLng == null) return;
     let cancelled = false;
@@ -183,7 +310,6 @@ export default function HojaForm({
         if (cancelled) return;
 
         let idaMin: number | null = null;
-        let vueltaMin: number | null = null;
         if (idaRes.resolved) {
           setDistanciaIdaKm(String(idaRes.distanceKm));
           setDuracionIdaMin(String(idaRes.durationMin));
@@ -194,7 +320,6 @@ export default function HojaForm({
           setDistanciaVueltaKm(String(vueltaRes.distanceKm));
           setDuracionVueltaMin(String(vueltaRes.durationMin));
           setRutaVueltaGeojson(vueltaRes.geometry);
-          vueltaMin = vueltaRes.durationMin;
         }
         if (!idaRes.resolved && !vueltaRes.resolved) {
           setRouteMsg("No se pudo calcular la ruta automáticamente — completá los horarios manualmente.");
@@ -218,9 +343,6 @@ export default function HojaForm({
     };
   }, [horaShow, bufferPrepMin, venueLat, venueLng, origenLat, origenLng]);
 
-  // Salida del venue / Llegada a destino: solo se sugieren si están vacíos
-  // (dependen de cuánto se queda el artista, una decisión humana), no forman
-  // parte del recálculo en vivo de arriba.
   useEffect(() => {
     const showMin = timeToMinutes(horaShow);
     if (showMin == null) return;
@@ -231,15 +353,6 @@ export default function HojaForm({
     if (vueltaMin != null && !horaLlegadaDestino) setHoraLlegadaDestino(minutesToTime(salidaVenue + vueltaMin));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [horaShow, duracionShowMin, duracionVueltaMin]);
-
-  function toIntOrNull(v: string): number | null {
-    const n = parseInt(v, 10);
-    return Number.isFinite(n) ? n : null;
-  }
-  function toNumOrNull(v: string): number | null {
-    const n = parseFloat(v);
-    return Number.isFinite(n) ? n : null;
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -259,6 +372,7 @@ export default function HojaForm({
           artistName: artistName.trim(),
           fecha,
           horaShow: horaShow || null,
+          horaAperturaPuertas: horaAperturaPuertas || null,
           tipoEvento: tipoEvento || null,
           venue: venue || null,
           venueDireccion: venueDireccion || null,
@@ -271,6 +385,39 @@ export default function HojaForm({
           venuePais: venuePais || null,
           origenLat, origenLng,
           origenFullAddress: origenFullAddress || null,
+
+          puntoEncuentroNombre: puntoEncuentroNombre || null,
+          puntoEncuentroDireccion: puntoEncuentroDireccion || null,
+          puntoEncuentroFullAddress: puntoEncuentroFullAddress || null,
+          puntoEncuentroLat, puntoEncuentroLng,
+          horaEncuentroEquipo: horaEncuentroEquipo || null,
+
+          direccionBusquedaArtista: direccionBusquedaArtista || null,
+          busquedaArtistaFullAddress: busquedaArtistaFullAddress || null,
+          busquedaArtistaLat, busquedaArtistaLng,
+          horaBusquedaArtista: horaBusquedaArtista || null,
+
+          horaLlegadaCiudad: horaLlegadaCiudad || null,
+
+          lugarPruebaSonido: lugarPruebaSonido || null,
+          direccionPruebaSonido: direccionPruebaSonido || null,
+          pruebaSonidoFullAddress: pruebaSonidoFullAddress || null,
+          pruebaSonidoLat, pruebaSonidoLng,
+          horaPruebaSonido: horaPruebaSonido || null,
+          duracionPruebaSonidoMin: toIntOrNull(duracionPruebaSonidoMin),
+
+          horaComida: horaComida || null,
+
+          hotelNombre: hotelNombre || null,
+          hotelDireccion: hotelDireccion || null,
+          hotelFullAddress: hotelFullAddress || null,
+          hotelLat, hotelLng,
+          horaLlegadaHotel: horaLlegadaHotel || null,
+          horaCheckin: horaCheckin || null,
+          horaCheckout: horaCheckout || null,
+
+          paradas: paradas.filter((p) => p.nombre.trim() || p.direccion),
+
           distanciaIdaKm: toNumOrNull(distanciaIdaKm),
           duracionIdaMin: toIntOrNull(duracionIdaMin),
           distanciaVueltaKm: toNumOrNull(distanciaVueltaKm),
@@ -316,11 +463,11 @@ export default function HojaForm({
       <form
         onClick={(e) => e.stopPropagation()}
         onSubmit={handleSubmit}
-        style={{ background: "var(--glass-bg-strong)", backdropFilter: "blur(40px) saturate(1.7)", WebkitBackdropFilter: "blur(40px) saturate(1.7)", color: "var(--text-1)", borderRadius: 16, border: "1px solid var(--glass-border)", boxShadow: "var(--shadow-glass-lg)", width: "100%", maxWidth: 560, padding: "1.5rem", display: "flex", flexDirection: "column", gap: 12, maxHeight: "90vh", overflowY: "auto" }}
+        style={{ background: "var(--glass-bg-strong)", backdropFilter: "blur(40px) saturate(1.7)", WebkitBackdropFilter: "blur(40px) saturate(1.7)", color: "var(--text-1)", borderRadius: 16, border: "1px solid var(--glass-border)", boxShadow: "var(--shadow-glass-lg)", width: "100%", maxWidth: 600, padding: "1.5rem", display: "flex", flexDirection: "column", gap: 12, maxHeight: "90vh", overflowY: "auto" }}
       >
         <div style={{ fontSize: 17, fontWeight: 600 }}>{hoja ? "Editar hoja de ruta" : "Nueva hoja de ruta"}</div>
         <p style={{ fontSize: 12, color: "var(--text-3)", margin: 0 }}>
-          Cargá solo lo esencial — el resto se puede completar después o se autocompleta más adelante.
+          Cargá lo esencial primero — el recorrido completo (punto de encuentro, búsqueda del artista, prueba de sonido, hotel, regreso) está más abajo.
         </p>
 
         <Field label="Artista">
@@ -332,12 +479,12 @@ export default function HojaForm({
         </Field>
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1 }}>
-            <Field label="Fecha">
+            <Field label="Fecha del show">
               <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required style={inputStyle} />
             </Field>
           </div>
           <div style={{ flex: 1 }}>
-            <Field label="Horario del show">
+            <Field label="¿A qué hora es el show?">
               <input type="time" value={horaShow} onChange={(e) => setHoraShow(e.target.value)} style={inputStyle} />
             </Field>
           </div>
@@ -350,99 +497,146 @@ export default function HojaForm({
             ))}
           </select>
         </Field>
-        <Field label="Venue">
+        <Field label="Lugar del show">
           <input value={venue} onChange={(e) => setVenue(e.target.value)} style={inputStyle} />
         </Field>
-        <Field label="Dirección del venue (o link de Google Maps)">
-          <input
-            value={venueDireccion}
-            onChange={(e) => setVenueDireccion(e.target.value)}
-            onBlur={(e) => resolveAddress("venue", e.target.value)}
-            placeholder="Dirección o link de Maps"
-            style={inputStyle}
-          />
-          {venueResolving && <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 4 }}>Resolviendo dirección...</div>}
-          {!venueResolving && venueFullAddress && (
-            <div style={{ fontSize: 11, color: "var(--good-ink)", marginTop: 4 }}>
-              ✓ {venueFullAddress}{venueCiudad ? ` — ${venueCiudad}` : ""}{venueProvincia ? `, ${venueProvincia}` : ""}
-            </div>
-          )}
-        </Field>
-        <div style={{ display: "flex", gap: 10 }}>
-          <div style={{ flex: 1 }}>
-            <Field label="Origen">
-              <select value={origenLabel} onChange={(e) => setOrigenLabel(e.target.value)} style={inputStyle}>
-                <option value="">Elegir...</option>
-                {ORIGEN_LABELS.map((o) => (
-                  <option key={o} value={o}>{o}</option>
-                ))}
-              </select>
-            </Field>
-          </div>
-          <div style={{ flex: 2 }}>
-            <Field label="Dirección de salida (o link de Google Maps)">
-              <input
-                value={origenDireccion}
-                onChange={(e) => setOrigenDireccion(e.target.value)}
-                onBlur={(e) => resolveAddress("origen", e.target.value)}
-                placeholder="Dirección o link de Maps"
-                style={inputStyle}
-              />
-              {origenResolving && <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 4 }}>Resolviendo dirección...</div>}
-              {!origenResolving && origenFullAddress && (
-                <div style={{ fontSize: 11, color: "var(--good-ink)", marginTop: 4 }}>✓ {origenFullAddress}</div>
-              )}
-            </Field>
-          </div>
-        </div>
-
-        {(venueLat != null && origenLat != null) && (
-          <div style={{ background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: ".04em" }}>
-              Cronograma calculado
-            </div>
-            {calculatingRoute ? (
-              <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>Calculando...</div>
-            ) : routeMsg ? (
-              <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>{routeMsg}</div>
-            ) : (
-              <>
-                {duracionIdaMin && (
-                  <div style={{ fontSize: 13, color: "var(--text-2)" }}>
-                    Tiempo de viaje: <strong style={{ color: "var(--text-1)" }}>{duracionIdaMin} min</strong>
-                    {distanciaIdaKm ? ` (${distanciaIdaKm} km)` : ""}
-                  </div>
-                )}
-                {horaLlegadaVenue && (
-                  <div style={{ fontSize: 13, color: "var(--text-2)" }}>
-                    Llegada al venue: <strong style={{ color: "var(--text-1)" }}>{horaLlegadaVenue}</strong>
-                  </div>
-                )}
-                {horaSalida && (
-                  <div style={{ fontSize: 15, color: "var(--good-ink)", fontWeight: 700 }}>
-                    Salida recomendada: {horaSalida}
-                  </div>
-                )}
-                {!duracionIdaMin && !horaLlegadaVenue && !horaSalida && (
-                  <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>Cargá el horario del show para calcular la salida.</div>
-                )}
-              </>
-            )}
-          </div>
-        )}
+        <AddressField
+          label="Dirección del show"
+          value={venueDireccion}
+          onChange={resolveVenue}
+          onResolved={(d) => {
+            if (!d) return;
+            setVenueLat(d.lat); setVenueLng(d.lng);
+            setVenueFullAddress(d.fullAddress ?? ""); setVenueCiudad(d.ciudad ?? "");
+            setVenueProvincia(d.provincia ?? ""); setVenuePais(d.pais ?? "");
+          }}
+          resolvedAddress={venueFullAddress ? `${venueFullAddress}${venueCiudad ? ` — ${venueCiudad}` : ""}${venueProvincia ? `, ${venueProvincia}` : ""}` : null}
+        />
 
         <button
           type="button"
           onClick={() => setShowDetails((s) => !s)}
           style={{ background: "transparent", border: "1px dashed var(--line-soft)", borderRadius: 8, padding: "8px 0", color: "var(--text-2)", fontSize: 12.5, cursor: "pointer" }}
         >
-          {showDetails ? "▾ Ocultar detalles adicionales" : "▸ Agregar detalles adicionales (opcional)"}
+          {showDetails ? "▾ Ocultar el resto del recorrido" : "▸ Completar el resto del recorrido"}
         </button>
 
         {showDetails && (
           <>
-            <div style={{ borderTop: "1px solid var(--line-soft)", paddingTop: 10, fontSize: 12.5, fontWeight: 600, color: "var(--text-2)" }}>
-              Venue
+            <div style={{ borderTop: "1px solid var(--line-soft)", paddingTop: 10, fontSize: 12.5, fontWeight: 700, color: "var(--accent-color)" }}>
+              1 · Salida del equipo
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <Field label="¿De dónde sale el equipo?">
+                  <select value={origenLabel} onChange={(e) => setOrigenLabel(e.target.value)} style={inputStyle}>
+                    <option value="">Elegir...</option>
+                    {ORIGEN_LABELS.map((o) => (
+                      <option key={o} value={o}>{o}</option>
+                    ))}
+                  </select>
+                </Field>
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field label="¿A qué hora sale el equipo?">
+                  <input type="time" value={horaSalida} onChange={(e) => setHoraSalida(e.target.value)} style={inputStyle} />
+                </Field>
+              </div>
+            </div>
+            <AddressField
+              label="Dirección de salida"
+              value={origenDireccion}
+              onChange={setOrigenDireccion}
+              onResolved={(d) => {
+                if (!d) return;
+                setOrigenLat(d.lat); setOrigenLng(d.lng); setOrigenFullAddress(d.fullAddress ?? "");
+              }}
+              resolvedAddress={origenFullAddress || null}
+            />
+
+            {(venueLat != null && origenLat != null) && (
+              <div style={{ background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: ".04em" }}>
+                  Cronograma calculado
+                </div>
+                {calculatingRoute ? (
+                  <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>Calculando...</div>
+                ) : routeMsg ? (
+                  <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>{routeMsg}</div>
+                ) : (
+                  <>
+                    {duracionIdaMin && (
+                      <div style={{ fontSize: 13, color: "var(--text-2)" }}>
+                        Tiempo de viaje: <strong style={{ color: "var(--text-1)" }}>{duracionIdaMin} min</strong>
+                        {distanciaIdaKm ? ` (${distanciaIdaKm} km)` : ""}
+                      </div>
+                    )}
+                    {horaLlegadaVenue && (
+                      <div style={{ fontSize: 13, color: "var(--text-2)" }}>
+                        Llegada al venue sugerida: <strong style={{ color: "var(--text-1)" }}>{horaLlegadaVenue}</strong>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--accent-color)", marginTop: 4 }}>
+              2 · Punto de encuentro del equipo técnico
+            </div>
+            <Field label="¿Dónde se encuentra el equipo técnico?">
+              <input value={puntoEncuentroNombre} onChange={(e) => setPuntoEncuentroNombre(e.target.value)} style={inputStyle} />
+            </Field>
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ flex: 2 }}>
+                <AddressField
+                  label="Dirección del punto de encuentro"
+                  value={puntoEncuentroDireccion}
+                  onChange={setPuntoEncuentroDireccion}
+                  onResolved={(d) => {
+                    if (!d) return;
+                    setPuntoEncuentroLat(d.lat); setPuntoEncuentroLng(d.lng); setPuntoEncuentroFullAddress(d.fullAddress ?? "");
+                  }}
+                  resolvedAddress={puntoEncuentroFullAddress || null}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field label="Horario de encuentro">
+                  <input type="time" value={horaEncuentroEquipo} onChange={(e) => setHoraEncuentroEquipo(e.target.value)} style={inputStyle} />
+                </Field>
+              </div>
+            </div>
+
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--accent-color)", marginTop: 4 }}>
+              3 · Búsqueda del artista
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ flex: 2 }}>
+                <AddressField
+                  label="¿Dónde pasan a buscar al artista?"
+                  value={direccionBusquedaArtista}
+                  onChange={setDireccionBusquedaArtista}
+                  onResolved={(d) => {
+                    if (!d) return;
+                    setBusquedaArtistaLat(d.lat); setBusquedaArtistaLng(d.lng); setBusquedaArtistaFullAddress(d.fullAddress ?? "");
+                  }}
+                  resolvedAddress={busquedaArtistaFullAddress || null}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field label="¿A qué hora pasan a buscarlo?">
+                  <input type="time" value={horaBusquedaArtista} onChange={(e) => setHoraBusquedaArtista(e.target.value)} style={inputStyle} />
+                </Field>
+              </div>
+            </div>
+
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--accent-color)", marginTop: 4 }}>
+              4 · Llegada y venue
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+              <Field label="¿A qué hora llegan a la ciudad?"><input type="time" value={horaLlegadaCiudad} onChange={(e) => setHoraLlegadaCiudad(e.target.value)} style={inputStyle} /></Field>
+              <Field label="Llegada al venue"><input type="time" value={horaLlegadaVenue} onChange={(e) => setHoraLlegadaVenue(e.target.value)} style={inputStyle} /></Field>
+              <Field label="Apertura de puertas"><input type="time" value={horaAperturaPuertas} onChange={(e) => setHoraAperturaPuertas(e.target.value)} style={inputStyle} /></Field>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <div style={{ flex: 1 }}>
@@ -456,10 +650,119 @@ export default function HojaForm({
               <input type="number" value={duracionShowMin} onChange={(e) => setDuracionShowMin(e.target.value)} style={inputStyle} />
             </Field>
 
-            <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-2)", marginTop: 4 }}>Cronograma de traslados</div>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--accent-color)", marginTop: 4 }}>
+              5 · Prueba de sonido
+            </div>
             <div style={{ display: "flex", gap: 10 }}>
               <div style={{ flex: 1 }}>
-                <Field label="Tiempo de anticipación (llegar al venue X antes del show)">
+                <Field label="¿A qué hora es la prueba de sonido?">
+                  <input type="time" value={horaPruebaSonido} onChange={(e) => setHoraPruebaSonido(e.target.value)} style={inputStyle} />
+                </Field>
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field label="Duración estimada (min)">
+                  <input type="number" value={duracionPruebaSonidoMin} onChange={(e) => setDuracionPruebaSonidoMin(e.target.value)} style={inputStyle} />
+                </Field>
+              </div>
+            </div>
+            <Field label="¿Dónde se hace la prueba de sonido?">
+              <input value={lugarPruebaSonido} onChange={(e) => setLugarPruebaSonido(e.target.value)} placeholder="Dejalo vacío si es el mismo lugar del show" style={inputStyle} />
+            </Field>
+            {lugarPruebaSonido.trim() && (
+              <AddressField
+                label="Dirección de la prueba de sonido (si es distinta al venue)"
+                value={direccionPruebaSonido}
+                onChange={setDireccionPruebaSonido}
+                onResolved={(d) => {
+                  if (!d) return;
+                  setPruebaSonidoLat(d.lat); setPruebaSonidoLng(d.lng); setPruebaSonidoFullAddress(d.fullAddress ?? "");
+                }}
+                resolvedAddress={pruebaSonidoFullAddress || null}
+              />
+            )}
+
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--accent-color)", marginTop: 4 }}>
+              6 · Comida
+            </div>
+            <Field label="¿A qué hora es la cena o comida?">
+              <input type="time" value={horaComida} onChange={(e) => setHoraComida(e.target.value)} style={inputStyle} />
+            </Field>
+
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--accent-color)", marginTop: 4 }}>
+              7 · Hotel
+            </div>
+            <Field label="¿Dónde se hospedan?">
+              <input value={hotelNombre} onChange={(e) => setHotelNombre(e.target.value)} style={inputStyle} />
+            </Field>
+            <AddressField
+              label="Dirección del hotel"
+              value={hotelDireccion}
+              onChange={setHotelDireccion}
+              onResolved={(d) => {
+                if (!d) return;
+                setHotelLat(d.lat); setHotelLng(d.lng); setHotelFullAddress(d.fullAddress ?? "");
+              }}
+              resolvedAddress={hotelFullAddress || null}
+            />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+              <Field label="Llegada estimada"><input type="time" value={horaLlegadaHotel} onChange={(e) => setHoraLlegadaHotel(e.target.value)} style={inputStyle} /></Field>
+              <Field label="Check-in"><input type="time" value={horaCheckin} onChange={(e) => setHoraCheckin(e.target.value)} style={inputStyle} /></Field>
+              <Field label="Check-out"><input type="time" value={horaCheckout} onChange={(e) => setHoraCheckout(e.target.value)} style={inputStyle} /></Field>
+            </div>
+
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--accent-color)", marginTop: 4 }}>
+              Paradas intermedias
+            </div>
+            {paradas.map((p, i) => (
+              <div key={i} style={{ background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
+                  <div style={{ flex: 1 }}>
+                    <Field label="Nombre de la parada">
+                      <input value={p.nombre} onChange={(e) => updateParada(i, { nombre: e.target.value })} style={inputStyle} />
+                    </Field>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <Field label="Horario">
+                      <input type="time" value={p.hora ?? ""} onChange={(e) => updateParada(i, { hora: e.target.value || null })} style={inputStyle} />
+                    </Field>
+                  </div>
+                  <button type="button" onClick={() => removeParada(i)} style={{ marginTop: 20, background: "transparent", border: "none", color: "var(--crit-ink)", cursor: "pointer", fontSize: 18, lineHeight: 1 }}>×</button>
+                </div>
+                <AddressField
+                  label="Dirección"
+                  value={p.direccion ?? ""}
+                  onChange={(v) => updateParada(i, { direccion: v })}
+                  onResolved={(d) => updateParada(i, { lat: d?.lat ?? null, lng: d?.lng ?? null, fullAddress: d?.fullAddress ?? null })}
+                  resolvedAddress={p.fullAddress}
+                />
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={addParada}
+              style={{ background: "transparent", border: "1px dashed var(--line-soft)", borderRadius: 8, padding: "8px 0", color: "var(--text-2)", fontSize: 12.5, cursor: "pointer" }}
+            >
+              + Agregar parada
+            </button>
+
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--accent-color)", marginTop: 4 }}>
+              8 · Regreso
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <Field label="¿A qué hora vuelven?"><input type="time" value={horaSalidaVenue} onChange={(e) => setHoraSalidaVenue(e.target.value)} style={inputStyle} /></Field>
+              </div>
+              <div style={{ flex: 1 }}>
+                <Field label="Llegada al destino final"><input type="time" value={horaLlegadaDestino} onChange={(e) => setHoraLlegadaDestino(e.target.value)} style={inputStyle} /></Field>
+              </div>
+            </div>
+
+            <div style={{ borderTop: "1px solid var(--line-soft)", paddingTop: 10, fontSize: 12.5, fontWeight: 600, color: "var(--text-2)" }}>
+              Tiempo de anticipación y traslados
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <Field label="Llegar al venue con cuánta anticipación">
                   <select value={bufferPreset} onChange={(e) => handleBufferPresetChange(e.target.value)} style={inputStyle}>
                     {BUFFER_PRESETS.map((p) => (
                       <option key={p.value} value={String(p.value)}>{p.label}</option>
@@ -476,22 +779,13 @@ export default function HojaForm({
                 </div>
               )}
             </div>
-            <p style={{ fontSize: 11.5, color: "var(--text-3)", margin: 0 }}>
-              El tiempo de viaje y la salida recomendada se recalculan solos apenas cambia el horario del show, el origen, el venue o la anticipación — ver "Cronograma calculado" arriba.
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              <Field label="Salida"><input type="time" value={horaSalida} onChange={(e) => setHoraSalida(e.target.value)} style={inputStyle} /></Field>
-              <Field label="Llegada al venue"><input type="time" value={horaLlegadaVenue} onChange={(e) => setHoraLlegadaVenue(e.target.value)} style={inputStyle} /></Field>
-              <Field label="Salida del venue"><input type="time" value={horaSalidaVenue} onChange={(e) => setHoraSalidaVenue(e.target.value)} style={inputStyle} /></Field>
-              <Field label="Llegada a destino"><input type="time" value={horaLlegadaDestino} onChange={(e) => setHoraLlegadaDestino(e.target.value)} style={inputStyle} /></Field>
-            </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10 }}>
               <Field label="Km ida"><input type="number" step="0.1" value={distanciaIdaKm} onChange={(e) => setDistanciaIdaKm(e.target.value)} style={inputStyle} /></Field>
               <Field label="Min ida"><input type="number" value={duracionIdaMin} onChange={(e) => setDuracionIdaMin(e.target.value)} style={inputStyle} /></Field>
               <Field label="Km vuelta"><input type="number" step="0.1" value={distanciaVueltaKm} onChange={(e) => setDistanciaVueltaKm(e.target.value)} style={inputStyle} /></Field>
               <Field label="Min vuelta"><input type="number" value={duracionVueltaMin} onChange={(e) => setDuracionVueltaMin(e.target.value)} style={inputStyle} /></Field>
             </div>
-            <Field label="Pax (cantidad de personas en el traslado)">
+            <Field label="Cantidad de personas en el traslado">
               <input type="number" value={pax} onChange={(e) => setPax(e.target.value)} style={inputStyle} />
             </Field>
             <div style={{ display: "flex", gap: 10 }}>
@@ -524,7 +818,7 @@ export default function HojaForm({
             <Field label="Running Order">
               <textarea value={runningOrder} onChange={(e) => setRunningOrder(e.target.value)} rows={2} placeholder={"Ej: Sofi B: 03.30"} style={{ ...inputStyle, resize: "vertical" }} />
             </Field>
-            <Field label="Notas (valor del show, seña, valor driver, responsable de liquidación, etc.)">
+            <Field label="Observaciones generales">
               <textarea value={notas} onChange={(e) => setNotas(e.target.value)} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
             </Field>
             <Field label="Estado">
@@ -546,7 +840,7 @@ export default function HojaForm({
             Cancelar
           </button>
           <button type="submit" disabled={saving} style={{ background: "var(--accent-glass-bg)", border: "1px solid var(--accent-glass-border)", borderRadius: 8, padding: "8px 16px", color: "var(--text-1)", fontWeight: 600, cursor: saving ? "default" : "pointer", fontSize: 13 }}>
-            {saving ? "Guardando..." : "Guardar"}
+            {saving ? "Guardando..." : "Guardar cambios"}
           </button>
         </div>
       </form>

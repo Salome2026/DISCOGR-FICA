@@ -9,17 +9,28 @@ import { theme } from "@discografica/shared/theme";
 // pin's scrollable distance) driving scale/y/opacity — here the same
 // progress value comes from the ScrollView's scroll offset via
 // Animated.event, interpolated with the exact same stops the web uses.
-// PIN_RATIO mirrors the web's 140vh section / 100vh sticky child split —
-// the extra 0.4 of screen height is how far you scroll to fully unpin.
-const PIN_RATIO = 0.4;
+// PIN_RATIO mirrors the web's OWN mobile breakpoint (globals.css:
+// `.vpo-hero{height:118dvh}` under 640px, vs 140dvh on desktop) — the extra
+// 0.18 of screen height is how far you scroll to fully unpin, short enough
+// that a single natural swipe clears it, same as on the web.
+const PIN_RATIO = 0.18;
+
+// Real logo mark (public/vpo-logo.png, 2539x1298, transparent background) —
+// NOT the app icon, which is a solid/opaque square by App Store requirement
+// and renders as a visible box when reused as inline art.
+const LOGO_ASPECT = 1298 / 2539;
 
 export function ScrollHeroSpacer({ height }: { height: number }) {
   return <View style={{ height }} />;
 }
 
 export function ScrollHero({ scrollY }: { scrollY: Animated.Value }) {
-  const { height: screenHeight } = useWindowDimensions();
+  const { height: screenHeight, width: screenWidth } = useWindowDimensions();
   const pinDistance = screenHeight * PIN_RATIO;
+  // Web caps at min(420px, 62vw); mobile app goes a bit larger per design
+  // direction ("similar a la web o incluso un poco más grande en celulares").
+  const logoWidth = Math.min(480, screenWidth * 0.72);
+  const logoHeight = logoWidth * LOGO_ASPECT;
 
   // Same stops as the web (fractions of the pin's scroll progress),
   // mapped onto the actual pixel scroll distance for this screen size.
@@ -39,7 +50,11 @@ export function ScrollHero({ scrollY }: { scrollY: Animated.Value }) {
       style={[styles.hero, { height: screenHeight, opacity: overlayOpacity }]}
     >
       <Animated.View style={{ transform: [{ scale }, { translateY }], opacity: markOpacity }}>
-        <Image source={require("@/assets/images/icon.png")} style={styles.logo} resizeMode="contain" />
+        <Image
+          source={require("@/assets/images/vpo-logo.png")}
+          style={{ width: logoWidth, height: logoHeight }}
+          resizeMode="contain"
+        />
       </Animated.View>
       <Animated.View style={{ opacity: textOpacity, transform: [{ translateY: textTranslateY }] }}>
         <Text style={styles.tagline}>Centro de control · acceso interno</Text>
@@ -68,7 +83,6 @@ const styles = StyleSheet.create({
     gap: theme.space.md,
     zIndex: 10,
   },
-  logo: { width: 220, height: 110 },
   tagline: { color: theme.text3, fontSize: 13, letterSpacing: 0.2, textAlign: "center" },
   hint: { position: "absolute", bottom: 48 },
   hintText: { color: theme.text3, fontSize: 12, letterSpacing: 0.3 },

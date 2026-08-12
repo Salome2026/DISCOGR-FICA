@@ -11,6 +11,7 @@ import {
   Platform,
   ActivityIndicator,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@discografica/shared/theme";
 import { useAuth, loginErrorMessage } from "@/lib/auth-context";
 import { forgotPasswordRequest } from "@/lib/api";
@@ -49,6 +50,7 @@ export function LoginScreen() {
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<ScrollView>(null);
   const pinDistance = usePinDistance();
+  const insets = useSafeAreaInsets();
 
   // Same as the web's panelRef.scrollIntoView when a card is tapped —
   // reaching the login panel means scrolling past the full hero, so bring
@@ -108,7 +110,7 @@ export function LoginScreen() {
         <ScrollHeroSpacer height={pinDistance} />
 
         {active === null ? (
-          <View style={styles.cards}>
+          <View style={[styles.cards, { paddingTop: insets.top + theme.space.lg }]}>
             {CARDS.map((c) => (
               <GlassCard key={c.key} radius={theme.radiusXl} style={styles.card}>
                 <Text style={styles.cardTitle}>{c.title}</Text>
@@ -120,7 +122,7 @@ export function LoginScreen() {
             ))}
           </View>
         ) : (
-          <GlassCard strong radius={theme.radiusXl} style={styles.panel}>
+          <GlassCard strong radius={theme.radiusXl} style={[styles.panel, { marginTop: insets.top + theme.space.lg }]}>
             <Pressable onPress={backToCards} style={styles.backLink}>
               <Text style={styles.backLinkText}>← Volver</Text>
             </Pressable>

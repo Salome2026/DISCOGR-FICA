@@ -15,6 +15,8 @@ export default function Landing() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [needsTotp, setNeedsTotp] = useState(false);
+  const [totpCode, setTotpCode] = useState("");
   const [forgotMode, setForgotMode] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotLoading, setForgotLoading] = useState(false);
@@ -36,14 +38,37 @@ export default function Landing() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
+    if (!needsTotp) {
+      // Peek before touching NextAuth at all — if this account has 2FA on,
+      // switch to asking for the code instead of attempting (and failing)
+      // a real sign-in with no code attached.
+      const check = await fetch("/api/auth/login-check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      }).then((r) => r.json());
+      if (check.error) {
+        setLoading(false);
+        setError(check.error);
+        return;
+      }
+      if (check.needsTotp) {
+        setLoading(false);
+        setNeedsTotp(true);
+        return;
+      }
+    }
+
     const res = await signIn("credentials", {
       email,
       password,
+      totpCode: needsTotp ? totpCode : undefined,
       redirect: false,
     });
     setLoading(false);
     if (res?.error) {
-      setError("Email o contraseña incorrectos.");
+      setError(needsTotp ? "Código inválido." : "Email o contraseña incorrectos.");
       return;
     }
     const me = await fetch("/api/me").then((r) => r.json());
@@ -74,6 +99,8 @@ export default function Landing() {
     setForgotMode(false);
     setForgotEmail("");
     setForgotMsg(null);
+    setNeedsTotp(false);
+    setTotpCode("");
   }
 
   return (
@@ -214,43 +241,77 @@ export default function Landing() {
             {!forgotMode ? (
               <>
                 <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                  <div>
-                    <label>Usuario o email</label>
-                    <input
-                      type="text"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      autoComplete="username"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label>Contraseña</label>
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      autoComplete="current-password"
-                      required
-                    />
-                  </div>
+                  {!needsTotp ? (
+                    <>
+                      <div>
+                        <label>Usuario o email</label>
+                        <input
+                          type="text"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          autoComplete="username"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label>Contraseña</label>
+                        <input
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          autoComplete="current-password"
+                          required
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <div>
+                      <label>Código de verificación</label>
+                      <p style={{ fontSize: 12, color: "var(--text-3)", margin: "2px 0 8px" }}>
+                        Abrí tu app de autenticación e ingresá el código de 6 dígitos, o un código de respaldo.
+                      </p>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        value={totpCode}
+                        onChange={(e) => setTotpCode(e.target.value)}
+                        autoComplete="one-time-code"
+                        autoFocus
+                        required
+                      />
+                    </div>
+                  )}
                   {error && (
                     <div style={{ color: "var(--crit-ink)", fontSize: 12.5 }}>{error}</div>
                   )}
                   <button className="access-btn" type="submit" disabled={loading}>
                     {loading ? "Ingresando..." : "Ingresar"}
                   </button>
-                  <button
-                    type="button"
-                    className="forgot-link"
-                    onClick={() => {
-                      setForgotMode(true);
-                      setForgotEmail(email);
-                      setForgotMsg(null);
-                    }}
-                  >
-                    ¿Olvidaste tu contraseña?
-                  </button>
+                  {needsTotp ? (
+                    <button
+                      type="button"
+                      className="forgot-link"
+                      onClick={() => {
+                        setNeedsTotp(false);
+                        setTotpCode("");
+                        setError(null);
+                      }}
+                    >
+                      ← Volver
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="forgot-link"
+                      onClick={() => {
+                        setForgotMode(true);
+                        setForgotEmail(email);
+                        setForgotMsg(null);
+                      }}
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  )}
                 </form>
                 <p style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 16, textAlign: "center" }}>
                   No hay registro público — tu cuenta la crea un administrador.

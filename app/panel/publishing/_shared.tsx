@@ -122,9 +122,14 @@ export function PublishingShell({
             <h1 className="pub-title">{title}</h1>
             <div className="pub-sub">{subtitle ?? session?.user?.email}</div>
           </div>
-          <button className="pub-signout" onClick={() => signOut({ callbackUrl: "/" })}>
-            Cerrar sesión
-          </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Link href="/cuenta" className="pub-signout" style={{ textDecoration: "none" }}>
+              Mi cuenta
+            </Link>
+            <button className="pub-signout" onClick={() => signOut({ callbackUrl: "/" })}>
+              Cerrar sesión
+            </button>
+          </div>
         </div>
         {children}
       </div>

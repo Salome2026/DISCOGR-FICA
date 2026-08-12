@@ -18,14 +18,22 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const email = body?.email as string | undefined;
   const password = body?.password as string | undefined;
+  const totpCode = body?.totpCode as string | undefined;
   if (!email || !password) {
     return NextResponse.json({ error: "Faltan credenciales." }, { status: 400 });
   }
 
-  const user = await verifyCredentials(email, password);
-  if (!user) {
+  const result = await verifyCredentials(email, password, totpCode);
+  if (result.status === "locked") {
+    return NextResponse.json({ error: "Demasiados intentos. Probá de nuevo en unos minutos." }, { status: 429 });
+  }
+  if (result.status === "needs_totp") {
+    return NextResponse.json({ needsTotp: true }, { status: 401 });
+  }
+  if (result.status !== "ok") {
     return NextResponse.json({ error: "Credenciales inválidas." }, { status: 401 });
   }
+  const user = result.user;
 
   const token = await new SignJWT({
     email: user.email,

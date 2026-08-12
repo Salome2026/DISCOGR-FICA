@@ -156,9 +156,14 @@ export function LegalShell({
             <h1 className="legal-title">{title}</h1>
             <div className="legal-sub">{subtitle ?? session?.user?.email}</div>
           </div>
-          <button className="legal-signout" onClick={() => signOut({ callbackUrl: "/" })}>
-            Cerrar sesión
-          </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Link href="/cuenta" className="legal-signout" style={{ textDecoration: "none" }}>
+              Mi cuenta
+            </Link>
+            <button className="legal-signout" onClick={() => signOut({ callbackUrl: "/" })}>
+              Cerrar sesión
+            </button>
+          </div>
         </div>
         {children}
       </div>

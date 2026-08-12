@@ -6,7 +6,7 @@ import type { Role } from "@/lib/permissions";
 export async function GET() {
   const session = await auth();
   const user = session?.user as
-    | { email?: string; name?: string; role?: Role | null; accountType?: string; invalid?: boolean }
+    | { email?: string; name?: string; role?: Role | null; accountType?: string; invalid?: boolean; totpEnabled?: boolean }
     | undefined;
   if (!user?.email || !user.role || user.invalid) {
     return NextResponse.json({ authenticated: false, home: "/" });
@@ -17,6 +17,7 @@ export async function GET() {
     name: user.name,
     role: user.role,
     accountType: user.accountType,
+    totpEnabled: user.totpEnabled ?? false,
     home: homeFor(user.role),
   });
 }

@@ -393,6 +393,7 @@ function DashboardInner() {
             <Link href="/admin/usuarios" className="nav-pill">Usuarios</Link>
             <Link href="/admin/artistas" className="nav-pill">Artistas</Link>
             <Link href="/panel/playlists" className="nav-pill">Playlists</Link>
+            <Link href="/cuenta" className="nav-pill">Mi cuenta</Link>
             <button
               type="button"
               className="nav-pill"

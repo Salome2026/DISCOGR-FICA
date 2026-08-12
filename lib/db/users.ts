@@ -1,5 +1,7 @@
 import { sql } from "@vercel/postgres";
 import bcrypt from "bcryptjs";
+import crypto from "node:crypto";
+import * as OTPAuth from "otpauth";
 import type { AccountType, Permission, Role } from "@/lib/permissions";
 import { getSharedPasswordHash } from "@/lib/db/settings";
 import { sendSecurityAlert } from "@/lib/emailAuth";
@@ -36,6 +38,13 @@ export function ensureUsersSchema(): Promise<void> {
       `;
       await sql`ALTER TABLE app_users ALTER COLUMN password_hash DROP NOT NULL`;
       await sql`ALTER TABLE app_users ADD COLUMN IF NOT EXISTS uses_shared_password BOOLEAN NOT NULL DEFAULT false`;
+      // TOTP 2FA — opt-in per account. totp_secret stays NULL until the QR
+      // is scanned and confirmed (setupTotp writes it, confirmTotp is what
+      // flips totp_enabled). Backup codes are bcrypt-hashed exactly like a
+      // password — they're a second way in, so they get the same protection.
+      await sql`ALTER TABLE app_users ADD COLUMN IF NOT EXISTS totp_secret TEXT`;
+      await sql`ALTER TABLE app_users ADD COLUMN IF NOT EXISTS totp_enabled BOOLEAN NOT NULL DEFAULT false`;
+      await sql`ALTER TABLE app_users ADD COLUMN IF NOT EXISTS totp_backup_codes TEXT[] NOT NULL DEFAULT '{}'`;
       await sql`
         CREATE TABLE IF NOT EXISTS pm_artist_assignments (
           id BIGSERIAL PRIMARY KEY,
@@ -87,24 +96,32 @@ export type AppUser = {
   session_version: number;
   last_login: string | null;
   uses_shared_password: boolean;
+  totp_enabled: boolean;
 };
 
+export type LoginOutcome =
+  | { status: "ok"; user: AppUser }
+  | { status: "invalid" }
+  | { status: "locked" }
+  | { status: "needs_totp" }
+  | { status: "invalid_totp" };
+
 // Shared by both the web login (auth.ts's authorize()) and the mobile
-// login route — a single choke point, so the lockout check protects both
-// without needing to be wired in twice.
-export async function verifyCredentials(email: string, password: string): Promise<AppUser | null> {
+// login route — a single choke point, so the lockout check (and now 2FA)
+// protects both without needing to be wired in twice.
+export async function verifyCredentials(email: string, password: string, totpCode?: string): Promise<LoginOutcome> {
   await ensureUsersSchema();
   const normalized = normalizeEmail(email);
 
   // Checked before the DB lookup and well before bcrypt.compare — a locked
   // email fails fast without spending the (deliberately slow) hash compare.
-  if (await isLoginLocked(normalized)) return null;
+  if (await isLoginLocked(normalized)) return { status: "locked" };
 
   const { rows } = await sql`SELECT * FROM app_users WHERE lower(email) = ${normalized}`;
   const user = rows[0];
   if (!user || !user.active) {
     await alertOnFailedLogin(normalized);
-    return null;
+    return { status: "invalid" };
   }
 
   let ok = false;
@@ -116,13 +133,25 @@ export async function verifyCredentials(email: string, password: string): Promis
   }
   if (!ok) {
     await alertOnFailedLogin(normalized);
-    return null;
+    return { status: "invalid" };
+  }
+
+  if (user.totp_enabled) {
+    if (!totpCode) return { status: "needs_totp" };
+    // A wrong code counts toward the same lockout as a wrong password — a
+    // 6-digit TOTP code is only ~1M possibilities, guessable fast without
+    // a rate limit of its own.
+    const validCode = await verifyTotpOrBackupCode(normalized, totpCode);
+    if (!validCode) {
+      await alertOnFailedLogin(normalized);
+      return { status: "invalid_totp" };
+    }
   }
 
   await clearLoginAttempts(normalized);
   await sql`UPDATE app_users SET last_login = now() WHERE lower(email) = ${normalized}`;
   await logActivity(user.email as string, "login");
-  return toAppUser(user);
+  return { status: "ok", user: toAppUser(user) };
 }
 
 export async function getUserByEmail(email: string): Promise<AppUser | null> {
@@ -144,6 +173,7 @@ function toAppUser(row: Record<string, unknown>): AppUser {
     session_version: row.session_version as number,
     last_login: row.last_login as string | null,
     uses_shared_password: row.uses_shared_password as boolean,
+    totp_enabled: row.totp_enabled as boolean,
   };
 }
 
@@ -403,4 +433,102 @@ export async function setAssignedArtists(email: string, artists: string[]) {
       ON CONFLICT DO NOTHING
     `;
   }
+}
+
+// ---- 2FA (TOTP) ----
+// Opt-in per account, standard Google Authenticator/Authy compatible codes
+// — no SMS provider, no new external service. The secret only ever leaves
+// this file inside the otpauth:// URI returned by setupTotp (rendered as a
+// QR client-side) and is never included on the generic AppUser type.
+
+function totpFor(email: string, secretBase32: string): OTPAuth.TOTP {
+  return new OTPAuth.TOTP({
+    issuer: "VPO Corp",
+    label: email,
+    algorithm: "SHA1",
+    digits: 6,
+    period: 30,
+    secret: OTPAuth.Secret.fromBase32(secretBase32),
+  });
+}
+
+export async function setupTotp(email: string): Promise<{ secret: string; uri: string }> {
+  await ensureUsersSchema();
+  const normalized = normalizeEmail(email);
+  const secret = new OTPAuth.Secret({ size: 20 });
+  // Not enabled yet — only confirmTotp() flips totp_enabled, once the user
+  // proves they actually scanned it by entering a real code back.
+  await sql`UPDATE app_users SET totp_secret = ${secret.base32} WHERE lower(email) = ${normalized}`;
+  return { secret: secret.base32, uri: totpFor(normalized, secret.base32).toString() };
+}
+
+function generateBackupCodes(count = 10): { display: string; canonical: string }[] {
+  const out: { display: string; canonical: string }[] = [];
+  for (let i = 0; i < count; i++) {
+    const raw = crypto.randomBytes(5).toString("hex").toUpperCase();
+    out.push({ canonical: raw, display: `${raw.slice(0, 5)}-${raw.slice(5)}` });
+  }
+  return out;
+}
+
+function normalizeBackupCode(input: string): string {
+  return input.trim().toUpperCase().replace(/[^A-F0-9]/g, "");
+}
+
+export async function confirmTotp(email: string, code: string): Promise<{ backupCodes: string[] } | { error: string }> {
+  await ensureUsersSchema();
+  const normalized = normalizeEmail(email);
+  const { rows } = await sql`SELECT totp_secret FROM app_users WHERE lower(email) = ${normalized}`;
+  const secretBase32 = rows[0]?.totp_secret as string | null;
+  if (!secretBase32) return { error: "Primero generá el código QR." };
+
+  const delta = totpFor(normalized, secretBase32).validate({ token: code.trim(), window: 1 });
+  if (delta === null) return { error: "Código inválido." };
+
+  const codes = generateBackupCodes();
+  const hashed = await Promise.all(codes.map((c) => bcrypt.hash(c.canonical, 10)));
+  await sql`
+    UPDATE app_users SET totp_enabled = true, totp_backup_codes = ${pgArrayLiteral(hashed)}::text[]
+    WHERE lower(email) = ${normalized}
+  `;
+  await recordAudit({ actorEmail: normalized, action: "totp_enabled", entityType: "user", entityId: normalized });
+  return { backupCodes: codes.map((c) => c.display) };
+}
+
+export async function disableTotp(email: string, actorEmail: string): Promise<void> {
+  await ensureUsersSchema();
+  const normalized = normalizeEmail(email);
+  await sql`
+    UPDATE app_users SET totp_enabled = false, totp_secret = NULL, totp_backup_codes = '{}'
+    WHERE lower(email) = ${normalized}
+  `;
+  await recordAudit({ actorEmail, action: "totp_disabled", entityType: "user", entityId: normalized });
+}
+
+// Called from verifyCredentials during login. Tries a live 6-digit code
+// first, then falls back to backup codes — a matched backup code is
+// removed immediately so it can't be reused (each one is single-use).
+async function verifyTotpOrBackupCode(normalizedEmail: string, code: string): Promise<boolean> {
+  const { rows } = await sql`SELECT totp_secret, totp_backup_codes FROM app_users WHERE lower(email) = ${normalizedEmail}`;
+  const row = rows[0];
+  const secretBase32 = row?.totp_secret as string | null;
+  if (!secretBase32) return false;
+
+  const trimmed = code.trim();
+  if (/^\d{6}$/.test(trimmed)) {
+    const delta = totpFor(normalizedEmail, secretBase32).validate({ token: trimmed, window: 1 });
+    if (delta !== null) return true;
+  }
+
+  const backupHashes = (row?.totp_backup_codes as string[]) ?? [];
+  const normalizedInput = normalizeBackupCode(trimmed);
+  if (!normalizedInput) return false;
+  for (let i = 0; i < backupHashes.length; i++) {
+    if (await bcrypt.compare(normalizedInput, backupHashes[i])) {
+      const remaining = backupHashes.filter((_, idx) => idx !== i);
+      await sql`UPDATE app_users SET totp_backup_codes = ${pgArrayLiteral(remaining)}::text[] WHERE lower(email) = ${normalizedEmail}`;
+      return true;
+    }
+  }
+  return false;
 }

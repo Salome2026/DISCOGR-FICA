@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 
-const NOTIFY_TO = ["operaciones@indyanarecords.com", "salome@mawzrecords.com"];
+const NOTIFY_TO = ["salome@mawzrecords.com", "support@indyanarecords.com", "agustinargibay@mawzrecords.com"];
 
 // Gmail caps total message size (headers + body + attachments, after
 // base64 encoding) at 25MB. Base64 inflates raw bytes by ~37%, so keep the

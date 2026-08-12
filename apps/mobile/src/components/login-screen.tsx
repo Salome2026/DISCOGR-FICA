@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   View,
   Text,
   TextInput,
   Pressable,
+  Animated,
   ScrollView,
   StyleSheet,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
@@ -15,14 +15,12 @@ import { theme } from "@discografica/shared/theme";
 import { useAuth, loginErrorMessage } from "@/lib/auth-context";
 import { forgotPasswordRequest } from "@/lib/api";
 import { GlassCard } from "./glass-card";
+import { ScrollHero, ScrollHeroSpacer, usePinDistance } from "./scroll-hero";
 
-// Mirrors app/page.tsx's Landing component exactly: the same 7 access
-// cards (title + description + Ingresar), the same expanding glass login
-// panel with the same field labels/copy/forgot-password flow. The web's
-// full scroll-driven hero (VPOScrollHero) is replaced with its own
-// documented static fallback (.vpo-hero-static — same logo + tagline, no
-// scroll parallax), since a phone screen doesn't have the same scroll
-// real estate a desktop landing page does.
+// Mirrors app/page.tsx's Landing component exactly: the same scroll-pinned
+// intro (see scroll-hero.tsx, a 1:1 port of VPOScrollHero's Framer Motion
+// transforms), the same 7 access cards, the same expanding glass login
+// panel with the same field labels/copy/forgot-password flow.
 type Card = "label" | "pm" | "legal" | "editorial" | "management" | "booking" | "tourmanager" | null;
 
 const CARDS: { key: Exclude<Card, null>; title: string; description: string; panelTitle: string }[] = [
@@ -47,6 +45,18 @@ export function LoginScreen() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSubmitting, setForgotSubmitting] = useState(false);
   const [forgotMsg, setForgotMsg] = useState<string | null>(null);
+
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const scrollRef = useRef<ScrollView>(null);
+  const pinDistance = usePinDistance();
+
+  // Same as the web's panelRef.scrollIntoView when a card is tapped —
+  // reaching the login panel means scrolling past the full hero, so bring
+  // it into view instead of leaving the user to find it themselves.
+  function selectCard(key: Exclude<Card, null>) {
+    setActive(key);
+    scrollRef.current?.scrollTo({ y: pinDistance, animated: true });
+  }
 
   function backToCards() {
     setActive(null);
@@ -87,11 +97,15 @@ export function LoginScreen() {
 
   return (
     <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <View style={styles.hero}>
-          <Image source={require("@/assets/images/icon.png")} style={styles.logo} resizeMode="contain" />
-          <Text style={styles.tagline}>Centro de control · acceso interno</Text>
-        </View>
+      <ScrollHero scrollY={scrollY} />
+      <Animated.ScrollView
+        ref={scrollRef}
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        scrollEventThrottle={16}
+        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: true })}
+      >
+        <ScrollHeroSpacer height={pinDistance} />
 
         {active === null ? (
           <View style={styles.cards}>
@@ -99,7 +113,7 @@ export function LoginScreen() {
               <GlassCard key={c.key} radius={theme.radiusXl} style={styles.card}>
                 <Text style={styles.cardTitle}>{c.title}</Text>
                 <Text style={styles.cardDescription}>{c.description}</Text>
-                <Pressable style={styles.accessButton} onPress={() => setActive(c.key)}>
+                <Pressable style={styles.accessButton} onPress={() => selectCard(c.key)}>
                   <Text style={styles.accessButtonText}>Ingresar</Text>
                 </Pressable>
               </GlassCard>
@@ -179,17 +193,14 @@ export function LoginScreen() {
             )}
           </GlassCard>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: theme.bg0 },
-  content: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 56, paddingBottom: 48 },
-  hero: { alignItems: "center", gap: 10, marginBottom: 32 },
-  logo: { width: 200, height: 100 },
-  tagline: { color: theme.text3, fontSize: 13, letterSpacing: 0.2 },
+  content: { paddingHorizontal: 20, paddingBottom: 48 },
   cards: { gap: 14 },
   card: { padding: 24, alignItems: "center" },
   cardTitle: { color: theme.text1, fontSize: 17, fontWeight: "600", marginBottom: 6, textAlign: "center" },

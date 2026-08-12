@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: theme.bg0 },
   content: { paddingHorizontal: 20, paddingBottom: 48 },
   cards: { gap: 14 },
-  card: { padding: 24, alignItems: "center" },
+  card: { padding: 24 },
   cardTitle: { color: theme.text1, fontSize: 17, fontWeight: "600", marginBottom: 6, textAlign: "center" },
   cardDescription: { color: theme.text2, fontSize: 13, lineHeight: 18, textAlign: "center", marginBottom: 18 },
   accessButton: { width: "100%", backgroundColor: theme.accentGlassBg, borderWidth: 1, borderColor: theme.accentGlassBorder, borderRadius: 10, paddingVertical: 12, alignItems: "center" },

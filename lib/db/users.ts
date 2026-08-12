@@ -52,6 +52,24 @@ export function ensureUsersSchema(): Promise<void> {
           detail TEXT
         )
       `;
+      // This table doubles as the platform's general audit log now, not
+      // just user-management events — see recordAudit()/getAuditLog()
+      // below. Additive columns so every row logged before this stays
+      // exactly as it was (email/action/at/detail keep their meaning).
+      await sql`ALTER TABLE user_activity_log ADD COLUMN IF NOT EXISTS entity_type TEXT`;
+      await sql`ALTER TABLE user_activity_log ADD COLUMN IF NOT EXISTS entity_id TEXT`;
+      await sql`ALTER TABLE user_activity_log ADD COLUMN IF NOT EXISTS before_state JSONB`;
+      await sql`ALTER TABLE user_activity_log ADD COLUMN IF NOT EXISTS after_state JSONB`;
+      await sql`CREATE INDEX IF NOT EXISTS user_activity_log_entity_idx ON user_activity_log (entity_type, entity_id)`;
+      await sql`
+        CREATE TABLE IF NOT EXISTS login_attempts (
+          id BIGSERIAL PRIMARY KEY,
+          email TEXT NOT NULL,
+          ip TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `;
+      await sql`CREATE INDEX IF NOT EXISTS login_attempts_email_idx ON login_attempts (email, created_at)`;
     })();
   }
   return ready;
@@ -70,12 +88,23 @@ export type AppUser = {
   uses_shared_password: boolean;
 };
 
+// Shared by both the web login (auth.ts's authorize()) and the mobile
+// login route — a single choke point, so the lockout check protects both
+// without needing to be wired in twice.
 export async function verifyCredentials(email: string, password: string): Promise<AppUser | null> {
   await ensureUsersSchema();
   const normalized = normalizeEmail(email);
+
+  // Checked before the DB lookup and well before bcrypt.compare — a locked
+  // email fails fast without spending the (deliberately slow) hash compare.
+  if (await isLoginLocked(normalized)) return null;
+
   const { rows } = await sql`SELECT * FROM app_users WHERE lower(email) = ${normalized}`;
   const user = rows[0];
-  if (!user || !user.active) return null;
+  if (!user || !user.active) {
+    await recordFailedLogin(normalized, null);
+    return null;
+  }
 
   let ok = false;
   if (user.uses_shared_password) {
@@ -84,8 +113,12 @@ export async function verifyCredentials(email: string, password: string): Promis
   } else if (user.password_hash) {
     ok = await bcrypt.compare(password, user.password_hash);
   }
-  if (!ok) return null;
+  if (!ok) {
+    await recordFailedLogin(normalized, null);
+    return null;
+  }
 
+  await clearLoginAttempts(normalized);
   await sql`UPDATE app_users SET last_login = now() WHERE lower(email) = ${normalized}`;
   await logActivity(user.email as string, "login");
   return toAppUser(user);
@@ -170,6 +203,7 @@ export async function updateUserRole(
 ) {
   await ensureUsersSchema();
   const normalized = normalizeEmail(email);
+  const before = await getUserByEmail(normalized);
   const extraLit = pgArrayLiteral(extraPermissions);
   const revokedLit = pgArrayLiteral(revokedPermissions);
   await sql`
@@ -179,14 +213,31 @@ export async function updateUserRole(
         revoked_permissions = ${revokedLit}::text[]
     WHERE lower(email) = ${normalized}
   `;
-  await logActivity(actorEmail, "role_updated", normalized);
+  await recordAudit({
+    actorEmail,
+    action: "role_updated",
+    entityType: "user",
+    entityId: normalized,
+    detail: normalized,
+    before: before ? { role: before.role, extraPermissions: before.extra_permissions, revokedPermissions: before.revoked_permissions } : undefined,
+    after: { role, extraPermissions, revokedPermissions },
+  });
 }
 
 export async function setUserActive(email: string, active: boolean, actorEmail: string) {
   await ensureUsersSchema();
   const normalized = normalizeEmail(email);
+  const before = await getUserByEmail(normalized);
   await sql`UPDATE app_users SET active = ${active} WHERE lower(email) = ${normalized}`;
-  await logActivity(actorEmail, active ? "user_activated" : "user_deactivated", normalized);
+  await recordAudit({
+    actorEmail,
+    action: active ? "user_activated" : "user_deactivated",
+    entityType: "user",
+    entityId: normalized,
+    detail: normalized,
+    before: before ? { active: before.active } : undefined,
+    after: { active },
+  });
 }
 
 export async function resetPassword(email: string, newPassword: string, actorEmail: string) {
@@ -215,6 +266,95 @@ export async function getActivityLog(limit = 100) {
     SELECT * FROM user_activity_log ORDER BY at DESC LIMIT ${limit}
   `;
   return rows;
+}
+
+// Richer sibling of logActivity — same table, same "email = who did it"
+// convention, plus a typed entity reference and a before/after snapshot so
+// a change can actually be reconstructed later, not just noticed. Nothing
+// in this codebase updates or deletes a row here — that's what makes it an
+// audit log instead of a mutable activity feed.
+export type AuditEntry = {
+  id: number;
+  email: string;
+  action: string;
+  at: string;
+  detail: string | null;
+  entityType: string | null;
+  entityId: string | null;
+  beforeState: unknown;
+  afterState: unknown;
+};
+
+export async function recordAudit(entry: {
+  actorEmail: string;
+  action: string;
+  entityType: string;
+  entityId?: string | null;
+  before?: unknown;
+  after?: unknown;
+  detail?: string | null;
+}): Promise<void> {
+  await ensureUsersSchema();
+  await sql`
+    INSERT INTO user_activity_log (email, action, detail, entity_type, entity_id, before_state, after_state)
+    VALUES (
+      ${entry.actorEmail}, ${entry.action}, ${entry.detail ?? null}, ${entry.entityType}, ${entry.entityId ?? null},
+      ${entry.before !== undefined ? JSON.stringify(entry.before) : null}::jsonb,
+      ${entry.after !== undefined ? JSON.stringify(entry.after) : null}::jsonb
+    )
+  `;
+}
+
+export async function getAuditLog(opts?: { entityType?: string; entityId?: string; limit?: number }): Promise<AuditEntry[]> {
+  await ensureUsersSchema();
+  const limit = opts?.limit ?? 200;
+  const { rows } =
+    opts?.entityType && opts?.entityId
+      ? await sql`SELECT * FROM user_activity_log WHERE entity_type = ${opts.entityType} AND entity_id = ${opts.entityId} ORDER BY at DESC LIMIT ${limit}`
+      : opts?.entityType
+        ? await sql`SELECT * FROM user_activity_log WHERE entity_type = ${opts.entityType} ORDER BY at DESC LIMIT ${limit}`
+        : await sql`SELECT * FROM user_activity_log ORDER BY at DESC LIMIT ${limit}`;
+  return rows.map((r) => ({
+    id: r.id as number,
+    email: r.email as string,
+    action: r.action as string,
+    at: r.at as string,
+    detail: (r.detail as string | null) ?? null,
+    entityType: (r.entity_type as string | null) ?? null,
+    entityId: (r.entity_id as string | null) ?? null,
+    beforeState: r.before_state,
+    afterState: r.after_state,
+  }));
+}
+
+// Login brute-force protection. Threshold/window are deliberately loose
+// (a real user mistyping a password a couple of times should never notice
+// this exists) — 5 failures in 15 minutes locks that email out for 15
+// minutes, checked before bcrypt.compare ever runs so a lockout also saves
+// the (comparatively expensive) hash comparison.
+const LOGIN_ATTEMPT_LIMIT = 5;
+const LOGIN_ATTEMPT_WINDOW_MINUTES = 15;
+
+export async function isLoginLocked(email: string): Promise<boolean> {
+  await ensureUsersSchema();
+  const normalized = normalizeEmail(email);
+  const { rows } = await sql`
+    SELECT count(*) AS n FROM login_attempts
+    WHERE email = ${normalized} AND created_at > now() - (${LOGIN_ATTEMPT_WINDOW_MINUTES} * interval '1 minute')
+  `;
+  return Number(rows[0]?.n ?? 0) >= LOGIN_ATTEMPT_LIMIT;
+}
+
+export async function recordFailedLogin(email: string, ip: string | null): Promise<void> {
+  await ensureUsersSchema();
+  const normalized = normalizeEmail(email);
+  await sql`INSERT INTO login_attempts (email, ip) VALUES (${normalized}, ${ip})`;
+}
+
+export async function clearLoginAttempts(email: string): Promise<void> {
+  await ensureUsersSchema();
+  const normalized = normalizeEmail(email);
+  await sql`DELETE FROM login_attempts WHERE email = ${normalized}`;
 }
 
 export async function getAssignedArtists(email: string): Promise<string[]> {

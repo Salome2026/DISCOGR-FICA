@@ -1,5 +1,6 @@
 import { sql } from "@vercel/postgres";
 import { ensurePublishingArtistsSchema } from "./publishingArtists";
+import { recordAudit } from "./users";
 import type { EditorialSplit, SplitPerson, SplitPersonInput, SplitCard } from "@discografica/shared/types/editorialSplits";
 
 export type { EditorialSplit, SplitPerson, SplitPersonInput, SplitCard };
@@ -81,6 +82,11 @@ export async function getSplit(id: string): Promise<EditorialSplit | null> {
   return rows[0] ? rowToSplit(rows[0]) : null;
 }
 
+// Sent splits have no PATCH/edit route at all — "locked after Enviado" is
+// enforced by that omission, not by a flag an editor could bypass. If a
+// correction is ever needed later, it should go through a dedicated
+// "amend" action that itself writes an audit_log entry with before/after,
+// never a silent update of letra/musica in place.
 export async function markSplitSent(id: string, actorEmail: string): Promise<EditorialSplit | null> {
   await ensureEditorialSplitsSchema();
   const { rows } = await sql`
@@ -88,7 +94,18 @@ export async function markSplitSent(id: string, actorEmail: string): Promise<Edi
     WHERE id = ${id} AND estado = 'Pendiente'
     RETURNING *
   `;
-  return rows[0] ? rowToSplit(rows[0]) : null;
+  const split = rows[0] ? rowToSplit(rows[0]) : null;
+  if (split) {
+    await recordAudit({
+      actorEmail,
+      action: "split_sent",
+      entityType: "editorial_split",
+      entityId: split.id,
+      before: { estado: "Pendiente" },
+      after: { estado: "Enviado", sentBy: split.sentBy, sentAt: split.sentAt },
+    });
+  }
+  return split;
 }
 
 // "Una persona = una ficha": before inserting a brand-new publishing_artists
@@ -155,5 +172,13 @@ export async function createSplit(input: {
             ${JSON.stringify(letra)}::jsonb, ${JSON.stringify(musica)}::jsonb, 'Pendiente', ${input.actorEmail})
     RETURNING *
   `;
-  return rowToSplit(rows[0]);
+  const split = rowToSplit(rows[0]);
+  await recordAudit({
+    actorEmail: input.actorEmail,
+    action: "split_created",
+    entityType: "editorial_split",
+    entityId: split.id,
+    after: { trackName: split.trackName, artistDisplay: split.artistDisplay, letra: split.letra, musica: split.musica },
+  });
+  return split;
 }

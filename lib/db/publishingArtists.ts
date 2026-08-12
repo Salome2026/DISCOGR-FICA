@@ -1,4 +1,5 @@
 import { sql } from "@vercel/postgres";
+import { recordAudit } from "./users";
 
 let ready: Promise<void> | null = null;
 
@@ -156,11 +157,20 @@ export async function createPublishingArtist(input: ArtistInput): Promise<Publis
        ${input.documentoNombre}, ${input.actorEmail}, now())
     RETURNING *
   `;
-  return rowToArtist(rows[0]);
+  const artist = rowToArtist(rows[0]);
+  await recordAudit({
+    actorEmail: input.actorEmail,
+    action: "publishing_artist_created",
+    entityType: "publishing_artist",
+    entityId: artist.id,
+    after: artist,
+  });
+  return artist;
 }
 
 export async function updatePublishingArtist(id: string, input: ArtistInput): Promise<PublishingArtist | null> {
   await ensurePublishingArtistsSchema();
+  const before = await getPublishingArtist(id);
   const { rows } = await sql`
     UPDATE publishing_artists SET
       nombre_artistico = ${input.nombreArtistico},
@@ -186,5 +196,15 @@ export async function updatePublishingArtist(id: string, input: ArtistInput): Pr
     WHERE id = ${id}
     RETURNING *
   `;
-  return rows[0] ? rowToArtist(rows[0]) : null;
+  if (!rows[0]) return null;
+  const artist = rowToArtist(rows[0]);
+  await recordAudit({
+    actorEmail: input.actorEmail,
+    action: "publishing_artist_updated",
+    entityType: "publishing_artist",
+    entityId: artist.id,
+    before,
+    after: artist,
+  });
+  return artist;
 }

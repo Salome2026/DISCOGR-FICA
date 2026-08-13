@@ -123,7 +123,7 @@ export default function HojaDetailScreen() {
           </Collapsible>
 
           <Collapsible title="Cronograma de traslados">
-            <Row label="Salida" value={hoja.horaSalida ? `${hoja.horaSalida} (${hoja.origenLabel ?? hoja.origenDireccion ?? "origen"})` : null} />
+            <Row label="Salida" value={hoja.horaSalida ? `${hoja.horaSalida} (${hoja.origenFullAddress ?? hoja.origenDireccion ?? hoja.origenLabel ?? "origen"})` : null} />
             <Row label="Llegada al venue" value={hoja.horaLlegadaVenue} />
             <Row label="Presentación" value={hoja.horaShow} />
             <Row label="Salida del venue" value={hoja.horaSalidaVenue} />

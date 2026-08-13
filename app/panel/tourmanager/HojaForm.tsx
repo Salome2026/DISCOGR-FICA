@@ -88,7 +88,7 @@ function AddressField({
 }
 
 const TIPOS_EVENTO = ["Show", "Boliche", "Festival", "Evento privado", "Radio", "TV", "Prensa", "Otro"];
-const ORIGEN_LABELS = ["Domicilio Artista", "Hotel", "Aeropuerto", "Otro"];
+const ORIGEN_LABELS = ["Domicilio Artista", "Hotel", "Aeropuerto", "Punto de encuentro"];
 const BUFFER_PRESETS = [
   { value: 30, label: "30 minutos" },
   { value: 45, label: "45 minutos" },

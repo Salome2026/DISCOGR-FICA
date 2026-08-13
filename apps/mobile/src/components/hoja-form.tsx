@@ -9,7 +9,7 @@ import { Collapsible } from "./collapsible";
 import type { ArtistResult } from "@discografica/shared/api/artists";
 
 const TIPOS_EVENTO = ["Show", "Boliche", "Festival", "Evento privado", "Radio", "TV", "Prensa", "Otro"];
-const ORIGEN_LABELS = ["Domicilio Artista", "Hotel", "Aeropuerto", "Otro"];
+const ORIGEN_LABELS = ["Domicilio Artista", "Hotel", "Aeropuerto", "Punto de encuentro"];
 const BUFFER_PRESETS = [30, 45, 60, 90, 120];
 
 function timeToMinutes(t: string): number | null {

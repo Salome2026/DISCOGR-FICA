@@ -152,7 +152,8 @@ export default function HojaDeRutaDoc({
 
           <Section label="1 · Salida del equipo">
             <Row label="Horario de salida" value={hoja.horaSalida} />
-            <Row label="Desde" value={hoja.origenLabel ?? hoja.origenFullAddress ?? hoja.origenDireccion} last />
+            <Row label="Desde" value={hoja.origenLabel} />
+            <Row label="Dirección" value={hoja.origenFullAddress ?? hoja.origenDireccion} last />
           </Section>
 
           {(hoja.puntoEncuentroNombre || hoja.horaEncuentroEquipo) && (

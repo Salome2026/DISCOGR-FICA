@@ -47,7 +47,8 @@ export default function HojaSummary({ hoja }: { hoja: HojaDeRuta }) {
 
       <Section title="1 · Salida del equipo">
         <Row label="Horario" value={hoja.horaSalida} />
-        <Row label="Desde" value={hoja.origenLabel ?? hoja.origenFullAddress ?? hoja.origenDireccion} />
+        <Row label="Desde" value={hoja.origenLabel} />
+        <Row label="Dirección" value={hoja.origenFullAddress ?? hoja.origenDireccion} />
       </Section>
 
       {(hoja.puntoEncuentroNombre || hoja.horaEncuentroEquipo) && (

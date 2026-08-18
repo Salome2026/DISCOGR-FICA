@@ -21,6 +21,8 @@ export const SPOTIFY_SCOPES = [
   "ugc-image-upload",
   "playlist-read-private",
   "playlist-read-collaborative",
+  "user-read-private",
+  "user-read-email",
 ].join(" ");
 
 let cachedToken: { token: string; expiresAt: number } | null = null;

@@ -268,7 +268,10 @@ export type SpotifyPlaylistCreated = { id: string; external_urls: { spotify: str
 export async function createPlaylist(name: string, description: string, isPublic: boolean): Promise<SpotifyPlaylistCreated> {
   const conn = await getSpotifyConnection();
   if (!conn?.spotifyUserId) throw new Error("Spotify no está conectado todavía.");
-  const res = await spotifyFetch(`/users/${conn.spotifyUserId}/playlists`, {
+  // Spotify removed POST /users/{id}/playlists from its Feb 2026 Development
+  // Mode endpoint set — POST /me/playlists (create for the authenticated
+  // user) is the only one still allowed there.
+  const res = await spotifyFetch(`/me/playlists`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, description, public: isPublic }),
@@ -300,11 +303,12 @@ export async function uploadPlaylistCoverImage(id: string, base64Jpeg: string): 
   if (!res.ok) throw new Error(`Spotify API error ${res.status} subiendo portada: ${await res.text()}`);
 }
 
-// Spotify caps this endpoint at 100 URIs per call.
+// Spotify caps this endpoint at 100 URIs per call. POST /playlists/{id}/items
+// replaces the removed POST /playlists/{id}/tracks as of Feb 2026.
 export async function addTracksToPlaylist(id: string, trackUris: string[]): Promise<void> {
   for (let i = 0; i < trackUris.length; i += 100) {
     const batch = trackUris.slice(i, i + 100);
-    const res = await spotifyFetch(`/playlists/${id}/tracks`, {
+    const res = await spotifyFetch(`/playlists/${id}/items`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ uris: batch }),

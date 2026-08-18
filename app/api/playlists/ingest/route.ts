@@ -37,9 +37,15 @@ async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string, deadline: n
   const matched: { title: string; artist: string; trackId: string; uri: string; score: number }[] = [];
   for (const entry of entries) {
     if (Date.now() > deadline) break;
-    const match = await searchTrackByTitleArtist(entry.title, entry.artist);
-    if (match && match.score >= MATCH_THRESHOLD) {
-      matched.push({ title: entry.title, artist: entry.artist, trackId: match.id, uri: match.uri, score: match.score });
+    try {
+      const match = await searchTrackByTitleArtist(entry.title, entry.artist);
+      if (match && match.score >= MATCH_THRESHOLD) {
+        matched.push({ title: entry.title, artist: entry.artist, trackId: match.id, uri: match.uri, score: match.score });
+      }
+    } catch (err) {
+      // A single rate-limited/failed search shouldn't sink the whole doc —
+      // it just ends up unmatched, same as one Spotify genuinely has no hit for.
+      console.error(`Search failed for "${entry.title}" — ${entry.artist}:`, err);
     }
   }
   console.log(`[ingest] +${Date.now() - startedAt}ms matched ${matched.length}/${entries.length} for "${doc.docName}"`);

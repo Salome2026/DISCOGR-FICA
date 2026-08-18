@@ -73,7 +73,14 @@ async function getAccessToken(forceRefresh = false): Promise<string> {
   return refreshAccessToken(conn);
 }
 
-async function spotifyFetch(path: string, init: RequestInit = {}, retried = false): Promise<Response> {
+// Capped so a sustained rate-limit window (e.g. many searches in a row
+// during a big batch ingest) can't hang a single call indefinitely — after
+// a couple of tries it's better to surface the 429 and let the caller skip
+// that one item than to block the whole request past its own time budget.
+const MAX_429_RETRIES = 2;
+const MAX_RETRY_AFTER_MS = 5_000;
+
+async function spotifyFetch(path: string, init: RequestInit = {}, retried = false, retries429 = 0): Promise<Response> {
   const token = await getAccessToken();
   const url = path.startsWith("http") ? path : `${SPOTIFY_API}${path}`;
   const res = await fetch(url, {
@@ -82,12 +89,13 @@ async function spotifyFetch(path: string, init: RequestInit = {}, retried = fals
   });
   if (res.status === 401 && !retried) {
     await getAccessToken(true);
-    return spotifyFetch(path, init, true);
+    return spotifyFetch(path, init, true, retries429);
   }
-  if (res.status === 429) {
+  if (res.status === 429 && retries429 < MAX_429_RETRIES) {
     const retryAfter = Number(res.headers.get("Retry-After") ?? "1");
-    await new Promise((r) => setTimeout(r, (retryAfter + 0.5) * 1000));
-    return spotifyFetch(path, init, retried);
+    const waitMs = Math.min((retryAfter + 0.5) * 1000, MAX_RETRY_AFTER_MS);
+    await new Promise((r) => setTimeout(r, waitMs));
+    return spotifyFetch(path, init, retried, retries429 + 1);
   }
   return res;
 }

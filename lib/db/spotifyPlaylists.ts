@@ -121,6 +121,15 @@ export async function listPlaylists(origin?: "personal" | "label"): Promise<Spot
 // overwrites when Spotify actually sends one — its Feb 2026 Development
 // Mode list response omits tracks.total entirely, and a null there must
 // never erase the real count we recorded at creation time.
+//
+// cover_image_url is the same story but for images: Spotify's own hosted
+// cover is a recompressed copy of whatever we uploaded (downsized to fit
+// its <256KB limit), visibly worse than the original. For a playlist whose
+// cover we set ourselves (cover_source='manual' — the Drive-ingest cover
+// or a manual admin upload), keep our original asset and never let a sync
+// replace it with Spotify's lossy copy; personal (pre-existing) playlists
+// have no cover_source of our own, so their cover keeps mirroring Spotify
+// as before.
 export async function upsertPlaylistFromSpotify(p: {
   id: string;
   name: string;
@@ -136,7 +145,10 @@ export async function upsertPlaylistFromSpotify(p: {
     ON CONFLICT (id) DO UPDATE SET
       name = EXCLUDED.name,
       description = EXCLUDED.description,
-      cover_image_url = EXCLUDED.cover_image_url,
+      cover_image_url = CASE
+        WHEN spotify_playlists.cover_source = 'manual' THEN spotify_playlists.cover_image_url
+        ELSE EXCLUDED.cover_image_url
+      END,
       spotify_url = EXCLUDED.spotify_url,
       track_count = COALESCE(EXCLUDED.track_count, spotify_playlists.track_count),
       last_synced_at = now()

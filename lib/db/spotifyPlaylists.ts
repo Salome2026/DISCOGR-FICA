@@ -115,9 +115,12 @@ export async function listPlaylists(origin?: "personal" | "label"): Promise<Spot
 }
 
 // Mirrors a playlist as it exists in Spotify right now into the local cache
-// — id/name/description/cover/track-count always reflect Spotify on a plain
-// read-sync; genre/sello/drive_folder_*/review_status stay whatever was set
-// locally (manual edit or Drive ingest), never overwritten here.
+// — id/name/description/cover always reflect Spotify on a plain read-sync;
+// genre/sello/drive_folder_*/review_status stay whatever was set locally
+// (manual edit or Drive ingest), never overwritten here. track_count only
+// overwrites when Spotify actually sends one — its Feb 2026 Development
+// Mode list response omits tracks.total entirely, and a null there must
+// never erase the real count we recorded at creation time.
 export async function upsertPlaylistFromSpotify(p: {
   id: string;
   name: string;
@@ -135,7 +138,7 @@ export async function upsertPlaylistFromSpotify(p: {
       description = EXCLUDED.description,
       cover_image_url = EXCLUDED.cover_image_url,
       spotify_url = EXCLUDED.spotify_url,
-      track_count = EXCLUDED.track_count,
+      track_count = COALESCE(EXCLUDED.track_count, spotify_playlists.track_count),
       last_synced_at = now()
   `;
 }

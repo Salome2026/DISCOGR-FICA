@@ -19,11 +19,14 @@ const MATCH_THRESHOLD = 0.35;
 // maxDuration below raises Vercel's actual platform cutoff to match — a
 // 45s internal budget alone got hard-killed by the platform's shorter
 // default (FUNCTION_INVOCATION_TIMEOUT) before it ever got the chance to
-// return gracefully.
-export const maxDuration = 60;
-const TIME_BUDGET_MS = 50_000;
+// return gracefully. The budget is only checked between docs, so a single
+// doc with an unusually long song list could still blow past it — deadline
+// is threaded into ingestOneDoc() too, so its own per-song search loop cuts
+// itself off (leaving the rest simply unmatched) instead of running unbounded.
+export const maxDuration = 300;
+const TIME_BUDGET_MS = 270_000;
 
-async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string): Promise<{ trackCount: number; entryCount: number }> {
+async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string, deadline: number): Promise<{ trackCount: number; entryCount: number }> {
   const entries = await parsePlaylistDoc(doc.docId);
   if (entries.length === 0) {
     throw new Error("El documento no tiene ninguna canción listada — no se crea la playlist.");
@@ -31,6 +34,7 @@ async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string): Promise<{ 
 
   const matched: { title: string; artist: string; trackId: string; uri: string; score: number }[] = [];
   for (const entry of entries) {
+    if (Date.now() > deadline) break;
     const match = await searchTrackByTitleArtist(entry.title, entry.artist);
     if (match && match.score >= MATCH_THRESHOLD) {
       matched.push({ title: entry.title, artist: entry.artist, trackId: match.id, uri: match.uri, score: match.score });
@@ -107,6 +111,7 @@ export async function POST(req: NextRequest) {
   const limit = limitParam ? Number(limitParam) : null;
 
   const startedAt = Date.now();
+  const deadline = startedAt + TIME_BUDGET_MS;
   const allDocs = await discoverPlaylistDocs();
 
   let processed = 0;
@@ -130,7 +135,7 @@ export async function POST(req: NextRequest) {
       continue;
     }
     try {
-      const result = await ingestOneDoc(doc, user.email);
+      const result = await ingestOneDoc(doc, user.email, deadline);
       created.push({ name: doc.docName, genre: doc.genre, ...result });
       processed++;
     } catch (err) {

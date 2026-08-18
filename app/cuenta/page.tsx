@@ -28,9 +28,10 @@ const STYLES = `
   .acc-secret { font-family: monospace; font-size: 13px; background: var(--bg-2); border-radius: 6px; padding: 8px 10px; text-align: center; letter-spacing: 1px; word-break: break-all; margin-bottom: 14px; }
   .acc-backup-codes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-family: monospace; font-size: 13.5px; background: var(--bg-2); border-radius: 8px; padding: 14px; margin: 14px 0; }
   .acc-field { margin-bottom: 12px; }
+  .acc-mandatory-banner { background: var(--warn-bg, rgba(230,160,40,0.12)); border: 1px solid var(--warn-ink, #e6a028); color: var(--warn-ink, #e6a028); border-radius: 10px; padding: 12px 14px; font-size: 12.5px; line-height: 1.5; margin-bottom: 1.25rem; }
 `;
 
-type Me = { authenticated: boolean; email?: string; name?: string; totpEnabled?: boolean };
+type Me = { authenticated: boolean; email?: string; name?: string; role?: string; totpEnabled?: boolean };
 
 export default function CuentaPage() {
   const router = useRouter();
@@ -64,6 +65,12 @@ export default function CuentaPage() {
             Cerrar sesión
           </button>
         </div>
+
+        {me.role === "admin" && !me.totpEnabled && (
+          <div className="acc-mandatory-banner">
+            Las cuentas admin necesitan verificación en dos pasos activada — activala para poder seguir usando el resto del panel.
+          </div>
+        )}
 
         <TwoFactorCard totpEnabled={!!me.totpEnabled} onChange={load} />
       </div>

@@ -26,8 +26,10 @@ const MATCH_THRESHOLD = 0.35;
 export const maxDuration = 300;
 const TIME_BUDGET_MS = 270_000;
 
-async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string, deadline: number): Promise<{ trackCount: number; entryCount: number }> {
+async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string, deadline: number, startedAt: number): Promise<{ trackCount: number; entryCount: number }> {
+  console.log(`[ingest] +${Date.now() - startedAt}ms parsing doc "${doc.docName}"`);
   const entries = await parsePlaylistDoc(doc.docId);
+  console.log(`[ingest] +${Date.now() - startedAt}ms parsed ${entries.length} entries for "${doc.docName}"`);
   if (entries.length === 0) {
     throw new Error("El documento no tiene ninguna canción listada — no se crea la playlist.");
   }
@@ -40,12 +42,14 @@ async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string, deadline: n
       matched.push({ title: entry.title, artist: entry.artist, trackId: match.id, uri: match.uri, score: match.score });
     }
   }
+  console.log(`[ingest] +${Date.now() - startedAt}ms matched ${matched.length}/${entries.length} for "${doc.docName}"`);
 
   const created = await createPlaylist(
     doc.docName,
     `Generado automáticamente desde Drive · género: ${doc.genre}`,
     false
   );
+  console.log(`[ingest] +${Date.now() - startedAt}ms created playlist ${created.id} for "${doc.docName}"`);
 
   // The label already designed a real cover for this exact playlist doc —
   // use it directly, no AI generation needed (that path is blocked on
@@ -63,6 +67,7 @@ async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string, deadline: n
       console.error(`Cover upload failed for "${doc.docName}":`, err);
     }
   }
+  console.log(`[ingest] +${Date.now() - startedAt}ms cover done for "${doc.docName}"`);
 
   // Must exist before logTrackAdded() below — spotify_playlist_tracks has a
   // foreign key on spotify_playlists(id).
@@ -79,10 +84,12 @@ async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string, deadline: n
     trackCount: matched.length,
     createdBy: actorEmail,
   });
+  console.log(`[ingest] +${Date.now() - startedAt}ms local row inserted for "${doc.docName}"`);
 
   if (matched.length > 0) {
     await addTracksToPlaylist(created.id, matched.map((m) => m.uri));
   }
+  console.log(`[ingest] +${Date.now() - startedAt}ms tracks added to Spotify for "${doc.docName}"`);
   for (let i = 0; i < matched.length; i++) {
     const m = matched[i];
     await logTrackAdded({
@@ -112,7 +119,9 @@ export async function POST(req: NextRequest) {
 
   const startedAt = Date.now();
   const deadline = startedAt + TIME_BUDGET_MS;
+  console.log(`[ingest] +0ms starting discoverPlaylistDocs`);
   const allDocs = await discoverPlaylistDocs();
+  console.log(`[ingest] +${Date.now() - startedAt}ms discovered ${allDocs.length} docs`);
 
   let processed = 0;
   let alreadyDone = 0;
@@ -135,7 +144,7 @@ export async function POST(req: NextRequest) {
       continue;
     }
     try {
-      const result = await ingestOneDoc(doc, user.email, deadline);
+      const result = await ingestOneDoc(doc, user.email, deadline, startedAt);
       created.push({ name: doc.docName, genre: doc.genre, ...result });
       processed++;
     } catch (err) {

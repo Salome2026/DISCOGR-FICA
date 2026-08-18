@@ -36,6 +36,15 @@ export function ensureSpotifyPlaylistsSchema(): Promise<void> {
       // creating duplicate playlists.
       await sql`ALTER TABLE spotify_playlists ADD COLUMN IF NOT EXISTS drive_doc_id TEXT`;
       await sql`CREATE UNIQUE INDEX IF NOT EXISTS spotify_playlists_drive_doc_idx ON spotify_playlists (drive_doc_id) WHERE drive_doc_id IS NOT NULL`;
+
+      // Separates the connected account's own pre-existing playlists
+      // ("personal") from the ones this app created for the label
+      // ("label" — Drive ingest or the future manual-create admin flow).
+      // upsertPlaylistFromSpotify() mirrors *every* playlist in the
+      // connected account (both kinds), so it only sets this on first
+      // INSERT and never touches it again on re-sync.
+      await sql`ALTER TABLE spotify_playlists ADD COLUMN IF NOT EXISTS origin TEXT NOT NULL DEFAULT 'personal'`;
+      await sql`UPDATE spotify_playlists SET origin = 'label' WHERE drive_doc_id IS NOT NULL OR created_by IS NOT NULL`;
     })();
   }
   return ready;
@@ -55,6 +64,7 @@ export type SpotifyPlaylistRow = {
   followerCount: number | null;
   trackCount: number | null;
   status: string;
+  origin: string;
   reviewStatus: string;
   reviewedBy: string | null;
   reviewedAt: string | null;
@@ -82,6 +92,7 @@ function rowToPlaylist(r: Record<string, unknown>): SpotifyPlaylistRow {
     followerCount: (r.follower_count as number | null) ?? null,
     trackCount: (r.track_count as number | null) ?? null,
     status: r.status as string,
+    origin: r.origin as string,
     reviewStatus: r.review_status as string,
     reviewedBy: (r.reviewed_by as string | null) ?? null,
     reviewedAt: (r.reviewed_at as string | null) ?? null,
@@ -95,9 +106,11 @@ function rowToPlaylist(r: Record<string, unknown>): SpotifyPlaylistRow {
   };
 }
 
-export async function listPlaylists(): Promise<SpotifyPlaylistRow[]> {
+export async function listPlaylists(origin?: "personal" | "label"): Promise<SpotifyPlaylistRow[]> {
   await ensureSpotifyPlaylistsSchema();
-  const { rows } = await sql`SELECT * FROM spotify_playlists WHERE status = 'active' ORDER BY name ASC`;
+  const { rows } = origin
+    ? await sql`SELECT * FROM spotify_playlists WHERE status = 'active' AND origin = ${origin} ORDER BY name ASC`
+    : await sql`SELECT * FROM spotify_playlists WHERE status = 'active' ORDER BY name ASC`;
   return rows.map(rowToPlaylist);
 }
 
@@ -160,10 +173,10 @@ export async function insertIngestedPlaylist(p: {
   await sql`
     INSERT INTO spotify_playlists
       (id, name, genre, drive_folder_id, drive_folder_path, drive_doc_id, cover_image_url, cover_source,
-       spotify_url, track_count, status, review_status, created_by)
+       spotify_url, track_count, status, origin, review_status, created_by)
     VALUES
       (${p.id}, ${p.name}, ${p.genre}, ${p.driveFolderId}, ${p.driveFolderPath}, ${p.driveDocId}, ${p.coverImageUrl},
-       ${p.coverSource}, ${p.spotifyUrl}, ${p.trackCount}, 'active', 'pending', ${p.createdBy})
+       ${p.coverSource}, ${p.spotifyUrl}, ${p.trackCount}, 'active', 'label', 'pending', ${p.createdBy})
   `;
 }
 

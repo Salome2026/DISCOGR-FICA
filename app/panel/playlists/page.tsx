@@ -12,6 +12,7 @@ type Playlist = {
   description: string | null;
   genre: string | null;
   sello: string | null;
+  origin: string;
   coverImageUrl: string | null;
   spotifyUrl: string | null;
   followerCount: number | null;
@@ -30,6 +31,7 @@ function PlaylistsContent() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<"label" | "personal">("label");
 
   const load = useCallback(() => {
     setLoading(true);
@@ -48,6 +50,10 @@ function PlaylistsContent() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const labelCount = playlists.filter((p) => p.origin === "label").length;
+  const personalCount = playlists.filter((p) => p.origin === "personal").length;
+  const visiblePlaylists = playlists.filter((p) => p.origin === tab);
 
   const connected = searchParams.get("connected");
   const spotifyAccount = searchParams.get("spotify_account");
@@ -142,15 +148,32 @@ function PlaylistsContent() {
           </div>
         )}
 
+        {configured && playlists.length > 0 && (
+          <div style={{ display: "flex", gap: 8 }}>
+            <button type="button" onClick={() => setTab("label")} style={tab === "label" ? tabBtnActive : tabBtn}>
+              Playlisting ({labelCount})
+            </button>
+            <button type="button" onClick={() => setTab("personal")} style={tab === "personal" ? tabBtnActive : tabBtn}>
+              Personales ({personalCount})
+            </button>
+          </div>
+        )}
+
         {configured && playlists.length === 0 && !loading && (
           <div style={{ color: "var(--text-3)", fontSize: 13, padding: "2rem 0", textAlign: "center" }}>
             La cuenta está conectada pero todavía no tiene playlists.
           </div>
         )}
 
-        {configured && playlists.length > 0 && (
+        {configured && playlists.length > 0 && visiblePlaylists.length === 0 && (
+          <div style={{ color: "var(--text-3)", fontSize: 13, padding: "2rem 0", textAlign: "center" }}>
+            {tab === "label" ? "Todavía no se creó ninguna playlist para el sello." : "No hay playlists personales."}
+          </div>
+        )}
+
+        {configured && visiblePlaylists.length > 0 && (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 14 }}>
-            {playlists.map((p) => (
+            {visiblePlaylists.map((p) => (
               <a
                 key={p.id}
                 href={p.spotifyUrl ?? undefined}
@@ -214,6 +237,24 @@ function PlaylistsContent() {
     </div>
   );
 }
+
+const tabBtn: React.CSSProperties = {
+  background: "var(--glass-bg)",
+  border: "1px solid var(--glass-border)",
+  borderRadius: 999,
+  padding: "8px 16px",
+  color: "var(--text-3)",
+  fontWeight: 600,
+  fontSize: 12.5,
+  cursor: "pointer",
+};
+
+const tabBtnActive: React.CSSProperties = {
+  ...tabBtn,
+  background: "var(--accent-glass-bg)",
+  border: "1px solid var(--accent-glass-border)",
+  color: "var(--text-1)",
+};
 
 const ghostBtn: React.CSSProperties = {
   background: "var(--glass-bg)",

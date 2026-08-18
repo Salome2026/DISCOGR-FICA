@@ -27,6 +27,9 @@ async function sessionUser(): Promise<SessionUser | null> {
 
 async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string): Promise<{ trackCount: number; entryCount: number }> {
   const entries = await parsePlaylistDoc(doc.docId);
+  if (entries.length === 0) {
+    throw new Error("El documento no tiene ninguna canción listada — no se crea la playlist.");
+  }
 
   const matched: { title: string; artist: string; trackId: string; uri: string; score: number }[] = [];
   for (const entry of entries) {

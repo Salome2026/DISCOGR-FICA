@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
-import { hasPermission, type SessionUser } from "@/lib/permissions";
+import { getSessionUser } from "@/lib/session";
+import { hasPermission } from "@/lib/permissions";
 import { discoverPlaylistDocs, parsePlaylistDoc, type PlaylistDocRef } from "@/lib/googleDriveScrape";
 import { searchTrackByTitleArtist, createPlaylist, addTracksToPlaylist, uploadPlaylistCoverImage } from "@/lib/spotify";
 import { findPlaylistByDriveDocId, insertIngestedPlaylist } from "@/lib/db/spotifyPlaylists";
@@ -18,12 +18,6 @@ const MATCH_THRESHOLD = 0.35;
 // per call is what keeps this safe under a serverless function's time limit
 // regardless of whether the project is on Hobby or Pro.
 const TIME_BUDGET_MS = 45_000;
-
-async function sessionUser(): Promise<SessionUser | null> {
-  const session = await auth();
-  if (!session?.user?.email) return null;
-  return session.user as unknown as SessionUser;
-}
 
 async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string): Promise<{ trackCount: number; entryCount: number }> {
   const entries = await parsePlaylistDoc(doc.docId);
@@ -99,7 +93,7 @@ async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string): Promise<{ 
 }
 
 export async function POST(req: NextRequest) {
-  const user = await sessionUser();
+  const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "editar_playlists")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

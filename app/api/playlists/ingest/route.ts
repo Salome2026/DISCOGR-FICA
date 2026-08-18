@@ -59,6 +59,22 @@ async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string): Promise<{ 
     }
   }
 
+  // Must exist before logTrackAdded() below — spotify_playlist_tracks has a
+  // foreign key on spotify_playlists(id).
+  await insertIngestedPlaylist({
+    id: created.id,
+    name: doc.docName,
+    genre: doc.genre,
+    driveFolderId: doc.genreFolderId,
+    driveFolderPath: `PLAYLIST/${doc.genre}`,
+    driveDocId: doc.docId,
+    coverImageUrl,
+    coverSource: coverImageUrl ? "manual" : null,
+    spotifyUrl: created.external_urls.spotify,
+    trackCount: matched.length,
+    createdBy: actorEmail,
+  });
+
   if (matched.length > 0) {
     await addTracksToPlaylist(created.id, matched.map((m) => m.uri));
   }
@@ -75,20 +91,6 @@ async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string): Promise<{ 
       addedBy: actorEmail,
     });
   }
-
-  await insertIngestedPlaylist({
-    id: created.id,
-    name: doc.docName,
-    genre: doc.genre,
-    driveFolderId: doc.genreFolderId,
-    driveFolderPath: `PLAYLIST/${doc.genre}`,
-    driveDocId: doc.docId,
-    coverImageUrl,
-    coverSource: coverImageUrl ? "manual" : null,
-    spotifyUrl: created.external_urls.spotify,
-    trackCount: matched.length,
-    createdBy: actorEmail,
-  });
 
   return { trackCount: matched.length, entryCount: entries.length };
 }

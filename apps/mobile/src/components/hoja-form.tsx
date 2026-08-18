@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView, StyleSheet, ActivityIndicator } from "react-native";
 import { router } from "expo-router";
 import { theme } from "@discografica/shared/theme";
 import { createHoja, updateHoja, resolveAddress, previewRoute } from "@discografica/shared/api/tourManager";
-import type { HojaDeRuta } from "@discografica/shared/types/tourManager";
+import type { HojaDeRuta, ParadaIntermedia } from "@discografica/shared/types/tourManager";
 import { ArtistPicker } from "./artist-picker";
 import { Collapsible } from "./collapsible";
 import type { ArtistResult } from "@discografica/shared/api/artists";
@@ -32,6 +32,8 @@ function toNumOrNull(v: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+type ResolvedAddr = { lat: number; lng: number; fullAddress: string | null; ciudad?: string | null; provincia?: string | null; pais?: string | null };
+
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <View style={{ marginBottom: theme.space.md }}>
@@ -53,18 +55,69 @@ function ChipRow({ options, value, onChange }: { options: string[]; value: strin
   );
 }
 
+// Mismo comportamiento para cada punto del recorrido (pega texto o link de
+// Maps, resuelve al salir del campo) — vive una sola vez en vez de
+// repetirse 6 veces, igual que AddressField en la versión web.
+function AddressInput({
+  label,
+  value,
+  onChangeText,
+  onResolved,
+  resolvedAddress,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (v: string) => void;
+  onResolved: (data: ResolvedAddr | null) => void;
+  resolvedAddress: string | null;
+}) {
+  const [resolving, setResolving] = useState(false);
+
+  async function handleBlur() {
+    if (!value.trim()) return;
+    setResolving(true);
+    try {
+      const data = await resolveAddress(value);
+      if (!data.resolved || data.lat == null || data.lng == null) {
+        onResolved(null);
+        return;
+      }
+      onResolved({ lat: data.lat, lng: data.lng, fullAddress: data.fullAddress ?? null, ciudad: data.ciudad ?? null, provincia: data.provincia ?? null, pais: data.pais ?? null });
+    } catch {
+      onResolved(null);
+    } finally {
+      setResolving(false);
+    }
+  }
+
+  return (
+    <Field label={label}>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        onBlur={handleBlur}
+        placeholder="Dirección o link de Maps"
+        placeholderTextColor={theme.text3}
+        style={styles.input}
+      />
+      {resolving && <Text style={styles.hint}>Resolviendo dirección...</Text>}
+      {!resolving && resolvedAddress ? <Text style={styles.hintGood}>✓ {resolvedAddress}</Text> : null}
+    </Field>
+  );
+}
+
 export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
   const [artistName, setArtistName] = useState(hoja?.artistName ?? "");
   const [artistId, setArtistId] = useState<string | null>(hoja?.artistId ?? null);
   const [fecha, setFecha] = useState(hoja?.fecha ?? "");
   const [horaShow, setHoraShow] = useState(hoja?.horaShow ?? "");
+  const [horaAperturaPuertas, setHoraAperturaPuertas] = useState(hoja?.horaAperturaPuertas ?? "");
   const [tipoEvento, setTipoEvento] = useState(hoja?.tipoEvento ?? "");
   const [venue, setVenue] = useState(hoja?.venue ?? "");
   const [venueDireccion, setVenueDireccion] = useState(hoja?.venueDireccion ?? "");
   const [origenLabel, setOrigenLabel] = useState(hoja?.origenLabel ?? "");
   const [origenDireccion, setOrigenDireccion] = useState(hoja?.origenDireccion ?? "");
 
-  const [venueResolving, setVenueResolving] = useState(false);
   const [venueLat, setVenueLat] = useState<number | null>(hoja?.venueLat ?? null);
   const [venueLng, setVenueLng] = useState<number | null>(hoja?.venueLng ?? null);
   const [venueFullAddress, setVenueFullAddress] = useState(hoja?.venueFullAddress ?? "");
@@ -72,35 +125,58 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
   const [venueProvincia, setVenueProvincia] = useState(hoja?.venueProvincia ?? "");
   const [venuePais, setVenuePais] = useState(hoja?.venuePais ?? "");
 
-  const [origenResolving, setOrigenResolving] = useState(false);
   const [origenLat, setOrigenLat] = useState<number | null>(hoja?.origenLat ?? null);
   const [origenLng, setOrigenLng] = useState<number | null>(hoja?.origenLng ?? null);
   const [origenFullAddress, setOrigenFullAddress] = useState(hoja?.origenFullAddress ?? "");
 
-  async function handleResolveAddress(kind: "venue" | "origen", value: string) {
-    if (!value.trim()) return;
-    const setResolving = kind === "venue" ? setVenueResolving : setOrigenResolving;
-    setResolving(true);
-    try {
-      const data = await resolveAddress(value);
-      if (!data.resolved || data.lat == null || data.lng == null) return;
-      if (kind === "venue") {
-        setVenueLat(data.lat);
-        setVenueLng(data.lng);
-        setVenueFullAddress(data.fullAddress ?? "");
-        setVenueCiudad(data.ciudad ?? "");
-        setVenueProvincia(data.provincia ?? "");
-        setVenuePais(data.pais ?? "");
-      } else {
-        setOrigenLat(data.lat);
-        setOrigenLng(data.lng);
-        setOrigenFullAddress(data.fullAddress ?? "");
-      }
-    } catch {
-      // silencioso — el campo sigue disponible para carga manual
-    } finally {
-      setResolving(false);
-    }
+  // --- Punto de encuentro del equipo técnico ---
+  const [puntoEncuentroNombre, setPuntoEncuentroNombre] = useState(hoja?.puntoEncuentroNombre ?? "");
+  const [puntoEncuentroDireccion, setPuntoEncuentroDireccion] = useState(hoja?.puntoEncuentroDireccion ?? "");
+  const [puntoEncuentroFullAddress, setPuntoEncuentroFullAddress] = useState(hoja?.puntoEncuentroFullAddress ?? "");
+  const [puntoEncuentroLat, setPuntoEncuentroLat] = useState<number | null>(hoja?.puntoEncuentroLat ?? null);
+  const [puntoEncuentroLng, setPuntoEncuentroLng] = useState<number | null>(hoja?.puntoEncuentroLng ?? null);
+  const [horaEncuentroEquipo, setHoraEncuentroEquipo] = useState(hoja?.horaEncuentroEquipo ?? "");
+
+  // --- Búsqueda del artista ---
+  const [direccionBusquedaArtista, setDireccionBusquedaArtista] = useState(hoja?.direccionBusquedaArtista ?? "");
+  const [busquedaArtistaFullAddress, setBusquedaArtistaFullAddress] = useState(hoja?.busquedaArtistaFullAddress ?? "");
+  const [busquedaArtistaLat, setBusquedaArtistaLat] = useState<number | null>(hoja?.busquedaArtistaLat ?? null);
+  const [busquedaArtistaLng, setBusquedaArtistaLng] = useState<number | null>(hoja?.busquedaArtistaLng ?? null);
+  const [horaBusquedaArtista, setHoraBusquedaArtista] = useState(hoja?.horaBusquedaArtista ?? "");
+
+  const [horaLlegadaCiudad, setHoraLlegadaCiudad] = useState(hoja?.horaLlegadaCiudad ?? "");
+
+  // --- Prueba de sonido ---
+  const [lugarPruebaSonido, setLugarPruebaSonido] = useState(hoja?.lugarPruebaSonido ?? "");
+  const [direccionPruebaSonido, setDireccionPruebaSonido] = useState(hoja?.direccionPruebaSonido ?? "");
+  const [pruebaSonidoFullAddress, setPruebaSonidoFullAddress] = useState(hoja?.pruebaSonidoFullAddress ?? "");
+  const [pruebaSonidoLat, setPruebaSonidoLat] = useState<number | null>(hoja?.pruebaSonidoLat ?? null);
+  const [pruebaSonidoLng, setPruebaSonidoLng] = useState<number | null>(hoja?.pruebaSonidoLng ?? null);
+  const [horaPruebaSonido, setHoraPruebaSonido] = useState(hoja?.horaPruebaSonido ?? "");
+  const [duracionPruebaSonidoMin, setDuracionPruebaSonidoMin] = useState(hoja?.duracionPruebaSonidoMin?.toString() ?? "");
+
+  const [horaComida, setHoraComida] = useState(hoja?.horaComida ?? "");
+
+  // --- Hotel ---
+  const [hotelNombre, setHotelNombre] = useState(hoja?.hotelNombre ?? "");
+  const [hotelDireccion, setHotelDireccion] = useState(hoja?.hotelDireccion ?? "");
+  const [hotelFullAddress, setHotelFullAddress] = useState(hoja?.hotelFullAddress ?? "");
+  const [hotelLat, setHotelLat] = useState<number | null>(hoja?.hotelLat ?? null);
+  const [hotelLng, setHotelLng] = useState<number | null>(hoja?.hotelLng ?? null);
+  const [horaLlegadaHotel, setHoraLlegadaHotel] = useState(hoja?.horaLlegadaHotel ?? "");
+  const [horaCheckin, setHoraCheckin] = useState(hoja?.horaCheckin ?? "");
+  const [horaCheckout, setHoraCheckout] = useState(hoja?.horaCheckout ?? "");
+
+  // --- Paradas intermedias ---
+  const [paradas, setParadas] = useState<ParadaIntermedia[]>(hoja?.paradas ?? []);
+  function addParada() {
+    setParadas((ps) => [...ps, { nombre: "", direccion: "", fullAddress: null, lat: null, lng: null, hora: null }]);
+  }
+  function updateParada(i: number, patch: Partial<ParadaIntermedia>) {
+    setParadas((ps) => ps.map((p, idx) => (idx === i ? { ...p, ...patch } : p)));
+  }
+  function removeParada(i: number) {
+    setParadas((ps) => ps.filter((_, idx) => idx !== i));
   }
 
   const [duracionShowMin, setDuracionShowMin] = useState(hoja?.duracionShowMin?.toString() ?? "");
@@ -134,9 +210,7 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Se recalcula solo apenas cambia el horario del show, el origen, el
-  // venue o la anticipación — mismo criterio que la web (ver HojaForm.tsx).
-  useEffect(() => {
+  React.useEffect(() => {
     if (venueLat == null || venueLng == null || origenLat == null || origenLng == null) return;
     let cancelled = false;
     const t = setTimeout(async () => {
@@ -183,7 +257,7 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
     };
   }, [horaShow, bufferPrepMin, venueLat, venueLng, origenLat, origenLng]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const showMin = timeToMinutes(horaShow);
     if (showMin == null) return;
     const showDuration = parseInt(duracionShowMin, 10) || 0;
@@ -206,6 +280,7 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
         artistName: artistName.trim(),
         fecha,
         horaShow: horaShow || null,
+        horaAperturaPuertas: horaAperturaPuertas || null,
         tipoEvento: tipoEvento || null,
         venue: venue || null,
         venueDireccion: venueDireccion || null,
@@ -220,6 +295,43 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
         origenLat,
         origenLng,
         origenFullAddress: origenFullAddress || null,
+
+        puntoEncuentroNombre: puntoEncuentroNombre || null,
+        puntoEncuentroDireccion: puntoEncuentroDireccion || null,
+        puntoEncuentroFullAddress: puntoEncuentroFullAddress || null,
+        puntoEncuentroLat,
+        puntoEncuentroLng,
+        horaEncuentroEquipo: horaEncuentroEquipo || null,
+
+        direccionBusquedaArtista: direccionBusquedaArtista || null,
+        busquedaArtistaFullAddress: busquedaArtistaFullAddress || null,
+        busquedaArtistaLat,
+        busquedaArtistaLng,
+        horaBusquedaArtista: horaBusquedaArtista || null,
+
+        horaLlegadaCiudad: horaLlegadaCiudad || null,
+
+        lugarPruebaSonido: lugarPruebaSonido || null,
+        direccionPruebaSonido: direccionPruebaSonido || null,
+        pruebaSonidoFullAddress: pruebaSonidoFullAddress || null,
+        pruebaSonidoLat,
+        pruebaSonidoLng,
+        horaPruebaSonido: horaPruebaSonido || null,
+        duracionPruebaSonidoMin: toIntOrNull(duracionPruebaSonidoMin),
+
+        horaComida: horaComida || null,
+
+        hotelNombre: hotelNombre || null,
+        hotelDireccion: hotelDireccion || null,
+        hotelFullAddress: hotelFullAddress || null,
+        hotelLat,
+        hotelLng,
+        horaLlegadaHotel: horaLlegadaHotel || null,
+        horaCheckin: horaCheckin || null,
+        horaCheckout: horaCheckout || null,
+
+        paradas: paradas.filter((p) => p.nombre.trim() || p.direccion),
+
         distanciaIdaKm: toNumOrNull(distanciaIdaKm),
         duracionIdaMin: toIntOrNull(duracionIdaMin),
         distanciaVueltaKm: toNumOrNull(distanciaVueltaKm),
@@ -255,6 +367,8 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
     }
   }
 
+  const pruebaSonidoDistinta = (lugarPruebaSonido || direccionPruebaSonido).trim().length > 0;
+
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>{hoja ? "Editar hoja de ruta" : "Nueva hoja de ruta"}</Text>
@@ -275,39 +389,20 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
       <Field label="Venue">
         <TextInput value={venue} onChangeText={setVenue} placeholderTextColor={theme.text3} style={styles.input} />
       </Field>
-      <Field label="Dirección del venue (o link de Google Maps)">
-        <TextInput
-          value={venueDireccion}
-          onChangeText={setVenueDireccion}
-          onBlur={() => handleResolveAddress("venue", venueDireccion)}
-          placeholder="Dirección o link de Maps"
-          placeholderTextColor={theme.text3}
-          style={styles.input}
-        />
-        {venueResolving && <Text style={styles.hint}>Resolviendo dirección...</Text>}
-        {!venueResolving && venueFullAddress ? (
-          <Text style={styles.hintGood}>
-            ✓ {venueFullAddress}
-            {venueCiudad ? ` — ${venueCiudad}` : ""}
-            {venueProvincia ? `, ${venueProvincia}` : ""}
-          </Text>
-        ) : null}
-      </Field>
-      <Field label="Origen">
-        <ChipRow options={ORIGEN_LABELS} value={origenLabel} onChange={setOrigenLabel} />
-      </Field>
-      <Field label="Dirección de salida (o link de Google Maps)">
-        <TextInput
-          value={origenDireccion}
-          onChangeText={setOrigenDireccion}
-          onBlur={() => handleResolveAddress("origen", origenDireccion)}
-          placeholder="Dirección o link de Maps"
-          placeholderTextColor={theme.text3}
-          style={styles.input}
-        />
-        {origenResolving && <Text style={styles.hint}>Resolviendo dirección...</Text>}
-        {!origenResolving && origenFullAddress ? <Text style={styles.hintGood}>✓ {origenFullAddress}</Text> : null}
-      </Field>
+      <AddressInput
+        label="Dirección del venue (o link de Google Maps)"
+        value={venueDireccion}
+        onChangeText={setVenueDireccion}
+        onResolved={(d) => {
+          setVenueLat(d?.lat ?? null);
+          setVenueLng(d?.lng ?? null);
+          setVenueFullAddress(d?.fullAddress ?? "");
+          setVenueCiudad(d?.ciudad ?? "");
+          setVenueProvincia(d?.provincia ?? "");
+          setVenuePais(d?.pais ?? "");
+        }}
+        resolvedAddress={venueFullAddress ? `${venueFullAddress}${venueCiudad ? ` — ${venueCiudad}` : ""}` : null}
+      />
 
       {venueLat != null && origenLat != null && (
         <View style={styles.scheduleCard}>
@@ -336,7 +431,73 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
       )}
 
       <View style={styles.collapsibles}>
-        <Collapsible title="Venue">
+        <Collapsible title="1 · Salida del equipo">
+          <Field label="Origen">
+            <ChipRow options={ORIGEN_LABELS} value={origenLabel} onChange={setOrigenLabel} />
+          </Field>
+          <Field label="Horario de salida">
+            <TextInput value={horaSalida} onChangeText={setHoraSalida} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
+          </Field>
+          <AddressInput
+            label="Dirección de salida (o link de Google Maps)"
+            value={origenDireccion}
+            onChangeText={setOrigenDireccion}
+            onResolved={(d) => {
+              setOrigenLat(d?.lat ?? null);
+              setOrigenLng(d?.lng ?? null);
+              setOrigenFullAddress(d?.fullAddress ?? "");
+            }}
+            resolvedAddress={origenFullAddress || null}
+          />
+        </Collapsible>
+
+        <Collapsible title="2 · Punto de encuentro del equipo">
+          <Field label="Lugar de encuentro">
+            <TextInput value={puntoEncuentroNombre} onChangeText={setPuntoEncuentroNombre} placeholderTextColor={theme.text3} style={styles.input} />
+          </Field>
+          <AddressInput
+            label="Dirección del punto de encuentro"
+            value={puntoEncuentroDireccion}
+            onChangeText={setPuntoEncuentroDireccion}
+            onResolved={(d) => {
+              setPuntoEncuentroLat(d?.lat ?? null);
+              setPuntoEncuentroLng(d?.lng ?? null);
+              setPuntoEncuentroFullAddress(d?.fullAddress ?? "");
+            }}
+            resolvedAddress={puntoEncuentroFullAddress || null}
+          />
+          <Field label="Horario de encuentro">
+            <TextInput value={horaEncuentroEquipo} onChangeText={setHoraEncuentroEquipo} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
+          </Field>
+        </Collapsible>
+
+        <Collapsible title="3 · Búsqueda del artista">
+          <AddressInput
+            label="¿Dónde pasan a buscar al artista?"
+            value={direccionBusquedaArtista}
+            onChangeText={setDireccionBusquedaArtista}
+            onResolved={(d) => {
+              setBusquedaArtistaLat(d?.lat ?? null);
+              setBusquedaArtistaLng(d?.lng ?? null);
+              setBusquedaArtistaFullAddress(d?.fullAddress ?? "");
+            }}
+            resolvedAddress={busquedaArtistaFullAddress || null}
+          />
+          <Field label="¿A qué hora pasan a buscarlo?">
+            <TextInput value={horaBusquedaArtista} onChangeText={setHoraBusquedaArtista} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
+          </Field>
+        </Collapsible>
+
+        <Collapsible title="4 · Llegada y venue">
+          <Field label="Llegada a la ciudad">
+            <TextInput value={horaLlegadaCiudad} onChangeText={setHoraLlegadaCiudad} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
+          </Field>
+          <Field label="Llegada al venue">
+            <TextInput value={horaLlegadaVenue} onChangeText={setHoraLlegadaVenue} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
+          </Field>
+          <Field label="Apertura de puertas">
+            <TextInput value={horaAperturaPuertas} onChangeText={setHoraAperturaPuertas} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
+          </Field>
           <Field label="Contacto del venue">
             <TextInput value={venueContactoNombre} onChangeText={setVenueContactoNombre} placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
@@ -348,23 +509,103 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
           </Field>
         </Collapsible>
 
-        <Collapsible title="Cronograma de traslados">
-          <Field label="Tiempo de anticipación">
-            <ChipRow options={BUFFER_PRESETS.map(String)} value={bufferPrepMin} onChange={(v) => setBufferPrepMin(v || "30")} />
+        <Collapsible title="5 · Prueba de sonido">
+          <Field label="Horario de la prueba de sonido">
+            <TextInput value={horaPruebaSonido} onChangeText={setHoraPruebaSonido} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
-          <Text style={styles.hint}>El tiempo de viaje y la salida recomendada se recalculan solos — ver &quot;Cronograma calculado&quot; arriba.</Text>
-          <Field label="Salida">
-            <TextInput value={horaSalida} onChangeText={setHoraSalida} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
+          <Field label="Duración estimada (min)">
+            <TextInput value={duracionPruebaSonidoMin} onChangeText={setDuracionPruebaSonidoMin} keyboardType="number-pad" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
-          <Field label="Llegada al venue">
-            <TextInput value={horaLlegadaVenue} onChangeText={setHoraLlegadaVenue} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
+          <Field label="Lugar (vacío si es el mismo del show)">
+            <TextInput value={lugarPruebaSonido} onChangeText={setLugarPruebaSonido} placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
+          {pruebaSonidoDistinta && (
+            <AddressInput
+              label="Dirección de la prueba de sonido"
+              value={direccionPruebaSonido}
+              onChangeText={setDireccionPruebaSonido}
+              onResolved={(d) => {
+                setPruebaSonidoLat(d?.lat ?? null);
+                setPruebaSonidoLng(d?.lng ?? null);
+                setPruebaSonidoFullAddress(d?.fullAddress ?? "");
+              }}
+              resolvedAddress={pruebaSonidoFullAddress || null}
+            />
+          )}
+        </Collapsible>
+
+        <Collapsible title="6 · Comida">
+          <Field label="Horario de la cena o comida">
+            <TextInput value={horaComida} onChangeText={setHoraComida} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
+          </Field>
+        </Collapsible>
+
+        <Collapsible title="7 · Hotel">
+          <Field label="Nombre del hotel">
+            <TextInput value={hotelNombre} onChangeText={setHotelNombre} placeholderTextColor={theme.text3} style={styles.input} />
+          </Field>
+          <AddressInput
+            label="Dirección del hotel"
+            value={hotelDireccion}
+            onChangeText={setHotelDireccion}
+            onResolved={(d) => {
+              setHotelLat(d?.lat ?? null);
+              setHotelLng(d?.lng ?? null);
+              setHotelFullAddress(d?.fullAddress ?? "");
+            }}
+            resolvedAddress={hotelFullAddress || null}
+          />
+          <Field label="Llegada estimada">
+            <TextInput value={horaLlegadaHotel} onChangeText={setHoraLlegadaHotel} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
+          </Field>
+          <Field label="Check-in">
+            <TextInput value={horaCheckin} onChangeText={setHoraCheckin} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
+          </Field>
+          <Field label="Check-out">
+            <TextInput value={horaCheckout} onChangeText={setHoraCheckout} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
+          </Field>
+        </Collapsible>
+
+        <Collapsible title="Paradas intermedias">
+          {paradas.map((p, i) => (
+            <View key={i} style={styles.paradaCard}>
+              <Field label="Nombre de la parada">
+                <TextInput value={p.nombre} onChangeText={(v) => updateParada(i, { nombre: v })} placeholderTextColor={theme.text3} style={styles.input} />
+              </Field>
+              <AddressInput
+                label="Dirección"
+                value={p.direccion ?? ""}
+                onChangeText={(v) => updateParada(i, { direccion: v })}
+                onResolved={(d) => updateParada(i, { lat: d?.lat ?? null, lng: d?.lng ?? null, fullAddress: d?.fullAddress ?? null })}
+                resolvedAddress={p.fullAddress}
+              />
+              <Field label="Horario">
+                <TextInput value={p.hora ?? ""} onChangeText={(v) => updateParada(i, { hora: v || null })} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
+              </Field>
+              <Pressable onPress={() => removeParada(i)} style={styles.removeParadaButton}>
+                <Text style={styles.removeParadaText}>Quitar parada</Text>
+              </Pressable>
+            </View>
+          ))}
+          <Pressable onPress={addParada} style={styles.addParadaButton}>
+            <Text style={styles.addParadaText}>+ Agregar parada</Text>
+          </Pressable>
+        </Collapsible>
+
+        <Collapsible title="8 · Regreso">
           <Field label="Salida del venue">
             <TextInput value={horaSalidaVenue} onChangeText={setHoraSalidaVenue} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
           <Field label="Llegada a destino">
             <TextInput value={horaLlegadaDestino} onChangeText={setHoraLlegadaDestino} placeholder="HH:MM" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
+        </Collapsible>
+
+        <Collapsible title="Traslados">
+          <Field label="Tiempo de anticipación">
+            <ChipRow options={BUFFER_PRESETS.map(String)} value={bufferPrepMin} onChange={(v) => setBufferPrepMin(v || "30")} />
+          </Field>
+          <Text style={styles.hint}>El tiempo de viaje y la salida recomendada se recalculan solos — ver &quot;Cronograma calculado&quot; arriba.</Text>
           <Field label="Pax">
             <TextInput value={pax} onChangeText={setPax} keyboardType="number-pad" placeholderTextColor={theme.text3} style={styles.input} />
           </Field>
@@ -392,7 +633,7 @@ export function HojaFormScreen({ hoja }: { hoja: HojaDeRuta | null }) {
           <Field label="Running Order">
             <TextInput value={runningOrder} onChangeText={setRunningOrder} multiline numberOfLines={2} placeholder="Ej: Sofi B: 03.30" placeholderTextColor={theme.text3} style={[styles.input, styles.textarea]} />
           </Field>
-          <Field label="Notas">
+          <Field label="Observaciones generales">
             <TextInput value={notas} onChangeText={setNotas} multiline numberOfLines={3} placeholderTextColor={theme.text3} style={[styles.input, styles.textarea]} />
           </Field>
           <Field label="Estado">
@@ -449,6 +690,11 @@ const styles = StyleSheet.create({
   scheduleStrong: { color: theme.text1, fontWeight: "700" },
   scheduleHighlight: { color: theme.accentColor, fontSize: 15, fontWeight: "700", marginTop: theme.space.xs },
   collapsibles: { gap: theme.space.sm, marginBottom: theme.space.lg },
+  paradaCard: { backgroundColor: theme.bg2, borderWidth: 1, borderColor: theme.lineSoft, borderRadius: theme.radiusSm, padding: theme.space.md, marginBottom: theme.space.sm },
+  removeParadaButton: { alignSelf: "flex-start" },
+  removeParadaText: { color: theme.critInk, ...theme.type.small },
+  addParadaButton: { borderWidth: 1, borderColor: theme.lineSoft, borderStyle: "dashed", borderRadius: theme.radiusSm, paddingVertical: theme.space.md, alignItems: "center" },
+  addParadaText: { color: theme.text2, ...theme.type.small },
   errorBox: { backgroundColor: theme.critBg, borderRadius: theme.radiusSm, padding: theme.space.md, marginBottom: theme.space.md },
   errorText: { color: theme.critInk, ...theme.type.small },
   actions: { flexDirection: "row", gap: theme.space.sm, marginTop: theme.space.xs },

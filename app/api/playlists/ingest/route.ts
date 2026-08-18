@@ -15,9 +15,13 @@ const MATCH_THRESHOLD = 0.35;
 // Processes as many not-yet-ingested Drive docs as fit in one invocation,
 // then returns — the client calls this repeatedly until `done`. Doing
 // discovery once per call (not once per doc) and budgeting wall-clock time
-// per call is what keeps this safe under a serverless function's time limit
-// regardless of whether the project is on Hobby or Pro.
-const TIME_BUDGET_MS = 45_000;
+// per call is what keeps this safe under a serverless function's time limit.
+// maxDuration below raises Vercel's actual platform cutoff to match — a
+// 45s internal budget alone got hard-killed by the platform's shorter
+// default (FUNCTION_INVOCATION_TIMEOUT) before it ever got the chance to
+// return gracefully.
+export const maxDuration = 60;
+const TIME_BUDGET_MS = 50_000;
 
 async function ingestOneDoc(doc: PlaylistDocRef, actorEmail: string): Promise<{ trackCount: number; entryCount: number }> {
   const entries = await parsePlaylistDoc(doc.docId);

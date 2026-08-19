@@ -37,6 +37,8 @@ export const PERMISSIONS = [
   "ver_tourmanager",
   "editar_tourmanager",
   "crear_split_editorial",
+  "ver_ar",
+  "editar_ar",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -51,6 +53,7 @@ export const ROLES = [
   "tourmanager",
   "distribucion",
   "marketing",
+  "ar",
   "artista",
   "representante",
   "invitado",
@@ -63,7 +66,7 @@ export type AccountType = "empresa" | "artista";
 // Roles available for each landing-page account type. An "artista" role only makes
 // sense behind the Artista card; company roles only behind the Empresa card.
 export const ROLES_BY_ACCOUNT_TYPE: Record<AccountType, Role[]> = {
-  empresa: ["admin", "project_manager", "legal", "editorial", "management", "booking", "tourmanager", "distribucion", "marketing", "invitado"],
+  empresa: ["admin", "project_manager", "legal", "editorial", "management", "booking", "tourmanager", "distribucion", "marketing", "ar", "invitado"],
   artista: ["artista", "representante"],
 };
 
@@ -83,6 +86,9 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "editar_rizzvor_proyectos",
     "ver_playlists",
     "crear_split_editorial",
+    // PM only ever sees opportunities assigned to them by the ar role — that
+    // scoping happens inside listOpportunitiesFor() by role branch, not here.
+    "ver_ar",
   ],
   // Legal is a fully separate module — its own permissions, shared with no
   // other operational area (Label/PM/Distribución/Marketing/etc). It does
@@ -99,6 +105,8 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   booking: ["ver_booking", "editar_booking"],
   // Same isolation principle again — its own module, own permissions.
   tourmanager: ["ver_tourmanager", "editar_tourmanager"],
+  // Same isolation principle again — its own module, own permissions.
+  ar: ["ver_ar", "editar_ar"],
   distribucion: ["editar_acuerdos", "aprobar_releases", "ver_estadisticas"],
   marketing: ["ver_estadisticas", "exportar_datos", "ver_playlists", "editar_playlists"],
   artista: ["subir_audio", "subir_portada"],
@@ -115,6 +123,7 @@ export const ROLE_HOME: Record<Role, string> = {
   management: "/panel/management",
   booking: "/panel/booking",
   tourmanager: "/panel/tourmanager",
+  ar: "/panel/ar",
   distribucion: "/panel/distribucion",
   marketing: "/panel/marketing",
   artista: "/panel/artista",

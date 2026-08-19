@@ -25,6 +25,8 @@ function ArContent() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<ArCategory | "">("");
   const [statusFilter, setStatusFilter] = useState<ArStatus | "">("");
+  const [scanning, setScanning] = useState(false);
+  const [scanMsg, setScanMsg] = useState<string | null>(null);
 
   function load() {
     setLoading(true);
@@ -39,6 +41,22 @@ function ArContent() {
       .finally(() => setLoading(false));
   }
   useEffect(load, []);
+
+  async function handleScan() {
+    setScanning(true);
+    setScanMsg(null);
+    try {
+      const res = await fetch("/api/ar/scan-roster", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo escanear.");
+      setScanMsg(`Revisados ${data.scanned} artistas — ${data.created} nuevas, ${data.updated} actualizadas.`);
+      load();
+    } catch (err) {
+      setScanMsg(err instanceof Error ? err.message : "Error desconocido.");
+    } finally {
+      setScanning(false);
+    }
+  }
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -79,6 +97,11 @@ function ArContent() {
                 + Cargar hallazgo
               </Link>
             )}
+            {canEdit && (
+              <button type="button" onClick={handleScan} style={ghostBtn} disabled={scanning}>
+                {scanning ? "Escaneando..." : "Escanear roster propio"}
+              </button>
+            )}
             <button type="button" onClick={load} style={ghostBtn} disabled={loading}>
               {loading ? "Actualizando..." : "↻ Actualizar"}
             </button>
@@ -88,6 +111,7 @@ function ArContent() {
           </div>
         </div>
 
+        {scanMsg && <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>{scanMsg}</div>}
         {error && <div style={banner}>{error}</div>}
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>

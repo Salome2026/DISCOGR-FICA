@@ -225,6 +225,78 @@ export async function updateOpportunity(id: string, patch: ArOpportunityUpdate, 
   return getOpportunity(id);
 }
 
+// Dedupe key for auto-generated opportunities — same spirit as
+// findPlaylistByDriveDocId in the Playlists ingest: lets a re-run of a scan
+// cheaply update the existing candidate instead of creating a duplicate.
+// Only looks at non-archived, non-terminal rows — a subject that was
+// DESCARTADO or ARCHIVADO on purpose should get a fresh row if it starts
+// growing again later, not silently resurrect the old decision.
+export async function findOpenOpportunityBySubject(subjectType: string, subjectKey: string): Promise<ArOpportunity | null> {
+  await ensureArOpportunitiesSchema();
+  const { rows } = await sql`
+    SELECT * FROM ar_opportunities
+    WHERE subject_type = ${subjectType} AND subject_key = ${subjectKey}
+      AND archived = false AND status NOT IN ('DESCARTADO', 'ARCHIVADO', 'INCORPORADO')
+    ORDER BY created_at DESC
+    LIMIT 1
+  `;
+  return rows[0] ? rowToOpportunity(rows[0]) : null;
+}
+
+// Auto-generated candidates (source_type != manual) always land as NUEVO —
+// scoring_version/score_breakdown/metrics/compatibility/sources are the
+// only fields a re-scan is allowed to refresh; status/category/comments
+// stay whatever a human already set on them.
+export async function upsertAutoOpportunity(input: {
+  category: ArOpportunity["category"];
+  title: string;
+  subjectType: ArOpportunity["subjectType"];
+  subjectKey: string;
+  subjectName: string;
+  regionFocus: ArOpportunity["regionFocus"];
+  sourceType: ArOpportunity["sourceType"];
+  opportunityScore: number;
+  scoringVersion: string;
+  scoreBreakdown: ArScoreBreakdown;
+  metrics: Record<string, unknown>;
+  compatibility: ArCompatibility;
+  suggestedSello: string | null;
+  sources: ArSource[];
+}): Promise<ArOpportunity> {
+  await ensureArOpportunitiesSchema();
+  const existing = await findOpenOpportunityBySubject(input.subjectType, input.subjectKey);
+  if (existing) {
+    await sql`
+      UPDATE ar_opportunities
+      SET opportunity_score = ${input.opportunityScore}, scoring_version = ${input.scoringVersion},
+          score_breakdown = ${JSON.stringify(input.scoreBreakdown)}::jsonb, metrics = ${JSON.stringify(input.metrics)}::jsonb,
+          compatibility = ${JSON.stringify(input.compatibility)}::jsonb, suggested_sello = ${input.suggestedSello},
+          sources = ${JSON.stringify(input.sources)}::jsonb, updated_at = now()
+      WHERE id = ${existing.id}
+    `;
+    const updated = await getOpportunity(existing.id);
+    if (!updated) throw new Error("No se pudo actualizar la oportunidad.");
+    return updated;
+  }
+
+  const id = newId();
+  await sql`
+    INSERT INTO ar_opportunities
+      (id, category, title, status, subject_type, subject_key, subject_name, region_focus,
+       suggested_sello, metrics, compatibility, sources, source_type,
+       opportunity_score, scoring_version, score_breakdown)
+    VALUES
+      (${id}, ${input.category}, ${input.title}, 'NUEVO', ${input.subjectType}, ${input.subjectKey},
+       ${input.subjectName}, ${input.regionFocus}, ${input.suggestedSello},
+       ${JSON.stringify(input.metrics)}::jsonb, ${JSON.stringify(input.compatibility)}::jsonb,
+       ${JSON.stringify(input.sources)}::jsonb, ${input.sourceType},
+       ${input.opportunityScore}, ${input.scoringVersion}, ${JSON.stringify(input.scoreBreakdown)}::jsonb)
+  `;
+  const created = await getOpportunity(id);
+  if (!created) throw new Error("No se pudo crear la oportunidad.");
+  return created;
+}
+
 export async function listComments(opportunityId: string): Promise<ArOpportunityComment[]> {
   await ensureArOpportunitiesSchema();
   const { rows } = await sql`

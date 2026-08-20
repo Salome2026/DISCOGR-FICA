@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequireRole from "@/app/components/RequireRole";
 import QuickAccessPanel from "./QuickAccessPanel";
-import { ROLES_BY_ACCOUNT_TYPE, type AccountType, type Role } from "@/lib/permissions";
+import { ROLES_BY_ACCOUNT_TYPE, ROLE_LABELS, type AccountType, type Role } from "@/lib/permissions";
 
 type AppUser = {
   email: string;
@@ -145,7 +145,7 @@ function AdminUsuariosInner() {
                         {(u.account_type === "empresa" ? ROLES_BY_ACCOUNT_TYPE.empresa : ROLES_BY_ACCOUNT_TYPE.artista).map(
                           (r) => (
                             <option key={r} value={r}>
-                              {r}
+                              {ROLE_LABELS[r]}
                             </option>
                           )
                         )}
@@ -258,7 +258,7 @@ function CreateUserForm({ onClose, onCreated }: { onClose: () => void; onCreated
           <select value={role} onChange={(e) => setRole(e.target.value as Role)} style={inputStyle}>
             {availableRoles.map((r) => (
               <option key={r} value={r}>
-                {r}
+                {ROLE_LABELS[r]}
               </option>
             ))}
           </select>

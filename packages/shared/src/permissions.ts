@@ -131,6 +131,24 @@ export const ROLE_HOME: Record<Role, string> = {
   invitado: "/panel/invitado",
 };
 
+// Human-readable label per role — used anywhere a role is shown to a user
+// (assignment <select>s, etc.) instead of the raw string value.
+export const ROLE_LABELS: Record<Role, string> = {
+  admin: "Admin",
+  project_manager: "Project Manager",
+  legal: "Legal",
+  editorial: "Editorial",
+  management: "Management",
+  booking: "Booking",
+  tourmanager: "Tour Manager",
+  ar: "A&R",
+  distribucion: "Distribución",
+  marketing: "Marketing",
+  artista: "Artista",
+  representante: "Representante",
+  invitado: "Invitado",
+};
+
 export type SessionUser = {
   email: string;
   role: Role | null;

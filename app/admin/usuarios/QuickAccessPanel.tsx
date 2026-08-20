@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ROLES_BY_ACCOUNT_TYPE, type AccountType, type Role } from "@/lib/permissions";
+import { ROLES_BY_ACCOUNT_TYPE, ROLE_LABELS, type AccountType, type Role } from "@/lib/permissions";
 
 export default function QuickAccessPanel({ onChanged }: { onChanged: () => void }) {
   const [configured, setConfigured] = useState<boolean | null>(null);
@@ -123,7 +123,7 @@ export default function QuickAccessPanel({ onChanged }: { onChanged: () => void 
           <select value={role} onChange={(e) => setRole(e.target.value as Role)} style={inputStyle}>
             {ROLES_BY_ACCOUNT_TYPE[accountType].map((r) => (
               <option key={r} value={r}>
-                {r}
+                {ROLE_LABELS[r]}
               </option>
             ))}
           </select>

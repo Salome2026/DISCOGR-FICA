@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyCredentials } from "@/lib/db/users";
+import { TRUSTED_DEVICE_COOKIE } from "@/lib/trustedDeviceCookie";
 
 // Peeks at verifyCredentials() before any NextAuth session exists, purely
 // so the login form can ask for a 2FA code without needing to smuggle that
@@ -17,7 +18,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Faltan credenciales." }, { status: 400 });
   }
 
-  const result = await verifyCredentials(email, password, undefined, { peek: true });
+  const deviceToken = req.cookies.get(TRUSTED_DEVICE_COOKIE)?.value ?? null;
+  const result = await verifyCredentials(email, password, undefined, { peek: true, deviceToken });
 
   if (result.status === "locked") {
     return NextResponse.json({ error: "Demasiados intentos. Probá de nuevo en unos minutos." }, { status: 429 });

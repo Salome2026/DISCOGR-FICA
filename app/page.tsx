@@ -71,6 +71,11 @@ export default function Landing() {
       setError(needsTotp ? "Código inválido." : "Email o contraseña incorrectos.");
       return;
     }
+    // Renews (or, the first time, establishes) this browser's 30-day 2FA
+    // trust window — a no-op for accounts without 2FA. Fire-and-forget: a
+    // failure here shouldn't block getting into an app you just logged
+    // into, worst case is just being asked for the code again next time.
+    fetch("/api/auth/trust-device", { method: "POST" }).catch(() => {});
     const me = await fetch("/api/me").then((r) => r.json());
     router.push(me.home ?? "/acceso-denegado");
   }

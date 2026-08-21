@@ -5,6 +5,7 @@ import * as OTPAuth from "otpauth";
 import type { AccountType, Permission, Role } from "@/lib/permissions";
 import { getSharedPasswordHash } from "@/lib/db/settings";
 import { sendSecurityAlert } from "@/lib/emailAuth";
+import { isDeviceTrusted, revokeAllTrustedDevices } from "@/lib/db/trustedDevices";
 
 // Email is the primary key and login identifier, so it must be treated as
 // case-insensitive everywhere: "Usuario@Empresa.com" and "usuario@empresa.com"
@@ -117,11 +118,16 @@ export type LoginOutcome =
 // the peek endpoint) but does NOT clear attempts / bump last_login / log
 // "login" — only the real call that follows does, so a normal login (no
 // 2FA) doesn't end up logged twice for one submit.
+//
+// opts.deviceToken: the "td" cookie value, if the browser sent one. Only
+// ever consulted when no totpCode was given — an explicit code always wins
+// and is verified normally, so typing the real code still works even from
+// a browser whose trust already expired or was revoked.
 export async function verifyCredentials(
   email: string,
   password: string,
   totpCode?: string,
-  opts?: { peek?: boolean }
+  opts?: { peek?: boolean; deviceToken?: string | null }
 ): Promise<LoginOutcome> {
   await ensureUsersSchema();
   const normalized = normalizeEmail(email);
@@ -150,14 +156,17 @@ export async function verifyCredentials(
   }
 
   if (user.totp_enabled) {
-    if (!totpCode) return { status: "needs_totp" };
-    // A wrong code counts toward the same lockout as a wrong password — a
-    // 6-digit TOTP code is only ~1M possibilities, guessable fast without
-    // a rate limit of its own.
-    const validCode = await verifyTotpOrBackupCode(normalized, totpCode);
-    if (!validCode) {
-      await alertOnFailedLogin(normalized);
-      return { status: "invalid_totp" };
+    if (totpCode) {
+      // A wrong code counts toward the same lockout as a wrong password — a
+      // 6-digit TOTP code is only ~1M possibilities, guessable fast without
+      // a rate limit of its own.
+      const validCode = await verifyTotpOrBackupCode(normalized, totpCode);
+      if (!validCode) {
+        await alertOnFailedLogin(normalized);
+        return { status: "invalid_totp" };
+      }
+    } else if (!(await isDeviceTrusted(normalized, opts?.deviceToken ?? null))) {
+      return { status: "needs_totp" };
     }
   }
 
@@ -293,6 +302,9 @@ export async function resetPassword(email: string, newPassword: string, actorEma
   const normalized = normalizeEmail(email);
   const hash = await bcrypt.hash(newPassword, 10);
   await sql`UPDATE app_users SET password_hash = ${hash}, uses_shared_password = false WHERE lower(email) = ${normalized}`;
+  // A password reset is exactly the kind of "start over" event that should
+  // also make every browser prove 2FA again, not just the one that changed it.
+  await revokeAllTrustedDevices(normalized);
   await logActivity(actorEmail, "password_reset", normalized);
 }
 
@@ -300,6 +312,7 @@ export async function forceLogout(email: string, actorEmail: string) {
   await ensureUsersSchema();
   const normalized = normalizeEmail(email);
   await sql`UPDATE app_users SET session_version = session_version + 1 WHERE lower(email) = ${normalized}`;
+  await revokeAllTrustedDevices(normalized);
   await logActivity(actorEmail, "force_logout", normalized);
 }
 
@@ -519,6 +532,9 @@ export async function disableTotp(email: string, actorEmail: string): Promise<vo
     UPDATE app_users SET totp_enabled = false, totp_secret = NULL, totp_backup_codes = '{}'
     WHERE lower(email) = ${normalized}
   `;
+  // Trust was built on this specific TOTP secret's identity — once it's
+  // gone, no browser should keep skipping the (now nonexistent) prompt.
+  await revokeAllTrustedDevices(normalized);
   await recordAudit({ actorEmail, action: "totp_disabled", entityType: "user", entityId: normalized });
 }
 

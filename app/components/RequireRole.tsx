@@ -16,7 +16,11 @@ export default function RequireRole({
   const router = useRouter();
   const role = (session?.user as { role?: Role | null } | undefined)?.role ?? null;
   const invalid = (session?.user as { invalid?: boolean } | undefined)?.invalid;
-  const authorized = status === "authenticated" && !invalid && !!role && allow.includes(role);
+  // admin always passes every single-purpose module's gate — same principle
+  // ROLE_PERMISSIONS.admin=ALL already gives it everywhere hasPermission()
+  // is used, this closes the gap for the modules that instead gate on an
+  // exact role match (Legal/Editorial/Management/Booking/Tour Manager/...).
+  const authorized = status === "authenticated" && !invalid && !!role && (role === "admin" || allow.includes(role));
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/");
@@ -38,7 +42,7 @@ export default function RequireRole({
   if (invalid || !role) {
     return <FullPageMessage text="Redirigiendo..." />;
   }
-  if (!allow.includes(role)) {
+  if (role !== "admin" && !allow.includes(role)) {
     return <AccesoDenegado />;
   }
   return <>{children}</>;

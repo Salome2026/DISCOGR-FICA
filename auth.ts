@@ -1,6 +1,14 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { verifyCredentials, getUserByEmail } from "@/lib/db/users";
+import { TRUSTED_DEVICE_COOKIE } from "@/lib/trustedDeviceCookie";
+
+function readCookie(request: Request, name: string): string | null {
+  const header = request.headers.get("cookie");
+  if (!header) return null;
+  const match = header.split(/;\s*/).find((c) => c.startsWith(`${name}=`));
+  return match ? decodeURIComponent(match.slice(name.length + 1)) : null;
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -17,12 +25,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // totpCode attached, the password has already been confirmed correct;
       // any non-"ok" outcome here is a generic failure, no need to
       // distinguish which, since the client's login-check step already did.
-      authorize: async (credentials) => {
+      // When no code is attached, the "vpo_td" cookie (if any) is what lets
+      // an already-trusted browser complete sign-in without one — read
+      // straight off the raw Request the way login-check reads it off
+      // NextRequest, same trust check either way.
+      authorize: async (credentials, request) => {
         const email = credentials?.email as string | undefined;
         const password = credentials?.password as string | undefined;
         const totpCode = credentials?.totpCode as string | undefined;
         if (!email || !password) return null;
-        const result = await verifyCredentials(email, password, totpCode);
+        const deviceToken = readCookie(request, TRUSTED_DEVICE_COOKIE);
+        const result = await verifyCredentials(email, password, totpCode, { deviceToken });
         if (result.status !== "ok") return null;
         return {
           id: result.user.email,

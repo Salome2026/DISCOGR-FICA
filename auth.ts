@@ -45,7 +45,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
-  session: { strategy: "jwt" },
+  // Explicit, not just relying on next-auth's own default (which happens to
+  // also be 30 days today, but that's an implicit library detail, not a
+  // guarantee) — a session on a device stays valid for 30 days of use,
+  // renewed automatically each time it's active within that window.
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   pages: {
     signIn: "/",
     error: "/auth-error",

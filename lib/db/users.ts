@@ -151,7 +151,14 @@ export async function verifyCredentials(
     ok = await bcrypt.compare(password, user.password_hash);
   }
   if (!ok) {
-    await alertOnFailedLogin(normalized);
+    // A peek that finds a wrong password is always immediately followed by
+    // the real sign-in attempt with the same credentials (login-check maps
+    // "invalid" to needsTotp:false, so the client falls straight through to
+    // signIn() next) — counting it here too double-charges the lockout for
+    // a single submit. Only the real call (opts.peek falsy) records it; the
+    // one case where peek is the *only* call for a submit is a correct
+    // password needing a code, which never reaches this branch anyway.
+    if (!opts?.peek) await alertOnFailedLogin(normalized);
     return { status: "invalid" };
   }
 

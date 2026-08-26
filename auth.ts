@@ -1,13 +1,19 @@
 import NextAuth from "next-auth";
+import { NextRequest } from "next/server";
 import Credentials from "next-auth/providers/credentials";
 import { verifyCredentials, getUserByEmail } from "@/lib/db/users";
 import { TRUSTED_DEVICE_COOKIE } from "@/lib/trustedDeviceCookie";
 
+// Delegates to the exact same cookie parser NextRequest.cookies.get() uses
+// (login-check's mechanism) instead of hand-rolling a second one here — a
+// hand-written regex split on ";\s*" picks the *first* match when a name
+// appears twice in the header (e.g. a stale cookie from an old path/domain
+// coexisting with the current one), while NextRequest's parser may resolve
+// duplicates differently; routing both call sites through one
+// implementation removes the possibility of them ever disagreeing on which
+// value is "the" cookie.
 function readCookie(request: Request, name: string): string | null {
-  const header = request.headers.get("cookie");
-  if (!header) return null;
-  const match = header.split(/;\s*/).find((c) => c.startsWith(`${name}=`));
-  return match ? decodeURIComponent(match.slice(name.length + 1)) : null;
+  return new NextRequest(request).cookies.get(name)?.value ?? null;
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({

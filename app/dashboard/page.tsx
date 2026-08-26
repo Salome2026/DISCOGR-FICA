@@ -113,6 +113,7 @@ function DashboardInner() {
   const [acuerdosError, setAcuerdosError] = useState<string | null>(null);
   const [catalogTracks, setCatalogTracks] = useState<CatalogTrack[] | null>(null);
   const [drill, setDrill] = useState<DrillState>(null);
+  const [sellosOpen, setSellosOpen] = useState(false);
   const reduceMotion = !!useReducedMotion();
   const fadeUp: Variants = {
     hidden: { opacity: 0, y: reduceMotion ? 0 : 14 },
@@ -325,19 +326,31 @@ function DashboardInner() {
         .nav-pill:hover:not(.active){background:var(--glass-bg-strong);color:var(--text-1);}
         .page-title{font-size:32px;font-weight:700;letter-spacing:-.03em;margin:0;background:linear-gradient(180deg,var(--text-1) 30%,var(--text-2) 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
         .page-subtitle{font-size:13px;color:var(--text-3);margin-top:5px;}
-        .sello-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:7px;margin-bottom:1.25rem;}
+        .sellos-toggle{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;border:1px solid var(--glass-border);border-radius:var(--radius-pill);background:var(--glass-bg);color:var(--text-1);cursor:pointer;padding:.55rem 1rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);transition:background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);margin-bottom:1rem;}
+        .sellos-toggle:hover{background:var(--glass-bg-strong);border-color:var(--accent-color-glow);}
+        .sellos-toggle .chev{transition:transform var(--dur-fast) var(--ease-out);font-size:10px;}
+        .sellos-toggle.open .chev{transform:rotate(180deg);}
+        .sello-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(105px,1fr));gap:7px;margin-bottom:1.25rem;overflow:hidden;}
         .sello-btn{aspect-ratio:1.7;display:flex;align-items:center;justify-content:center;text-align:center;font-size:11.5px;font-weight:600;border:1px solid var(--glass-border);border-radius:var(--radius-md);background:var(--glass-bg);color:var(--text-1);cursor:pointer;padding:.4rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);transition:transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);}
         .sello-btn:hover{background:var(--glass-bg-strong);border-color:var(--accent-color-glow);transform:translateY(-2px);}
+        .hero-row{display:grid;grid-template-columns:3fr 1fr;gap:.9rem;margin-bottom:1rem;align-items:stretch;}
+        @media (max-width:860px){ .hero-row{grid-template-columns:1fr;} }
+        .agent-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin:1.5rem 0 1rem;}
+        @media (max-width:640px){ .agent-row{grid-template-columns:1fr;} }
+        .agent-card{display:flex;align-items:center;gap:14px;padding:1.25rem 1.4rem;text-decoration:none;color:inherit;}
+        .agent-card:hover{background:var(--glass-bg-strong);border-color:var(--accent-color-glow);}
+        .agent-avatar{width:52px;height:52px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--accent-gradient);color:var(--accent-ink);}
+        .agent-name{font-size:16px;font-weight:700;letter-spacing:-.01em;}
+        .agent-sub{font-size:12px;color:var(--text-3);margin-top:2px;}
+        .agent-card.disabled{cursor:default;opacity:.85;}
         .card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-xl);padding:1.4rem;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);box-shadow:var(--shadow-glass);}
         .card-label{font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.07em;font-weight:500;}
         .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:.9rem;margin-bottom:1rem;}
-        .bento-donut{grid-column:span 3;grid-row:span 2;}
-        .bento-calendar{grid-column:span 3;grid-row:span 2;}
         .bento-estado{grid-column:span 6;}
         .bento-kpi-firmados{grid-column:span 4;}
         .bento-kpi-artistas{grid-column:span 2;}
         .bento-kpi-sm{grid-column:span 3;}
-        @media (max-width:860px){ .bento{grid-template-columns:1fr;} .bento-donut,.bento-calendar,.bento-estado,.bento-kpi-firmados,.bento-kpi-artistas,.bento-kpi-sm{grid-column:span 1;grid-row:auto;} }
+        @media (max-width:860px){ .bento{grid-template-columns:1fr;} .bento-estado,.bento-kpi-firmados,.bento-kpi-artistas,.bento-kpi-sm{grid-column:span 1;grid-row:auto;} }
         .donut-card{display:flex;flex-direction:column;height:100%;}
         .donut-wrap{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-top:.85rem;flex:1;}
         .donut-seg{cursor:pointer;transition:filter var(--dur-fast) var(--ease-out);}
@@ -406,22 +419,34 @@ function DashboardInner() {
         </div>
 
         <motion.div variants={fadeUp} custom={0} initial="hidden" animate="show" style={{ marginBottom: "2rem" }}>
-          <h1 className="page-title">Dashboard</h1>
+          <h1 className="page-title">Label Management</h1>
           <p className="page-subtitle">Pulso general de sellos, acuerdos y catálogo.</p>
         </motion.div>
 
-        <motion.div className="sello-row" variants={fadeUp} custom={1} initial="hidden" animate="show">
-          {SELLOS.filter((s) => s !== "Streamings").map((s) => (
-            <Link key={s} href={`/sellos/${encodeURIComponent(s)}`} className="sello-btn">
-              {s}
-            </Link>
-          ))}
-          <Link href="/catalogo-distribuido" className="sello-btn">
-            Catálogo Distribuido
-          </Link>
-          <Link href="/streamings" className="sello-btn">
-            Streamings
-          </Link>
+        <motion.div variants={fadeUp} custom={1} initial="hidden" animate="show">
+          <button
+            type="button"
+            className={`sellos-toggle${sellosOpen ? " open" : ""}`}
+            onClick={() => setSellosOpen((v) => !v)}
+            aria-expanded={sellosOpen}
+          >
+            Sellos <span className="chev">▾</span>
+          </button>
+          {sellosOpen && (
+            <div className="sello-row">
+              {SELLOS.filter((s) => s !== "Streamings").map((s) => (
+                <Link key={s} href={`/sellos/${encodeURIComponent(s)}`} className="sello-btn">
+                  {s}
+                </Link>
+              ))}
+              <Link href="/catalogo-distribuido" className="sello-btn">
+                Catálogo Distribuido
+              </Link>
+              <Link href="/streamings" className="sello-btn">
+                Streamings
+              </Link>
+            </div>
+          )}
         </motion.div>
 
         {acuerdosError && (
@@ -439,8 +464,10 @@ function DashboardInner() {
           </div>
         )}
 
-        <motion.div className="bento" variants={fadeUp} custom={2} initial="hidden" animate="show">
-          <div className="card bento-donut donut-card">
+        <motion.div className="hero-row" variants={fadeUp} custom={2} initial="hidden" animate="show">
+          <ReleaseCalendar className="" />
+
+          <div className="card donut-card">
             <div className="card-label">Distribución por discográfica</div>
             <div className="donut-wrap">
               <div style={{ position: "relative", width: 170, height: 170, flexShrink: 0 }}>
@@ -486,12 +513,38 @@ function DashboardInner() {
               </div>
             </div>
           </div>
-
-          <ReleaseCalendar className="bento-calendar" />
         </motion.div>
 
         <motion.div variants={fadeUp} custom={3} initial="hidden" animate="show">
           <RankingListeners />
+        </motion.div>
+
+        <motion.div className="agent-row" variants={fadeUp} custom={3.5} initial="hidden" animate="show">
+          <Link href="/panel/ar" className="card agent-card">
+            <div className="agent-avatar">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="8" r="4" fill="currentColor" />
+                <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor" />
+              </svg>
+            </div>
+            <div>
+              <div className="agent-name">A&amp;R</div>
+              <div className="agent-sub">Descubrimiento de talento y tendencias</div>
+            </div>
+          </Link>
+
+          <div className="card agent-card disabled">
+            <div className="agent-avatar" style={{ background: "var(--glass-bg-strong)", color: "var(--text-3)" }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="8" r="4" fill="currentColor" />
+                <path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" fill="currentColor" />
+              </svg>
+            </div>
+            <div>
+              <div className="agent-name">Asistente</div>
+              <div className="agent-sub">Próximamente</div>
+            </div>
+          </div>
         </motion.div>
 
         <motion.div className="bento" variants={fadeUp} custom={4} initial="hidden" animate="show">

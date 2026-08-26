@@ -172,7 +172,15 @@ export async function verifyCredentials(
         await alertOnFailedLogin(normalized);
         return { status: "invalid_totp" };
       }
-    } else if (!(await isDeviceTrusted(normalized, opts?.deviceToken ?? null))) {
+      // TEMPORARILY DISABLED (2026-08-26): the trusted-device bypass below
+      // was intermittently rejecting a device that login-check had just
+      // approved seconds earlier — real production evidence (login-check
+      // "ok" immediately followed by authorize() failing with the same
+      // cookie, repeatedly), root cause not yet confirmed. Forcing every
+      // login through an explicit code until that's found and fixed is the
+      // safe fallback — re-enable the `else if (!isDeviceTrusted(...))`
+      // branch (see git history) once it is.
+    } else {
       return { status: "needs_totp" };
     }
   }

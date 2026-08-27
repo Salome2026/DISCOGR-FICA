@@ -1,4 +1,6 @@
+import { sql } from "@vercel/postgres";
 import { normalizeName } from "./participants";
+import { listActiveStreamingProjects } from "./db/streamingProjects";
 import type { Sello } from "./sellos";
 
 export type RosterArtist = {
@@ -56,9 +58,9 @@ export const SELLO_ROSTERS: Partial<Record<Sello, RosterArtist[]>> = {
 };
 
 // Caserio's roster, kept separate from SELLO_ROSTERS above for the reason
-// noted there. Used for things that just need "our artists' names" — like
-// picking who to sync with Chartmetric — without touching sello-page
-// rendering.
+// noted there. Used by lib/db/artists.ts for the Management artist
+// directory — the growth/listener sync (getRosterArtistEntries below) reads
+// catalog_tracks directly instead and doesn't touch this list.
 export const CASERIO_ROSTER_NAMES = [
   "Eze Remix",
   "Juanma Girat",
@@ -91,21 +93,50 @@ export const CASERIO_ROSTER_NAMES = [
   "Sheafiell",
 ];
 
-// Projects/collectives that have their own Spotify artist profile (not an
-// individual artist, but still something the label wants tracked in the
-// listener ranking) — kept separate from CASERIO_ROSTER_NAMES since they
-// aren't tied to one sello's track classification.
-export const EXTRA_TRACKABLE_NAMES = ["La Juntada De Los Artistas", "Sin Guion"];
+export type RosterArtistEntry = { name: string; sello: string };
 
-// Every artist actually signed to / working with one of our sellos — the
-// roster lists above exist to classify tracks, but this flat name list is
-// what things like the Chartmetric sync use to know who "our artists" are,
-// as opposed to every artist in the wider catalog exports.
-export function getAllRosterArtistNames(): string[] {
-  const fromRosters = Object.values(SELLO_ROSTERS)
-    .flat()
-    .map((a) => a.name);
-  return [...new Set([...fromRosters, ...CASERIO_ROSTER_NAMES, ...EXTRA_TRACKABLE_NAMES])];
+// Every artist actually signed to / working with one of our sellos — derived
+// live from catalog_tracks (every PM-loaded release already tags each track
+// with sello + participants) instead of the hand-maintained lists above, so
+// a newly-signed artist's first release makes them show up here immediately,
+// no code change or redeploy needed. Case/whitespace variants of the same
+// name ("Gusty dj" vs "GUSTY DJ") collapse to one entry.
+//
+// "Streamings" is the one deliberate exception: its catalog rows list every
+// artist who ever appeared on a compilation as a participant, but what the
+// label actually wants tracked for that sello is the handful of channel
+// profiles themselves (streaming_projects — admin-managed, e.g. "La Juntada
+// de los Artistas"), not each guest artist.
+export async function getRosterArtistEntries(): Promise<RosterArtistEntry[]> {
+  const { rows } = await sql`
+    SELECT sello, jsonb_array_elements_text(participants) AS name
+    FROM catalog_tracks
+    WHERE sello IS NOT NULL AND sello <> 'Streamings'
+  `;
+  const bySello = new Map<string, Map<string, string>>();
+  for (const r of rows as { sello: string; name: string }[]) {
+    const norm = normalizeName(r.name);
+    if (!norm) continue;
+    if (!bySello.has(r.sello)) bySello.set(r.sello, new Map());
+    const seen = bySello.get(r.sello)!;
+    if (!seen.has(norm)) seen.set(norm, r.name.trim());
+  }
+
+  const entries: RosterArtistEntry[] = [];
+  for (const [sello, seen] of bySello) {
+    for (const name of seen.values()) entries.push({ name, sello });
+  }
+
+  const streamingProjects = await listActiveStreamingProjects();
+  for (const p of streamingProjects) entries.push({ name: p.name, sello: "Streamings" });
+
+  return entries;
+}
+
+// Flat name list — what things like the Chartmetric sync use to know who
+// "our artists" are, as opposed to every artist in the wider catalog exports.
+export async function getAllRosterArtistNames(): Promise<string[]> {
+  return (await getRosterArtistEntries()).map((e) => e.name);
 }
 
 export function matchRosterArtist(

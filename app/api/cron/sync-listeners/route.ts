@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { assignSello } from "@/lib/sellos";
-import { getAllRosterArtistNames } from "@/lib/roster";
+import { getRosterArtistEntries } from "@/lib/roster";
 import { chartmetricConfigured, searchArtist, getArtistSpotifyStats } from "@/lib/chartmetric";
 import { upsertDailyRecord, startSyncRun, finishSyncRun } from "@/lib/db/listeners";
 
@@ -31,7 +30,8 @@ export async function GET(req: NextRequest) {
   const errors: string[] = [];
   const measuredAt = today();
 
-  for (const artistName of getAllRosterArtistNames()) {
+  const roster = await getRosterArtistEntries();
+  for (const { name: artistName, sello } of roster) {
     try {
       const match = await searchArtist(artistName);
       if (!match) {
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
         artistId: String(match.chartmetricId),
         artistName,
         spotifyId: match.spotifyId,
-        sello: assignSello(artistName),
+        sello,
         measuredAt,
         monthlyListeners: stats.monthlyListeners,
         followers: stats.followers,

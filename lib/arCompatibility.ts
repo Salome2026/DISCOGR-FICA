@@ -10,7 +10,7 @@ import type { ArCompatibility, ArCompatibilityMatch } from "@discografica/shared
 // same either way, so downstream code (scoring, the UI) never has to
 // special-case "is this subject one of ours".
 export async function crossReferenceArtist(subjectName: string): Promise<ArCompatibility> {
-  const roster = getAllRosterArtistNames();
+  const roster = await getAllRosterArtistNames();
   const normalized = subjectName.trim().toLowerCase();
   const rosterMatch = roster.find((n) => n.toLowerCase() === normalized);
 

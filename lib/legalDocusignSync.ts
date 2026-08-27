@@ -48,7 +48,7 @@ export async function syncNewSignedDocuments(): Promise<SyncResult> {
   ]);
 
   const newEnvelopes = envelopes.filter((e) => !alreadyImported.has(e.envelopeId));
-  const roster = getAllRosterArtistNames();
+  const roster = await getAllRosterArtistNames();
 
   const result: SyncResult = {
     checked: envelopes.length,

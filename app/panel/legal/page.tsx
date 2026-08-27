@@ -4,12 +4,15 @@ import Link from "next/link";
 import RequireRole from "@/app/components/RequireRole";
 import ReleaseCalendar from "@/app/dashboard/ReleaseCalendar";
 import { LegalShell } from "./_shared";
+import ReleaseRequestsPending from "./ReleaseRequestsPending";
 
 export default function LegalHomePage() {
   return (
     <RequireRole allow={["legal"]}>
       <LegalShell title="Panel de Legales" homeMaxWidth>
         <div className="legal-home-grid">
+          <ReleaseRequestsPending limit={5} />
+
           <ReleaseCalendar readOnly />
 
           <div className="legal-home-buttons legal-ficha-buttons">

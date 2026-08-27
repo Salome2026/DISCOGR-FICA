@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import RequireRole from "@/app/components/RequireRole";
 import { PMShell } from "../_shared";
 import type { SplitPersonInput, SplitPersonOption, SplitTrackOption } from "@discografica/shared/types/editorialSplits";
@@ -33,6 +33,15 @@ const SPX_STYLES = `
   .spx-total { margin-top:10px; font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:8px; }
   .spx-total.ok { color:var(--good-ink); }
   .spx-total.short, .spx-total.over { color:var(--warn-ink); }
+
+  .spx-new-person-fields { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px; }
+  .spx-new-person-fields input { grid-column: span 1; }
+  .spx-new-person-fields input[type="date"] { color:var(--text-1); }
+
+  .spx-calc-row { display:flex; align-items:center; gap:8px; margin-bottom:12px; }
+  .spx-calc-row input { width:70px; }
+  .spx-calc-btn { background:transparent; border:1px solid var(--line-soft); border-radius:8px; padding:8px 14px; color:var(--text-2); cursor:pointer; font-size:12.5px; }
+  .spx-calc-btn:hover { border-color:var(--accent-color); color:var(--text-1); }
 
   .spx-resolved-chip { display:flex; align-items:center; gap:8px; background:var(--bg-2); border:1px solid var(--line-soft); border-radius:8px; padding:9px 12px; }
   .spx-resolved-name { font-size:13.5px; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -69,11 +78,38 @@ type Row = {
   personName: string;
   isNew: boolean;
   newEmail: string;
+  newApellido: string;
+  newDni: string;
+  newDireccion: string;
+  newFechaNacimiento: string;
+  newSadaic: string;
   percentRaw: string;
 };
 
 function newRow(): Row {
-  return { key: Math.random().toString(36).slice(2), personId: null, personName: "", isNew: false, newEmail: "", percentRaw: "" };
+  return {
+    key: Math.random().toString(36).slice(2),
+    personId: null,
+    personName: "",
+    isNew: false,
+    newEmail: "",
+    newApellido: "",
+    newDni: "",
+    newDireccion: "",
+    newFechaNacimiento: "",
+    newSadaic: "",
+    percentRaw: "",
+  };
+}
+
+// Reparte 5000 (50,00%) entre n personas lo más parejo posible — el resto de
+// la división entera va a las primeras filas para que la suma siempre cierre
+// en exactamente 5000, nunca 4999/5001 por redondeo.
+function splitEvenly(n: number): number[] {
+  if (n <= 0) return [];
+  const base = Math.floor(5000 / n);
+  const remainder = 5000 % n;
+  return Array.from({ length: n }, (_, i) => base + (i < remainder ? 1 : 0));
 }
 
 function useDebounced(value: string, delay = 250): string {
@@ -243,13 +279,45 @@ function PersonSlot({ row, onChange, onRemove }: { row: Row; onChange: (patch: P
               </button>
             </div>
             {row.isNew && creating && (
-              <input
-                className="spx-input"
-                style={{ marginTop: 6 }}
-                placeholder="Email (opcional)"
-                value={row.newEmail}
-                onChange={(e) => onChange({ newEmail: e.target.value })}
-              />
+              <div className="spx-new-person-fields">
+                <input
+                  className="spx-input"
+                  placeholder="Apellido (opcional)"
+                  value={row.newApellido}
+                  onChange={(e) => onChange({ newApellido: e.target.value })}
+                />
+                <input
+                  className="spx-input"
+                  placeholder="DNI (opcional)"
+                  value={row.newDni}
+                  onChange={(e) => onChange({ newDni: e.target.value })}
+                />
+                <input
+                  className="spx-input"
+                  placeholder="Domicilio (opcional)"
+                  value={row.newDireccion}
+                  onChange={(e) => onChange({ newDireccion: e.target.value })}
+                />
+                <input
+                  className="spx-input"
+                  placeholder="Fecha de nacimiento (opcional)"
+                  type="date"
+                  value={row.newFechaNacimiento}
+                  onChange={(e) => onChange({ newFechaNacimiento: e.target.value })}
+                />
+                <input
+                  className="spx-input"
+                  placeholder="Número de SADAIC (opcional)"
+                  value={row.newSadaic}
+                  onChange={(e) => onChange({ newSadaic: e.target.value })}
+                />
+                <input
+                  className="spx-input"
+                  placeholder="Email (opcional)"
+                  value={row.newEmail}
+                  onChange={(e) => onChange({ newEmail: e.target.value })}
+                />
+              </div>
             )}
           </>
         )}
@@ -269,6 +337,7 @@ function PersonSlot({ row, onChange, onRemove }: { row: Row; onChange: (patch: P
 }
 
 function SplitSection({ title, rows, setRows }: { title: string; rows: Row[]; setRows: (rows: Row[]) => void }) {
+  const [partes, setPartes] = useState("");
   const sum = rows.reduce((s, r) => s + (parsePercent(r.percentRaw) ?? 0), 0);
   const status = sum === 5000 ? "ok" : sum < 5000 ? "short" : "over";
   const statusText =
@@ -285,9 +354,29 @@ function SplitSection({ title, rows, setRows }: { title: string; rows: Row[]; se
     setRows(rows.filter((r) => r.key !== key));
   }
 
+  function applyCalc() {
+    const n = Math.trunc(Number(partes));
+    if (!Number.isFinite(n) || n <= 0) return;
+    const shares = splitEvenly(n);
+    const nextRows = Array.from({ length: n }, (_, i) => rows[i] ?? newRow());
+    setRows(nextRows.map((r, i) => ({ ...r, percentRaw: formatX100(shares[i]) })));
+  }
+
   return (
     <div className="spx-section">
       <div className="spx-section-title">{title}</div>
+      <div className="spx-calc-row">
+        <input
+          className="spx-input"
+          placeholder="¿Entre cuántas partes se divide?"
+          inputMode="numeric"
+          value={partes}
+          onChange={(e) => setPartes(e.target.value)}
+        />
+        <button type="button" className="spx-calc-btn" onClick={applyCalc}>
+          Repartir 50% en partes iguales
+        </button>
+      </div>
       {rows.map((r) => (
         <PersonSlot key={r.key} row={r} onChange={(patch) => updateRow(r.key, patch)} onRemove={() => removeRow(r.key)} />
       ))}
@@ -301,7 +390,16 @@ function SplitSection({ title, rows, setRows }: { title: string; rows: Row[]; se
 
 function SplitEditorialForm() {
   const router = useRouter();
-  const [track, setTrack] = useState<SplitTrackOption | null>(null);
+  const searchParams = useSearchParams();
+  const prefill = useMemo<SplitTrackOption | null>(() => {
+    const catalogTrackId = searchParams.get("catalogTrackId");
+    const trackName = searchParams.get("trackName");
+    const artistDisplay = searchParams.get("artistDisplay");
+    if (!catalogTrackId || !trackName || !artistDisplay) return null;
+    return { id: catalogTrackId, track: trackName, artistDisplay, sello: searchParams.get("sello") };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const [track, setTrack] = useState<SplitTrackOption | null>(prefill);
   const [letra, setLetra] = useState<Row[]>([newRow()]);
   const [musica, setMusica] = useState<Row[]>([newRow()]);
   const [error, setError] = useState<string | null>(null);
@@ -317,7 +415,18 @@ function SplitEditorialForm() {
   function toInput(rows: Row[]): SplitPersonInput[] {
     return rows.map((r) =>
       r.isNew
-        ? { newPerson: { nombreArtistico: r.personName, email: r.newEmail.trim() || null }, percentX100: parsePercent(r.percentRaw) ?? 0 }
+        ? {
+            newPerson: {
+              nombreArtistico: r.personName,
+              email: r.newEmail.trim() || null,
+              apellido: r.newApellido.trim() || null,
+              dni: r.newDni.trim() || null,
+              direccion: r.newDireccion.trim() || null,
+              fechaNacimiento: r.newFechaNacimiento.trim() || null,
+              sadaic: r.newSadaic.trim() || null,
+            },
+            percentX100: parsePercent(r.percentRaw) ?? 0,
+          }
         : { personId: r.personId!, percentX100: parsePercent(r.percentRaw) ?? 0 }
     );
   }

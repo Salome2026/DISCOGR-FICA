@@ -13,6 +13,7 @@ import { getAssignedArtists } from "@/lib/db/users";
 import { upsertTrackFromRelease } from "@/lib/db/catalog";
 import { isActiveStreamingProjectName } from "@/lib/db/streamingProjects";
 import { notifyNewLanzamiento } from "@/lib/email";
+import { TIPOS_OBRA } from "@/lib/tiposObra";
 
 const ESTADOS: EstadoRelease[] = ["Contactado", "Firmado", "Necesito ayuda"];
 const HORA_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -92,10 +93,10 @@ async function handleSingleCreate(
   sello: string | null,
   streamingProject: string | null
 ) {
-  const { artist, fonograma, estado, distribuidora, fecha, hora, autoresCompositores, colaboradores, isrc, genero, audioUrl, portadaUrl } = body as {
+  const { artist, fonograma, estado, distribuidora, fecha, hora, autoresCompositores, colaboradores, isrc, genero, tipoObra, audioUrl, portadaUrl } = body as {
     artist?: string; fonograma?: string; estado?: string; distribuidora?: string;
     fecha?: string; hora?: string; autoresCompositores?: string; colaboradores?: string;
-    isrc?: string; genero?: string; audioUrl?: string; portadaUrl?: string;
+    isrc?: string; genero?: string; tipoObra?: string; audioUrl?: string; portadaUrl?: string;
   };
   const horaNorm = normalizeHora(hora);
 
@@ -107,6 +108,9 @@ async function handleSingleCreate(
   }
   if (!ESTADOS.includes(estado as EstadoRelease)) {
     return NextResponse.json({ error: "Estado inválido." }, { status: 400 });
+  }
+  if (!tipoObra || !(TIPOS_OBRA as readonly string[]).includes(tipoObra)) {
+    return NextResponse.json({ error: "Falta indicar el tipo de obra." }, { status: 400 });
   }
   if (fecha && Number.isNaN(Date.parse(fecha))) {
     return NextResponse.json({ error: "Fecha inválida." }, { status: 400 });
@@ -136,6 +140,7 @@ async function handleSingleCreate(
     colaboradores: colaboradores || null,
     isrc: isrc?.trim() || null,
     genero: genero || null,
+    tipoObra,
     audioUrl: audioUrl || null,
     portadaUrl: portadaUrl || null,
     createdBy: email,
@@ -188,6 +193,7 @@ type TrackInput = {
   productor?: string;
   isrc?: string;
   genero?: string;
+  tipoObra?: string;
   audioUrl?: string;
   portadaUrl?: string;
   comentario?: string;
@@ -243,6 +249,12 @@ async function handleGroupedCreate(
         { status: 400 }
       );
     }
+    if (!t.tipoObra || !(TIPOS_OBRA as readonly string[]).includes(t.tipoObra)) {
+      return NextResponse.json(
+        { error: `Falta indicar el tipo de obra de "${t.fonograma}".` },
+        { status: 400 }
+      );
+    }
     const dup = await findDuplicateRelease(t.artist, t.fonograma, fecha || null);
     if (dup) {
       return NextResponse.json(
@@ -258,6 +270,7 @@ async function handleGroupedCreate(
       productor: t.productor?.trim() || null,
       isrc: t.isrc?.trim() || null,
       genero: t.genero || null,
+      tipoObra: t.tipoObra,
       audioUrl: t.audioUrl || null,
       portadaUrl: t.portadaUrl || null,
       comentario: t.comentario?.trim() || null,

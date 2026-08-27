@@ -37,6 +37,7 @@ export const PERMISSIONS = [
   "ver_tourmanager",
   "editar_tourmanager",
   "crear_split_editorial",
+  "crear_release_legal",
   "ver_ar",
   "editar_ar",
 ] as const;
@@ -86,6 +87,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "editar_rizzvor_proyectos",
     "ver_playlists",
     "crear_split_editorial",
+    "crear_release_legal",
     // PM only ever sees opportunities assigned to them by the ar role — that
     // scoping happens inside listOpportunitiesFor() by role branch, not here.
     "ver_ar",

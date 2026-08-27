@@ -118,6 +118,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         colaboradores: song.colaboradores,
         isrc: song.isrc,
         genero: project.genero,
+        // Rizzvor es el desarrollo propio de artistas del sello — sus
+        // canciones son composiciones originales por definición (el
+        // checklist del proyecto ya exige "Documentación de
+        // autoría/composición"), nunca covers/remixes de terceros.
+        tipoObra: "Tema de autoría propia",
         audioUrl: wav.url,
         portadaUrl: portada.url,
         createdBy: user.email,
@@ -178,6 +183,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         productor: song.productor,
         isrc: song.isrc,
         genero: project.genero,
+        tipoObra: "Tema de autoría propia",
         audioUrl: wav.url,
         portadaUrl: portada.url,
         comentario: song.comentario,

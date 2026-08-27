@@ -5,6 +5,7 @@ import { upload } from "@vercel/blob/client";
 import porCompania from "@/data/por_compania.json";
 import { assignSello, SELLOS } from "@/lib/sellos";
 import { GENEROS } from "@/lib/genres";
+import { TIPOS_OBRA } from "@/lib/tiposObra";
 
 const distribuidoras = [
   ...(porCompania as { companies: { company: string }[] }).companies
@@ -53,8 +54,8 @@ type TrackDraft = {
   artistaPrincipal: string;
   colaboradores: string;
   productor: string;
-  isrc: string;
   genero: string;
+  tipoObra: string;
   comentario: string;
   audioFile: File | null;
   portadaFile: File | null;
@@ -74,8 +75,8 @@ function emptyTrack(artistaPrincipal: string): TrackDraft {
     artistaPrincipal,
     colaboradores: "",
     productor: "",
-    isrc: "",
     genero: "",
+    tipoObra: "",
     comentario: "",
     audioFile: null,
     portadaFile: null,
@@ -124,8 +125,8 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   const [fonograma, setFonograma] = useState("");
   const [autores, setAutores] = useState("");
   const [featuring, setFeaturing] = useState("");
-  const [isrc, setIsrc] = useState("");
   const [genero, setGenero] = useState("");
+  const [tipoObra, setTipoObra] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [portadaFile, setPortadaFile] = useState<File | null>(null);
 
@@ -307,7 +308,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   // productor, and comentario — same "everything but Featuring" rule as the
   // rest of the form.
   const incompleteTracks = useMemo(
-    () => tracks.filter((t) => !t.fonograma.trim() || !t.artistaPrincipal.trim() || !t.audioFile || !t.portadaFile),
+    () => tracks.filter((t) => !t.fonograma.trim() || !t.artistaPrincipal.trim() || !t.tipoObra || !t.audioFile || !t.portadaFile),
     [tracks]
   );
 
@@ -326,6 +327,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
     if (tipo === "single") {
       if (!fonograma.trim()) missing.push("Nombre del fonograma");
       if (!autores.trim()) missing.push("Autores y compositores");
+      if (!tipoObra) missing.push("Tipo de obra");
       if (!audioFile) missing.push("Audio (.wav)");
       if (!portadaFile) missing.push("Portada");
     } else {
@@ -335,7 +337,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
     if (!fecha) missing.push("Fecha de lanzamiento");
     if (!hora) missing.push("Hora de lanzamiento");
     return missing;
-  }, [tipo, artist, sello, streamingProject, fonograma, autores, audioFile, portadaFile, groupNombre, distribuidora, fecha, hora]);
+  }, [tipo, artist, sello, streamingProject, fonograma, autores, tipoObra, audioFile, portadaFile, groupNombre, distribuidora, fecha, hora]);
 
   const formIncomplete =
     missingFields.length > 0 || (isGrouped && (tracks.length === 0 || incompleteTracks.length > 0));
@@ -433,8 +435,8 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             hora: hora || null,
             autoresCompositores: autores || null,
             colaboradores: featuring || null,
-            isrc: isrc || null,
             genero: genero || null,
+            tipoObra,
             audioUrl,
             portadaUrl,
           }),
@@ -492,8 +494,8 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             artist: t.artistaPrincipal,
             colaboradores: t.colaboradores || null,
             productor: t.productor || null,
-            isrc: t.isrc || null,
             genero: t.genero || null,
+            tipoObra: t.tipoObra,
             comentario: t.comentario || null,
             audioUrl: uploaded[i].audioUrl,
             portadaUrl: uploaded[i].portadaUrl,
@@ -1173,15 +1175,13 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             {tipo === "single" && (
               <div style={{ display: "flex", gap: 10 }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>
-                    ISRC <span style={{ color: "var(--text-3)", fontWeight: 400 }}>(opcional)</span>
-                  </label>
-                  <input
-                    value={isrc}
-                    onChange={(e) => setIsrc(e.target.value)}
-                    placeholder="Ej: ARXXX2500001"
-                    style={inputStyle}
-                  />
+                  <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Tipo de obra</label>
+                  <select value={tipoObra} onChange={(e) => setTipoObra(e.target.value)} style={missingStyle(!tipoObra)}>
+                    <option value="">Elegir...</option>
+                    {TIPOS_OBRA.map((t) => (
+                      <option key={t} value={t}>{t}</option>
+                    ))}
+                  </select>
                 </div>
                 <div style={{ flex: 1 }}>
                   <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>
@@ -1343,13 +1343,17 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                             </div>
                             <div style={{ display: "flex", gap: 8 }}>
                               <div style={{ flex: 1 }}>
-                                <label style={smallLabel}>ISRC (opcional)</label>
-                                <input
-                                  value={t.isrc}
-                                  onChange={(e) => updateTrack(t.key, { isrc: e.target.value })}
-                                  placeholder="Ej: ARXXX2500001"
-                                  style={inputStyle}
-                                />
+                                <label style={smallLabel}>Tipo de obra</label>
+                                <select
+                                  value={t.tipoObra}
+                                  onChange={(e) => updateTrack(t.key, { tipoObra: e.target.value })}
+                                  style={missingStyle(!t.tipoObra, inputStyle)}
+                                >
+                                  <option value="">Elegir...</option>
+                                  {TIPOS_OBRA.map((to) => (
+                                    <option key={to} value={to}>{to}</option>
+                                  ))}
+                                </select>
                               </div>
                               <div style={{ flex: 1 }}>
                                 <label style={smallLabel}>Género (opcional)</label>

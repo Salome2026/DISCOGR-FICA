@@ -131,8 +131,12 @@ async function resolvePerson(input: SplitPersonInput, actorEmail: string): Promi
 
   const id = `pub-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const { rows } = await sql`
-    INSERT INTO publishing_artists (id, nombre_artistico, email, tipo, updated_by, updated_at)
-    VALUES (${id}, ${name}, ${input.newPerson.email ?? null}, 'Externo', ${actorEmail}, now())
+    INSERT INTO publishing_artists
+      (id, nombre_artistico, email, apellido, dni, direccion, fecha_nacimiento, sadaic, tipo, updated_by, updated_at)
+    VALUES
+      (${id}, ${name}, ${input.newPerson.email ?? null}, ${input.newPerson.apellido ?? null}, ${input.newPerson.dni ?? null},
+       ${input.newPerson.direccion ?? null}, ${input.newPerson.fechaNacimiento ?? null}, ${input.newPerson.sadaic ?? null},
+       'Externo', ${actorEmail}, now())
     RETURNING id, nombre_artistico
   `;
   return { personId: rows[0].id as string, personName: rows[0].nombre_artistico as string, percentX100: input.percentX100 };

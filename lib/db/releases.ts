@@ -1,4 +1,6 @@
 import { sql } from "@vercel/postgres";
+import { ensureLegalReleaseRequestsSchema } from "./legalReleaseRequests";
+import { ensureEditorialSplitsSchema } from "./editorialSplits";
 
 export type EstadoRelease = "Contactado" | "Firmado" | "Necesito ayuda";
 export type TipoLanzamiento = "single" | "ep" | "album";
@@ -79,6 +81,14 @@ export function ensureReleasesSchema(): Promise<void> {
       // habilitar sugerencias de playlists de Spotify por género.
       await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS genero TEXT`;
 
+      // Tipo de obra (Cover/Remix/Tema de autoría propia, ver lib/tiposObra.ts)
+      // determina si corresponde una tarea de Split editorial pendiente.
+      // Nullable: filas viejas (pre-esta feature) se tratan como "No
+      // corresponde" hasta que alguien las edite u override.
+      await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS tipo_obra TEXT`;
+      // Permite forzar una tarea de Split editorial incluso en un Cover/Remix.
+      await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS split_override BOOLEAN NOT NULL DEFAULT false`;
+
       await sql`
         CREATE TABLE IF NOT EXISTS pm_release_history (
           id BIGSERIAL PRIMARY KEY,
@@ -107,6 +117,7 @@ export type NewRelease = {
   colaboradores: string | null;
   isrc: string | null;
   genero: string | null;
+  tipoObra: string;
   audioUrl: string | null;
   portadaUrl: string | null;
   createdBy: string;
@@ -129,10 +140,10 @@ export async function createRelease(r: NewRelease) {
   const { rows } = await sql`
     INSERT INTO pm_releases
       (artist_name, sello, streaming_project, fonograma_nombre, estado, distribuidora, fecha_lanzamiento,
-       hora_lanzamiento, autores_compositores, colaboradores, isrc, genero, audio_url, portada_url, created_by)
+       hora_lanzamiento, autores_compositores, colaboradores, isrc, genero, tipo_obra, audio_url, portada_url, created_by)
     VALUES
       (${r.artist}, ${r.sello}, ${r.streamingProject}, ${r.fonograma}, ${r.estado}, ${r.distribuidora}, ${r.fecha},
-       ${r.hora}, ${r.autoresCompositores}, ${r.colaboradores}, ${r.isrc}, ${r.genero}, ${r.audioUrl}, ${r.portadaUrl}, ${r.createdBy})
+       ${r.hora}, ${r.autoresCompositores}, ${r.colaboradores}, ${r.isrc}, ${r.genero}, ${r.tipoObra}, ${r.audioUrl}, ${r.portadaUrl}, ${r.createdBy})
     RETURNING *
   `;
   const release = rows[0];
@@ -165,6 +176,7 @@ export type NewGroupTrack = {
   productor: string | null;
   isrc: string | null;
   genero: string | null;
+  tipoObra: string;
   audioUrl: string | null;
   portadaUrl: string | null;
   comentario: string | null;
@@ -187,11 +199,11 @@ export async function createGroupedRelease(group: NewReleaseGroup, tracks: NewGr
     const { rows } = await sql`
       INSERT INTO pm_releases
         (artist_name, sello, streaming_project, fonograma_nombre, estado, distribuidora, fecha_lanzamiento, hora_lanzamiento,
-         audio_url, portada_url, group_id, track_number, colaboradores, productor, isrc, genero, comentario, created_by)
+         audio_url, portada_url, group_id, track_number, colaboradores, productor, isrc, genero, tipo_obra, comentario, created_by)
       VALUES
         (${t.artist}, ${group.sello}, ${group.streamingProject}, ${t.fonograma}, ${group.estado}, ${group.distribuidora}, ${group.fecha}, ${group.hora},
          ${t.audioUrl}, ${t.portadaUrl}, ${groupRow.id}, ${t.trackNumber}, ${t.colaboradores},
-         ${t.productor}, ${t.isrc}, ${t.genero}, ${t.comentario}, ${group.createdBy})
+         ${t.productor}, ${t.isrc}, ${t.genero}, ${t.tipoObra}, ${t.comentario}, ${group.createdBy})
       RETURNING *
     `;
     const track = rows[0];
@@ -231,6 +243,42 @@ export async function listReleasesFor(email: string, role: string) {
   return rows;
 }
 
+// Separado de listReleasesFor() a propósito — esa función ya la consumen el
+// calendario y otras pantallas tal cual está hoy; el board de tareas
+// pendientes necesita columnas extra (de dos tablas más) que esas pantallas
+// no piden, así que vive en su propia función en vez de arriesgar romper algo
+// que ya funciona.
+export async function listReleasesForBoard(email: string, role: string) {
+  await ensureReleasesSchema();
+  await ensureLegalReleaseRequestsSchema();
+  await ensureEditorialSplitsSchema();
+  const roleFilter = role === "admin" || role === "legal" || role === "editorial" || role === "management";
+  const { rows } = roleFilter
+    ? await sql`
+        SELECT r.*, g.tipo AS group_tipo, g.nombre AS group_nombre,
+          lrr.id AS release_request_id, lrr.estado AS release_request_estado,
+          es.id AS split_id, es.estado AS split_estado
+        FROM pm_releases r
+        LEFT JOIN pm_release_groups g ON g.id = r.group_id
+        LEFT JOIN legal_release_requests lrr ON lrr.pm_release_id = r.id
+        LEFT JOIN editorial_splits es ON es.catalog_track_id = 'pm-' || r.id
+        WHERE r.archived = false
+        ORDER BY r.created_at DESC
+      `
+    : await sql`
+        SELECT r.*, g.tipo AS group_tipo, g.nombre AS group_nombre,
+          lrr.id AS release_request_id, lrr.estado AS release_request_estado,
+          es.id AS split_id, es.estado AS split_estado
+        FROM pm_releases r
+        LEFT JOIN pm_release_groups g ON g.id = r.group_id
+        LEFT JOIN legal_release_requests lrr ON lrr.pm_release_id = r.id
+        LEFT JOIN editorial_splits es ON es.catalog_track_id = 'pm-' || r.id
+        WHERE r.archived = false AND r.created_by = ${email}
+        ORDER BY r.created_at DESC
+      `;
+  return rows;
+}
+
 export async function updateReleaseEstado(
   id: number,
   estado: EstadoRelease,
@@ -244,6 +292,18 @@ export async function updateReleaseEstado(
   await sql`
     INSERT INTO pm_release_history (release_id, action, actor_email, detail)
     VALUES (${id}, 'updated', ${actorEmail}, ${`Estado -> ${estado}`})
+  `;
+}
+
+export async function setSplitOverride(id: number, value: boolean, actorEmail: string) {
+  await ensureReleasesSchema();
+  await sql`
+    UPDATE pm_releases SET split_override = ${value}, updated_by = ${actorEmail}, updated_at = now()
+    WHERE id = ${id}
+  `;
+  await sql`
+    INSERT INTO pm_release_history (release_id, action, actor_email, detail)
+    VALUES (${id}, 'updated', ${actorEmail}, ${`Split override -> ${value}`})
   `;
 }
 
@@ -272,6 +332,17 @@ export async function setMarketingPlan(
     INSERT INTO pm_release_history (release_id, action, actor_email, detail)
     VALUES (${id}, 'updated', ${actorEmail}, ${`Plan de marketing -> ${marketingPlan ? "Sí" : "No"}`})
   `;
+}
+
+export async function getReleaseById(id: number) {
+  await ensureReleasesSchema();
+  const { rows } = await sql`
+    SELECT r.*, g.tipo AS group_tipo, g.nombre AS group_nombre
+    FROM pm_releases r
+    LEFT JOIN pm_release_groups g ON g.id = r.group_id
+    WHERE r.id = ${id}
+  `;
+  return rows[0] ?? null;
 }
 
 export async function getReleaseOwner(id: number) {

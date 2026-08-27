@@ -30,6 +30,26 @@ export const PM_STYLES = `
   .pmx-big-btn p { font-size:12.5px; color:var(--text-3); margin:0; line-height:1.5; }
 
   .pmx-card { background: var(--glass-bg); border:1px solid var(--glass-border); border-radius: var(--radius-lg); padding:1.5rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); box-shadow: var(--shadow-glass); }
+
+  .pmx-fono-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; }
+  .pmx-fono-card {
+    display:flex; flex-direction:column; gap:10px;
+    background: var(--glass-bg); border:1px solid var(--glass-border); border-radius: var(--radius-lg);
+    padding:1.1rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7);
+    box-shadow: var(--shadow-glass);
+  }
+  .pmx-fono-title { font-size:15px; font-weight:700; }
+  .pmx-fono-meta { font-size:12px; color:var(--text-3); }
+  .pmx-fono-tasks { display:flex; flex-direction:column; gap:6px; margin-top:4px; }
+  .pmx-fono-task { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .pmx-fono-task-label { font-size:12px; color:var(--text-2); }
+  .pmx-badge { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:3px 10px; border-radius:100px; flex-shrink:0; }
+  .pmx-badge.pendiente { background: var(--warn-bg); color: var(--warn-ink); }
+  .pmx-badge.completado { background: var(--good-bg); color: var(--good-ink); }
+  .pmx-badge.no-corresponde { background: var(--bg-2); color: var(--text-3); }
+  .pmx-fono-task-btn { background:transparent; border:1px solid var(--line-soft); border-radius:6px; padding:4px 10px; color:var(--text-2); cursor:pointer; font-size:11.5px; text-decoration:none; }
+  .pmx-fono-task-btn:hover { border-color:var(--accent-color); color:var(--text-1); }
+  .pmx-fono-footer { display:flex; justify-content:flex-end; margin-top:2px; }
 `;
 
 export function PMShell({

@@ -132,6 +132,28 @@ export const LEGAL_STYLES = `
     position: absolute; top: 10px; right: 10px; background: var(--glass-bg); border: 1px solid var(--glass-border);
     border-radius: 6px; padding: 3px 8px; color: var(--text-2); cursor: pointer; font-size: 10.5px;
   }
+
+  .rlr-list { display: flex; flex-direction: column; gap: 10px; }
+  .rlr-card {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg);
+    padding: 14px 16px; cursor: pointer; text-decoration: none; color: var(--text-1);
+    transition: border-color var(--dur-base) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  }
+  .rlr-card:hover { border-color: var(--legal-accent); transform: translateY(-1px); }
+  .rlr-card-title { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .rlr-card-meta { font-size: 12px; color: var(--text-3); }
+  .rlr-badge { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 3px 10px; border-radius: 100px; flex-shrink: 0; }
+  .rlr-badge.pendiente { background: var(--warn-bg); color: var(--warn-ink); }
+  .rlr-badge.revisado { background: var(--good-bg); color: var(--good-ink); }
+  .rlr-empty { color: var(--text-3); font-size: 13.5px; text-align: center; padding: 1.5rem 0; }
+  .rlr-see-all { font-size: 12.5px; color: var(--legal-accent); text-decoration: none; }
+
+  .rlr-detail-section { margin-top: 1.25rem; }
+  .rlr-detail-title { font-size: 14px; font-weight: 700; letter-spacing: .02em; margin-bottom: 8px; }
+  .rlr-participant-row { display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; padding: 8px 0; border-bottom: 1px solid var(--line-soft); }
+  .rlr-participant-row .p-meta { color: var(--text-3); font-size: 11.5px; margin-top: 2px; }
+  .rlr-total-row { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 700; padding: 8px 0 0; color: var(--good-ink); }
 `;
 
 export function LegalShell({

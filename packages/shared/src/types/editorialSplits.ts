@@ -47,4 +47,15 @@ export type SplitPersonOption = {
 
 export type SplitPersonInput =
   | { personId: string; percentX100: number }
-  | { newPerson: { nombreArtistico: string; email?: string | null }; percentX100: number };
+  | {
+      newPerson: {
+        nombreArtistico: string;
+        email?: string | null;
+        apellido?: string | null;
+        dni?: string | null;
+        direccion?: string | null;
+        fechaNacimiento?: string | null;
+        sadaic?: string | null;
+      };
+      percentX100: number;
+    };

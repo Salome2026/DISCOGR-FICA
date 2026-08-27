@@ -318,7 +318,7 @@ function DashboardInner() {
         .dash-inner{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:2rem 2.5rem 0;}
         .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:.85rem;}
         .brand{display:flex;align-items:center;gap:10px;}
-        .brand-logo-chip{width:84px;height:27px;overflow:hidden;}
+        .brand-logo-chip{width:84px;height:33px;overflow:hidden;}
         .brand-logo-chip img{width:84px;height:auto;display:block;}
         .brand-sub{font-size:10px;color:var(--text-3);}
         .nav-pills{display:flex;gap:3px;flex-wrap:wrap;background:var(--glass-bg);border:1px solid var(--glass-border);backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);border-radius:var(--radius-pill);padding:4px;}

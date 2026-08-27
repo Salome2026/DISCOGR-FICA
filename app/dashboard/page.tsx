@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import { signOut } from "next-auth/react";
 import { motion, useReducedMotion, animate, type Variants } from "framer-motion";
@@ -316,9 +317,9 @@ function DashboardInner() {
         }
         .dash-inner{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:2rem 2.5rem 0;}
         .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:.85rem;}
-        .brand{display:flex;align-items:center;gap:9px;}
-        .brand-mark{width:26px;height:26px;border-radius:8px;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11.5px;color:var(--accent-ink);}
-        .brand-name{font-size:12.5px;font-weight:600;letter-spacing:-.01em;}
+        .brand{display:flex;align-items:center;gap:10px;}
+        .brand-logo-chip{background:#fff;border-radius:7px;width:84px;height:27px;overflow:hidden;}
+        .brand-logo-chip img{width:84px;height:auto;display:block;}
         .brand-sub{font-size:10px;color:var(--text-3);}
         .nav-pills{display:flex;gap:3px;flex-wrap:wrap;background:var(--glass-bg);border:1px solid var(--glass-border);backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);border-radius:var(--radius-pill);padding:4px;}
         .nav-pill{font-size:11.5px;padding:6px 11px;border-radius:var(--radius-pill);color:var(--text-2);border:1px solid transparent;text-decoration:none;transition:background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);}
@@ -392,17 +393,15 @@ function DashboardInner() {
       <div className="dash-inner">
         <div className="topbar">
           <div className="brand">
-            <div className="brand-mark">V</div>
-            <div>
-              <div className="brand-name">VPO Corp</div>
-              <div className="brand-sub">Centro de control</div>
+            <div className="brand-logo-chip">
+              <Image src="/vpo-logo.png" alt="VPO Corp" width={2539} height={1298} priority />
             </div>
+            <div className="brand-sub">Centro de control</div>
           </div>
           <div className="nav-pills">
             <span className="nav-pill active">Dashboard</span>
             <Link href="/catalogo" className="nav-pill">Catálogo</Link>
             <Link href="/nuevo" className="nav-pill">+ Nuevo acuerdo</Link>
-            <Link href="/pm" className="nav-pill">Project Managers</Link>
             <Link href="/admin/usuarios" className="nav-pill">Usuarios</Link>
             <Link href="/admin/artistas" className="nav-pill">Artistas</Link>
             <Link href="/panel/playlists" className="nav-pill">Playlists</Link>

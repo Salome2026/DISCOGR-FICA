@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { createUserWithSharedPassword } from "@/lib/db/users";
 import { hasSharedPassword } from "@/lib/db/settings";
-import { ROLES, type AccountType, type Role } from "@/lib/permissions";
+import { PERMISSIONS, ROLES, hasPermission, type AccountType, type Permission, type Role, type SessionUser } from "@/lib/permissions";
 
 async function requireAdmin() {
   const session = await auth();
-  const user = session?.user as { email?: string; role?: string } | undefined;
-  if (!user?.email || user.role !== "admin") return null;
+  const user = session?.user as unknown as SessionUser | undefined;
+  if (!user?.email || !hasPermission(user, "administrar_usuarios")) return null;
   return user.email;
 }
 
@@ -24,11 +24,12 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { email, name, accountType, role } = body as {
+  const { email, name, accountType, role, revokedPermissions } = body as {
     email?: string;
     name?: string;
     accountType?: AccountType;
     role?: Role;
+    revokedPermissions?: unknown;
   };
 
   if (!email || !name || !accountType || !role) {
@@ -37,7 +38,10 @@ export async function POST(req: NextRequest) {
   if (!ROLES.includes(role)) {
     return NextResponse.json({ error: "Rol inválido." }, { status: 400 });
   }
+  const revoked: Permission[] = Array.isArray(revokedPermissions)
+    ? revokedPermissions.filter((p): p is Permission => (PERMISSIONS as readonly string[]).includes(p))
+    : [];
 
-  await createUserWithSharedPassword({ email, name, accountType, role, createdBy: admin });
+  await createUserWithSharedPassword({ email, name, accountType, role, revokedPermissions: revoked, createdBy: admin });
   return NextResponse.json({ ok: true }, { status: 201 });
 }

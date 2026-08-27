@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { setSharedPassword, hasSharedPassword } from "@/lib/db/settings";
 import { logActivity } from "@/lib/db/users";
+import { hasPermission, type SessionUser } from "@/lib/permissions";
 
 async function requireAdmin() {
   const session = await auth();
-  const user = session?.user as { email?: string; role?: string } | undefined;
-  if (!user?.email || user.role !== "admin") return null;
+  const user = session?.user as unknown as SessionUser | undefined;
+  if (!user?.email || !hasPermission(user, "administrar_usuarios")) return null;
   return user.email;
 }
 

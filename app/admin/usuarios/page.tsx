@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import RequireRole from "@/app/components/RequireRole";
+import RequirePermission from "@/app/components/RequirePermission";
 import QuickAccessPanel from "./QuickAccessPanel";
-import { ROLES_BY_ACCOUNT_TYPE, ROLE_LABELS, type AccountType, type Role } from "@/lib/permissions";
+import { ROLES_BY_ACCOUNT_TYPE, ROLE_LABELS, type AccountType, type Permission, type Role } from "@/lib/permissions";
 
 type AppUser = {
   email: string;
@@ -13,13 +13,15 @@ type AppUser = {
   role: Role;
   active: boolean;
   last_login: string | null;
+  extra_permissions: Permission[];
+  revoked_permissions: Permission[];
 };
 
 export default function AdminUsuarios() {
   return (
-    <RequireRole allow={["admin"]}>
+    <RequirePermission need="administrar_usuarios">
       <AdminUsuariosInner />
-    </RequireRole>
+    </RequirePermission>
   );
 }
 
@@ -60,6 +62,18 @@ function AdminUsuariosInner() {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "set_role", role, extraPermissions: [], revokedPermissions: [] }),
+    });
+    load();
+  }
+
+  async function toggleNoAdminUsuarios(u: AppUser, checked: boolean) {
+    const revokedPermissions = checked
+      ? [...new Set([...u.revoked_permissions, "administrar_usuarios"])]
+      : u.revoked_permissions.filter((p) => p !== "administrar_usuarios");
+    await fetch(`/api/admin/users/${encodeURIComponent(u.email)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "set_role", role: u.role, extraPermissions: u.extra_permissions, revokedPermissions }),
     });
     load();
   }
@@ -129,6 +143,7 @@ function AdminUsuariosInner() {
                   <th>Email</th>
                   <th>Tipo</th>
                   <th>Rol</th>
+                  <th>Sin administrar usuarios</th>
                   <th>Último acceso</th>
                   <th>Estado</th>
                   <th></th>
@@ -150,6 +165,15 @@ function AdminUsuariosInner() {
                           )
                         )}
                       </select>
+                    </td>
+                    <td>
+                      {u.role === "admin" && (
+                        <input
+                          type="checkbox"
+                          checked={u.revoked_permissions.includes("administrar_usuarios")}
+                          onChange={(e) => toggleNoAdminUsuarios(u, e.target.checked)}
+                        />
+                      )}
                     </td>
                     <td>{u.last_login ? new Date(u.last_login).toLocaleString("es-AR") : "Nunca"}</td>
                     <td>

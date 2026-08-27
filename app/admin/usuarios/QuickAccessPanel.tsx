@@ -13,6 +13,7 @@ export default function QuickAccessPanel({ onChanged }: { onChanged: () => void 
   const [name, setName] = useState("");
   const [accountType, setAccountType] = useState<AccountType>("empresa");
   const [role, setRole] = useState<Role>("project_manager");
+  const [noAdminUsuarios, setNoAdminUsuarios] = useState(false);
   const [addSaving, setAddSaving] = useState(false);
   const [addMsg, setAddMsg] = useState<string | null>(null);
 
@@ -54,13 +55,20 @@ export default function QuickAccessPanel({ onChanged }: { onChanged: () => void 
       const res = await fetch("/api/admin/quick-add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, name, accountType, role }),
+        body: JSON.stringify({
+          email,
+          name,
+          accountType,
+          role,
+          revokedPermissions: role === "admin" && noAdminUsuarios ? ["administrar_usuarios"] : [],
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setAddMsg(`${email} agregado — entra con la contraseña común.`);
       setEmail("");
       setName("");
+      setNoAdminUsuarios(false);
       onChanged();
     } catch (err) {
       setAddMsg(err instanceof Error ? err.message : "Error");
@@ -132,6 +140,12 @@ export default function QuickAccessPanel({ onChanged }: { onChanged: () => void 
           {addSaving ? "Agregando..." : "+ Agregar acceso"}
         </button>
       </form>
+      {role === "admin" && (
+        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "var(--text-2)", marginTop: 10 }}>
+          <input type="checkbox" checked={noAdminUsuarios} onChange={(e) => setNoAdminUsuarios(e.target.checked)} />
+          Acceso a Label, pero sin poder administrar usuarios
+        </label>
+      )}
       {addMsg && <p style={{ fontSize: 12, color: "var(--text-2)", marginTop: 8 }}>{addMsg}</p>}
     </div>
   );

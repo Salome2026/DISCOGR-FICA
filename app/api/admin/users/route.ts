@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 import { createUser, listUsers } from "@/lib/db/users";
-import { ROLES, type AccountType, type Role } from "@/lib/permissions";
+import { ROLES, hasPermission, type AccountType, type Role } from "@/lib/permissions";
 
 async function requireAdmin(req: NextRequest): Promise<string | null> {
   const user = await getSessionUser(req);
-  if (!user?.email || user.role !== "admin") return null;
+  if (!user?.email || !hasPermission(user, "administrar_usuarios")) return null;
   return user.email;
 }
 

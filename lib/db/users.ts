@@ -235,15 +235,18 @@ export async function createUserWithSharedPassword(input: {
   name: string;
   accountType: AccountType;
   role: Role;
+  revokedPermissions?: Permission[];
   createdBy: string;
 }) {
   await ensureUsersSchema();
   const email = normalizeEmail(input.email);
+  const revokedLit = pgArrayLiteral(input.revokedPermissions ?? []);
   await sql`
-    INSERT INTO app_users (email, name, password_hash, uses_shared_password, account_type, role, created_by)
-    VALUES (${email}, ${input.name}, NULL, true, ${input.accountType}, ${input.role}, ${input.createdBy})
+    INSERT INTO app_users (email, name, password_hash, uses_shared_password, account_type, role, revoked_permissions, created_by)
+    VALUES (${email}, ${input.name}, NULL, true, ${input.accountType}, ${input.role}, ${revokedLit}::text[], ${input.createdBy})
     ON CONFLICT (email) DO UPDATE SET
-      uses_shared_password = true, role = ${input.role}, account_type = ${input.accountType}, active = true
+      uses_shared_password = true, role = ${input.role}, account_type = ${input.accountType},
+      revoked_permissions = ${revokedLit}::text[], active = true
   `;
   await logActivity(input.createdBy, "user_quick_added", email);
 }

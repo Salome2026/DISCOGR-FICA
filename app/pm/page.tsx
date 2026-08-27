@@ -17,6 +17,10 @@ export default function PMLandingPage() {
             <h2>Fonograma</h2>
             <p>Cargá un single, EP o álbum nuevo.</p>
           </Link>
+          <Link href="/pm/release" className="pmx-big-btn">
+            <h2>Release</h2>
+            <p>Cargá los datos de derechos de máster de un fonograma.</p>
+          </Link>
         </div>
       </PMShell>
     </RequireRole>

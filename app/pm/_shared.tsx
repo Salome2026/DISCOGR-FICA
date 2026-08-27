@@ -14,7 +14,7 @@ export const PM_STYLES = `
   .pmx-sub { font-size:13px; color:var(--text-3); margin-top:4px; }
   .pmx-signout { background: var(--glass-bg); border:1px solid var(--glass-border); border-radius:8px; padding:8px 16px; color:var(--text-2); cursor:pointer; font-size:12.5px; backdrop-filter: blur(20px) saturate(1.7); -webkit-backdrop-filter: blur(20px) saturate(1.7); }
 
-  .pmx-home-buttons { display:grid; grid-template-columns: 1fr 1fr; gap:1.25rem; }
+  .pmx-home-buttons { display:grid; grid-template-columns: repeat(3, 1fr); gap:1.25rem; }
   @media (max-width:640px) { .pmx-home-buttons { grid-template-columns: 1fr; } }
   .pmx-big-btn {
     display:flex; flex-direction:column; gap:8px; align-items:flex-start; text-align:left; justify-content:center;

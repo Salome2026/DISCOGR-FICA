@@ -3,12 +3,14 @@ import { getSessionUser } from "@/lib/session";
 import { hasPermission } from "@/lib/permissions";
 import { getReleaseById } from "@/lib/db/releases";
 import { createReleaseRequest, type ReleaseParticipant } from "@/lib/db/legalReleaseRequests";
+import { RELEASE_PARTICIPANT_TIPOS } from "@discografica/shared/types/legalReleaseRequests";
 
 function isValidParticipant(p: unknown): p is ReleaseParticipant {
   if (!p || typeof p !== "object") return false;
   const o = p as Record<string, unknown>;
   if (typeof o.nombre !== "string" || !o.nombre.trim()) return false;
   if (typeof o.percentX100 !== "number" || !Number.isFinite(o.percentX100) || o.percentX100 <= 0) return false;
+  if (!(RELEASE_PARTICIPANT_TIPOS as readonly string[]).includes(o.tipo as string)) return false;
   return true;
 }
 

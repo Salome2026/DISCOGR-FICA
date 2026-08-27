@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import RequireRole from "@/app/components/RequireRole";
 import { LegalShell } from "../../_shared";
 
+const RELEASE_PARTICIPANT_TIPOS = ["Artista", "Sello", "PPD"] as const;
+
 type ReleaseParticipant = {
   nombre: string;
   apellido: string | null;
@@ -12,6 +14,7 @@ type ReleaseParticipant = {
   fechaNacimiento: string | null;
   domicilio: string | null;
   email: string | null;
+  tipo: (typeof RELEASE_PARTICIPANT_TIPOS)[number];
   percentX100: number;
 };
 
@@ -116,22 +119,35 @@ function ReleaseRequestDetail({ id }: { id: string }) {
         )}
       </div>
 
-      <div className="rlr-detail-section">
-        <div className="rlr-detail-title">PARTICIPANTES</div>
-        {request.participants.map((p, i) => (
-          <div key={i} className="rlr-participant-row">
-            <div>
-              <div>{[p.nombre, p.apellido].filter(Boolean).join(" ")}</div>
-              <div className="p-meta">
-                {p.dni ? `DNI ${p.dni}` : ""}
-                {p.fechaNacimiento ? ` · Nac. ${formatDate(p.fechaNacimiento)}` : ""}
-                {p.domicilio ? ` · ${p.domicilio}` : ""}
-                {p.email ? ` · ${p.email}` : ""}
+      {RELEASE_PARTICIPANT_TIPOS.map((tipo) => {
+        const people = request.participants.filter((p) => p.tipo === tipo);
+        if (people.length === 0) return null;
+        const subtotal = people.reduce((s, p) => s + p.percentX100, 0);
+        return (
+          <div key={tipo} className="rlr-detail-section">
+            <div className="rlr-detail-title">{tipo.toUpperCase()}</div>
+            {people.map((p, i) => (
+              <div key={i} className="rlr-participant-row">
+                <div>
+                  <div>{[p.nombre, p.apellido].filter(Boolean).join(" ")}</div>
+                  <div className="p-meta">
+                    {p.dni ? `DNI ${p.dni}` : ""}
+                    {p.fechaNacimiento ? ` · Nac. ${formatDate(p.fechaNacimiento)}` : ""}
+                    {p.domicilio ? ` · ${p.domicilio}` : ""}
+                    {p.email ? ` · ${p.email}` : ""}
+                  </div>
+                </div>
+                <span>{formatX100(p.percentX100)}%</span>
               </div>
+            ))}
+            <div className="rlr-total-row">
+              <span>Subtotal {tipo}</span>
+              <span>{formatX100(subtotal)}%</span>
             </div>
-            <span>{formatX100(p.percentX100)}%</span>
           </div>
-        ))}
+        );
+      })}
+      <div className="rlr-detail-section">
         <div className="rlr-total-row">
           <span>TOTAL</span>
           <span>{formatX100(total)}%</span>

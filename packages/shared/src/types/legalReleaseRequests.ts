@@ -2,6 +2,9 @@
 // grabación) — snapshot propio, deliberadamente no ligado a
 // publishing_artists (esa tabla es de derechos editoriales/SADAIC, un
 // concepto distinto aunque la misma persona real pueda aparecer en ambas).
+export const RELEASE_PARTICIPANT_TIPOS = ["Artista", "Sello", "PPD"] as const;
+export type ReleaseParticipantTipo = (typeof RELEASE_PARTICIPANT_TIPOS)[number];
+
 export type ReleaseParticipant = {
   nombre: string;
   apellido: string | null;
@@ -9,6 +12,7 @@ export type ReleaseParticipant = {
   fechaNacimiento: string | null;
   domicilio: string | null;
   email: string | null;
+  tipo: ReleaseParticipantTipo;
   percentX100: number;
 };
 

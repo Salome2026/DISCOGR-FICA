@@ -10,10 +10,10 @@ type ReleaseRequestCard = {
   trackName: string;
   artistDisplay: string;
   tipo: "Artista" | "Sello" | "PPD" | null;
-  estado: "Pendiente de envío" | "Revisado";
+  estado: "Pendiente de envío" | "Enviado";
   createdBy: string;
   createdAt: string;
-  reviewedAt: string | null;
+  sentAt: string | null;
 };
 
 function formatDate(v: string): string {
@@ -32,7 +32,7 @@ export default function ReleaseRequestsPage() {
 
 function ReleaseRequestsList() {
   const router = useRouter();
-  const [estado, setEstado] = useState<"Pendiente de envío" | "Revisado">("Pendiente de envío");
+  const [estado, setEstado] = useState<"Pendiente de envío" | "Enviado">("Pendiente de envío");
   const [q, setQ] = useState("");
   const [requests, setRequests] = useState<ReleaseRequestCard[] | null>(null);
 
@@ -56,10 +56,10 @@ function ReleaseRequestsList() {
             Pendientes
           </button>
           <button
-            className={estado === "Revisado" ? "legal-btn-primary" : "legal-btn-ghost"}
-            onClick={() => setEstado("Revisado")}
+            className={estado === "Enviado" ? "legal-btn-primary" : "legal-btn-ghost"}
+            onClick={() => setEstado("Enviado")}
           >
-            Revisados
+            Enviados
           </button>
         </div>
         <input className="legal-search" placeholder="Buscar por canción o artista..." value={q} onChange={(e) => setQ(e.target.value)} />
@@ -69,7 +69,7 @@ function ReleaseRequestsList() {
         <p className="muted">Cargando...</p>
       ) : requests.length === 0 ? (
         <div className="rlr-empty">
-          {q ? "No encontramos ningún Release con esa búsqueda." : estado === "Pendiente de envío" ? "No hay Releases pendientes." : "Todavía no hay Releases revisados."}
+          {q ? "No encontramos ningún Release con esa búsqueda." : estado === "Pendiente de envío" ? "No hay Releases pendientes." : "Todavía no hay Releases enviados."}
         </div>
       ) : (
         <div className="rlr-list">
@@ -79,13 +79,13 @@ function ReleaseRequestsList() {
                 <div className="rlr-card-title">{r.trackName}</div>
                 <div className="rlr-card-meta">
                   {r.artistDisplay} · Cargado por {r.createdBy} ·{" "}
-                  {estado === "Revisado" && r.reviewedAt ? `Revisado ${formatDate(r.reviewedAt)}` : formatDate(r.createdAt)}
+                  {estado === "Enviado" && r.sentAt ? `Enviado ${formatDate(r.sentAt)}` : formatDate(r.createdAt)}
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 {r.tipo && <span className="rlr-badge tipo">{r.tipo}</span>}
-                <span className={`rlr-badge ${estado === "Pendiente de envío" ? "pendiente" : "revisado"}`}>
-                  {estado === "Pendiente de envío" ? "Pendiente" : "Revisado"}
+                <span className={`rlr-badge ${estado === "Pendiente de envío" ? "pendiente" : "enviado"}`}>
+                  {estado === "Pendiente de envío" ? "Pendiente" : "Enviado"}
                 </span>
               </div>
             </div>

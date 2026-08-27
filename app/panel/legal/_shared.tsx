@@ -145,16 +145,24 @@ export const LEGAL_STYLES = `
   .rlr-card-meta { font-size: 12px; color: var(--text-3); }
   .rlr-badge { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 3px 10px; border-radius: 100px; flex-shrink: 0; }
   .rlr-badge.pendiente { background: var(--warn-bg); color: var(--warn-ink); }
-  .rlr-badge.revisado { background: var(--good-bg); color: var(--good-ink); }
+  .rlr-badge.enviado { background: var(--good-bg); color: var(--good-ink); }
   .rlr-badge.tipo { background: var(--accent-glass-bg); color: var(--legal-accent); }
   .rlr-empty { color: var(--text-3); font-size: 13.5px; text-align: center; padding: 1.5rem 0; }
   .rlr-see-all { font-size: 12.5px; color: var(--legal-accent); text-decoration: none; }
 
   .rlr-detail-section { margin-top: 1.25rem; }
   .rlr-detail-title { font-size: 14px; font-weight: 700; letter-spacing: .02em; margin-bottom: 8px; }
-  .rlr-participant-row { display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; padding: 8px 0; border-bottom: 1px solid var(--line-soft); }
-  .rlr-participant-row .p-meta { color: var(--text-3); font-size: 11.5px; margin-top: 2px; }
   .rlr-total-row { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 700; padding: 8px 0 0; color: var(--good-ink); }
+
+  /* Campos "ETIQUETA: valor" — documento legal, no un chat: la etiqueta va
+     tenue (text-3) pero el valor siempre en alto contraste (text-1). */
+  .rlr-field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px 24px; }
+  .rlr-field-label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--text-3); margin-bottom: 3px; }
+  .rlr-field-value { font-size: 14.5px; color: var(--text-1); font-weight: 600; }
+
+  .rlr-participant-card { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+  .rlr-participant-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px 20px; }
+  .rlr-participant-percent { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line-soft); }
 `;
 
 export function LegalShell({

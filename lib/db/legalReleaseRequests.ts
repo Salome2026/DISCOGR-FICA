@@ -34,6 +34,18 @@ export function ensureLegalReleaseRequestsSchema(): Promise<void> {
       // Clasificación del release completo (Artista/Sello/PPD) — le indica a
       // Legal de qué forma procesarlo. Nullable para no romper filas viejas.
       await sql`ALTER TABLE legal_release_requests ADD COLUMN IF NOT EXISTS tipo TEXT`;
+      // Terminología unificada con Publishing (editorial_splits): "Enviado",
+      // no "Revisado". sent_by/sent_at reemplazan a reviewed_by/reviewed_at;
+      // se migran las filas que ya estaban en 'Revisado' antes de este
+      // cambio — la UPDATE es un no-op en cualquier corrida posterior, una
+      // vez que ninguna fila queda en ese estado viejo.
+      await sql`ALTER TABLE legal_release_requests ADD COLUMN IF NOT EXISTS sent_by TEXT`;
+      await sql`ALTER TABLE legal_release_requests ADD COLUMN IF NOT EXISTS sent_at TIMESTAMPTZ`;
+      await sql`
+        UPDATE legal_release_requests
+        SET sent_by = reviewed_by, sent_at = reviewed_at, estado = 'Enviado'
+        WHERE estado = 'Revisado'
+      `;
     })();
   }
   return ready;
@@ -59,11 +71,11 @@ function rowToRequest(r: Record<string, unknown>): LegalReleaseRequest {
         : String(r.fecha_lanzamiento).slice(0, 10)
       : null,
     participants: (r.participants as ReleaseParticipant[]) ?? [],
-    estado: r.estado as "Pendiente de envío" | "Revisado",
+    estado: r.estado as "Pendiente de envío" | "Enviado",
     createdBy: r.created_by as string,
     createdAt: r.created_at as string,
-    reviewedBy: (r.reviewed_by as string | null) ?? null,
-    reviewedAt: (r.reviewed_at as string | null) ?? null,
+    sentBy: (r.sent_by as string | null) ?? null,
+    sentAt: (r.sent_at as string | null) ?? null,
   };
 }
 
@@ -118,18 +130,18 @@ export async function createReleaseRequest(input: {
   return request;
 }
 
-export async function listReleaseRequests(opts: { estado: "Pendiente de envío" | "Revisado"; q?: string }): Promise<ReleaseRequestCard[]> {
+export async function listReleaseRequests(opts: { estado: "Pendiente de envío" | "Enviado"; q?: string }): Promise<ReleaseRequestCard[]> {
   await ensureLegalReleaseRequestsSchema();
   const q = opts.q?.trim();
   const { rows } = q
     ? await sql`
-        SELECT id, track_name, artist_display, tipo, estado, created_by, created_at, reviewed_at
+        SELECT id, track_name, artist_display, tipo, estado, created_by, created_at, sent_at
         FROM legal_release_requests
         WHERE estado = ${opts.estado} AND (track_name ILIKE ${"%" + q + "%"} OR artist_display ILIKE ${"%" + q + "%"})
         ORDER BY created_at DESC
       `
     : await sql`
-        SELECT id, track_name, artist_display, tipo, estado, created_by, created_at, reviewed_at
+        SELECT id, track_name, artist_display, tipo, estado, created_by, created_at, sent_at
         FROM legal_release_requests
         WHERE estado = ${opts.estado}
         ORDER BY created_at DESC
@@ -139,10 +151,10 @@ export async function listReleaseRequests(opts: { estado: "Pendiente de envío" 
     trackName: r.track_name as string,
     artistDisplay: r.artist_display as string,
     tipo: (r.tipo as ReleaseRequestCard["tipo"]) ?? null,
-    estado: r.estado as "Pendiente de envío" | "Revisado",
+    estado: r.estado as "Pendiente de envío" | "Enviado",
     createdBy: r.created_by as string,
     createdAt: r.created_at as string,
-    reviewedAt: (r.reviewed_at as string | null) ?? null,
+    sentAt: (r.sent_at as string | null) ?? null,
   }));
 }
 
@@ -152,13 +164,13 @@ export async function getReleaseRequest(id: string): Promise<LegalReleaseRequest
   return rows[0] ? rowToRequest(rows[0]) : null;
 }
 
-// Sin ruta de edición tras "Revisado" — mismo criterio que markSplitSent en
+// Sin ruta de edición tras "Enviado" — mismo criterio que markSplitSent en
 // lib/db/editorialSplits.ts: "bloqueado" por la ausencia de un PATCH de
 // edición, no por una bandera que un editor pudiera esquivar.
-export async function markReleaseRequestReviewed(id: string, actorEmail: string): Promise<LegalReleaseRequest | null> {
+export async function markReleaseRequestSent(id: string, actorEmail: string): Promise<LegalReleaseRequest | null> {
   await ensureLegalReleaseRequestsSchema();
   const { rows } = await sql`
-    UPDATE legal_release_requests SET estado = 'Revisado', reviewed_by = ${actorEmail}, reviewed_at = now()
+    UPDATE legal_release_requests SET estado = 'Enviado', sent_by = ${actorEmail}, sent_at = now()
     WHERE id = ${id} AND estado = 'Pendiente de envío'
     RETURNING *
   `;
@@ -166,11 +178,11 @@ export async function markReleaseRequestReviewed(id: string, actorEmail: string)
   if (request) {
     await recordAudit({
       actorEmail,
-      action: "release_request_reviewed",
+      action: "release_request_sent",
       entityType: "legal_release_request",
       entityId: request.id,
       before: { estado: "Pendiente de envío" },
-      after: { estado: "Revisado", reviewedBy: request.reviewedBy, reviewedAt: request.reviewedAt },
+      after: { estado: "Enviado", sentBy: request.sentBy, sentAt: request.sentAt },
     });
   }
   return request;

@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const { searchParams } = new URL(req.url);
-  const estado = searchParams.get("estado") === "Revisado" ? "Revisado" : "Pendiente de envío";
+  const estado = searchParams.get("estado") === "Enviado" ? "Enviado" : "Pendiente de envío";
   const q = searchParams.get("q") ?? undefined;
   const requests = await listReleaseRequests({ estado, q });
   return NextResponse.json({ requests });

@@ -23,11 +23,11 @@ type LegalReleaseRequest = {
   fechaLanzamiento: string | null;
   tipo: "Artista" | "Sello" | "PPD" | null;
   participants: ReleaseParticipant[];
-  estado: "Pendiente de envío" | "Revisado";
+  estado: "Pendiente de envío" | "Enviado";
   createdBy: string;
   createdAt: string;
-  reviewedBy: string | null;
-  reviewedAt: string | null;
+  sentBy: string | null;
+  sentAt: string | null;
 };
 
 function formatX100(x100: number): string {
@@ -41,6 +41,15 @@ function formatDateTime(v: string): string {
 function formatDate(v: string | null): string {
   if (!v) return "—";
   return v.slice(0, 10);
+}
+
+function Field({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <div className="rlr-field-label">{label}</div>
+      <div className="rlr-field-value">{value}</div>
+    </div>
+  );
 }
 
 export default function ReleaseRequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -67,17 +76,17 @@ function ReleaseRequestDetail({ id }: { id: string }) {
   }
   useEffect(load, [id]);
 
-  async function handleMarkReviewed() {
+  async function handleMarkSent() {
     setMarking(true);
     setError(null);
     try {
       const res = await fetch(`/api/legal/release-requests/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "marcar_revisado" }),
+        body: JSON.stringify({ action: "marcar_enviado" }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "No se pudo marcar como revisado.");
+      if (!res.ok) throw new Error(data.error || "No se pudo marcar como enviado.");
       setRequest(data.request);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido.");
@@ -94,28 +103,25 @@ function ReleaseRequestDetail({ id }: { id: string }) {
   return (
     <div className="legal-card">
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-        <div>
-          <div style={{ fontSize: 19, fontWeight: 700 }}>{request.trackName}</div>
-          <div className="muted" style={{ fontSize: 13, marginTop: 2 }}>
-            {request.artistDisplay}
-            {request.sello ? ` · ${request.sello}` : ""}
-            {request.fechaLanzamiento ? ` · Lanzamiento: ${formatDate(request.fechaLanzamiento)}` : ""}
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          {request.tipo && <span className="rlr-badge tipo">{request.tipo}</span>}
-          <span className={`rlr-badge ${request.estado === "Pendiente de envío" ? "pendiente" : "revisado"}`}>
-            {request.estado === "Pendiente de envío" ? "Pendiente" : "Revisado"}
-          </span>
-        </div>
+        <div style={{ fontSize: 19, fontWeight: 700 }}>{request.trackName}</div>
+        <span className={`rlr-badge ${request.estado === "Pendiente de envío" ? "pendiente" : "enviado"}`}>
+          {request.estado}
+        </span>
       </div>
 
-      <div className="muted" style={{ fontSize: 12.5, marginTop: 10 }}>
+      <div className="rlr-field-grid" style={{ marginTop: 16 }}>
+        <Field label="Artista" value={request.artistDisplay} />
+        <Field label="Sello" value={request.sello || "—"} />
+        <Field label="Fecha de lanzamiento" value={formatDate(request.fechaLanzamiento)} />
+        <Field label="Reparto" value={request.tipo || "—"} />
+      </div>
+
+      <div className="muted" style={{ fontSize: 12.5, marginTop: 16 }}>
         Cargado por {request.createdBy} · {formatDateTime(request.createdAt)}
-        {request.estado === "Revisado" && request.reviewedAt && (
+        {request.estado === "Enviado" && request.sentAt && (
           <>
             <br />
-            Revisado por {request.reviewedBy} · {formatDateTime(request.reviewedAt)}
+            Enviado por {request.sentBy} · {formatDateTime(request.sentAt)}
           </>
         )}
       </div>
@@ -123,17 +129,17 @@ function ReleaseRequestDetail({ id }: { id: string }) {
       <div className="rlr-detail-section">
         <div className="rlr-detail-title">PARTICIPANTES</div>
         {request.participants.map((p, i) => (
-          <div key={i} className="rlr-participant-row">
-            <div>
-              <div>{[p.nombre, p.apellido].filter(Boolean).join(" ")}</div>
-              <div className="p-meta">
-                {p.dni ? `DNI ${p.dni}` : ""}
-                {p.fechaNacimiento ? ` · Nac. ${formatDate(p.fechaNacimiento)}` : ""}
-                {p.domicilio ? ` · ${p.domicilio}` : ""}
-                {p.email ? ` · ${p.email}` : ""}
-              </div>
+          <div key={i} className="rlr-participant-card">
+            <div className="rlr-participant-fields">
+              <Field label="Nombre" value={[p.nombre, p.apellido].filter(Boolean).join(" ") || "—"} />
+              <Field label="DNI" value={p.dni || "—"} />
+              <Field label="Fecha de nacimiento" value={formatDate(p.fechaNacimiento)} />
+              <Field label="Domicilio" value={p.domicilio || "—"} />
+              <Field label="Email" value={p.email || "—"} />
             </div>
-            <span>{formatX100(p.percentX100)}%</span>
+            <div className="rlr-participant-percent">
+              <Field label="% de participación" value={`${formatX100(p.percentX100)}%`} />
+            </div>
           </div>
         ))}
         <div className="rlr-total-row">
@@ -146,13 +152,13 @@ function ReleaseRequestDetail({ id }: { id: string }) {
 
       {request.estado === "Pendiente de envío" && (
         <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end" }}>
-          <button className="legal-btn-primary" disabled={marking} onClick={handleMarkReviewed}>
-            {marking ? "Marcando..." : "✓ Marcar como revisado"}
+          <button className="legal-btn-primary" disabled={marking} onClick={handleMarkSent}>
+            {marking ? "Marcando..." : "✓ Marcar como enviado"}
           </button>
         </div>
       )}
 
-      {request.estado === "Revisado" && (
+      {request.estado === "Enviado" && (
         <div style={{ marginTop: 24 }}>
           <button className="legal-btn-ghost" onClick={() => router.push("/panel/legal/release-requests")}>
             Volver al listado

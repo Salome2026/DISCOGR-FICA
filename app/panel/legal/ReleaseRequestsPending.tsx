@@ -8,10 +8,10 @@ type ReleaseRequestCard = {
   trackName: string;
   artistDisplay: string;
   tipo: "Artista" | "Sello" | "PPD" | null;
-  estado: "Pendiente de envío" | "Revisado";
+  estado: "Pendiente de envío" | "Enviado";
   createdBy: string;
   createdAt: string;
-  reviewedAt: string | null;
+  sentAt: string | null;
 };
 
 function formatDate(v: string): string {

@@ -26,11 +26,11 @@ export type LegalReleaseRequest = {
   fechaLanzamiento: string | null;
   tipo: ReleaseTipo | null;
   participants: ReleaseParticipant[];
-  estado: "Pendiente de envío" | "Revisado";
+  estado: "Pendiente de envío" | "Enviado";
   createdBy: string;
   createdAt: string;
-  reviewedBy: string | null;
-  reviewedAt: string | null;
+  sentBy: string | null;
+  sentAt: string | null;
 };
 
 export type ReleaseRequestCard = {
@@ -38,8 +38,8 @@ export type ReleaseRequestCard = {
   trackName: string;
   artistDisplay: string;
   tipo: ReleaseTipo | null;
-  estado: "Pendiente de envío" | "Revisado";
+  estado: "Pendiente de envío" | "Enviado";
   createdBy: string;
   createdAt: string;
-  reviewedAt: string | null;
+  sentAt: string | null;
 };

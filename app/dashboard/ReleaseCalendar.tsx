@@ -18,6 +18,7 @@ type PmReleaseRow = {
   marketing_plan: boolean;
   marketing_plan_detalle: string | null;
   portada_url: string | null;
+  source?: "sheet";
 };
 
 export type CalendarEvent = {
@@ -36,6 +37,7 @@ export type CalendarEvent = {
   marketingPlanDetalle: string | null;
   tracks: string[];
   portadaUrl: string | null;
+  source?: "sheet";
 };
 
 const SELLO_COLORS: Record<string, string> = {
@@ -81,10 +83,16 @@ export default function ReleaseCalendar({
   className = "",
   readOnly = false,
   apiUrl = "/api/pm/releases",
+  syncUrl,
 }: {
   className?: string;
   readOnly?: boolean;
   apiUrl?: string;
+  // When set, POSTs here before every reload — same "pull the sheet, then
+  // reload" pattern as app/panel/booking/ShowCalendar.tsx. Server-side
+  // rate-limited (see lib/fonogramasSheetSync.ts), so polling every 30s
+  // here costs nothing extra when several tabs are open.
+  syncUrl?: string;
 }) {
   const [rows, setRows] = useState<PmReleaseRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -93,14 +101,34 @@ export default function ReleaseCalendar({
   const [selected, setSelected] = useState<CalendarEvent | null>(null);
 
   useEffect(() => {
-    fetch(apiUrl)
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.error) setError(d.error);
-        else setRows(d.releases);
-      })
-      .catch((e) => setError(String(e)));
-  }, [apiUrl]);
+    function load() {
+      fetch(apiUrl)
+        .then((r) => r.json())
+        .then((d) => {
+          if (d.error) setError(d.error);
+          else setRows(d.releases);
+        })
+        .catch((e) => setError(String(e)));
+    }
+    function syncAndLoad() {
+      if (!syncUrl) {
+        load();
+        return;
+      }
+      fetch(syncUrl, { method: "POST" }).catch(() => {}).finally(load);
+    }
+    syncAndLoad();
+    if (!syncUrl) return;
+    const interval = setInterval(syncAndLoad, 30000);
+    function onVisible() {
+      if (document.visibilityState === "visible") syncAndLoad();
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [apiUrl, syncUrl]);
 
   const events = useMemo(() => {
     if (!rows) return [] as CalendarEvent[];
@@ -139,6 +167,7 @@ export default function ReleaseCalendar({
         marketingPlanDetalle: group.find((g) => g.marketing_plan_detalle)?.marketing_plan_detalle ?? null,
         tracks: group.map((g) => g.fonograma_nombre),
         portadaUrl: group.find((g) => g.portada_url)?.portada_url ?? null,
+        source: first.source,
       });
     }
     out.sort((a, b) => a.fecha.localeCompare(b.fecha));
@@ -377,6 +406,10 @@ export function EventDetail({
   const [saving, setSaving] = useState(false);
   const status = publishStatus(event.fecha);
   const looksLikeUrl = /^https?:\/\//i.test(event.marketingPlanDetalle ?? "");
+  // Rows synced from the external fonogramas sheet have no matching
+  // pm_releases row to PATCH — editing marketing plan on them wouldn't
+  // persist anywhere, so they're read-only here regardless of the prop.
+  readOnly = readOnly || event.source === "sheet";
 
   async function toggleMarketing() {
     setSaving(true);

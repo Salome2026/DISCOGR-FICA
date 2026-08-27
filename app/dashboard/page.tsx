@@ -464,7 +464,11 @@ function DashboardInner() {
         )}
 
         <motion.div className="hero-row" variants={fadeUp} custom={2} initial="hidden" animate="show">
-          <ReleaseCalendar className="" />
+          <ReleaseCalendar
+            className=""
+            apiUrl="/api/pm/releases/dashboard-calendar"
+            syncUrl="/api/pm/releases/sync-fonogramas-sheet"
+          />
 
           <div className="card donut-card">
             <div className="card-label">Distribución por discográfica</div>

@@ -146,6 +146,7 @@ export const LEGAL_STYLES = `
   .rlr-badge { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 3px 10px; border-radius: 100px; flex-shrink: 0; }
   .rlr-badge.pendiente { background: var(--warn-bg); color: var(--warn-ink); }
   .rlr-badge.revisado { background: var(--good-bg); color: var(--good-ink); }
+  .rlr-badge.tipo { background: var(--accent-glass-bg); color: var(--legal-accent); }
   .rlr-empty { color: var(--text-3); font-size: 13.5px; text-align: center; padding: 1.5rem 0; }
   .rlr-see-all { font-size: 12.5px; color: var(--legal-accent); text-decoration: none; }
 

@@ -9,6 +9,7 @@ type ReleaseRequestCard = {
   id: string;
   trackName: string;
   artistDisplay: string;
+  tipo: "Artista" | "Sello" | "PPD" | null;
   estado: "Pendiente de envío" | "Revisado";
   createdBy: string;
   createdAt: string;
@@ -81,9 +82,12 @@ function ReleaseRequestsList() {
                   {estado === "Revisado" && r.reviewedAt ? `Revisado ${formatDate(r.reviewedAt)}` : formatDate(r.createdAt)}
                 </div>
               </div>
-              <span className={`rlr-badge ${estado === "Pendiente de envío" ? "pendiente" : "revisado"}`}>
-                {estado === "Pendiente de envío" ? "Pendiente" : "Revisado"}
-              </span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {r.tipo && <span className="rlr-badge tipo">{r.tipo}</span>}
+                <span className={`rlr-badge ${estado === "Pendiente de envío" ? "pendiente" : "revisado"}`}>
+                  {estado === "Pendiente de envío" ? "Pendiente" : "Revisado"}
+                </span>
+              </div>
             </div>
           ))}
         </div>

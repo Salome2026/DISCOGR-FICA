@@ -2,9 +2,6 @@
 // grabación) — snapshot propio, deliberadamente no ligado a
 // publishing_artists (esa tabla es de derechos editoriales/SADAIC, un
 // concepto distinto aunque la misma persona real pueda aparecer en ambas).
-export const RELEASE_PARTICIPANT_TIPOS = ["Artista", "Sello", "PPD"] as const;
-export type ReleaseParticipantTipo = (typeof RELEASE_PARTICIPANT_TIPOS)[number];
-
 export type ReleaseParticipant = {
   nombre: string;
   apellido: string | null;
@@ -12,9 +9,13 @@ export type ReleaseParticipant = {
   fechaNacimiento: string | null;
   domicilio: string | null;
   email: string | null;
-  tipo: ReleaseParticipantTipo;
   percentX100: number;
 };
+
+// Clasificación del Release completo (no por participante): de qué lado
+// viene — le indica a Legal de qué forma procesarlo apenas lo abre.
+export const RELEASE_TIPOS = ["Artista", "Sello", "PPD"] as const;
+export type ReleaseTipo = (typeof RELEASE_TIPOS)[number];
 
 export type LegalReleaseRequest = {
   id: string;
@@ -23,6 +24,7 @@ export type LegalReleaseRequest = {
   artistDisplay: string;
   sello: string | null;
   fechaLanzamiento: string | null;
+  tipo: ReleaseTipo | null;
   participants: ReleaseParticipant[];
   estado: "Pendiente de envío" | "Revisado";
   createdBy: string;
@@ -35,6 +37,7 @@ export type ReleaseRequestCard = {
   id: string;
   trackName: string;
   artistDisplay: string;
+  tipo: ReleaseTipo | null;
   estado: "Pendiente de envío" | "Revisado";
   createdBy: string;
   createdAt: string;

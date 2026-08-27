@@ -7,6 +7,7 @@ type ReleaseRequestCard = {
   id: string;
   trackName: string;
   artistDisplay: string;
+  tipo: "Artista" | "Sello" | "PPD" | null;
   estado: "Pendiente de envío" | "Revisado";
   createdBy: string;
   createdAt: string;
@@ -52,7 +53,10 @@ export default function ReleaseRequestsPending({ limit }: { limit?: number }) {
                   {r.artistDisplay} · Cargado por {r.createdBy} · {formatDate(r.createdAt)}
                 </div>
               </div>
-              <span className="rlr-badge pendiente">Pendiente</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {r.tipo && <span className="rlr-badge tipo">{r.tipo}</span>}
+                <span className="rlr-badge pendiente">Pendiente</span>
+              </div>
             </Link>
           ))}
         </div>

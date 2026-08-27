@@ -4,7 +4,7 @@ import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import RequireRole from "@/app/components/RequireRole";
 import { PMShell } from "../../../_shared";
-import { RELEASE_PARTICIPANT_TIPOS, type ReleaseParticipantTipo } from "@discografica/shared/types/legalReleaseRequests";
+import { RELEASE_TIPOS, type ReleaseTipo } from "@discografica/shared/types/legalReleaseRequests";
 
 const RLX_STYLES = `
   .rlx-field-label { font-size:12.5px; color:var(--text-2); margin-bottom:6px; display:block; font-weight:600; }
@@ -12,18 +12,17 @@ const RLX_STYLES = `
   .rlx-row { display:flex; gap:10px; margin-bottom:12px; }
   .rlx-row > div { flex:1; }
 
+  .rlx-tipo-tabs { display:flex; gap:6px; }
+  .rlx-tipo-tab { flex:1; background:var(--bg-1); border:1px solid var(--line-soft); border-radius:8px; padding:10px; color:var(--text-2); cursor:pointer; font-size:13px; font-weight:600; text-align:center; }
+  .rlx-tipo-tab:hover { border-color:var(--accent-color); }
+  .rlx-tipo-tab.active { background:var(--accent-glass-bg); border-color:var(--accent-color); color:var(--text-1); }
+
   .rlx-section { margin-top:1.5rem; }
   .rlx-section-title { font-size:15px; font-weight:700; letter-spacing:.02em; margin-bottom:10px; }
   .rlx-participant { background:var(--bg-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px; margin-bottom:10px; }
   .rlx-participant-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .rlx-participant-percent { display:flex; align-items:center; gap:8px; margin-top:8px; }
   .rlx-participant-percent input { width:90px; text-align:right; }
-  .rlx-tipo-tabs { display:flex; gap:6px; margin-bottom:14px; }
-  .rlx-tipo-tab { flex:1; background:var(--bg-1); border:1px solid var(--line-soft); border-radius:8px; padding:10px; color:var(--text-2); cursor:pointer; font-size:13px; font-weight:600; text-align:center; }
-  .rlx-tipo-tab:hover { border-color:var(--accent-color); }
-  .rlx-tipo-tab.active { background:var(--accent-glass-bg); border-color:var(--accent-color); color:var(--text-1); }
-  .rlx-tipo-tab .rlx-tipo-sub { display:block; font-size:11px; font-weight:500; color:var(--text-3); margin-top:2px; }
-  .rlx-tipo-tab.active .rlx-tipo-sub { color:var(--text-2); }
   .rlx-remove { background:transparent; border:none; color:var(--text-3); cursor:pointer; font-size:12px; text-decoration:underline; margin-top:8px; }
   .rlx-remove:hover { color:var(--crit-ink); }
   .rlx-add { background:transparent; border:1px dashed var(--line-soft); border-radius:8px; padding:9px 14px; color:var(--text-2); cursor:pointer; font-size:13px; width:100%; text-align:left; }
@@ -80,14 +79,6 @@ function newParticipant(): ParticipantRow {
   };
 }
 
-function emptyGroups(): Record<ReleaseParticipantTipo, ParticipantRow[]> {
-  return { Artista: [], Sello: [], PPD: [] };
-}
-
-function groupSum(rows: ParticipantRow[]): number {
-  return rows.reduce((s, r) => s + (parsePercent(r.percentRaw) ?? 0), 0);
-}
-
 type FonogramaInfo = {
   id: number;
   fonograma_nombre: string;
@@ -115,12 +106,8 @@ function ReleaseForm({ pmReleaseId }: { pmReleaseId: number }) {
   const [artistDisplay, setArtistDisplay] = useState("");
   const [sello, setSello] = useState("");
   const [fecha, setFecha] = useState("");
-  const [activeTipo, setActiveTipo] = useState<ReleaseParticipantTipo>("Artista");
-  const [groups, setGroups] = useState<Record<ReleaseParticipantTipo, ParticipantRow[]>>(() => {
-    const g = emptyGroups();
-    g.Artista = [newParticipant()];
-    return g;
-  });
+  const [tipo, setTipo] = useState<ReleaseTipo | "">("");
+  const [participants, setParticipants] = useState<ParticipantRow[]>([newParticipant()]);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -143,21 +130,16 @@ function ReleaseForm({ pmReleaseId }: { pmReleaseId: number }) {
       .catch(() => setFonograma(null));
   }, [pmReleaseId]);
 
-  function updateParticipant(tipo: ReleaseParticipantTipo, key: string, patch: Partial<ParticipantRow>) {
-    setGroups((prev) => ({ ...prev, [tipo]: prev[tipo].map((p) => (p.key === key ? { ...p, ...patch } : p)) }));
+  function updateParticipant(key: string, patch: Partial<ParticipantRow>) {
+    setParticipants((prev) => prev.map((p) => (p.key === key ? { ...p, ...patch } : p)));
   }
-  function removeParticipant(tipo: ReleaseParticipantTipo, key: string) {
-    setGroups((prev) => ({ ...prev, [tipo]: prev[tipo].filter((p) => p.key !== key) }));
-  }
-  function addParticipant(tipo: ReleaseParticipantTipo) {
-    setGroups((prev) => ({ ...prev, [tipo]: [...prev[tipo], newParticipant()] }));
+  function removeParticipant(key: string) {
+    setParticipants((prev) => prev.filter((p) => p.key !== key));
   }
 
-  const allRows = [...groups.Artista, ...groups.Sello, ...groups.PPD];
-  const sum = groupSum(allRows);
-  const hasAnyParticipant = allRows.length > 0;
-  const rowsReady = allRows.every((p) => p.nombre.trim() && (parsePercent(p.percentRaw) ?? 0) > 0);
-  const canSubmit = !!fonograma && trackName.trim() && artistDisplay.trim() && sum === 10000 && hasAnyParticipant && rowsReady;
+  const sum = participants.reduce((s, p) => s + (parsePercent(p.percentRaw) ?? 0), 0);
+  const rowsReady = participants.length > 0 && participants.every((p) => p.nombre.trim() && (parsePercent(p.percentRaw) ?? 0) > 0);
+  const canSubmit = !!fonograma && !!tipo && trackName.trim() && artistDisplay.trim() && sum === 10000 && rowsReady;
 
   async function handleSubmit() {
     if (!canSubmit) return;
@@ -173,18 +155,16 @@ function ReleaseForm({ pmReleaseId }: { pmReleaseId: number }) {
           artistDisplay: artistDisplay.trim(),
           sello: sello || null,
           fechaLanzamiento: fecha || null,
-          participants: RELEASE_PARTICIPANT_TIPOS.flatMap((tipo) =>
-            groups[tipo].map((p) => ({
-              nombre: p.nombre.trim(),
-              apellido: p.apellido.trim() || null,
-              dni: p.dni.trim() || null,
-              fechaNacimiento: p.fechaNacimiento.trim() || null,
-              domicilio: p.domicilio.trim() || null,
-              email: p.email.trim() || null,
-              tipo,
-              percentX100: parsePercent(p.percentRaw) ?? 0,
-            }))
-          ),
+          tipo,
+          participants: participants.map((p) => ({
+            nombre: p.nombre.trim(),
+            apellido: p.apellido.trim() || null,
+            dni: p.dni.trim() || null,
+            fechaNacimiento: p.fechaNacimiento.trim() || null,
+            domicilio: p.domicilio.trim() || null,
+            email: p.email.trim() || null,
+            percentX100: parsePercent(p.percentRaw) ?? 0,
+          })),
         }),
       });
       const data = await res.json();
@@ -245,35 +225,35 @@ function ReleaseForm({ pmReleaseId }: { pmReleaseId: number }) {
           <input className="rlx-input" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
         </div>
       </div>
+      <div className="rlx-row">
+        <div>
+          <label className="rlx-field-label">Este Release es de la parte de:</label>
+          <div className="rlx-tipo-tabs">
+            {RELEASE_TIPOS.map((t) => (
+              <button
+                key={t}
+                type="button"
+                className={`rlx-tipo-tab ${tipo === t ? "active" : ""}`}
+                onClick={() => setTipo(t)}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       <div className="rlx-section">
         <div className="rlx-section-title">Participantes (derechos de máster)</div>
-
-        <div className="rlx-tipo-tabs">
-          {RELEASE_PARTICIPANT_TIPOS.map((tipo) => (
-            <button
-              key={tipo}
-              type="button"
-              className={`rlx-tipo-tab ${activeTipo === tipo ? "active" : ""}`}
-              onClick={() => setActiveTipo(tipo)}
-            >
-              {tipo}
-              <span className="rlx-tipo-sub">
-                {groups[tipo].length === 0 ? "Sin participantes" : `${formatX100(groupSum(groups[tipo]))}%`}
-              </span>
-            </button>
-          ))}
-        </div>
-
-        {groups[activeTipo].map((p) => (
+        {participants.map((p) => (
           <div key={p.key} className="rlx-participant">
             <div className="rlx-participant-grid">
-              <input className="rlx-input" placeholder="Nombre" value={p.nombre} onChange={(e) => updateParticipant(activeTipo, p.key, { nombre: e.target.value })} />
-              <input className="rlx-input" placeholder="Apellido" value={p.apellido} onChange={(e) => updateParticipant(activeTipo, p.key, { apellido: e.target.value })} />
-              <input className="rlx-input" placeholder="DNI" value={p.dni} onChange={(e) => updateParticipant(activeTipo, p.key, { dni: e.target.value })} />
-              <input className="rlx-input" type="date" placeholder="Fecha de nacimiento" value={p.fechaNacimiento} onChange={(e) => updateParticipant(activeTipo, p.key, { fechaNacimiento: e.target.value })} />
-              <input className="rlx-input" placeholder="Domicilio" value={p.domicilio} onChange={(e) => updateParticipant(activeTipo, p.key, { domicilio: e.target.value })} />
-              <input className="rlx-input" placeholder="Email" value={p.email} onChange={(e) => updateParticipant(activeTipo, p.key, { email: e.target.value })} />
+              <input className="rlx-input" placeholder="Nombre" value={p.nombre} onChange={(e) => updateParticipant(p.key, { nombre: e.target.value })} />
+              <input className="rlx-input" placeholder="Apellido" value={p.apellido} onChange={(e) => updateParticipant(p.key, { apellido: e.target.value })} />
+              <input className="rlx-input" placeholder="DNI" value={p.dni} onChange={(e) => updateParticipant(p.key, { dni: e.target.value })} />
+              <input className="rlx-input" type="date" placeholder="Fecha de nacimiento" value={p.fechaNacimiento} onChange={(e) => updateParticipant(p.key, { fechaNacimiento: e.target.value })} />
+              <input className="rlx-input" placeholder="Domicilio" value={p.domicilio} onChange={(e) => updateParticipant(p.key, { domicilio: e.target.value })} />
+              <input className="rlx-input" placeholder="Email" value={p.email} onChange={(e) => updateParticipant(p.key, { email: e.target.value })} />
             </div>
             <div className="rlx-participant-percent">
               <span style={{ fontSize: 12.5, color: "var(--text-3)" }}>% de participación</span>
@@ -282,20 +262,20 @@ function ReleaseForm({ pmReleaseId }: { pmReleaseId: number }) {
                 placeholder="0%"
                 inputMode="decimal"
                 value={p.percentRaw}
-                onChange={(e) => updateParticipant(activeTipo, p.key, { percentRaw: e.target.value })}
+                onChange={(e) => updateParticipant(p.key, { percentRaw: e.target.value })}
               />
             </div>
-            <button type="button" className="rlx-remove" onClick={() => removeParticipant(activeTipo, p.key)}>
-              Quitar participante
-            </button>
+            {participants.length > 1 && (
+              <button type="button" className="rlx-remove" onClick={() => removeParticipant(p.key)}>
+                Quitar participante
+              </button>
+            )}
           </div>
         ))}
-        <button type="button" className="rlx-add" onClick={() => addParticipant(activeTipo)}>
-          + Agregar participante de {activeTipo}
+        <button type="button" className="rlx-add" onClick={() => setParticipants((prev) => [...prev, newParticipant()])}>
+          + Agregar participante
         </button>
-
         <div className={`rlx-total ${sum === 10000 ? "ok" : "off"}`}>
-          Total ({RELEASE_PARTICIPANT_TIPOS.map((t) => `${t} ${formatX100(groupSum(groups[t]))}%`).join(" + ")}):{" "}
           {sum === 10000 ? `${formatX100(sum)}% / 100% ✓` : `${formatX100(sum)}% / 100%`}
         </div>
       </div>
@@ -303,7 +283,7 @@ function ReleaseForm({ pmReleaseId }: { pmReleaseId: number }) {
       {error && <div className="rlx-error">{error}</div>}
 
       <div className="rlx-submit-bar">
-        {!canSubmit && <span className="rlx-submit-hint">Completá los participantes hasta sumar 100% para enviar.</span>}
+        {!canSubmit && <span className="rlx-submit-hint">Elegí de qué parte es y completá los participantes hasta sumar 100% para enviar.</span>}
         <button type="button" className="rlx-submit-btn" disabled={!canSubmit || submitting} onClick={handleSubmit}>
           {submitting ? "Enviando..." : "Enviar Release"}
         </button>

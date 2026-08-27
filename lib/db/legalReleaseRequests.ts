@@ -31,6 +31,9 @@ export function ensureLegalReleaseRequestsSchema(): Promise<void> {
       `;
       await sql`CREATE INDEX IF NOT EXISTS legal_release_requests_estado_idx ON legal_release_requests (estado)`;
       await sql`CREATE INDEX IF NOT EXISTS legal_release_requests_pm_release_idx ON legal_release_requests (pm_release_id)`;
+      // Clasificación del release completo (Artista/Sello/PPD) — le indica a
+      // Legal de qué forma procesarlo. Nullable para no romper filas viejas.
+      await sql`ALTER TABLE legal_release_requests ADD COLUMN IF NOT EXISTS tipo TEXT`;
     })();
   }
   return ready;
@@ -43,6 +46,7 @@ function rowToRequest(r: Record<string, unknown>): LegalReleaseRequest {
     trackName: r.track_name as string,
     artistDisplay: r.artist_display as string,
     sello: (r.sello as string | null) ?? null,
+    tipo: (r.tipo as LegalReleaseRequest["tipo"]) ?? null,
     // fecha_lanzamiento es una columna DATE — @vercel/postgres la devuelve
     // como Date, no string, en esta capa (todavía server-side, antes de
     // pasar por JSON.stringify). String(date) usa Date.prototype.toString()
@@ -75,6 +79,7 @@ export async function createReleaseRequest(input: {
   artistDisplay: string;
   sello: string | null;
   fechaLanzamiento: string | null;
+  tipo: LegalReleaseRequest["tipo"];
   participants: ReleaseParticipant[];
   actorEmail: string;
 }): Promise<LegalReleaseRequest> {
@@ -96,9 +101,9 @@ export async function createReleaseRequest(input: {
   const id = `rlr-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const { rows } = await sql`
     INSERT INTO legal_release_requests
-      (id, pm_release_id, track_name, artist_display, sello, fecha_lanzamiento, participants, estado, created_by)
+      (id, pm_release_id, track_name, artist_display, sello, fecha_lanzamiento, tipo, participants, estado, created_by)
     VALUES
-      (${id}, ${input.pmReleaseId}, ${input.trackName}, ${input.artistDisplay}, ${input.sello}, ${input.fechaLanzamiento},
+      (${id}, ${input.pmReleaseId}, ${input.trackName}, ${input.artistDisplay}, ${input.sello}, ${input.fechaLanzamiento}, ${input.tipo},
        ${JSON.stringify(input.participants)}::jsonb, 'Pendiente de envío', ${input.actorEmail})
     RETURNING *
   `;
@@ -118,13 +123,13 @@ export async function listReleaseRequests(opts: { estado: "Pendiente de envío" 
   const q = opts.q?.trim();
   const { rows } = q
     ? await sql`
-        SELECT id, track_name, artist_display, estado, created_by, created_at, reviewed_at
+        SELECT id, track_name, artist_display, tipo, estado, created_by, created_at, reviewed_at
         FROM legal_release_requests
         WHERE estado = ${opts.estado} AND (track_name ILIKE ${"%" + q + "%"} OR artist_display ILIKE ${"%" + q + "%"})
         ORDER BY created_at DESC
       `
     : await sql`
-        SELECT id, track_name, artist_display, estado, created_by, created_at, reviewed_at
+        SELECT id, track_name, artist_display, tipo, estado, created_by, created_at, reviewed_at
         FROM legal_release_requests
         WHERE estado = ${opts.estado}
         ORDER BY created_at DESC
@@ -133,6 +138,7 @@ export async function listReleaseRequests(opts: { estado: "Pendiente de envío" 
     id: r.id as string,
     trackName: r.track_name as string,
     artistDisplay: r.artist_display as string,
+    tipo: (r.tipo as ReleaseRequestCard["tipo"]) ?? null,
     estado: r.estado as "Pendiente de envío" | "Revisado",
     createdBy: r.created_by as string,
     createdAt: r.created_at as string,

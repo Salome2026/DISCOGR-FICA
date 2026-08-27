@@ -3,14 +3,13 @@ import { getSessionUser } from "@/lib/session";
 import { hasPermission } from "@/lib/permissions";
 import { getReleaseById } from "@/lib/db/releases";
 import { createReleaseRequest, type ReleaseParticipant } from "@/lib/db/legalReleaseRequests";
-import { RELEASE_PARTICIPANT_TIPOS } from "@discografica/shared/types/legalReleaseRequests";
+import { RELEASE_TIPOS } from "@discografica/shared/types/legalReleaseRequests";
 
 function isValidParticipant(p: unknown): p is ReleaseParticipant {
   if (!p || typeof p !== "object") return false;
   const o = p as Record<string, unknown>;
   if (typeof o.nombre !== "string" || !o.nombre.trim()) return false;
   if (typeof o.percentX100 !== "number" || !Number.isFinite(o.percentX100) || o.percentX100 <= 0) return false;
-  if (!(RELEASE_PARTICIPANT_TIPOS as readonly string[]).includes(o.tipo as string)) return false;
   return true;
 }
 
@@ -21,13 +20,16 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { pmReleaseId, trackName, artistDisplay, sello, fechaLanzamiento, participants } = body as {
+  const { pmReleaseId, trackName, artistDisplay, sello, fechaLanzamiento, tipo, participants } = body as {
     pmReleaseId?: number; trackName?: string; artistDisplay?: string; sello?: string | null;
-    fechaLanzamiento?: string | null; participants?: unknown[];
+    fechaLanzamiento?: string | null; tipo?: string; participants?: unknown[];
   };
 
   if (!pmReleaseId || !trackName?.trim() || !artistDisplay?.trim()) {
     return NextResponse.json({ error: "Faltan datos del fonograma." }, { status: 400 });
+  }
+  if (!tipo || !(RELEASE_TIPOS as readonly string[]).includes(tipo)) {
+    return NextResponse.json({ error: "Elegí de qué parte es este Release." }, { status: 400 });
   }
   const release = await getReleaseById(Number(pmReleaseId));
   if (!release) {
@@ -47,6 +49,7 @@ export async function POST(req: NextRequest) {
       artistDisplay: artistDisplay.trim(),
       sello: sello || null,
       fechaLanzamiento: fechaLanzamiento || null,
+      tipo: tipo as (typeof RELEASE_TIPOS)[number],
       participants: participants as ReleaseParticipant[],
       actorEmail: user.email,
     });

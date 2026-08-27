@@ -514,11 +514,7 @@ function DashboardInner() {
           </div>
         </motion.div>
 
-        <motion.div variants={fadeUp} custom={3} initial="hidden" animate="show">
-          <RankingListeners />
-        </motion.div>
-
-        <motion.div className="agent-row" variants={fadeUp} custom={3.5} initial="hidden" animate="show">
+        <motion.div className="agent-row" variants={fadeUp} custom={3} initial="hidden" animate="show">
           <Link href="/panel/ar" className="card agent-card">
             <div className="agent-avatar">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -544,6 +540,10 @@ function DashboardInner() {
               <div className="agent-sub">Próximamente</div>
             </div>
           </div>
+        </motion.div>
+
+        <motion.div variants={fadeUp} custom={3.5} initial="hidden" animate="show">
+          <RankingListeners />
         </motion.div>
 
         <motion.div className="bento" variants={fadeUp} custom={4} initial="hidden" animate="show">

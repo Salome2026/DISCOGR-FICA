@@ -210,7 +210,7 @@ export default function ReleaseCalendar({
   return (
     <div className={`card cal-card ${className}`}>
       <style>{`
-        .cal-card{display:flex;flex-direction:column;}
+        .cal-card{display:flex;flex-direction:column;height:100%;justify-content:center;}
         .cal-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:.6rem;}
         .cal-title{display:flex;flex-direction:column;gap:1px;}
         .cal-nav{display:flex;align-items:center;gap:4px;}
@@ -243,7 +243,7 @@ export default function ReleaseCalendar({
         .cal-day-item .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
         .cal-day-item .meta{font-size:11.5px;font-weight:500;color:var(--text-2);margin-top:1px;}
         .cal-day-cover{width:30px;height:30px;border-radius:7px;object-fit:cover;flex-shrink:0;}
-        .cal-legend{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto;padding-top:.55rem;border-top:1px solid var(--line-soft);}
+        .cal-legend{display:flex;flex-wrap:wrap;gap:7px;margin-top:.75rem;padding-top:.55rem;border-top:1px solid var(--line-soft);}
         .cal-legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-2);}
         .cal-legend-item .dot{width:6px;height:6px;border-radius:50%;}
       `}</style>

@@ -210,7 +210,7 @@ export default function ReleaseCalendar({
   return (
     <div className={`card cal-card ${className}`}>
       <style>{`
-        .cal-card{display:flex;flex-direction:column;height:100%;}
+        .cal-card{display:flex;flex-direction:column;}
         .cal-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:.6rem;}
         .cal-title{display:flex;flex-direction:column;gap:1px;}
         .cal-nav{display:flex;align-items:center;gap:4px;}

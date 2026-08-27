@@ -353,14 +353,14 @@ function DashboardInner() {
         .bento-kpi-sm{grid-column:span 3;}
         @media (max-width:860px){ .bento{grid-template-columns:1fr;} .bento-estado,.bento-kpi-firmados,.bento-kpi-artistas,.bento-kpi-sm{grid-column:span 1;grid-row:auto;} }
         .donut-card{display:flex;flex-direction:column;height:100%;}
-        .donut-wrap{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;margin-top:.85rem;flex:1;}
+        .donut-wrap{display:flex;align-items:center;gap:.9rem;flex-wrap:wrap;margin-top:.5rem;flex:1;}
         .donut-seg{cursor:pointer;transition:filter var(--dur-fast) var(--ease-out);}
         .donut-seg:hover{filter:drop-shadow(0 0 10px rgba(255,255,255,0.4));}
         .donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
-        .donut-center .n{font-size:40px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
-        .donut-center .l{font-size:11px;color:var(--text-3);margin-top:2px;}
-        .donut-legend{display:flex;flex-direction:column;gap:5px;flex:1;min-width:160px;}
-        .leg-row{display:flex;align-items:center;gap:9px;font-size:12px;background:transparent;border:none;padding:4px 5px;border-radius:7px;cursor:pointer;text-align:left;color:inherit;font:inherit;width:100%;transition:background var(--dur-fast) var(--ease-out);}
+        .donut-center .n{font-size:24px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+        .donut-center .l{font-size:9px;color:var(--text-3);margin-top:1px;}
+        .donut-legend{display:flex;flex-direction:column;gap:2px;flex:1;min-width:130px;}
+        .leg-row{display:flex;align-items:center;gap:7px;font-size:10.5px;background:transparent;border:none;padding:2px 4px;border-radius:6px;cursor:pointer;text-align:left;color:inherit;font:inherit;width:100%;transition:background var(--dur-fast) var(--ease-out);}
         .leg-row:hover{background:var(--bg-2);}
         .leg-dot{width:8px;height:8px;border-radius:3px;flex-shrink:0;}
         .leg-name{color:var(--text-2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -469,8 +469,8 @@ function DashboardInner() {
           <div className="card donut-card">
             <div className="card-label">Distribución por discográfica</div>
             <div className="donut-wrap">
-              <div style={{ position: "relative", width: 170, height: 170, flexShrink: 0 }}>
-                <svg width="170" height="170" viewBox="0 0 190 190">
+              <div style={{ position: "relative", width: 108, height: 108, flexShrink: 0 }}>
+                <svg width="108" height="108" viewBox="0 0 190 190">
                   <circle cx="95" cy="95" r="80" fill="none" stroke="var(--bg-2)" strokeWidth="22" />
                   {donutSegs.segs.map((s) => (
                     <circle

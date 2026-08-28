@@ -177,6 +177,7 @@ export function ArtistForm({
   const [dni, setDni] = useState(artist?.dni ?? "");
   const [cuil, setCuil] = useState(artist?.cuil ?? "");
   const [sadaic, setSadaic] = useState(artist?.sadaic ?? "");
+  const [ipi, setIpi] = useState(artist?.ipi ?? "");
   const [direccion, setDireccion] = useState(artist?.direccion ?? "");
   const [localidad, setLocalidad] = useState(artist?.localidad ?? "");
   const [provincia, setProvincia] = useState(artist?.provincia ?? "");
@@ -219,7 +220,7 @@ export function ArtistForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           nombreArtistico, nombreCompleto: nombreCompleto || null, apellido: apellido || null,
-          dni: dni || null, cuil: cuil || null, sadaic: sadaic || null, direccion: direccion || null,
+          dni: dni || null, cuil: cuil || null, sadaic: sadaic || null, ipi: ipi || null, direccion: direccion || null,
           localidad: localidad || null, provincia: provincia || null,
           nacionalidad: nacionalidad || null, fechaNacimiento: fechaNacimiento || null,
           email: email || null, telefono: telefono || null, sello: sello || null, tipo,
@@ -265,12 +266,17 @@ export function ArtistForm({
             <Field label="DNI"><input value={dni} onChange={(e) => setDni(e.target.value)} style={inputStyle} /></Field>
           </div>
           <div style={{ flex: 1 }}>
-            <Field label="N° de SADAIC / IPI"><input value={sadaic} onChange={(e) => setSadaic(e.target.value)} style={inputStyle} /></Field>
+            <Field label="N° de SADAIC"><input value={sadaic} onChange={(e) => setSadaic(e.target.value)} style={inputStyle} /></Field>
           </div>
         </div>
-        <Field label="CUIL">
-          <input value={cuil} onChange={(e) => setCuil(e.target.value)} style={inputStyle} />
-        </Field>
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ flex: 1 }}>
+            <Field label="N° de IPI"><input value={ipi} onChange={(e) => setIpi(e.target.value)} style={inputStyle} /></Field>
+          </div>
+          <div style={{ flex: 1 }}>
+            <Field label="CUIL"><input value={cuil} onChange={(e) => setCuil(e.target.value)} style={inputStyle} /></Field>
+          </div>
+        </div>
         <Field label="Dirección">
           <input value={direccion} onChange={(e) => setDireccion(e.target.value)} style={inputStyle} />
         </Field>

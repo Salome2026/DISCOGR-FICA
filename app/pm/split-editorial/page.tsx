@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import RequireRole from "@/app/components/RequireRole";
 import { PMShell } from "../_shared";
+import { upload } from "@vercel/blob/client";
 import type { SplitPersonInput, SplitPersonOption, SplitTrackOption } from "@discografica/shared/types/editorialSplits";
 
 const SPX_STYLES = `
@@ -48,6 +49,14 @@ const SPX_STYLES = `
   .spx-new-badge { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:2px 7px; border-radius:100px; background:var(--accent-glass-bg); color:var(--accent-color); flex-shrink:0; }
   .spx-change-link { background:none; border:none; color:var(--text-3); font-size:11.5px; cursor:pointer; text-decoration:underline; flex-shrink:0; }
 
+  .spx-matched-ficha { margin-top:6px; background:var(--bg-2); border:1px solid var(--line-soft); border-radius:8px; padding:9px 12px; }
+  .spx-matched-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.03em; color:var(--text-3); display:block; margin-bottom:6px; }
+  .spx-matched-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px 12px; font-size:12.5px; color:var(--text-2); }
+
+  .spx-attachments { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .spx-attachment-hint { font-size:11.5px; color:var(--text-3); margin-top:4px; }
+  .spx-attachment-hint.ok { color:var(--good-ink); }
+
   .spx-submit-bar { margin-top:2rem; display:flex; align-items:center; justify-content:flex-end; gap:14px; flex-wrap:wrap; }
   .spx-submit-hint { font-size:12.5px; color:var(--text-3); }
   .spx-submit-btn { background:var(--accent-gradient); border:none; border-radius:8px; padding:12px 24px; color:var(--accent-ink); font-weight:700; cursor:pointer; font-size:14px; }
@@ -79,10 +88,16 @@ type Row = {
   isNew: boolean;
   newEmail: string;
   newApellido: string;
+  newNombreCompleto: string;
   newDni: string;
   newDireccion: string;
   newFechaNacimiento: string;
   newSadaic: string;
+  newIpi: string;
+  // Ficha completa de una persona YA existente en Publishing, autocompletada
+  // apenas el PM la elige del buscador — solo para mostrarla, nunca se
+  // reenvía al servidor (que sigue mandando solo el personId).
+  matched: SplitPersonOption | null;
   percentRaw: string;
 };
 
@@ -94,10 +109,13 @@ function newRow(): Row {
     isNew: false,
     newEmail: "",
     newApellido: "",
+    newNombreCompleto: "",
     newDni: "",
     newDireccion: "",
     newFechaNacimiento: "",
     newSadaic: "",
+    newIpi: "",
+    matched: null,
     percentRaw: "",
   };
 }
@@ -224,7 +242,7 @@ function PersonSlot({ row, onChange, onRemove }: { row: Row; onChange: (patch: P
           <div className="spx-dropdown">
             <input
               className="spx-input"
-              placeholder="Nombre de la persona..."
+              placeholder="Nombre del autor/compositor..."
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
@@ -240,7 +258,7 @@ function PersonSlot({ row, onChange, onRemove }: { row: Row; onChange: (patch: P
                     key={p.id}
                     className="spx-dropdown-item"
                     onMouseDown={() => {
-                      onChange({ personId: p.id, personName: p.nombreArtistico, isNew: false });
+                      onChange({ personId: p.id, personName: p.nombreArtistico, isNew: false, matched: p });
                       setQuery("");
                       setOpen(false);
                     }}
@@ -251,7 +269,7 @@ function PersonSlot({ row, onChange, onRemove }: { row: Row; onChange: (patch: P
                 <div
                   className="spx-dropdown-item spx-dropdown-create"
                   onMouseDown={() => {
-                    onChange({ personId: null, personName: query.trim(), isNew: true });
+                    onChange({ personId: null, personName: query.trim(), isNew: true, matched: null });
                     setCreating(true);
                     setQuery("");
                     setOpen(false);
@@ -271,7 +289,7 @@ function PersonSlot({ row, onChange, onRemove }: { row: Row; onChange: (patch: P
                 type="button"
                 className="spx-change-link"
                 onClick={() => {
-                  onChange({ personId: null, personName: "", isNew: false, newEmail: "" });
+                  onChange({ personId: null, personName: "", isNew: false, newEmail: "", matched: null });
                   setCreating(false);
                 }}
               >
@@ -280,6 +298,12 @@ function PersonSlot({ row, onChange, onRemove }: { row: Row; onChange: (patch: P
             </div>
             {row.isNew && creating && (
               <div className="spx-new-person-fields">
+                <input
+                  className="spx-input"
+                  placeholder="Nombre completo (opcional)"
+                  value={row.newNombreCompleto}
+                  onChange={(e) => onChange({ newNombreCompleto: e.target.value })}
+                />
                 <input
                   className="spx-input"
                   placeholder="Apellido (opcional)"
@@ -291,12 +315,6 @@ function PersonSlot({ row, onChange, onRemove }: { row: Row; onChange: (patch: P
                   placeholder="DNI (opcional)"
                   value={row.newDni}
                   onChange={(e) => onChange({ newDni: e.target.value })}
-                />
-                <input
-                  className="spx-input"
-                  placeholder="Domicilio (opcional)"
-                  value={row.newDireccion}
-                  onChange={(e) => onChange({ newDireccion: e.target.value })}
                 />
                 <input
                   className="spx-input"
@@ -313,10 +331,37 @@ function PersonSlot({ row, onChange, onRemove }: { row: Row; onChange: (patch: P
                 />
                 <input
                   className="spx-input"
+                  placeholder="Número de IPI (opcional)"
+                  value={row.newIpi}
+                  onChange={(e) => onChange({ newIpi: e.target.value })}
+                />
+                <input
+                  className="spx-input"
+                  placeholder="Domicilio (opcional)"
+                  value={row.newDireccion}
+                  onChange={(e) => onChange({ newDireccion: e.target.value })}
+                />
+                <input
+                  className="spx-input"
                   placeholder="Email (opcional)"
                   value={row.newEmail}
                   onChange={(e) => onChange({ newEmail: e.target.value })}
                 />
+              </div>
+            )}
+            {!row.isNew && row.matched && (
+              <div className="spx-matched-ficha">
+                <span className="spx-matched-title">Ficha en Publishing (autocompletada)</span>
+                <div className="spx-matched-grid">
+                  <span>Nombre completo: {row.matched.nombreCompleto || "—"}</span>
+                  <span>Apellido: {row.matched.apellido || "—"}</span>
+                  <span>DNI: {row.matched.dni || "—"}</span>
+                  <span>Fecha de nacimiento: {row.matched.fechaNacimiento || "—"}</span>
+                  <span>SADAIC: {row.matched.sadaic || "—"}</span>
+                  <span>IPI: {row.matched.ipi || "—"}</span>
+                  <span>Domicilio: {row.matched.direccion || "—"}</span>
+                  <span>Email: {row.matched.email || "—"}</span>
+                </div>
               </div>
             )}
           </>
@@ -381,7 +426,7 @@ function SplitSection({ title, rows, setRows }: { title: string; rows: Row[]; se
         <PersonSlot key={r.key} row={r} onChange={(patch) => updateRow(r.key, patch)} onRemove={() => removeRow(r.key)} />
       ))}
       <button type="button" className="spx-add-person" onClick={() => setRows([...rows, newRow()])}>
-        + Agregar persona
+        + Agregar autor/compositor
       </button>
       <div className={`spx-total ${status}`}>{statusText}</div>
     </div>
@@ -396,16 +441,41 @@ function SplitEditorialForm() {
     const trackName = searchParams.get("trackName");
     const artistDisplay = searchParams.get("artistDisplay");
     if (!catalogTrackId || !trackName || !artistDisplay) return null;
-    return { id: catalogTrackId, track: trackName, artistDisplay, sello: searchParams.get("sello") };
+    return {
+      id: catalogTrackId,
+      track: trackName,
+      artistDisplay,
+      sello: searchParams.get("sello"),
+      audioUrl: searchParams.get("audioUrl"),
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const [track, setTrack] = useState<SplitTrackOption | null>(prefill);
   const [letra, setLetra] = useState<Row[]>([newRow()]);
   const [musica, setMusica] = useState<Row[]>([newRow()]);
+  const [letraDoc, setLetraDoc] = useState<{ url: string; nombre: string } | null>(null);
+  const [uploadingLetra, setUploadingLetra] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  async function handleLetraFile(file: File) {
+    setUploadingLetra(true);
+    setError(null);
+    try {
+      const blob = await upload(file.name, file, {
+        access: "public",
+        handleUploadUrl: "/api/pm/upload",
+        clientPayload: "letra",
+      });
+      setLetraDoc({ url: blob.url, nombre: file.name });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo subir el documento de letra.");
+    } finally {
+      setUploadingLetra(false);
+    }
+  }
 
   const letraSum = letra.reduce((s, r) => s + (parsePercent(r.percentRaw) ?? 0), 0);
   const musicaSum = musica.reduce((s, r) => s + (parsePercent(r.percentRaw) ?? 0), 0);
@@ -418,12 +488,14 @@ function SplitEditorialForm() {
         ? {
             newPerson: {
               nombreArtistico: r.personName,
+              nombreCompleto: r.newNombreCompleto.trim() || null,
               email: r.newEmail.trim() || null,
               apellido: r.newApellido.trim() || null,
               dni: r.newDni.trim() || null,
               direccion: r.newDireccion.trim() || null,
               fechaNacimiento: r.newFechaNacimiento.trim() || null,
               sadaic: r.newSadaic.trim() || null,
+              ipi: r.newIpi.trim() || null,
             },
             percentX100: parsePercent(r.percentRaw) ?? 0,
           }
@@ -439,7 +511,13 @@ function SplitEditorialForm() {
       const res = await fetch("/api/pm/split-editorial", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ catalogTrackId: track.id, letra: toInput(letra), musica: toInput(musica) }),
+        body: JSON.stringify({
+          catalogTrackId: track.id,
+          letra: toInput(letra),
+          musica: toInput(musica),
+          letraUrl: letraDoc?.url ?? null,
+          letraNombre: letraDoc?.nombre ?? null,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "No se pudo enviar el split.");
@@ -472,6 +550,31 @@ function SplitEditorialForm() {
 
       {track && (
         <>
+          <div className="spx-section">
+            <div className="spx-section-title">ARCHIVOS</div>
+            <div className="spx-attachments">
+              <div>
+                <label className="spx-field-label">Documento de letra (opcional)</label>
+                <input
+                  className="spx-input"
+                  type="file"
+                  accept="application/pdf,.doc,.docx,text/plain"
+                  disabled={uploadingLetra}
+                  onChange={(e) => e.target.files?.[0] && handleLetraFile(e.target.files[0])}
+                />
+                {uploadingLetra && <div className="spx-attachment-hint">Subiendo...</div>}
+                {letraDoc && !uploadingLetra && <div className="spx-attachment-hint ok">✓ {letraDoc.nombre}</div>}
+              </div>
+              <div>
+                <label className="spx-field-label">Audio</label>
+                {track.audioUrl ? (
+                  <div className="spx-attachment-hint ok">✓ Ya cargado con el fonograma — no hace falta subirlo de nuevo.</div>
+                ) : (
+                  <div className="spx-attachment-hint">Se toma automáticamente del fonograma cuando corresponde.</div>
+                )}
+              </div>
+            </div>
+          </div>
           <SplitSection title="LETRA" rows={letra} setRows={setLetra} />
           <SplitSection title="MÚSICA" rows={musica} setRows={setMusica} />
         </>
@@ -492,7 +595,7 @@ function SplitEditorialForm() {
 export default function SplitEditorialPage() {
   return (
     <RequireRole allow={["admin", "project_manager"]}>
-      <PMShell title="Split editorial" subtitle="Cargá quién cobra letra y música de una canción." backHref="/pm">
+      <PMShell title="Split editorial" subtitle="Cargá qué autores/compositores cobran letra y música de una canción." backHref="/pm">
         <SplitEditorialForm />
       </PMShell>
     </RequireRole>

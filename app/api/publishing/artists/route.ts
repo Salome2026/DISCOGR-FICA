@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const {
-    nombreArtistico, nombreCompleto, apellido, dni, cuil, sadaic, direccion, localidad, provincia, nacionalidad,
+    nombreArtistico, nombreCompleto, apellido, dni, cuil, sadaic, ipi, direccion, localidad, provincia, nacionalidad,
     fechaNacimiento, email, telefono, sello, tipo, observaciones, documentoUrl, documentoNombre,
   } = body as Record<string, string | null | undefined>;
 
@@ -48,6 +48,7 @@ export async function POST(req: NextRequest) {
     dni: dni || null,
     cuil: cuil || null,
     sadaic: sadaic || null,
+    ipi: ipi || null,
     direccion: direccion || null,
     localidad: localidad || null,
     provincia: provincia || null,

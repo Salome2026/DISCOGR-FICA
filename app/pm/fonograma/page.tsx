@@ -20,6 +20,7 @@ type BoardRelease = {
   group_id: number | null;
   group_tipo: string | null;
   group_nombre: string | null;
+  audio_url: string | null;
   releaseStatus: TaskStatus;
   splitStatus: TaskStatus;
 };
@@ -218,7 +219,7 @@ function PMFonogramaInner() {
                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       {r.splitStatus === "Pendiente" && (
                         <Link
-                          href={`/pm/split-editorial?catalogTrackId=pm-${r.id}&trackName=${encodeURIComponent(r.fonograma_nombre)}&artistDisplay=${encodeURIComponent(r.artist_name)}${r.sello ? `&sello=${encodeURIComponent(r.sello)}` : ""}`}
+                          href={`/pm/split-editorial?catalogTrackId=pm-${r.id}&trackName=${encodeURIComponent(r.fonograma_nombre)}&artistDisplay=${encodeURIComponent(r.artist_name)}${r.sello ? `&sello=${encodeURIComponent(r.sello)}` : ""}${r.audio_url ? `&audioUrl=${encodeURIComponent(r.audio_url)}` : ""}`}
                           className="pmx-fono-task-btn"
                         >
                           Completar Split

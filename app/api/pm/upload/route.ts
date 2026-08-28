@@ -16,12 +16,15 @@ export async function POST(req: NextRequest) {
       body,
       request: req,
       onBeforeGenerateToken: async (pathname, clientPayload) => {
-        const kind = clientPayload === "portada" ? "portada" : "audio";
+        const kind = clientPayload === "portada" ? "portada" : clientPayload === "letra" ? "letra" : "audio";
+        const allowedContentTypes =
+          kind === "audio"
+            ? ["audio/wav", "audio/x-wav", "audio/wave"]
+            : kind === "letra"
+              ? ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"]
+              : ["image/png", "image/jpeg"];
         return {
-          allowedContentTypes:
-            kind === "audio"
-              ? ["audio/wav", "audio/x-wav", "audio/wave"]
-              : ["image/png", "image/jpeg"],
+          allowedContentTypes,
           maximumSizeInBytes: kind === "audio" ? 700 * 1024 * 1024 : 20 * 1024 * 1024,
           addRandomSuffix: true,
           tokenPayload: JSON.stringify({ uploadedBy: session.user!.email }),

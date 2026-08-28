@@ -13,6 +13,9 @@ type EditorialSplit = {
   sello: string | null;
   letra: SplitPerson[];
   musica: SplitPerson[];
+  letraUrl: string | null;
+  letraNombre: string | null;
+  audioUrl: string | null;
   estado: "Pendiente" | "Enviado";
   createdBy: string;
   createdAt: string;
@@ -115,6 +118,28 @@ function SplitDetail({ id }: { id: string }) {
           </>
         )}
       </div>
+
+      {(split.letraUrl || split.audioUrl) && (
+        <div className="split-detail-section">
+          <div className="split-detail-title">ARCHIVOS</div>
+          {split.letraUrl && (
+            <div className="split-person-row">
+              <span>Documento de letra</span>
+              <a href={split.letraUrl} target="_blank" rel="noopener noreferrer">
+                {split.letraNombre || "Ver documento"}
+              </a>
+            </div>
+          )}
+          {split.audioUrl && (
+            <div className="split-person-row">
+              <span>Audio</span>
+              <a href={split.audioUrl} target="_blank" rel="noopener noreferrer">
+                Escuchar
+              </a>
+            </div>
+          )}
+        </div>
+      )}
 
       <SplitPersonList title="LETRA" people={split.letra} />
       <SplitPersonList title="MÚSICA" people={split.musica} />

@@ -27,6 +27,13 @@ export function ensureEditorialSplitsSchema(): Promise<void> {
         )
       `;
       await sql`CREATE INDEX IF NOT EXISTS editorial_splits_estado_idx ON editorial_splits (estado)`;
+      // Letra: documento subido por el PM al enviar el split. Audio: nunca se
+      // sube de nuevo acá — es una copia del audio_url que ya existe en
+      // pm_releases (tomada por el servidor en createSplit), guardada como
+      // snapshot para que el split quede autocontenido para Publishing.
+      await sql`ALTER TABLE editorial_splits ADD COLUMN IF NOT EXISTS letra_url TEXT`;
+      await sql`ALTER TABLE editorial_splits ADD COLUMN IF NOT EXISTS letra_nombre TEXT`;
+      await sql`ALTER TABLE editorial_splits ADD COLUMN IF NOT EXISTS audio_url TEXT`;
     })();
   }
   return ready;
@@ -41,6 +48,9 @@ function rowToSplit(r: Record<string, unknown>): EditorialSplit {
     sello: (r.sello as string | null) ?? null,
     letra: (r.letra as SplitPerson[]) ?? [],
     musica: (r.musica as SplitPerson[]) ?? [],
+    letraUrl: (r.letra_url as string | null) ?? null,
+    letraNombre: (r.letra_nombre as string | null) ?? null,
+    audioUrl: (r.audio_url as string | null) ?? null,
     estado: r.estado as "Pendiente" | "Enviado",
     createdBy: r.created_by as string,
     createdAt: r.created_at as string,
@@ -132,10 +142,10 @@ async function resolvePerson(input: SplitPersonInput, actorEmail: string): Promi
   const id = `pub-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const { rows } = await sql`
     INSERT INTO publishing_artists
-      (id, nombre_artistico, email, apellido, dni, direccion, fecha_nacimiento, sadaic, tipo, updated_by, updated_at)
+      (id, nombre_artistico, nombre_completo, email, apellido, dni, direccion, fecha_nacimiento, sadaic, ipi, tipo, updated_by, updated_at)
     VALUES
-      (${id}, ${name}, ${input.newPerson.email ?? null}, ${input.newPerson.apellido ?? null}, ${input.newPerson.dni ?? null},
-       ${input.newPerson.direccion ?? null}, ${input.newPerson.fechaNacimiento ?? null}, ${input.newPerson.sadaic ?? null},
+      (${id}, ${name}, ${input.newPerson.nombreCompleto ?? null}, ${input.newPerson.email ?? null}, ${input.newPerson.apellido ?? null}, ${input.newPerson.dni ?? null},
+       ${input.newPerson.direccion ?? null}, ${input.newPerson.fechaNacimiento ?? null}, ${input.newPerson.sadaic ?? null}, ${input.newPerson.ipi ?? null},
        'Externo', ${actorEmail}, now())
     RETURNING id, nombre_artistico
   `;
@@ -149,6 +159,9 @@ export async function createSplit(input: {
   sello: string | null;
   letra: SplitPersonInput[];
   musica: SplitPersonInput[];
+  letraUrl?: string | null;
+  letraNombre?: string | null;
+  audioUrl?: string | null;
   actorEmail: string;
 }): Promise<EditorialSplit> {
   await ensureEditorialSplitsSchema();
@@ -171,9 +184,10 @@ export async function createSplit(input: {
 
   const id = `spl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const { rows } = await sql`
-    INSERT INTO editorial_splits (id, catalog_track_id, track_name, artist_display, sello, letra, musica, estado, created_by)
+    INSERT INTO editorial_splits (id, catalog_track_id, track_name, artist_display, sello, letra, musica, letra_url, letra_nombre, audio_url, estado, created_by)
     VALUES (${id}, ${input.catalogTrackId}, ${input.trackName}, ${input.artistDisplay}, ${input.sello},
-            ${JSON.stringify(letra)}::jsonb, ${JSON.stringify(musica)}::jsonb, 'Pendiente', ${input.actorEmail})
+            ${JSON.stringify(letra)}::jsonb, ${JSON.stringify(musica)}::jsonb,
+            ${input.letraUrl ?? null}, ${input.letraNombre ?? null}, ${input.audioUrl ?? null}, 'Pendiente', ${input.actorEmail})
     RETURNING *
   `;
   const split = rowToSplit(rows[0]);

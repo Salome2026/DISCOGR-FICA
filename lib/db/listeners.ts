@@ -1,5 +1,13 @@
 import { sql } from "@vercel/postgres";
 
+// @vercel/postgres's sql`` typings only accept Primitive (no arrays), even
+// though the underlying driver happily sends a JS array as a real Postgres
+// array parameter (same workaround as lib/db/fonogramasSheet.ts) — this cast
+// exists purely to satisfy that overly-narrow type, not to change behavior.
+function arrayParam<T>(items: T[]): string | number | boolean {
+  return items as unknown as string;
+}
+
 let schemaReady: Promise<void> | null = null;
 
 export function ensureSchema(): Promise<void> {
@@ -172,6 +180,25 @@ export async function getArtistLatestByName(name: string) {
     LIMIT 1
   `;
   return rows[0] ?? null;
+}
+
+// Batched version of getArtistLatestByName's image lookup — used by the
+// dashboard calendar to avoid one round-trip per distinct artist on screen.
+// Keyed by lowercased name since artist_name casing in the sheet/PM data
+// doesn't always match Chartmetric's.
+export async function getArtistImagesByNames(names: string[]): Promise<Map<string, string>> {
+  await ensureSchema();
+  const map = new Map<string, string>();
+  const uniqueLower = [...new Set(names.map((n) => n.trim().toLowerCase()).filter(Boolean))];
+  if (uniqueLower.length === 0) return map;
+  const { rows } = await sql`
+    SELECT DISTINCT ON (lower(artist_name)) lower(artist_name) AS name_key, image_url
+    FROM artist_listeners_daily
+    WHERE lower(artist_name) = ANY(${arrayParam(uniqueLower)}::text[]) AND image_url IS NOT NULL
+    ORDER BY lower(artist_name), measured_at DESC
+  `;
+  for (const r of rows as { name_key: string; image_url: string }[]) map.set(r.name_key, r.image_url);
+  return map;
 }
 
 export async function getArtistHistoryByName(name: string, sinceDays: number) {

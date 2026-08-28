@@ -3,6 +3,7 @@ import { sql } from "@vercel/postgres";
 import { auth } from "@/auth";
 import { listReleasesFor } from "@/lib/db/releases";
 import { ensureFonogramasSheetSchema } from "@/lib/db/fonogramasSheet";
+import { getArtistImagesByNames } from "@/lib/db/listeners";
 
 // Merges the PM-created pipeline (pm_releases, task-tracked, editable) with
 // the external "Fonogramas MAWZ & INDYANA" sheet (read-only catalog synced
@@ -17,7 +18,7 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const pmReleases = await listReleasesFor(user.email, "admin");
+  const pmReleases = (await listReleasesFor(user.email, "admin")) as { artist_name: string }[];
 
   await ensureFonogramasSheetSchema();
   const { rows: sheetRows } = await sql`
@@ -43,5 +44,18 @@ export async function GET(_req: NextRequest) {
     source: "sheet" as const,
   }));
 
-  return NextResponse.json({ releases: [...pmReleases, ...sheetAsReleases] });
+  // Spotify profile photo per artist, for the calendar chip avatar — reuses
+  // the same Chartmetric-synced images already shown in "Ranking de
+  // artistas" instead of a second image source. A sheet row's artist_name
+  // is sometimes several names joined with "|" straight from the sheet cell
+  // (a real quirk of that source, not something this pipeline should try to
+  // clean up) — those simply won't match and fall back to no avatar.
+  const allNames = [...pmReleases, ...sheetAsReleases].map((r) => r.artist_name as string).filter(Boolean);
+  const images = await getArtistImagesByNames(allNames);
+  const withImage = <T extends { artist_name: string }>(r: T) => ({
+    ...r,
+    image_url: images.get(r.artist_name.trim().toLowerCase()) ?? null,
+  });
+
+  return NextResponse.json({ releases: [...pmReleases.map(withImage), ...sheetAsReleases.map(withImage)] });
 }

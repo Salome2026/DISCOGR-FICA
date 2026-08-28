@@ -18,6 +18,7 @@ type PmReleaseRow = {
   marketing_plan: boolean;
   marketing_plan_detalle: string | null;
   portada_url: string | null;
+  image_url?: string | null;
   source?: "sheet";
 };
 
@@ -37,6 +38,7 @@ export type CalendarEvent = {
   marketingPlanDetalle: string | null;
   tracks: string[];
   portadaUrl: string | null;
+  artistImageUrl: string | null;
   source?: "sheet";
 };
 
@@ -167,6 +169,7 @@ export default function ReleaseCalendar({
         marketingPlanDetalle: group.find((g) => g.marketing_plan_detalle)?.marketing_plan_detalle ?? null,
         tracks: group.map((g) => g.fonograma_nombre),
         portadaUrl: group.find((g) => g.portada_url)?.portada_url ?? null,
+        artistImageUrl: group.find((g) => g.image_url)?.image_url ?? null,
         source: first.source,
       });
     }
@@ -258,6 +261,7 @@ export default function ReleaseCalendar({
         .cal-chip{display:flex;align-items:center;gap:3px;font-size:9.5px;font-weight:500;padding:1px 4px;border-radius:4px;background:var(--glass-bg);cursor:pointer;overflow:hidden;text-align:left;border:none;color:var(--text-1);width:100%;}
         .cal-chip:hover{background:var(--glass-bg-strong);}
         .cal-chip .dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;}
+        .cal-chip-avatar{width:12px;height:12px;border-radius:50%;flex-shrink:0;object-fit:cover;}
         .cal-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .cal-more{font-size:9px;font-weight:500;color:var(--text-2);padding:0 4px;}
         .cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
@@ -318,6 +322,7 @@ export default function ReleaseCalendar({
                 {visible.map((ev) => (
                   <button key={ev.key} className="cal-chip" onClick={() => setSelected(ev)}>
                     <span className="dot" style={{ background: selloColor(ev.sello) }} />
+                    {ev.artistImageUrl && <img src={ev.artistImageUrl} alt="" className="cal-chip-avatar" />}
                     <span>{ev.artista}</span>
                   </button>
                 ))}
@@ -342,6 +347,7 @@ export default function ReleaseCalendar({
                 {dayEvents.map((ev) => (
                   <button key={ev.key} className="cal-chip" onClick={() => setSelected(ev)}>
                     <span className="dot" style={{ background: selloColor(ev.sello) }} />
+                    {ev.artistImageUrl && <img src={ev.artistImageUrl} alt="" className="cal-chip-avatar" />}
                     <span>{ev.titulo}</span>
                   </button>
                 ))}

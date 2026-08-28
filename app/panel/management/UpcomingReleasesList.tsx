@@ -93,6 +93,7 @@ export default function UpcomingReleasesList() {
         marketingPlanDetalle: group.find((g) => g.marketing_plan_detalle)?.marketing_plan_detalle ?? null,
         tracks: group.map((g) => g.fonograma_nombre),
         portadaUrl: group.find((g) => g.portada_url)?.portada_url ?? null,
+        artistImageUrl: null,
       });
     }
 

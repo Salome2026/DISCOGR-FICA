@@ -264,16 +264,16 @@ export default function ReleaseCalendar({
         .cal-views{display:flex;gap:2px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-pill);padding:2px;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);}
         .cal-view-btn{border:none;background:transparent;border-radius:var(--radius-pill);padding:2px 8px;font-size:9px;font-weight:600;color:var(--text-2);cursor:pointer;}
         .cal-view-btn.active{background:var(--accent-glass-bg);color:var(--text-1);}
-        .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+        .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
         .cal-dayname{font-size:9px;color:var(--text-2);text-align:center;padding:1px 0 3px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
-        .cal-cell{min-height:23px;border-radius:6px;border:1px solid var(--line-soft);padding:3px;display:flex;flex-direction:column;gap:1px;transition:border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);}
+        .cal-cell{min-height:23px;border-radius:6px;border:1px solid var(--line-soft);padding:2px;display:flex;flex-direction:column;gap:1px;transition:border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);}
         .cal-cell.outside{opacity:.35;}
         .cal-cell.today{border-color:var(--accent-color);background:rgba(63,198,209,0.06);}
         .cal-daynum{font-size:10px;font-weight:600;color:var(--text-1);font-variant-numeric:tabular-nums;}
-        .cal-chip{display:flex;align-items:center;gap:3px;font-size:9.5px;font-weight:500;padding:1px 4px;border-radius:4px;background:var(--glass-bg);cursor:pointer;overflow:hidden;text-align:left;border:none;color:var(--text-1);width:100%;}
+        .cal-chip{display:flex;align-items:center;gap:3px;font-size:9px;font-weight:500;padding:1px 4px;border-radius:4px;background:var(--glass-bg);cursor:pointer;overflow:hidden;text-align:left;border:none;color:var(--text-1);width:100%;}
         .cal-chip:hover{background:var(--glass-bg-strong);}
         .cal-chip .dot{width:4px;height:4px;border-radius:50%;flex-shrink:0;}
-        .cal-chip-avatar{width:12px;height:12px;border-radius:50%;flex-shrink:0;object-fit:cover;}
+        .cal-chip-avatar{width:10px;height:10px;border-radius:50%;flex-shrink:0;object-fit:cover;}
         .cal-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
         .cal-more{font-size:9px;font-weight:500;color:var(--text-2);padding:0 4px;}
         .cal-week{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
@@ -326,7 +326,7 @@ export default function ReleaseCalendar({
             const dayEvents = eventsByDay.get(toKey(d)) ?? [];
             const outside = d.getMonth() !== cursor.getMonth();
             const isToday = isSameDay(d, today);
-            const visible = dayEvents.slice(0, 3);
+            const visible = dayEvents.slice(0, 2);
             const extra = dayEvents.length - visible.length;
             return (
               <div key={d.toISOString()} className={`cal-cell${outside ? " outside" : ""}${isToday ? " today" : ""}`}>

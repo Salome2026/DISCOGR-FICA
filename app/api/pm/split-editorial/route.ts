@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 import { hasPermission } from "@/lib/permissions";
-import { getTrack } from "@/lib/db/catalog";
+import { getTrack, upsertTrackFromRelease } from "@/lib/db/catalog";
 import { createSplit } from "@/lib/db/editorialSplits";
 import { getReleaseById } from "@/lib/db/releases";
 import type { SplitPersonInput } from "@discografica/shared/types/editorialSplits";
@@ -36,7 +36,40 @@ export async function POST(req: NextRequest) {
   if (!catalogTrackId) {
     return NextResponse.json({ error: "Elegí la canción." }, { status: 400 });
   }
-  const track = await getTrack(catalogTrackId);
+  let track = await getTrack(catalogTrackId);
+  if (!track) {
+    // Fonogramas cargados antes de que cada alta espejara automáticamente
+    // en catalog_tracks se quedaron sin esa fila — en vez de bloquear el
+    // split para siempre, si el id es el de un fonograma real de PM
+    // ("pm-<id>") se genera la fila que falta ahí mismo y se sigue.
+    const pmMatch = /^pm-(\d+)$/.exec(catalogTrackId);
+    if (pmMatch) {
+      const release = await getReleaseById(Number(pmMatch[1]));
+      if (release) {
+        const participants = [release.artist_name as string];
+        if (release.colaboradores) {
+          for (const c of String(release.colaboradores).split(",")) {
+            const n = c.trim();
+            if (n) participants.push(n);
+          }
+        }
+        await upsertTrackFromRelease({
+          id: catalogTrackId,
+          track: release.fonograma_nombre as string,
+          album: null,
+          releaseDate: (release.fecha_lanzamiento as string | null) ?? null,
+          company: release.distribuidora === "Sin definir" ? null : ((release.distribuidora as string | null) ?? null),
+          artistDisplay: release.artist_name as string,
+          participants,
+          sello: (release.sello as string | null) ?? null,
+          streamingProject: (release.streaming_project as string | null) ?? null,
+          isrc: (release.isrc as string | null) ?? null,
+          genero: (release.genero as string | null) ?? null,
+        });
+        track = await getTrack(catalogTrackId);
+      }
+    }
+  }
   if (!track) {
     return NextResponse.json({ error: "No encontramos esa canción." }, { status: 400 });
   }

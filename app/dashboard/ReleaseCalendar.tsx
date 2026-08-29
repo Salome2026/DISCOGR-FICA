@@ -264,7 +264,7 @@ export default function ReleaseCalendar({
         .cal-views{display:flex;gap:2px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:var(--radius-pill);padding:2px;backdrop-filter:blur(var(--glass-blur)) saturate(1.7);-webkit-backdrop-filter:blur(var(--glass-blur)) saturate(1.7);}
         .cal-view-btn{border:none;background:transparent;border-radius:var(--radius-pill);padding:2px 8px;font-size:9px;font-weight:600;color:var(--text-2);cursor:pointer;}
         .cal-view-btn.active{background:var(--accent-glass-bg);color:var(--text-1);}
-        .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+        .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:auto repeat(6,1fr);gap:2px;flex:1;min-height:0;}
         .cal-dayname{font-size:9px;color:var(--text-2);text-align:center;padding:1px 0 3px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
         .cal-cell{min-height:23px;border-radius:6px;border:1px solid var(--line-soft);padding:2px;display:flex;flex-direction:column;gap:1px;transition:border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);}
         .cal-cell.outside{opacity:.35;}

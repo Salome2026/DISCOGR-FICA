@@ -151,7 +151,7 @@ function DashboardInner() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/catalog/tracks")
+    fetch("/api/catalog/dashboard-tracks")
       .then((r) => r.json())
       .then((d) => !d.error && setCatalogTracks(d.tracks))
       .catch(() => {});
@@ -231,16 +231,17 @@ function DashboardInner() {
   const donutSegs = useMemo(() => {
     const top = companyBuckets ?? [];
     const circumference = 2 * Math.PI * 80;
-    let offset = 0;
+    const lens = top.map((c) => (donutTotal ? (c.count / donutTotal) * circumference : 0));
+    const offsets = lens.reduce<number[]>((acc, len, i) => {
+      acc.push(i === 0 ? 0 : acc[i - 1] + lens[i - 1]);
+      return acc;
+    }, []);
     const segs = top.map((c, i) => {
-      const frac = donutTotal ? c.count / donutTotal : 0;
-      const len = frac * circumference;
       const pct = donutTotal ? Math.round((c.count / donutTotal) * 1000) / 10 : 0;
-      const seg = { color: COLORS[i % COLORS.length], len, offset, company: c.company, count: c.count, pct, tracks: c.tracks };
-      offset += len;
-      return seg;
+      return { color: COLORS[i % COLORS.length], len: lens[i], offset: offsets[i], company: c.company, count: c.count, pct, tracks: c.tracks };
     });
-    return { segs, circumference, rest: circumference - offset };
+    const totalLen = lens.reduce((s, l) => s + l, 0);
+    return { segs, circumference, rest: circumference - totalLen };
   }, [companyBuckets, donutTotal]);
 
   const estadoOrder = [

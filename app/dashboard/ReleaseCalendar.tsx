@@ -137,7 +137,19 @@ export default function ReleaseCalendar({
     const byKey = new Map<string, PmReleaseRow[]>();
     for (const r of rows) {
       if (!r.fecha_lanzamiento) continue;
-      const k = r.group_id != null ? `g${r.group_id}` : `r${r.id}`;
+      // Sheet rows have no group_id (the sheet has no EP/album concept) —
+      // a compilation channel like "La Juntada de los Artistas" drops many
+      // tracks under the same name on the same day, and without grouping
+      // each one became its own visually-identical chip (looked like
+      // duplicates, and flooded the day cell). Group them the same way an
+      // EP/album already groups by fecha+artist instead, mirroring the
+      // real group_id grouping below.
+      const k =
+        r.group_id != null
+          ? `g${r.group_id}`
+          : r.source === "sheet"
+            ? `sheet-${r.artist_name.trim().toLowerCase()}-${String(r.fecha_lanzamiento).slice(0, 10)}`
+            : `r${r.id}`;
       if (!byKey.has(k)) byKey.set(k, []);
       byKey.get(k)!.push(r);
     }

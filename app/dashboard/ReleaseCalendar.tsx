@@ -254,7 +254,7 @@ export default function ReleaseCalendar({
   return (
     <div className={`card cal-card ${className}`}>
       <style>{`
-        .cal-card{display:flex;flex-direction:column;height:100%;justify-content:center;}
+        .cal-card{display:flex;flex-direction:column;height:100%;justify-content:center;min-width:0;}
         .cal-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:.4rem;}
         .cal-title{display:flex;flex-direction:column;gap:1px;}
         .cal-nav{display:flex;align-items:center;gap:3px;}
@@ -266,7 +266,7 @@ export default function ReleaseCalendar({
         .cal-view-btn.active{background:var(--accent-glass-bg);color:var(--text-1);}
         .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:auto repeat(6,1fr);gap:2px;flex:1;min-height:0;}
         .cal-dayname{font-size:9px;color:var(--text-2);text-align:center;padding:1px 0 3px;text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
-        .cal-cell{min-height:23px;border-radius:6px;border:1px solid var(--line-soft);padding:2px;display:flex;flex-direction:column;gap:1px;transition:border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);}
+        .cal-cell{min-height:23px;min-width:0;border-radius:6px;border:1px solid var(--line-soft);padding:2px;display:flex;flex-direction:column;gap:1px;transition:border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);}
         .cal-cell.outside{opacity:.35;}
         .cal-cell.today{border-color:var(--accent-color);background:rgba(63,198,209,0.06);}
         .cal-daynum{font-size:10px;font-weight:600;color:var(--text-1);font-variant-numeric:tabular-nums;}

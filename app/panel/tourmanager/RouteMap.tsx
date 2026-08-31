@@ -106,11 +106,12 @@ export default function RouteMap({ hoja }: { hoja: HojaDeRuta }) {
           </a>
         )}
       </div>
-      <div style={{ borderRadius: 12, overflow: "hidden", border: "1px solid var(--glass-border)", height: 320 }}>
+      <style>{`.tm-route-map .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9); }`}</style>
+      <div className="tm-route-map" style={{ borderRadius: 12, overflow: "hidden", border: "1px solid var(--glass-border)", height: 320 }}>
         <MapContainer center={points[0] ?? [-34.6, -58.4]} zoom={12} style={{ height: "100%", width: "100%" }} scrollWheelZoom>
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <FitBounds points={points} />
           <ResizeHandler />

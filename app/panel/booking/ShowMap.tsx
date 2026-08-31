@@ -83,6 +83,7 @@ export default function ShowMap() {
         .bksm-toggle-btn { border: none; background: transparent; border-radius: var(--radius-pill); padding: 6px 13px; font-size: 12px; font-weight: 600; color: var(--text-2); cursor: pointer; }
         .bksm-toggle-btn.active { background: var(--accent-glass-bg); color: var(--text-1); }
         .bksm-map-wrap { flex: 1; min-height: 380px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--glass-border); }
+        .bksm-map-wrap .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9); }
         .bksm-empty-note { font-size: 12px; color: var(--text-3); margin-top: 8px; }
         .bksm-map-wrap .leaflet-popup-content-wrapper { background: var(--glass-bg-strong); color: var(--text-1); border-radius: 10px; box-shadow: var(--shadow-glass-lg); }
         .bksm-map-wrap .leaflet-popup-tip { background: var(--glass-bg-strong); }
@@ -117,8 +118,8 @@ export default function ShowMap() {
           scrollWheelZoom
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <ResizeHandler />
           {markers.map((s) => (

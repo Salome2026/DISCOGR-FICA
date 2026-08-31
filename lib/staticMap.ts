@@ -1,11 +1,19 @@
 import sharp from "sharp";
 
-// Renders a static PNG of the full route — same free CARTO tiles the
+// Renders a static PNG of the full route — same free OpenStreetMap tiles the
 // interactive Leaflet map already uses (app/panel/tourmanager/RouteMap.tsx),
 // stitched server-side with sharp instead of a browser. This is what makes
 // "el mapa debe aparecer arriba de todo en el PDF, sin depender de abrir
 // enlaces externos" possible — @react-pdf/renderer can only embed a raster
 // image, never a live map component.
+//
+// CARTO's free dark_all basemap tiles started requiring an API key
+// (basemaps.cartocdn.com now returns an "API KEY REQUIRED" watermark
+// instead of real tiles) — switched to standard OSM tiles, which stay
+// genuinely free with no account. OSM's tiles are a light basemap, not
+// dark, so the composited PNG gets negated at the end to approximate the
+// same dark look the rest of the app/PDF uses (same trick as the CSS
+// `filter: invert(1) hue-rotate(180deg)` applied to the interactive map).
 
 const TILE_SIZE = 256;
 const CANVAS_WIDTH = 1000;
@@ -34,7 +42,7 @@ async function fetchTile(z: number, x: number, y: number): Promise<Buffer | null
   const wrappedX = ((x % max) + max) % max;
   if (y < 0 || y >= max) return null;
   try {
-    const res = await fetch(`https://a.basemaps.cartocdn.com/dark_all/${z}/${wrappedX}/${y}.png`, {
+    const res = await fetch(`https://a.tile.openstreetmap.org/${z}/${wrappedX}/${y}.png`, {
       headers: { "User-Agent": "DISCOGR-FICA Tour Manager (internal tool, contact: salome@mawzrecords.com)" },
       signal: AbortSignal.timeout(8000),
     });
@@ -95,12 +103,22 @@ export async function renderStaticRouteMap(input: {
   }
   const tileBuffers = await Promise.all(tileJobs.map((t) => fetchTile(zoom, t.x, t.y)));
 
-  const composites: { input: Buffer; left: number; top: number }[] = [];
+  const tileComposites: { input: Buffer; left: number; top: number }[] = [];
   tileJobs.forEach((t, i) => {
     const buf = tileBuffers[i];
     if (!buf) return;
-    composites.push({ input: buf, left: Math.round(t.x * TILE_SIZE - originX), top: Math.round(t.y * TILE_SIZE - originY) });
+    tileComposites.push({ input: buf, left: Math.round(t.x * TILE_SIZE - originX), top: Math.round(t.y * TILE_SIZE - originY) });
   });
+  // Negate just the light OSM tiles into a dark basemap — the route line
+  // and marker colors below are already correct for a dark background and
+  // must be composited afterward, untouched, or they'd get inverted too.
+  const darkTiles = await sharp({
+    create: { width: CANVAS_WIDTH, height: CANVAS_HEIGHT, channels: 4, background: { r: 10, g: 10, b: 12, alpha: 1 } },
+  })
+    .composite(tileComposites)
+    .negate({ alpha: false })
+    .png()
+    .toBuffer();
 
   // Route line first (under the markers), then numbered markers on top —
   // same visual language as the interactive map (accent teal line, start
@@ -128,12 +146,8 @@ export async function renderStaticRouteMap(input: {
       ${markers}
     </svg>
   `;
-  composites.push({ input: Buffer.from(svg), left: 0, top: 0 });
-
-  const png = await sharp({
-    create: { width: CANVAS_WIDTH, height: CANVAS_HEIGHT, channels: 4, background: { r: 10, g: 10, b: 12, alpha: 1 } },
-  })
-    .composite(composites)
+  const png = await sharp(darkTiles)
+    .composite([{ input: Buffer.from(svg), left: 0, top: 0 }])
     .png()
     .toBuffer();
 

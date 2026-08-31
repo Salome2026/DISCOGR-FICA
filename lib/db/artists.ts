@@ -163,6 +163,20 @@ export async function getArtist(id: string): Promise<Artist | null> {
   return rows[0] ? rowToArtist(rows[0]) : null;
 }
 
+// Insert-if-missing, never overwrites — guarantees a real row exists the
+// moment an artist is assigned to a PM (lib/db/pmArtistAssignments.ts), even
+// if until now they only existed in the static roster. Not an editing path;
+// updateArtistManagementFields/upsertArtist stay the only ones that mutate.
+export async function ensureArtistExists(id: string, name: string, actorEmail: string): Promise<void> {
+  await ensureArtistsSchema();
+  const sello = staticRosterIndex().find((a) => a.id === id)?.sello ?? null;
+  await sql`
+    INSERT INTO artists (id, name, aliases, sello, updated_by, updated_at)
+    VALUES (${id}, ${name}, '[]'::jsonb, ${sello}, ${actorEmail}, now())
+    ON CONFLICT (id) DO NOTHING
+  `;
+}
+
 export async function upsertArtist(input: {
   id?: string;
   name: string;

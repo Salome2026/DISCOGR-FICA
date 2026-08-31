@@ -40,6 +40,7 @@ export const PERMISSIONS = [
   "crear_release_legal",
   "ver_ar",
   "editar_ar",
+  "administrar_asignaciones_pm",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -101,8 +102,11 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // Same isolation principle as legal — its own module, own permissions,
   // nothing shared with Label/PM/Legal/Distribución/Marketing.
   editorial: ["ver_publishing", "editar_publishing"],
-  // Same isolation principle again — its own module, own permissions.
-  management: ["ver_management", "editar_management"],
+  // Same isolation principle again — its own module, own permissions, plus
+  // the one narrow cross-module capability of administering which PM owns
+  // which artist (deliberately not administrar_usuarios, which would also
+  // unlock role/password/force-logout admin actions).
+  management: ["ver_management", "editar_management", "administrar_asignaciones_pm"],
   // Same isolation principle again — its own module, own permissions.
   booking: ["ver_booking", "editar_booking"],
   // Same isolation principle again — its own module, own permissions.

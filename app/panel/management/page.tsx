@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import RequireRole from "@/app/components/RequireRole";
 import ReleaseCalendar from "@/app/dashboard/ReleaseCalendar";
 import { ManagementShell } from "./_shared";
@@ -11,6 +12,11 @@ export default function ManagementHomePage() {
   return (
     <RequireRole allow={["management"]}>
       <ManagementShell title="Management">
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+          <Link href="/panel/management/asignaciones" style={{ fontSize: 13, color: "var(--accent)", textDecoration: "none" }}>
+            Gestionar asignaciones de PM →
+          </Link>
+        </div>
         <PendingMeetingRequests />
         <ArtistGrid />
         <div className="mgmt-section">

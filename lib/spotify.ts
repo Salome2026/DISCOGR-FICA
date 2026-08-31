@@ -80,13 +80,31 @@ async function getAccessToken(forceRefresh = false): Promise<string> {
 const MAX_429_RETRIES = 2;
 const MAX_RETRY_AFTER_MS = 5_000;
 
+// A stalled TCP connection (seen in practice: a search request that hung
+// for ~55 minutes after an ECONNRESET, with the plain fetch() never
+// resolving on its own) has no bound without this — and since ingestOneDoc's
+// own per-entry deadline check only runs BETWEEN searches, a single hung
+// fetch call can blow through the entire ingest route's time budget by
+// itself. 20s is generous for every endpoint this wraps (search, playlist
+// create/update, batched track-add) while still failing fast enough that
+// the caller's existing per-item try/catch can move on.
+const FETCH_TIMEOUT_MS = 20_000;
+
 async function spotifyFetch(path: string, init: RequestInit = {}, retried = false, retries429 = 0): Promise<Response> {
   const token = await getAccessToken();
   const url = path.startsWith("http") ? path : `${SPOTIFY_API}${path}`;
-  const res = await fetch(url, {
-    ...init,
-    headers: { ...(init.headers || {}), Authorization: `Bearer ${token}` },
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...init,
+      headers: { ...(init.headers || {}), Authorization: `Bearer ${token}` },
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
   if (res.status === 401 && !retried) {
     await getAccessToken(true);
     return spotifyFetch(path, init, true, retries429);
@@ -309,6 +327,15 @@ export async function uploadPlaylistCoverImage(id: string, base64Jpeg: string): 
     body: base64Jpeg,
   });
   if (!res.ok) throw new Error(`Spotify API error ${res.status} subiendo portada: ${await res.text()}`);
+}
+
+// Spotify has no true delete — for a playlist owned by this account, having
+// the account unfollow it is the equivalent (it stops appearing in the
+// account's library). Used by the admin "archivar" action and to clean up
+// a playlist an automated run created with bad/empty data.
+export async function unfollowPlaylist(id: string): Promise<void> {
+  const res = await spotifyFetch(`/playlists/${id}/followers`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`Spotify API error ${res.status} eliminando playlist: ${await res.text()}`);
 }
 
 // Spotify caps this endpoint at 100 URIs per call. POST /playlists/{id}/items

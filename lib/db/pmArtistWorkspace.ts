@@ -40,10 +40,40 @@ export function ensurePmArtistWorkspaceSchema(): Promise<void> {
         )
       `;
       await sql`CREATE INDEX IF NOT EXISTS pm_artist_notes_artist_idx ON pm_artist_notes (artist_id)`;
+      await sql`
+        CREATE TABLE IF NOT EXISTS pm_meeting_requests (
+          id TEXT PRIMARY KEY,
+          artist_id TEXT NOT NULL,
+          artist_name TEXT NOT NULL,
+          requested_by TEXT NOT NULL,
+          comment TEXT NOT NULL,
+          priority TEXT NOT NULL DEFAULT 'Media',
+          suggested_date DATE,
+          status TEXT NOT NULL DEFAULT 'Pendiente',
+          scheduled_date DATE,
+          scheduled_time TEXT,
+          management_notes TEXT,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          updated_by TEXT,
+          updated_at TIMESTAMPTZ
+        )
+      `;
+      await sql`CREATE INDEX IF NOT EXISTS pm_meeting_requests_artist_idx ON pm_meeting_requests (artist_id)`;
+      await sql`CREATE INDEX IF NOT EXISTS pm_meeting_requests_status_idx ON pm_meeting_requests (status)`;
+      await sql`CREATE INDEX IF NOT EXISTS pm_meeting_requests_created_idx ON pm_meeting_requests (created_at DESC)`;
     })();
   }
   return ready;
 }
+
+function newId(prefix: string): string {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+export const MEETING_REQUEST_STATUSES = ["Pendiente", "Agendada", "Realizada"] as const;
+export type MeetingRequestStatus = (typeof MEETING_REQUEST_STATUSES)[number];
+export const MEETING_REQUEST_PRIORITIES = ["Alta", "Media", "Baja"] as const;
+export type MeetingRequestPriority = (typeof MEETING_REQUEST_PRIORITIES)[number];
 
 export type PmArtistProfile = {
   artistId: string;
@@ -205,4 +235,104 @@ export async function addNote(artistId: string, authorEmail: string, body: strin
     RETURNING *
   `;
   return rowToNote(rows[0]);
+}
+
+// ---------- Meeting requests ----------
+
+export type PmMeetingRequest = {
+  id: string;
+  artistId: string;
+  artistName: string;
+  requestedBy: string;
+  comment: string;
+  priority: string;
+  suggestedDate: string | null;
+  status: string;
+  scheduledDate: string | null;
+  scheduledTime: string | null;
+  managementNotes: string | null;
+  createdAt: string;
+  updatedBy: string | null;
+  updatedAt: string | null;
+};
+
+function rowToMeetingRequest(r: Record<string, unknown>): PmMeetingRequest {
+  return {
+    id: r.id as string,
+    artistId: r.artist_id as string,
+    artistName: r.artist_name as string,
+    requestedBy: r.requested_by as string,
+    comment: r.comment as string,
+    priority: r.priority as string,
+    suggestedDate: (r.suggested_date as string | null) ?? null,
+    status: r.status as string,
+    scheduledDate: (r.scheduled_date as string | null) ?? null,
+    scheduledTime: (r.scheduled_time as string | null) ?? null,
+    managementNotes: (r.management_notes as string | null) ?? null,
+    createdAt: r.created_at as string,
+    updatedBy: (r.updated_by as string | null) ?? null,
+    updatedAt: (r.updated_at as string | null) ?? null,
+  };
+}
+
+export async function listMeetingRequestsForArtist(artistId: string): Promise<PmMeetingRequest[]> {
+  await ensurePmArtistWorkspaceSchema();
+  const { rows } = await sql`
+    SELECT * FROM pm_meeting_requests WHERE artist_id = ${artistId} ORDER BY created_at DESC
+  `;
+  return rows.map(rowToMeetingRequest);
+}
+
+// Pending first (so Management sees what needs action at the top), newest first within each group.
+export async function listAllMeetingRequests(): Promise<PmMeetingRequest[]> {
+  await ensurePmArtistWorkspaceSchema();
+  const { rows } = await sql`
+    SELECT * FROM pm_meeting_requests ORDER BY (status = 'Pendiente') DESC, created_at DESC
+  `;
+  return rows.map(rowToMeetingRequest);
+}
+
+export async function createMeetingRequest(input: {
+  artistId: string;
+  artistName: string;
+  requestedBy: string;
+  comment: string;
+  priority: string;
+  suggestedDate: string | null;
+}): Promise<PmMeetingRequest> {
+  await ensurePmArtistWorkspaceSchema();
+  const id = newId("mtg");
+  const { rows } = await sql`
+    INSERT INTO pm_meeting_requests (id, artist_id, artist_name, requested_by, comment, priority, suggested_date, status)
+    VALUES (${id}, ${input.artistId}, ${input.artistName}, ${input.requestedBy}, ${input.comment}, ${input.priority}, ${input.suggestedDate}, 'Pendiente')
+    RETURNING *
+  `;
+  return rowToMeetingRequest(rows[0]);
+}
+
+export async function updateMeetingRequest(
+  id: string,
+  patch: { status?: string; scheduledDate?: string | null; scheduledTime?: string | null; managementNotes?: string | null },
+  actorEmail: string
+): Promise<PmMeetingRequest | null> {
+  await ensurePmArtistWorkspaceSchema();
+  const current = await sql`SELECT * FROM pm_meeting_requests WHERE id = ${id}`;
+  if (!current.rows[0]) return null;
+  const existing = rowToMeetingRequest(current.rows[0]);
+  const status = patch.status ?? existing.status;
+  const scheduledDate = patch.scheduledDate !== undefined ? patch.scheduledDate : existing.scheduledDate;
+  const scheduledTime = patch.scheduledTime !== undefined ? patch.scheduledTime : existing.scheduledTime;
+  const managementNotes = patch.managementNotes !== undefined ? patch.managementNotes : existing.managementNotes;
+  const { rows } = await sql`
+    UPDATE pm_meeting_requests SET
+      status = ${status},
+      scheduled_date = ${scheduledDate},
+      scheduled_time = ${scheduledTime},
+      management_notes = ${managementNotes},
+      updated_by = ${actorEmail},
+      updated_at = now()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return rowToMeetingRequest(rows[0]);
 }

@@ -9,6 +9,10 @@ type Artist = { id: string; name: string; sello: string | null; photoUrl: string
 type Profile = { planAnual: string | null; objetivosGenerales: string | null } | null;
 type ActionItem = { id: number; title: string; done: boolean; doneBy: string | null; doneAt: string | null };
 type Note = { id: number; authorEmail: string; body: string; createdAt: string };
+type MeetingRequest = {
+  id: string; comment: string; priority: string; suggestedDate: string | null; status: string;
+  scheduledDate: string | null; scheduledTime: string | null; managementNotes: string | null; createdAt: string;
+};
 
 type Bundle = {
   artist: Artist;
@@ -16,6 +20,15 @@ type Bundle = {
   actionItems: ActionItem[];
   notes: Note[];
 };
+
+const PRIORITIES = ["Alta", "Media", "Baja"];
+const STATUS_TONE: Record<string, string> = { Pendiente: "var(--warn-ink)", Agendada: "var(--accent)", Realizada: "var(--good-ink)" };
+
+function formatFecha(fecha: string | null): string {
+  if (!fecha) return "";
+  const [y, m, d] = fecha.slice(0, 10).split("-");
+  return `${d}/${m}/${y}`;
+}
 
 const sectionStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 };
 const sectionLabelStyle: React.CSSProperties = { fontSize: 13, fontWeight: 700, color: "var(--text-1)" };
@@ -36,6 +49,13 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
   const [savingProfile, setSavingProfile] = useState(false);
   const [newItem, setNewItem] = useState("");
   const [newNote, setNewNote] = useState("");
+  const [meetingRequests, setMeetingRequests] = useState<MeetingRequest[]>([]);
+  const [showMeetingModal, setShowMeetingModal] = useState(false);
+  const [meetingComment, setMeetingComment] = useState("");
+  const [meetingPriority, setMeetingPriority] = useState("Media");
+  const [meetingSuggestedDate, setMeetingSuggestedDate] = useState("");
+  const [sendingMeeting, setSendingMeeting] = useState(false);
+  const [meetingError, setMeetingError] = useState<string | null>(null);
 
   function load() {
     fetch(`/api/pm/artistas/${artistId}`)
@@ -51,6 +71,9 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
         setObjetivos(d.profile?.objetivosGenerales ?? "");
       })
       .catch((e) => setError(String(e)));
+    fetch(`/api/pm/artistas/${artistId}/meeting-requests`)
+      .then((r) => r.json())
+      .then((d) => setMeetingRequests(d.requests ?? []));
   }
 
   useEffect(() => {
@@ -110,6 +133,33 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
     });
     setNewNote("");
     load();
+  }
+
+  async function sendMeetingRequest() {
+    if (!meetingComment.trim()) {
+      setMeetingError("Falta el comentario o temario de la reunión.");
+      return;
+    }
+    setSendingMeeting(true);
+    setMeetingError(null);
+    try {
+      const res = await fetch(`/api/pm/artistas/${artistId}/meeting-requests`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ comment: meetingComment.trim(), priority: meetingPriority, suggestedDate: meetingSuggestedDate || null }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || "No se pudo enviar la solicitud.");
+      setShowMeetingModal(false);
+      setMeetingComment("");
+      setMeetingPriority("Media");
+      setMeetingSuggestedDate("");
+      load();
+    } catch (err) {
+      setMeetingError(err instanceof Error ? err.message : "Error desconocido.");
+    } finally {
+      setSendingMeeting(false);
+    }
   }
 
   if (data === undefined) {
@@ -201,6 +251,80 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
           <button style={smallBtn} onClick={addNote}>Agregar</button>
         </div>
       </div>
+
+      <div className="pmx-card" style={sectionStyle}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={sectionLabelStyle}>Reuniones con Management</div>
+          <button
+            style={{ ...smallBtn, alignSelf: "auto" }}
+            onClick={() => {
+              setMeetingError(null);
+              setShowMeetingModal(true);
+            }}
+          >
+            Solicitar reunión con Management
+          </button>
+        </div>
+        {meetingRequests.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 13 }}>Todavía no se solicitó ninguna reunión.</p>}
+        {meetingRequests.map((r) => (
+          <div key={r.id} style={{ fontSize: 13, borderTop: "1px solid var(--line-soft)", paddingTop: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontWeight: 700, color: STATUS_TONE[r.status] ?? "var(--text-1)" }}>{r.status}</span>
+              <span style={{ color: "var(--text-3)", fontSize: 11 }}>
+                Prioridad {r.priority} · Solicitada {new Date(r.createdAt).toLocaleDateString("es-AR")}
+                {r.suggestedDate && ` · Sugerida ${formatFecha(r.suggestedDate)}`}
+              </span>
+            </div>
+            <div style={{ marginTop: 4 }}>{r.comment}</div>
+            {r.status === "Agendada" && (r.scheduledDate || r.scheduledTime) && (
+              <div style={{ color: "var(--accent)", marginTop: 4 }}>
+                Agendada para {formatFecha(r.scheduledDate) || "?"} {r.scheduledTime ?? ""}
+              </div>
+            )}
+            {r.managementNotes && <div style={{ color: "var(--text-3)", marginTop: 4 }}>Nota de Management: {r.managementNotes}</div>}
+          </div>
+        ))}
+      </div>
+
+      {showMeetingModal && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}
+          onClick={() => setShowMeetingModal(false)}
+        >
+          <div className="pmx-card" onClick={(e) => e.stopPropagation()} style={{ display: "flex", flexDirection: "column", gap: 12, width: 460, maxWidth: "95vw" }}>
+            <div style={{ fontSize: 16, fontWeight: 700 }}>Solicitar reunión con Management</div>
+            <div>
+              <div style={{ fontSize: 12.5, color: "var(--text-2)" }}>Artista</div>
+              <input value={data.artist.name} disabled style={{ width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-3)", fontSize: 13, marginTop: 4 }} />
+            </div>
+            <div>
+              <div style={{ fontSize: 12.5, color: "var(--text-2)" }}>Comentario o temario de la reunión</div>
+              <textarea value={meetingComment} onChange={(e) => setMeetingComment(e.target.value)} style={{ ...textareaStyle, minHeight: 80, marginTop: 4 }} />
+            </div>
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12.5, color: "var(--text-2)" }}>Prioridad</div>
+                <select value={meetingPriority} onChange={(e) => setMeetingPriority(e.target.value)} style={{ width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-1)", fontSize: 13, marginTop: 4 }}>
+                  {PRIORITIES.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12.5, color: "var(--text-2)" }}>Fecha sugerida (opcional)</div>
+                <input type="date" value={meetingSuggestedDate} onChange={(e) => setMeetingSuggestedDate(e.target.value)} style={{ width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-1)", fontSize: 13, marginTop: 4 }} />
+              </div>
+            </div>
+            {meetingError && <div style={{ color: "var(--crit-ink)", fontSize: 13 }}>{meetingError}</div>}
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+              <button onClick={() => setShowMeetingModal(false)} style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "9px 16px", color: "var(--text-2)", cursor: "pointer", fontSize: 13 }}>
+                Cancelar
+              </button>
+              <button onClick={sendMeetingRequest} disabled={sendingMeeting} style={{ background: "var(--accent-gradient)", border: "none", borderRadius: 8, padding: "9px 20px", color: "var(--accent-ink)", fontWeight: 700, cursor: "pointer", fontSize: 13.5 }}>
+                {sendingMeeting ? "Enviando..." : "Enviar solicitud"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PMShell>
   );
 }

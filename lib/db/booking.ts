@@ -1,6 +1,14 @@
 import { sql } from "@vercel/postgres";
 import { recordAudit } from "./users";
 
+// @vercel/postgres's sql`` typings only accept Primitive (no arrays), even
+// though the underlying driver happily sends a JS array as a real Postgres
+// array parameter (same workaround as lib/db/fonogramasSheet.ts) — this cast
+// exists purely to satisfy that overly-narrow type, not to change behavior.
+function arrayParam<T>(items: T[]): string | number | boolean {
+  return items as unknown as string;
+}
+
 let ready: Promise<void> | null = null;
 
 export function ensureBookingSchema(): Promise<void> {
@@ -41,9 +49,17 @@ export function ensureBookingSchema(): Promise<void> {
       await sql`ALTER TABLE booking_shows ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'manual'`;
       await sql`ALTER TABLE booking_shows ADD COLUMN IF NOT EXISTS sheet_row INTEGER`;
       await sql`ALTER TABLE booking_shows ADD COLUMN IF NOT EXISTS sheet_col INTEGER`;
+      // Which tab of the spreadsheet a sheet-sourced row came from ("agenda",
+      // "hist2024", "hist2025", "hist2026") — each tab restarts its own
+      // row/col numbering from scratch, so without this a cell in one tab
+      // can collide with a same-numbered cell in another. Existing rows
+      // default to 'agenda' (the only tab synced before this column existed),
+      // which keeps their ids and uniqueness scope exactly as before.
+      await sql`ALTER TABLE booking_shows ADD COLUMN IF NOT EXISTS sheet_tab TEXT NOT NULL DEFAULT 'agenda'`;
+      await sql`DROP INDEX IF EXISTS booking_shows_sheet_cell_idx`;
       await sql`
         CREATE UNIQUE INDEX IF NOT EXISTS booking_shows_sheet_cell_idx
-        ON booking_shows (sheet_row, sheet_col) WHERE source = 'sheet'
+        ON booking_shows (sheet_tab, sheet_row, sheet_col) WHERE source = 'sheet'
       `;
       // "Eliminar" archives instead of hard-deleting — a show/contact is a
       // historical record, not a scratch row. archived_at IS NULL is the
@@ -229,38 +245,69 @@ export type SheetShow = {
   fecha: string;
   notas: string;
   valor: string | null;
+  sheetTab: string;
   sheetRow: number;
   sheetCol: number;
 };
 
+// The "agenda" tab was the only one synced before sheetTab existed, so its
+// id format stays bare (sheet-<row>-<col>) to avoid orphaning anything that
+// already points at one of those ids (e.g. tourmanager_hojas.booking_show_id).
+// Every other tab gets its name folded into the id, since that space is new.
+function sheetShowId(c: SheetShow): string {
+  return c.sheetTab === "agenda"
+    ? `sheet-${c.sheetRow}-${c.sheetCol}`
+    : `sheet-${c.sheetTab}-${c.sheetRow}-${c.sheetCol}`;
+}
+
 // Mirrors the Google Sheet's cells 1:1 into booking_shows rows tagged
-// source='sheet' — upserted by (sheetRow, sheetCol) since a free-text
-// calendar cell has no other stable identity. Any previously-synced row
-// whose cell is no longer present (cleared, or the whole sheet shrank) is
-// deleted, so the sheet stays the single source of truth for its own rows.
+// source='sheet' — upserted by (sheetTab, sheetRow, sheetCol) since a
+// free-text calendar cell has no other stable identity. Cells from every
+// synced tab are expected in one combined call, since the stale-row cleanup
+// below removes any previously-synced row not present in THIS call — call it
+// per-tab and every other tab's rows would look stale and get deleted.
 // Manual rows (source='manual') are never touched by this function.
+//
+// Once the three "Hist <year>" tabs got added on top of the live agenda, a
+// sync could carry ~2000 cells — one round-trip per row (the original
+// version of this function) took minutes and risked the serverless
+// function's own timeout, same failure mode already solved once for
+// lib/db/fonogramasSheet.ts. unnest() turns the whole upsert into a single
+// statement; @vercel/postgres passes a plain JS array straight through as a
+// real Postgres array parameter, no manual array-literal building needed.
 export async function syncSheetShows(cells: SheetShow[]): Promise<{ upserted: number; removed: number }> {
   await ensureBookingSchema();
-  for (const c of cells) {
-    const id = `sheet-${c.sheetRow}-${c.sheetCol}`;
-    await sql`
-      INSERT INTO booking_shows
-        (id, artist_name, fecha, estado, notas, valor, source, sheet_row, sheet_col, updated_at)
-      VALUES
-        (${id}, ${c.artistName}, ${c.fecha}::date, 'Pendiente', ${c.notas}, ${c.valor}, 'sheet', ${c.sheetRow}, ${c.sheetCol}, now())
-      ON CONFLICT (sheet_row, sheet_col) WHERE source = 'sheet'
-      DO UPDATE SET artist_name = EXCLUDED.artist_name, fecha = EXCLUDED.fecha, notas = EXCLUDED.notas, valor = EXCLUDED.valor, updated_at = now()
-    `;
+  if (cells.length === 0) {
+    const { rowCount } = await sql`DELETE FROM booking_shows WHERE source = 'sheet'`;
+    return { upserted: 0, removed: rowCount ?? 0 };
   }
-  const keep = cells.map((c) => `sheet-${c.sheetRow}-${c.sheetCol}`);
-  const { rows } = await sql`SELECT id FROM booking_shows WHERE source = 'sheet'`;
-  const stale = rows.map((r) => r.id as string).filter((id) => !keep.includes(id));
-  let removed = 0;
-  for (const id of stale) {
-    await sql`DELETE FROM booking_shows WHERE id = ${id}`;
-    removed++;
-  }
-  return { upserted: cells.length, removed };
+
+  const ids = cells.map(sheetShowId);
+  const artistNames = cells.map((c) => c.artistName);
+  const fechas = cells.map((c) => c.fecha);
+  const notas = cells.map((c) => c.notas);
+  const valores = cells.map((c) => c.valor);
+  const sheetTabs = cells.map((c) => c.sheetTab);
+  const sheetRows = cells.map((c) => c.sheetRow);
+  const sheetCols = cells.map((c) => c.sheetCol);
+
+  await sql`
+    INSERT INTO booking_shows
+      (id, artist_name, fecha, estado, notas, valor, source, sheet_tab, sheet_row, sheet_col, updated_at)
+    SELECT id, artist_name, fecha, 'Pendiente', notas, valor, 'sheet', sheet_tab, sheet_row, sheet_col, now()
+    FROM unnest(
+      ${arrayParam(ids)}::text[], ${arrayParam(artistNames)}::text[], ${arrayParam(fechas)}::date[],
+      ${arrayParam(notas)}::text[], ${arrayParam(valores)}::text[],
+      ${arrayParam(sheetTabs)}::text[], ${arrayParam(sheetRows)}::int[], ${arrayParam(sheetCols)}::int[]
+    ) AS t(id, artist_name, fecha, notas, valor, sheet_tab, sheet_row, sheet_col)
+    ON CONFLICT (sheet_tab, sheet_row, sheet_col) WHERE source = 'sheet'
+    DO UPDATE SET artist_name = EXCLUDED.artist_name, fecha = EXCLUDED.fecha, notas = EXCLUDED.notas, valor = EXCLUDED.valor, updated_at = now()
+  `;
+
+  const { rowCount } = await sql`
+    DELETE FROM booking_shows WHERE source = 'sheet' AND NOT (id = ANY(${arrayParam(ids)}::text[]))
+  `;
+  return { upserted: cells.length, removed: rowCount ?? 0 };
 }
 
 export type BookingContact = {

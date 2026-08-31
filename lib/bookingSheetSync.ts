@@ -73,38 +73,65 @@ function parseCSV(text: string): string[][] {
   return rows;
 }
 
-// Header cells look like "´Mayo 2026", "´Junio2026", "Óctubre 2026" — a
-// leading curly-quote artifact, inconsistent spacing before the year, and
-// accented month names. Strip all of that down to a {month, year} pair.
-function parseMonthHeader(raw: string): { month: number; year: number } | null {
+// Header cells look like "´Mayo 2026", "´Junio2026", "Óctubre 2026" (the
+// live "AGENDA" tab — leading curly-quote artifact, inconsistent spacing,
+// accented month names, explicit 4-digit year) or "enero 25", "sept 25" (the
+// "Hist 2025"/"Hist 2026" tabs — 2-digit year) or "JUNIO Viernes" (the
+// "Hist 2024" tab — no year at all, combined with the day name; that tab's
+// year has to come from the caller instead, since the cell never states it).
+function parseMonthHeader(raw: string, defaultYear?: number): { month: number; year: number } | null {
   const clean = raw
     .replace(/[´`]/g, "")
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .trim();
-  const yearMatch = clean.match(/\d{4}/);
-  if (!yearMatch) return null;
-  const year = parseInt(yearMatch[0], 10);
-  const monthWord = clean.replace(/\d{4}/, "").trim();
+  const year4 = clean.match(/\d{4}/);
+  const year2 = clean.match(/\b\d{2}\b/);
+  let year: number;
+  let monthWord: string;
+  if (year4) {
+    year = parseInt(year4[0], 10);
+    monthWord = clean.replace(/\d{4}/, "").trim();
+  } else if (year2) {
+    year = 2000 + parseInt(year2[0], 10);
+    monthWord = clean.replace(/\d{2}/, "").trim();
+  } else if (defaultYear) {
+    year = defaultYear;
+    monthWord = clean;
+  } else {
+    return null;
+  }
   const key = Object.keys(MONTH_NAMES).find((k) => monthWord.startsWith(k));
   if (!key) return null;
   return { month: MONTH_NAMES[key], year };
 }
 
+type GridConfig = {
+  sheetTab: string;
+  monthRowIdx: number;
+  dayRowIdx: number;
+  dataStartRow: number;
+  defaultYear?: number;
+};
+
 // Turns the raw grid into one SheetShow per non-empty date cell. Column A
 // holds an artist name only on some rows — it applies to that row and every
 // row below it until the next non-empty A cell (an artist can reappear
 // several times lower down for extra shows that month, which is fine; we
-// just keep tracking whatever's most recently seen).
-export function parseAgendaGrid(rows: string[][]): SheetShow[] {
-  if (rows.length < 3) return [];
-  const monthRow = rows[0];
-  const dayRow = rows[2];
+// just keep tracking whatever's most recently seen). Shared by the live
+// "AGENDA" tab and the three "Hist <year>" tabs — they lay out the same
+// artist-rows-by-date-columns grid, just with the header rows and the
+// column-vs-day-of-month(the actual date) at slightly different row offsets
+// (see GRID_CONFIGS below).
+function parseGrid(rows: string[][], config: GridConfig): SheetShow[] {
+  if (rows.length <= config.dataStartRow) return [];
+  const monthRow = rows[config.monthRowIdx];
+  const dayRow = rows[config.dayRowIdx];
 
   const colDates: (string | null)[] = monthRow.map((monthCell, col) => {
     if (col === 0) return null;
-    const header = parseMonthHeader(monthCell ?? "");
+    const header = parseMonthHeader(monthCell ?? "", config.defaultYear);
     const dayRaw = (dayRow[col] ?? "").trim();
     if (!header || !dayRaw) return null;
     const day = parseInt(dayRaw, 10);
@@ -114,7 +141,7 @@ export function parseAgendaGrid(rows: string[][]): SheetShow[] {
 
   const cells: SheetShow[] = [];
   let currentArtist = "";
-  for (let r = 3; r < rows.length; r++) {
+  for (let r = config.dataStartRow; r < rows.length; r++) {
     const row = rows[r];
     const artistCell = (row[0] ?? "").trim();
     if (artistCell) currentArtist = canonicalArtistName(artistCell);
@@ -125,11 +152,31 @@ export function parseAgendaGrid(rows: string[][]): SheetShow[] {
       if (!fecha) continue;
       const text = (row[c] ?? "").trim();
       if (!text) continue;
-      cells.push({ artistName: currentArtist, fecha, notas: text, valor: extractValor(text), sheetRow: r, sheetCol: c });
+      cells.push({ artistName: currentArtist, fecha, notas: text, valor: extractValor(text), sheetTab: config.sheetTab, sheetRow: r, sheetCol: c });
     }
   }
   return cells;
 }
+
+export function parseAgendaGrid(rows: string[][]): SheetShow[] {
+  return parseGrid(rows, { sheetTab: "agenda", monthRowIdx: 0, dayRowIdx: 2, dataStartRow: 3 });
+}
+
+// The three "Hist <year>" tabs — same show-booking grid, kept as a running
+// archive instead of getting cleared out once a show is in the past. Each
+// one lays its header out a little differently (see the parseMonthHeader
+// comment above), which is why dayRowIdx/dataStartRow vary here even though
+// the underlying artist-rows-by-date-columns shape is identical.
+const HIST_CONFIGS: GridConfig[] = [
+  { sheetTab: "hist2024", monthRowIdx: 0, dayRowIdx: 1, dataStartRow: 2, defaultYear: 2024 },
+  { sheetTab: "hist2025", monthRowIdx: 0, dayRowIdx: 2, dataStartRow: 3, defaultYear: 2025 },
+  { sheetTab: "hist2026", monthRowIdx: 0, dayRowIdx: 2, dataStartRow: 3, defaultYear: 2026 },
+];
+const HIST_SHEET_NAMES: Record<string, string> = {
+  hist2024: "Hist 2024",
+  hist2025: "Hist 2025",
+  hist2026: "Hist 2026",
+};
 
 // The team always writes a show's fee as a plain decimal ("1.5", "2,5"),
 // sometimes with a "k"/"m" shorthand suffix, mixed in with venue/deposit/time
@@ -148,9 +195,9 @@ function extractValor(text: string): string | null {
   return null;
 }
 
-async function fetchAgendaCSV(): Promise<string> {
+async function fetchSheetCSV(params: string): Promise<string> {
   const res = await fetch(
-    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${AGENDA_GID}`,
+    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/${params}`,
     { cache: "no-store" }
   );
   const text = await res.text();
@@ -160,20 +207,45 @@ async function fetchAgendaCSV(): Promise<string> {
   return text;
 }
 
+function fetchAgendaCSV(): Promise<string> {
+  return fetchSheetCSV(`export?format=csv&gid=${AGENDA_GID}`);
+}
+
+// The three Hist tabs aren't exposed as a stable gid the same way the first
+// tab is (gid=0 only ever means "first tab") — the gviz endpoint's `sheet=`
+// param takes the tab's display name directly instead, which works the same
+// way for a link-shared (not "published to web") spreadsheet.
+function fetchNamedSheetCSV(sheetName: string): Promise<string> {
+  return fetchSheetCSV(`gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`);
+}
+
 let lastSyncAt = 0;
 const MIN_SYNC_INTERVAL_MS = 60_000;
 
 // Rate-limited independent of how often callers ask — several teammates'
 // tabs can all be polling at once, but Google's CSV export only actually
-// gets hit at most once a minute.
+// gets hit at most once a minute. Pulls the live "AGENDA" tab plus the three
+// "Hist <year>" archive tabs and syncs them in one combined call, so the
+// stale-row cleanup in syncSheetShows sees every tab's current cells at once
+// instead of treating each other tab's rows as gone.
 export async function syncAgendaFromSheet(): Promise<{ upserted: number; removed: number; skipped?: true }> {
   const now = Date.now();
   if (now - lastSyncAt < MIN_SYNC_INTERVAL_MS) {
     return { upserted: 0, removed: 0, skipped: true };
   }
   lastSyncAt = now;
-  const csv = await fetchAgendaCSV();
-  const rows = parseCSV(csv);
-  const cells = parseAgendaGrid(rows);
+
+  // syncSheetShows treats any previously-synced row absent from THIS call as
+  // stale and deletes it — so a transient failure fetching just one tab must
+  // abort the whole sync rather than proceed with a partial cell list, or
+  // that one tab's entire archive would look "gone" and get wiped out.
+  const agendaCsv = await fetchAgendaCSV();
+  const cells = parseAgendaGrid(parseCSV(agendaCsv));
+
+  for (const config of HIST_CONFIGS) {
+    const csv = await fetchNamedSheetCSV(HIST_SHEET_NAMES[config.sheetTab]);
+    cells.push(...parseGrid(parseCSV(csv), config));
+  }
+
   return syncSheetShows(cells);
 }

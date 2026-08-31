@@ -37,7 +37,7 @@ export function ensurePmStudioBookingsSchema(): Promise<void> {
   return ready;
 }
 
-export const STUDIOS = ["Estudio A", "Estudio B"] as const;
+export const STUDIOS = ["Sinatra", "Madonna"] as const;
 export type Studio = (typeof STUDIOS)[number];
 export const SHIFTS = ["12:00-15:00", "16:00-19:00"] as const;
 export type Shift = (typeof SHIFTS)[number];

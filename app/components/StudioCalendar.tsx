@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 
-const STUDIOS = ["Estudio A", "Estudio B"] as const;
+const STUDIOS = ["Sinatra", "Madonna"] as const;
 const SHIFTS = ["12:00-15:00", "16:00-19:00"] as const;
 const DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 

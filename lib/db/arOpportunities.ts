@@ -344,6 +344,24 @@ export async function listAssignmentsForOpportunity(opportunityId: string): Prom
   return rows.map(rowToAssignment);
 }
 
+export async function getAssignment(assignmentId: number): Promise<ArOpportunityAssignment | null> {
+  await ensureArOpportunitiesSchema();
+  const { rows } = await sql`SELECT * FROM ar_opportunity_assignments WHERE id = ${assignmentId}`;
+  return rows[0] ? rowToAssignment(rows[0]) : null;
+}
+
+export async function updateAssignmentStatus(assignmentId: number, taskStatus: ArTaskStatus): Promise<ArOpportunityAssignment | null> {
+  await ensureArOpportunitiesSchema();
+  const { rows } = await sql`
+    UPDATE ar_opportunity_assignments
+    SET task_status = ${taskStatus},
+        completed_at = CASE WHEN ${taskStatus} = 'done' THEN now() ELSE completed_at END
+    WHERE id = ${assignmentId}
+    RETURNING *
+  `;
+  return rows[0] ? rowToAssignment(rows[0]) : null;
+}
+
 // Writes Gemini-generated narrative content (never scores/metrics — those
 // stay purely deterministic, see lib/arScoring.ts). Wholesale overwrite is
 // intentional: "Generar/Regenerar" always replaces the previous narrative

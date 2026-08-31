@@ -4,6 +4,9 @@ import { hasPermission } from "@/lib/permissions";
 import { getOpportunity, canSeeOpportunity } from "@/lib/db/arOpportunities";
 import { generateCatalogRevivalNarrative } from "@/lib/arCatalogRevival";
 import { geminiConfigured } from "@/lib/gemini";
+import { withTimeout } from "@/lib/withTimeout";
+
+export const maxDuration = 90;
 
 // Generic "generate/regenerate narrative" endpoint, dispatched by category —
 // one route for every Gemini-narrated opportunity type instead of one route
@@ -29,7 +32,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   try {
     if (opportunity.category === "OPORTUNIDAD DE CATÁLOGO") {
-      const catalogRevival = await generateCatalogRevivalNarrative(id);
+      const catalogRevival = await withTimeout(generateCatalogRevivalNarrative(id), 60_000);
+      if (!catalogRevival) {
+        return NextResponse.json({ error: "Gemini no respondió a tiempo (60s) — probá de nuevo en un rato." }, { status: 504 });
+      }
       return NextResponse.json({ catalogRevival });
     }
     return NextResponse.json(

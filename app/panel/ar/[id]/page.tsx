@@ -5,7 +5,13 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import RequirePermission from "@/app/components/RequirePermission";
 import { hasPermission, type SessionUser } from "@/lib/permissions";
-import { AR_STATUSES, type ArOpportunity, type ArOpportunityComment, type ArStatus } from "@discografica/shared/types/ar";
+import { AR_STATUSES, type ArOpportunity, type ArOpportunityComment, type ArOpportunityAssignment, type ArStatus, type ArTaskStatus } from "@discografica/shared/types/ar";
+
+const TASK_STATUS_LABELS: Record<ArTaskStatus, string> = {
+  pending: "Pendiente",
+  acknowledged: "Reconocida",
+  done: "Hecha",
+};
 
 function GhostButton({ children, onClick, disabled }: { children: React.ReactNode; onClick: () => void; disabled?: boolean }) {
   return (
@@ -64,6 +70,13 @@ function ArDetailContent({ id }: { id: string }) {
   const [savingStatus, setSavingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatingNarrative, setGeneratingNarrative] = useState(false);
+  const [assignments, setAssignments] = useState<ArOpportunityAssignment[]>([]);
+  const [pms, setPms] = useState<{ email: string; name: string }[]>([]);
+  const [selectedPm, setSelectedPm] = useState("");
+  const [assignComment, setAssignComment] = useState("");
+  const [assigning, setAssigning] = useState(false);
+
+  const isOverseer = user?.role === "admin" || user?.role === "ar";
 
   function load() {
     fetch(`/api/ar/${id}`)
@@ -72,8 +85,49 @@ function ArDetailContent({ id }: { id: string }) {
     fetch(`/api/ar/${id}/comments`)
       .then((r) => r.json())
       .then((d: { comments?: ArOpportunityComment[] }) => setComments(d.comments ?? []));
+    fetch(`/api/ar/${id}/assign`)
+      .then((r) => r.json())
+      .then((d: { assignments?: ArOpportunityAssignment[] }) => setAssignments(d.assignments ?? []));
   }
   useEffect(load, [id]);
+
+  useEffect(() => {
+    if (!isOverseer) return;
+    fetch("/api/ar/pms")
+      .then((r) => r.json())
+      .then((d: { pms?: { email: string; name: string }[] }) => setPms(d.pms ?? []));
+  }, [isOverseer]);
+
+  async function handleAssign() {
+    if (!selectedPm) return;
+    setAssigning(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/ar/${id}/assign`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pmEmail: selectedPm, comment: assignComment.trim() || null }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo asignar.");
+      setSelectedPm("");
+      setAssignComment("");
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido.");
+    } finally {
+      setAssigning(false);
+    }
+  }
+
+  async function handleTaskStatusChange(assignmentId: number, taskStatus: ArTaskStatus) {
+    const res = await fetch(`/api/ar/${id}/assign/${assignmentId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ taskStatus }),
+    });
+    if (res.ok) load();
+  }
 
   async function handleStatusChange(status: ArStatus) {
     setSavingStatus(true);
@@ -177,6 +231,53 @@ function ArDetailContent({ id }: { id: string }) {
             ))}
           </div>
         </Section>
+
+        {(isOverseer || assignments.length > 0) && (
+          <Section title="Asignación a PM">
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {assignments.map((a) => {
+                const isOwnTask = user?.email === a.pmEmail;
+                return (
+                  <div key={a.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px" }}>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600 }}>{a.pmEmail}</div>
+                      {a.comment && <div style={{ fontSize: 12, color: "var(--text-3)" }}>{a.comment}</div>}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ ...pill, fontSize: 10.5 }}>{TASK_STATUS_LABELS[a.taskStatus]}</span>
+                      {(isOwnTask || isOverseer) && a.taskStatus !== "done" && (
+                        <button
+                          type="button"
+                          onClick={() => handleTaskStatusChange(a.id, a.taskStatus === "pending" ? "acknowledged" : "done")}
+                          style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 6, padding: "4px 10px", color: "var(--text-2)", fontSize: 11.5, cursor: "pointer" }}
+                        >
+                          {a.taskStatus === "pending" ? "Reconocer" : "Marcar como hecho"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+              {isOverseer && (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                  <select value={selectedPm} onChange={(e) => setSelectedPm(e.target.value)} style={{ background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-1)", fontSize: 13 }}>
+                    <option value="">Elegir PM...</option>
+                    {pms.map((p) => <option key={p.email} value={p.email}>{p.name} ({p.email})</option>)}
+                  </select>
+                  <input
+                    value={assignComment}
+                    onChange={(e) => setAssignComment(e.target.value)}
+                    placeholder="Comentario (opcional)"
+                    style={{ flex: "1 1 180px", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-1)", fontSize: 13 }}
+                  />
+                  <button type="button" onClick={handleAssign} disabled={!selectedPm || assigning} style={{ background: "var(--accent-glass-bg)", border: "1px solid var(--accent-glass-border)", borderRadius: 8, padding: "8px 14px", color: "var(--text-1)", fontSize: 13, cursor: "pointer" }}>
+                    {assigning ? "Asignando..." : "Asignar"}
+                  </button>
+                </div>
+              )}
+            </div>
+          </Section>
+        )}
 
         {opportunity.category === "OPORTUNIDAD DE CATÁLOGO" ? (
           <Section title="Análisis de revival de catálogo">

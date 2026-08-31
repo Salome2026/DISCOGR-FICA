@@ -173,6 +173,31 @@ export type ArOpportunityUpdate = {
   suggestedSello?: string | null;
 };
 
+// The module's "front door" — a rotating snapshot of what's happening in
+// the market and in the roster, regenerated on demand or by the daily
+// cron (see lib/arMarketIntelligence.ts). Every name/id here is real,
+// pulled from a closed list before the prompt is built — same discipline
+// as everything else in this module.
+export type ArMarketSnapshotScope = "market" | "roster" | "combined";
+
+export type ArMarketNarrative = {
+  resumenGeneral: string;
+  hallazgosClave: { titulo: string; detalle: string; tipo: string; relevanciaParaElSello: string }[];
+  generosEnCrecimientoAR: string[];
+  artistasRosterDestacados: { nombre: string; motivo: string }[];
+  oportunidadesParaRevisar: { opportunityId: string; motivo: string }[];
+};
+
+export type ArMarketSnapshot = {
+  id: number;
+  scope: ArMarketSnapshotScope;
+  narrative: ArMarketNarrative;
+  dataSnapshot: Record<string, unknown>;
+  generatedAt: string;
+  generatedBy: string | null;
+  model: string;
+};
+
 // Manually-reported "this genre is moving" signal — see lib/db/arGenreTrends.ts.
 export type ArGenreTrendDirection = "growing" | "declining" | "stable";
 

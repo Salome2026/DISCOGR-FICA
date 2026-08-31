@@ -257,6 +257,15 @@ export async function listUsers(): Promise<AppUser[]> {
   return rows.map(toAppUser);
 }
 
+// Narrow, role-scoped listing — for pickers like A&R's "asignar a PM" that
+// need real PM emails/names but shouldn't expose the full user directory
+// (that stays admin-only via listUsers()).
+export async function listUsersByRole(role: Role): Promise<AppUser[]> {
+  await ensureUsersSchema();
+  const { rows } = await sql`SELECT * FROM app_users WHERE role = ${role} AND active = true ORDER BY name ASC`;
+  return rows.map(toAppUser);
+}
+
 function pgArrayLiteral(items: string[]): string {
   return `{${items.map((i) => `"${i.replace(/"/g, '\\"')}"`).join(",")}}`;
 }

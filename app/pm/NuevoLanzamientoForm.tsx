@@ -125,6 +125,7 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
   const [fonograma, setFonograma] = useState("");
   const [autores, setAutores] = useState("");
   const [featuring, setFeaturing] = useState("");
+  const [featuringRoles, setFeaturingRoles] = useState<Record<string, "main" | "featuring">>({});
   const [genero, setGenero] = useState("");
   const [tipoObra, setTipoObra] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -435,6 +436,11 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
             hora: hora || null,
             autoresCompositores: autores || null,
             colaboradores: featuring || null,
+            colaboradoresMain: featuring
+              .split(",")
+              .map((n) => n.trim())
+              .filter((n) => n && featuringRoles[n] === "main")
+              .join(", ") || null,
             genero: genero || null,
             tipoObra,
             audioUrl,
@@ -1169,6 +1175,51 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                   placeholder="Nombres separados por coma (dejar vacío si no hay)"
                   style={inputStyle}
                 />
+                {featuring.trim() && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                    {featuring.split(",").map((raw) => raw.trim()).filter(Boolean).map((name) => {
+                      const role = featuringRoles[name] ?? "featuring";
+                      return (
+                        <div
+                          key={name}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            background: "var(--bg-2)",
+                            border: "1px solid var(--line-soft)",
+                            borderRadius: 999,
+                            padding: "4px 6px 4px 12px",
+                            fontSize: 12.5,
+                          }}
+                        >
+                          <span>{name}</span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFeaturingRoles((prev) => ({
+                                ...prev,
+                                [name]: role === "main" ? "featuring" : "main",
+                              }))
+                            }
+                            style={{
+                              background: role === "main" ? "var(--accent-glass-bg)" : "transparent",
+                              border: "1px solid " + (role === "main" ? "var(--accent-glass-border)" : "var(--line-soft)"),
+                              borderRadius: 999,
+                              padding: "3px 10px",
+                              fontSize: 11,
+                              fontWeight: 600,
+                              color: role === "main" ? "var(--text-1)" : "var(--text-3)",
+                              cursor: "pointer",
+                            }}
+                          >
+                            {role === "main" ? "Main" : "Featuring"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 

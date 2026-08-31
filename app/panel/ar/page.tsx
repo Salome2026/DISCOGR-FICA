@@ -5,7 +5,99 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import RequirePermission from "@/app/components/RequirePermission";
 import { hasPermission, type SessionUser } from "@/lib/permissions";
-import { AR_CATEGORIES, AR_STATUSES, type ArOpportunity, type ArCategory, type ArStatus } from "@discografica/shared/types/ar";
+import { AR_CATEGORIES, AR_STATUSES, type ArOpportunity, type ArCategory, type ArStatus, type ArMarketSnapshot } from "@discografica/shared/types/ar";
+
+function timeAgo(iso: string): string {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diffMs / 60_000);
+  if (mins < 1) return "recién";
+  if (mins < 60) return `hace ${mins} min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `hace ${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `hace ${days}d`;
+}
+
+function MarketSnapshotCard({ canEdit }: { canEdit: boolean }) {
+  const [snapshot, setSnapshot] = useState<ArMarketSnapshot | null | undefined>(undefined);
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function load() {
+    fetch("/api/ar/market-snapshot")
+      .then((r) => r.json())
+      .then((d: { snapshot?: ArMarketSnapshot | null }) => setSnapshot(d.snapshot ?? null));
+  }
+  useEffect(load, []);
+
+  async function handleGenerate() {
+    setGenerating(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/ar/market-snapshot", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo generar el resumen.");
+      setSnapshot(data.snapshot);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido.");
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  if (snapshot === undefined) return null;
+
+  return (
+    <div
+      style={{
+        background: "var(--glass-bg)",
+        border: "1px solid var(--glass-border)",
+        borderRadius: 16,
+        padding: 18,
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, flexWrap: "wrap" }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: ".04em" }}>
+          Resumen de mercado{snapshot ? ` · ${timeAgo(snapshot.generatedAt)}` : ""}
+        </div>
+        {canEdit && (
+          <button type="button" onClick={handleGenerate} disabled={generating} style={ghostBtn}>
+            {generating ? "Generando..." : snapshot ? "↻ Actualizar ahora" : "✦ Generar ahora"}
+          </button>
+        )}
+      </div>
+      {error && <div style={{ fontSize: 12.5, color: "var(--crit-ink)" }}>{error}</div>}
+      {!snapshot ? (
+        <div style={{ fontSize: 13, color: "var(--text-3)" }}>
+          Todavía no se generó ningún resumen. {canEdit ? "Generalo con el botón de arriba, o esperá a la corrida diaria automática." : "Esperá a que el equipo de A&R lo genere."}
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ fontSize: 14, lineHeight: 1.5 }}>{snapshot.narrative.resumenGeneral}</div>
+          {snapshot.narrative.hallazgosClave.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {snapshot.narrative.hallazgosClave.map((h, i) => (
+                <div key={i} style={{ fontSize: 13 }}>
+                  <strong>{h.titulo}</strong> — {h.detalle}
+                </div>
+              ))}
+            </div>
+          )}
+          {snapshot.narrative.generosEnCrecimientoAR.length > 0 && (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {snapshot.narrative.generosEnCrecimientoAR.map((g) => (
+                <span key={g} style={pill}>{g}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function scoreColor(score: number | null): string {
   if (score == null) return "var(--text-3)";
@@ -138,6 +230,8 @@ function ArContent() {
             </button>
           </div>
         </div>
+
+        <MarketSnapshotCard canEdit={canEdit} />
 
         {scanMsg && <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>{scanMsg}</div>}
         {scanCatalogMsg && <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>{scanCatalogMsg}</div>}

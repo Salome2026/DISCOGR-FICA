@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/sync-docusign",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/ar-scan",
+      "schedule": "0 17 * * *"
     }
   ]
 }

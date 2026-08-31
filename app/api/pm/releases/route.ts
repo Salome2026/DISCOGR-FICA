@@ -93,9 +93,9 @@ async function handleSingleCreate(
   sello: string | null,
   streamingProject: string | null
 ) {
-  const { artist, fonograma, estado, distribuidora, fecha, hora, autoresCompositores, colaboradores, isrc, genero, tipoObra, audioUrl, portadaUrl } = body as {
+  const { artist, fonograma, estado, distribuidora, fecha, hora, autoresCompositores, colaboradores, colaboradoresMain, isrc, genero, tipoObra, audioUrl, portadaUrl } = body as {
     artist?: string; fonograma?: string; estado?: string; distribuidora?: string;
-    fecha?: string; hora?: string; autoresCompositores?: string; colaboradores?: string;
+    fecha?: string; hora?: string; autoresCompositores?: string; colaboradores?: string; colaboradoresMain?: string;
     isrc?: string; genero?: string; tipoObra?: string; audioUrl?: string; portadaUrl?: string;
   };
   const horaNorm = normalizeHora(hora);
@@ -146,13 +146,24 @@ async function handleSingleCreate(
     createdBy: email,
   });
 
+  // Co-main artists (tagged "Main" in the Featuring picker, as opposed to
+  // a guest "Featuring" credit) get folded into the displayed artist name
+  // — e.g. "Artista & Co-artista" — same way a real co-headline release
+  // gets credited on Spotify, instead of disappearing into the generic
+  // colaboradores list alongside actual guest features.
+  const mainNames = (colaboradoresMain || "")
+    .split(",")
+    .map((n) => n.trim())
+    .filter(Boolean);
+  const artistDisplay = mainNames.length > 0 ? [artist, ...mainNames].join(" & ") : artist;
+
   await upsertTrackFromRelease({
     id: `pm-${release.id}`,
     track: fonograma,
     album: null,
     releaseDate: fecha || null,
     company: canonicalCompany(distribuidora),
-    artistDisplay: artist,
+    artistDisplay,
     participants: buildParticipants(artist, colaboradores || null),
     sello,
     streamingProject,

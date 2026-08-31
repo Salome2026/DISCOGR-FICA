@@ -30,7 +30,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 // Un input de dirección con autocompletado (pega texto o link de Maps,
 // resuelve al salir del campo) — el mismo comportamiento para cada punto
 // del recorrido, así que vive una sola vez en vez de repetirse 6 veces.
-function AddressField({
+export function AddressField({
   label,
   value,
   onChange,

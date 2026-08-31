@@ -6,7 +6,7 @@ import { signOut, useSession } from "next-auth/react";
 export const PM_STYLES = `
   .pmx-root { font-family: var(--font-display); color: var(--text-1); min-height: 100vh; padding-bottom: 5rem; }
   .pmx-inner { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem 0; }
-  .pmx-inner.pmx-home { max-width: 760px; }
+  .pmx-inner.pmx-home { max-width: 980px; }
   .pmx-topbar { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:1.75rem; flex-wrap:wrap; }
   .pmx-back { background:none; border:none; color:var(--text-3); font-size:12.5px; cursor:pointer; padding:0; margin-bottom:10px; display:inline-block; text-decoration:none; }
   .pmx-kicker { font-size:11px; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; font-weight:600; }

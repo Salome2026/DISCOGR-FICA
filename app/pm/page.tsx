@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import RequireRole from "@/app/components/RequireRole";
+import ReleaseCalendar from "@/app/dashboard/ReleaseCalendar";
 import { PMShell } from "./_shared";
 
 export default function PMLandingPage() {
   return (
     <RequireRole allow={["admin", "project_manager"]}>
       <PMShell title="¿Qué querés cargar?" homeMaxWidth>
-        <div className="pmx-home-buttons">
+        <div className="pmx-home-buttons" style={{ marginBottom: "1.75rem" }}>
           <Link href="/pm/fonograma" className="pmx-big-btn">
             <h2>Fonograma</h2>
             <p>Cargá un single, EP o álbum nuevo.</p>
@@ -22,6 +23,8 @@ export default function PMLandingPage() {
             <p>Cargá los datos de derechos de máster de un fonograma.</p>
           </Link>
         </div>
+
+        <ReleaseCalendar readOnly apiUrl="/api/pm/releases/dashboard-calendar" />
       </PMShell>
     </RequireRole>
   );

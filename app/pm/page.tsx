@@ -28,7 +28,18 @@ export default function PMLandingPage() {
           </Link>
         </div>
 
-        <ReleaseCalendar readOnly apiUrl="/api/pm/releases/dashboard-calendar" />
+        <div className="pmx-calendar-row">
+          <div>
+            <div className="pmx-section-title">Calendario de lanzamientos</div>
+            <ReleaseCalendar readOnly apiUrl="/api/pm/releases/dashboard-calendar" />
+          </div>
+          <div>
+            <div className="pmx-section-title">Calendario de estudios de grabación</div>
+            <div className="pmx-card" style={{ color: "var(--text-3)", fontSize: 14 }}>
+              Próximamente.
+            </div>
+          </div>
+        </div>
       </PMShell>
     </RequireRole>
   );

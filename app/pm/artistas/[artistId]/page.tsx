@@ -30,16 +30,21 @@ function formatFecha(fecha: string | null): string {
   return `${d}/${m}/${y}`;
 }
 
-const sectionStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 };
-const sectionLabelStyle: React.CSSProperties = { fontSize: 13, fontWeight: 700, color: "var(--text-1)" };
+const sectionStyle: React.CSSProperties = { display: "flex", flexDirection: "column", gap: 16, marginBottom: 32 };
+const sectionLabelStyle: React.CSSProperties = { fontSize: 18, fontWeight: 700, color: "var(--text-1)" };
 const textareaStyle: React.CSSProperties = {
-  width: "100%", minHeight: 100, background: "var(--bg-2)", border: "1px solid var(--line-soft)",
-  borderRadius: 8, padding: "10px 12px", color: "var(--text-1)", fontSize: 13.5, fontFamily: "inherit", resize: "vertical",
+  width: "100%", minHeight: 150, background: "var(--bg-2)", border: "1px solid var(--line-soft)",
+  borderRadius: 10, padding: "14px 16px", color: "var(--text-1)", fontSize: 16, fontFamily: "inherit", resize: "vertical", lineHeight: 1.5,
 };
 const smallBtn: React.CSSProperties = {
-  background: "var(--accent-glass-bg)", border: "1px solid var(--accent-glass-border)", borderRadius: 8,
-  padding: "6px 14px", color: "var(--text-1)", fontWeight: 600, fontSize: 12.5, cursor: "pointer", alignSelf: "flex-start",
+  background: "var(--accent-glass-bg)", border: "1px solid var(--accent-glass-border)", borderRadius: 10,
+  padding: "11px 22px", color: "var(--text-1)", fontWeight: 600, fontSize: 15, cursor: "pointer", alignSelf: "flex-start",
 };
+const listInputStyle: React.CSSProperties = {
+  flex: 1, background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10,
+  padding: "12px 16px", color: "var(--text-1)", fontSize: 15.5,
+};
+const checkboxStyle: React.CSSProperties = { width: 20, height: 20, cursor: "pointer" };
 
 function ArtistProfileInner({ artistId }: { artistId: string }) {
   const [data, setData] = useState<Bundle | null | undefined>(undefined);
@@ -199,20 +204,20 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
 
       <div className="pmx-card" style={sectionStyle}>
         <div style={sectionLabelStyle}>Próximas acciones y temas pendientes</div>
-        {pendientes.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 13 }}>Sin pendientes.</p>}
+        {pendientes.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 15 }}>Sin pendientes.</p>}
         {pendientes.map((i) => (
-          <label key={i.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5 }}>
-            <input type="checkbox" checked={false} onChange={() => toggleItem(i.id, true)} />
+          <label key={i.id} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 16 }}>
+            <input type="checkbox" checked={false} onChange={() => toggleItem(i.id, true)} style={checkboxStyle} />
             {i.title}
           </label>
         ))}
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 10 }}>
           <input
             value={newItem}
             onChange={(e) => setNewItem(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addItem()}
             placeholder="Nueva acción o tema pendiente..."
-            style={{ flex: 1, background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-1)", fontSize: 13 }}
+            style={listInputStyle}
           />
           <button style={smallBtn} onClick={addItem}>Agregar</button>
         </div>
@@ -220,10 +225,10 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
 
       <div className="pmx-card" style={sectionStyle}>
         <div style={sectionLabelStyle}>Historial de acciones realizadas</div>
-        {realizadas.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 13 }}>Todavía no hay acciones completadas.</p>}
+        {realizadas.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 15 }}>Todavía no hay acciones completadas.</p>}
         {realizadas.map((i) => (
-          <label key={i.id} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5, color: "var(--text-3)" }}>
-            <input type="checkbox" checked={true} onChange={() => toggleItem(i.id, false)} />
+          <label key={i.id} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 16, color: "var(--text-3)" }}>
+            <input type="checkbox" checked={true} onChange={() => toggleItem(i.id, false)} style={checkboxStyle} />
             <span style={{ textDecoration: "line-through" }}>{i.title}</span>
           </label>
         ))}
@@ -231,29 +236,29 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
 
       <div className="pmx-card" style={sectionStyle}>
         <div style={sectionLabelStyle}>Anotaciones del PM</div>
-        {data.notes.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 13 }}>Sin anotaciones todavía.</p>}
+        {data.notes.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 15 }}>Sin anotaciones todavía.</p>}
         {data.notes.map((n) => (
-          <div key={n.id} style={{ fontSize: 13, borderTop: "1px solid var(--line-soft)", paddingTop: 8 }}>
-            <div style={{ color: "var(--text-3)", fontSize: 11 }}>
+          <div key={n.id} style={{ fontSize: 15.5, borderTop: "1px solid var(--line-soft)", paddingTop: 12 }}>
+            <div style={{ color: "var(--text-3)", fontSize: 13 }}>
               {n.authorEmail} · {new Date(n.createdAt).toLocaleString("es-AR")}
             </div>
             {n.body}
           </div>
         ))}
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 10 }}>
           <input
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addNote()}
             placeholder="Nueva anotación..."
-            style={{ flex: 1, background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-1)", fontSize: 13 }}
+            style={listInputStyle}
           />
           <button style={smallBtn} onClick={addNote}>Agregar</button>
         </div>
       </div>
 
       <div className="pmx-card" style={sectionStyle}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <div style={sectionLabelStyle}>Reuniones con Management</div>
           <button
             style={{ ...smallBtn, alignSelf: "auto" }}
@@ -265,23 +270,23 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
             Solicitar reunión con Management
           </button>
         </div>
-        {meetingRequests.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 13 }}>Todavía no se solicitó ninguna reunión.</p>}
+        {meetingRequests.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 15 }}>Todavía no se solicitó ninguna reunión.</p>}
         {meetingRequests.map((r) => (
-          <div key={r.id} style={{ fontSize: 13, borderTop: "1px solid var(--line-soft)", paddingTop: 8 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontWeight: 700, color: STATUS_TONE[r.status] ?? "var(--text-1)" }}>{r.status}</span>
-              <span style={{ color: "var(--text-3)", fontSize: 11 }}>
+          <div key={r.id} style={{ fontSize: 15.5, borderTop: "1px solid var(--line-soft)", paddingTop: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+              <span style={{ fontWeight: 700, fontSize: 16, color: STATUS_TONE[r.status] ?? "var(--text-1)" }}>{r.status}</span>
+              <span style={{ color: "var(--text-3)", fontSize: 13 }}>
                 Prioridad {r.priority} · Solicitada {new Date(r.createdAt).toLocaleDateString("es-AR")}
                 {r.suggestedDate && ` · Sugerida ${formatFecha(r.suggestedDate)}`}
               </span>
             </div>
-            <div style={{ marginTop: 4 }}>{r.comment}</div>
+            <div style={{ marginTop: 6 }}>{r.comment}</div>
             {r.status === "Agendada" && (r.scheduledDate || r.scheduledTime) && (
-              <div style={{ color: "var(--accent)", marginTop: 4 }}>
+              <div style={{ color: "var(--accent)", marginTop: 6 }}>
                 Agendada para {formatFecha(r.scheduledDate) || "?"} {r.scheduledTime ?? ""}
               </div>
             )}
-            {r.managementNotes && <div style={{ color: "var(--text-3)", marginTop: 4 }}>Nota de Management: {r.managementNotes}</div>}
+            {r.managementNotes && <div style={{ color: "var(--text-3)", marginTop: 6 }}>Nota de Management: {r.managementNotes}</div>}
           </div>
         ))}
       </div>
@@ -291,34 +296,34 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }}
           onClick={() => setShowMeetingModal(false)}
         >
-          <div className="pmx-card" onClick={(e) => e.stopPropagation()} style={{ display: "flex", flexDirection: "column", gap: 12, width: 460, maxWidth: "95vw" }}>
-            <div style={{ fontSize: 16, fontWeight: 700 }}>Solicitar reunión con Management</div>
+          <div className="pmx-card" onClick={(e) => e.stopPropagation()} style={{ display: "flex", flexDirection: "column", gap: 16, width: 560, maxWidth: "95vw" }}>
+            <div style={{ fontSize: 20, fontWeight: 700 }}>Solicitar reunión con Management</div>
             <div>
-              <div style={{ fontSize: 12.5, color: "var(--text-2)" }}>Artista</div>
-              <input value={data.artist.name} disabled style={{ width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-3)", fontSize: 13, marginTop: 4 }} />
+              <div style={{ fontSize: 14.5, color: "var(--text-2)" }}>Artista</div>
+              <input value={data.artist.name} disabled style={{ width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: "12px 16px", color: "var(--text-3)", fontSize: 15.5, marginTop: 6 }} />
             </div>
             <div>
-              <div style={{ fontSize: 12.5, color: "var(--text-2)" }}>Comentario o temario de la reunión</div>
-              <textarea value={meetingComment} onChange={(e) => setMeetingComment(e.target.value)} style={{ ...textareaStyle, minHeight: 80, marginTop: 4 }} />
+              <div style={{ fontSize: 14.5, color: "var(--text-2)" }}>Comentario o temario de la reunión</div>
+              <textarea value={meetingComment} onChange={(e) => setMeetingComment(e.target.value)} style={{ ...textareaStyle, minHeight: 100, marginTop: 6 }} />
             </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12.5, color: "var(--text-2)" }}>Prioridad</div>
-                <select value={meetingPriority} onChange={(e) => setMeetingPriority(e.target.value)} style={{ width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-1)", fontSize: 13, marginTop: 4 }}>
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+              <div style={{ flex: 1, minWidth: 160 }}>
+                <div style={{ fontSize: 14.5, color: "var(--text-2)" }}>Prioridad</div>
+                <select value={meetingPriority} onChange={(e) => setMeetingPriority(e.target.value)} style={{ width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: "12px 16px", color: "var(--text-1)", fontSize: 15.5, marginTop: 6 }}>
                   {PRIORITIES.map((p) => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 12.5, color: "var(--text-2)" }}>Fecha sugerida (opcional)</div>
-                <input type="date" value={meetingSuggestedDate} onChange={(e) => setMeetingSuggestedDate(e.target.value)} style={{ width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-1)", fontSize: 13, marginTop: 4 }} />
+              <div style={{ flex: 1, minWidth: 160 }}>
+                <div style={{ fontSize: 14.5, color: "var(--text-2)" }}>Fecha sugerida (opcional)</div>
+                <input type="date" value={meetingSuggestedDate} onChange={(e) => setMeetingSuggestedDate(e.target.value)} style={{ width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: "12px 16px", color: "var(--text-1)", fontSize: 15.5, marginTop: 6 }} />
               </div>
             </div>
-            {meetingError && <div style={{ color: "var(--crit-ink)", fontSize: 13 }}>{meetingError}</div>}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-              <button onClick={() => setShowMeetingModal(false)} style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "9px 16px", color: "var(--text-2)", cursor: "pointer", fontSize: 13 }}>
+            {meetingError && <div style={{ color: "var(--crit-ink)", fontSize: 15 }}>{meetingError}</div>}
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 12 }}>
+              <button onClick={() => setShowMeetingModal(false)} style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 10, padding: "12px 20px", color: "var(--text-2)", cursor: "pointer", fontSize: 15 }}>
                 Cancelar
               </button>
-              <button onClick={sendMeetingRequest} disabled={sendingMeeting} style={{ background: "var(--accent-gradient)", border: "none", borderRadius: 8, padding: "9px 20px", color: "var(--accent-ink)", fontWeight: 700, cursor: "pointer", fontSize: 13.5 }}>
+              <button onClick={sendMeetingRequest} disabled={sendingMeeting} style={{ background: "var(--accent-gradient)", border: "none", borderRadius: 10, padding: "12px 26px", color: "var(--accent-ink)", fontWeight: 700, cursor: "pointer", fontSize: 16 }}>
                 {sendingMeeting ? "Enviando..." : "Enviar solicitud"}
               </button>
             </div>

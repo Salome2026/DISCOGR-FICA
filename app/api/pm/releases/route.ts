@@ -10,6 +10,7 @@ import {
   type EstadoRelease,
 } from "@/lib/db/releases";
 import { getAssignedArtists } from "@/lib/db/users";
+import { isArtistAssignedToPm } from "@/lib/db/pmArtistAssignments";
 import { upsertTrackFromRelease } from "@/lib/db/catalog";
 import { isActiveStreamingProjectName } from "@/lib/db/streamingProjects";
 import { notifyNewLanzamiento } from "@/lib/email";
@@ -33,11 +34,14 @@ export async function GET(req: NextRequest) {
 }
 
 async function checkArtistAssignment(role: string, email: string, artist: string) {
-  // Artist assignment for project_manager isn't set up yet — don't block
-  // release creation on it. artista/representante still enforce it.
-  if (role !== "artista" && role !== "representante") return true;
-  const assigned = await getAssignedArtists(email);
-  return assigned.map((a) => a.toLowerCase()).includes(String(artist).toLowerCase());
+  if (role === "artista" || role === "representante") {
+    const assigned = await getAssignedArtists(email);
+    return assigned.map((a) => a.toLowerCase()).includes(String(artist).toLowerCase());
+  }
+  if (role === "project_manager") {
+    return isArtistAssignedToPm(email, artist);
+  }
+  return true;
 }
 
 function canonicalCompany(distribuidora: string | null | undefined): string | null {

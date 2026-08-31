@@ -6,7 +6,7 @@ import { signOut, useSession } from "next-auth/react";
 export const PM_STYLES = `
   .pmx-root { font-family: var(--font-display); color: var(--text-1); min-height: 100vh; padding-bottom: 5rem; }
   .pmx-inner { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem 0; }
-  .pmx-inner.pmx-home { max-width: 980px; }
+  .pmx-inner.pmx-home { max-width: 1800px; }
   .pmx-topbar { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:1.75rem; flex-wrap:wrap; }
   .pmx-back { background:none; border:none; color:var(--text-3); font-size:12.5px; cursor:pointer; padding:0; margin-bottom:10px; display:inline-block; text-decoration:none; }
   .pmx-kicker { font-size:11px; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; font-weight:600; }
@@ -14,8 +14,13 @@ export const PM_STYLES = `
   .pmx-sub { font-size:13px; color:var(--text-3); margin-top:4px; }
   .pmx-signout { background: var(--glass-bg); border:1px solid var(--glass-border); border-radius:8px; padding:8px 16px; color:var(--text-2); cursor:pointer; font-size:12.5px; backdrop-filter: blur(20px) saturate(1.7); -webkit-backdrop-filter: blur(20px) saturate(1.7); }
 
-  .pmx-home-buttons { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1.25rem; }
-  @media (max-width:640px) { .pmx-home-buttons { grid-template-columns: 1fr; } }
+  .pmx-home-buttons { display:grid; grid-template-columns: repeat(4, 1fr); gap:1.25rem; }
+  @media (max-width:900px) { .pmx-home-buttons { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width:520px) { .pmx-home-buttons { grid-template-columns: 1fr; } }
+
+  .pmx-section-title { color:#fff; font-weight:800; font-size:21px; letter-spacing:-.01em; margin-bottom:14px; }
+  .pmx-calendar-row { display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem; align-items:start; }
+  @media (max-width:1100px) { .pmx-calendar-row { grid-template-columns: 1fr; } }
   .pmx-big-btn {
     display:flex; flex-direction:column; gap:8px; align-items:flex-start; text-align:left; justify-content:center;
     min-height: 168px;
@@ -51,18 +56,18 @@ export const PM_STYLES = `
   .pmx-fono-task-btn:hover { border-color:var(--accent-color); color:var(--text-1); }
   .pmx-fono-footer { display:flex; justify-content:flex-end; margin-top:2px; }
 
-  .pmx-artist-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px; }
+  .pmx-artist-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:18px; }
   .pmx-artist-card {
-    display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text-1);
+    display:flex; align-items:center; gap:16px; text-decoration:none; color:var(--text-1);
     background: var(--glass-bg); border:1px solid var(--glass-border); border-radius: var(--radius-lg);
-    padding:1rem 1.1rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7);
+    padding:1.4rem 1.5rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7);
     box-shadow: var(--shadow-glass); transition: border-color var(--dur-base) var(--ease-out), transform var(--dur-fast) var(--ease-out);
   }
   .pmx-artist-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .pmx-artist-avatar-img { width:48px; height:48px; border-radius:50%; object-fit:cover; flex-shrink:0; }
-  .pmx-artist-avatar-fallback { width:48px; height:48px; border-radius:50%; background:var(--bg-2); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--text-2); flex-shrink:0; }
-  .pmx-artist-card-name { font-size:14.5px; font-weight:700; }
-  .pmx-artist-card-sello { font-size:11.5px; color:var(--text-3); margin-top:2px; }
+  .pmx-artist-avatar-img { width:64px; height:64px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+  .pmx-artist-avatar-fallback { width:64px; height:64px; border-radius:50%; background:var(--bg-2); display:flex; align-items:center; justify-content:center; font-size:20px; font-weight:700; color:var(--text-2); flex-shrink:0; }
+  .pmx-artist-card-name { font-size:18px; font-weight:700; }
+  .pmx-artist-card-sello { font-size:14px; color:var(--text-3); margin-top:4px; }
 `;
 
 export function PMShell({

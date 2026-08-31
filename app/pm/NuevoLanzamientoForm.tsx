@@ -108,7 +108,13 @@ function cancionPlural(n: number): string {
   return n === 1 ? "canción" : "canciones";
 }
 
-export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
+export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, onCreated }: Props) {
+  // null = unrestricted (admin, or a role this form doesn't gate) — the
+  // free-text input stays exactly as before. A non-null array means the
+  // artist field becomes a picker constrained to it (empty array = no
+  // artists assigned yet, shown as an explicit blocked state rather than a
+  // silent submit-time 403).
+  const restrictedArtists = role === "admin" ? null : assignedArtists;
   const [tipo, setTipo] = useState<Tipo>("");
 
   const [artist, setArtist] = useState("");
@@ -1090,12 +1096,25 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
           <>
             <div>
               <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Artista</label>
-              <input
-                value={artist}
-                onChange={(e) => onArtistChange(e.target.value)}
-                placeholder="Nombre del artista"
-                style={missingStyle(!artist.trim())}
-              />
+              {restrictedArtists === null ? (
+                <input
+                  value={artist}
+                  onChange={(e) => onArtistChange(e.target.value)}
+                  placeholder="Nombre del artista"
+                  style={missingStyle(!artist.trim())}
+                />
+              ) : restrictedArtists.length === 0 ? (
+                <p style={{ fontSize: 12.5, color: "var(--crit-ink)", margin: "4px 0 0" }}>
+                  No tenés artistas asignados — pedile a Management que te asigne uno.
+                </p>
+              ) : (
+                <select value={artist} onChange={(e) => onArtistChange(e.target.value)} style={missingStyle(!artist.trim())}>
+                  <option value="">Elegir...</option>
+                  {restrictedArtists.map((a) => (
+                    <option key={a} value={a}>{a}</option>
+                  ))}
+                </select>
+              )}
             </div>
 
             <div>
@@ -1369,11 +1388,24 @@ export default function NuevoLanzamientoForm({ onClose, onCreated }: Props) {
                             </div>
                             <div>
                               <label style={smallLabel}>Artista principal</label>
-                              <input
-                                value={t.artistaPrincipal}
-                                onChange={(e) => updateTrack(t.key, { artistaPrincipal: e.target.value })}
-                                style={missingStyle(!t.artistaPrincipal.trim())}
-                              />
+                              {restrictedArtists === null || restrictedArtists.length === 0 ? (
+                                <input
+                                  value={t.artistaPrincipal}
+                                  onChange={(e) => updateTrack(t.key, { artistaPrincipal: e.target.value })}
+                                  style={missingStyle(!t.artistaPrincipal.trim())}
+                                />
+                              ) : (
+                                <select
+                                  value={t.artistaPrincipal}
+                                  onChange={(e) => updateTrack(t.key, { artistaPrincipal: e.target.value })}
+                                  style={missingStyle(!t.artistaPrincipal.trim())}
+                                >
+                                  <option value="">Elegir...</option>
+                                  {restrictedArtists.map((a) => (
+                                    <option key={a} value={a}>{a}</option>
+                                  ))}
+                                </select>
+                              )}
                             </div>
                             <div>
                               <label style={smallLabel}>Artistas invitados / colaboradores (opcional)</label>

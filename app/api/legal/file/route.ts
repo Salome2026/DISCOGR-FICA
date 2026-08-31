@@ -27,5 +27,16 @@ export async function GET(req: NextRequest) {
   `;
   if (rows.length === 0) return NextResponse.json({ error: "Archivo no encontrado." }, { status: 404 });
 
+  // Most legal documents were imported with a Google Drive link instead of
+  // a real Vercel Blob URL (92/94 legal_contracts, all of
+  // legal_signed_releases/legal_external_releases) — streamPrivateBlob only
+  // knows how to read Vercel Blob storage, so calling it on a Drive URL
+  // throws and 500s. Send the browser straight to Drive instead of trying
+  // to stream it through our own server; Drive already handles its own
+  // viewer/permissions for these documents.
+  if (/^https?:\/\/(drive|docs)\.google\.com\//i.test(url)) {
+    return NextResponse.redirect(url);
+  }
+
   return streamPrivateBlob(url);
 }

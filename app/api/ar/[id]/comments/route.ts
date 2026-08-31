@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 import { hasPermission } from "@/lib/permissions";
-import { listComments, addComment } from "@/lib/db/arOpportunities";
+import { listComments, addComment, canSeeOpportunity } from "@/lib/db/arOpportunities";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await getSessionUser(req);
@@ -9,6 +9,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const { id } = await params;
+  if (!(await canSeeOpportunity(user, id))) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
   const comments = await listComments(id);
   return NextResponse.json({ comments });
 }

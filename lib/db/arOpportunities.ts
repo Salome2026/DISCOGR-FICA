@@ -343,3 +343,13 @@ export async function listAssignmentsForOpportunity(opportunityId: string): Prom
   `;
   return rows.map(rowToAssignment);
 }
+
+// Shared visibility check — admin/ar see every opportunity, anyone else
+// (a PM) only sees ones assigned to them. Used by every route under
+// app/api/ar/[id]/**, not just GET, so a PM can't read or write an
+// opportunity nobody assigned to them.
+export async function canSeeOpportunity(user: { email: string; role: string | null }, opportunityId: string): Promise<boolean> {
+  if (user.role === "admin" || user.role === "ar") return true;
+  const assignments = await listAssignmentsForOpportunity(opportunityId);
+  return assignments.some((a) => a.pmEmail === user.email);
+}

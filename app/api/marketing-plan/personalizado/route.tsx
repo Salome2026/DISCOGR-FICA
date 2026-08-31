@@ -5,19 +5,7 @@ import { getArtistCatalogHistory } from "@/lib/db/catalog";
 import { chartmetricConfigured, searchArtist, getArtistSpotifyStats } from "@/lib/chartmetric";
 import { geminiConfigured, generateMarketingPlan, getContentExamples, buildCalendarDates, type MarketingPlanInput } from "@/lib/gemini";
 import PlanPersonalizadoDoc from "@/lib/pdf/PlanPersonalizadoDoc";
-
-// Never let a slow/unavailable Chartmetric call eat into the 5-10s budget —
-// fall back to null and keep going with what the platform already has.
-async function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | null> {
-  try {
-    return await Promise.race([
-      p,
-      new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
-    ]);
-  } catch {
-    return null;
-  }
-}
+import { withTimeout } from "@/lib/withTimeout";
 
 async function chartmetricSnapshot(name: string, knownChartmetricId?: number | null) {
   if (!chartmetricConfigured()) return null;

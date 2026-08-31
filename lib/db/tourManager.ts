@@ -266,9 +266,11 @@ function diffHoja(before: HojaDeRuta | null, after: HojaDeRuta): { before: Recor
   return { before: changedBefore, after: changedAfter };
 }
 
-export async function listHojas(): Promise<HojaDeRuta[]> {
+export async function listHojas(opts?: { archived?: boolean }): Promise<HojaDeRuta[]> {
   await ensureTourManagerSchema();
-  const { rows } = await sql`SELECT * FROM tourmanager_hojas WHERE archived_at IS NULL ORDER BY fecha ASC, id ASC`;
+  const { rows } = opts?.archived
+    ? await sql`SELECT * FROM tourmanager_hojas WHERE archived_at IS NOT NULL ORDER BY archived_at DESC`
+    : await sql`SELECT * FROM tourmanager_hojas WHERE archived_at IS NULL ORDER BY fecha ASC, id ASC`;
   return rows.map(rowToHoja);
 }
 
@@ -464,6 +466,17 @@ export async function deleteHoja(id: string, actorEmail: string): Promise<void> 
   await ensureTourManagerSchema();
   await sql`UPDATE tourmanager_hojas SET archived_at = now(), archived_by = ${actorEmail} WHERE id = ${id}`;
   await recordAudit({ actorEmail, action: "hoja_archived", entityType: "tourmanager_hoja", entityId: id });
+}
+
+export async function restoreHoja(id: string, actorEmail: string): Promise<HojaDeRuta | null> {
+  await ensureTourManagerSchema();
+  const { rows } = await sql`
+    UPDATE tourmanager_hojas SET archived_at = NULL, archived_by = NULL WHERE id = ${id}
+    RETURNING *
+  `;
+  if (!rows[0]) return null;
+  await recordAudit({ actorEmail, action: "hoja_restored", entityType: "tourmanager_hoja", entityId: id });
+  return rowToHoja(rows[0]);
 }
 
 // Clona una hoja existente como punto de partida para una nueva — útil

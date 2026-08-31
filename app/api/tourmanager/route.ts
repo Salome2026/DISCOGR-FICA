@@ -13,7 +13,8 @@ export async function GET(req: NextRequest) {
   if (!user || !hasPermission(user, "ver_tourmanager")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  const hojas = await listHojas();
+  const archived = req.nextUrl.searchParams.get("archived") === "1";
+  const hojas = await listHojas({ archived });
   return NextResponse.json({ hojas });
 }
 

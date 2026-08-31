@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import type { HojaDeRuta } from "@/lib/db/tourManager";
+import type { BookingShow } from "@/lib/db/booking";
 import type { ParadaIntermedia } from "@discografica/shared/types/tourManager";
 import ArtistPicker, { type ArtistResult } from "./ArtistPicker";
+import BookingShowPicker from "./BookingShowPicker";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -138,6 +140,7 @@ export default function HojaForm({
   const [origenDireccion, setOrigenDireccion] = useState(hoja?.origenDireccion ?? "");
 
   const [artistId, setArtistId] = useState<string | null>(hoja?.artistId ?? null);
+  const [bookingShowId, setBookingShowId] = useState<string | null>(hoja?.bookingShowId ?? null);
 
   // --- Direcciones resueltas ---
   const [venueLat, setVenueLat] = useState<number | null>(hoja?.venueLat ?? null);
@@ -153,6 +156,28 @@ export default function HojaForm({
 
   function resolveVenue(v: string) {
     setVenueDireccion(v);
+  }
+
+  // Trae artista/fecha/hora/venue/ciudad/coords de un show ya cargado en
+  // Booking, para no re-tipear nada. Booking no guarda una dirección de
+  // calle separada del venue (solo nombre + ciudad/provincia/país + lat/lng),
+  // así que venueDireccion queda vacío para completar a mano si hace falta
+  // el link/dirección exacta — pero las coordenadas ya alcanzan para que la
+  // ruta se calcule sola.
+  function applyBookingShow(show: BookingShow) {
+    setBookingShowId(show.id);
+    setArtistName(show.artistName);
+    setFecha(show.fecha.slice(0, 10));
+    if (show.hora) setHoraShow(show.hora);
+    setVenue(show.venue ?? "");
+    setVenueCiudad(show.ciudad ?? "");
+    setVenueProvincia(show.provincia ?? "");
+    setVenuePais(show.pais ?? "");
+    setVenueLat(show.lat);
+    setVenueLng(show.lng);
+    setVenueFullAddress(
+      [show.venue, show.ciudad, show.provincia, show.pais].filter(Boolean).join(", ")
+    );
   }
 
   // --- Punto de encuentro del equipo ---
@@ -443,6 +468,7 @@ export default function HojaForm({
           rutaIdaGeojson,
           rutaVueltaGeojson,
           artistId,
+          bookingShowId,
         }),
       });
       const data = await res.json();
@@ -469,6 +495,17 @@ export default function HojaForm({
         <p style={{ fontSize: 12, color: "var(--text-3)", margin: 0 }}>
           Cargá lo esencial primero — el recorrido completo (punto de encuentro, búsqueda del artista, prueba de sonido, hotel, regreso) está más abajo.
         </p>
+
+        {!hoja && (
+          <Field label="¿Ya existe este show en Booking?">
+            <BookingShowPicker onSelect={applyBookingShow} />
+            {bookingShowId && (
+              <div style={{ fontSize: 11, color: "var(--good-ink)", marginTop: 4 }}>
+                ✓ Datos traídos de Booking — revisá y completá lo que falte.
+              </div>
+            )}
+          </Field>
+        )}
 
         <Field label="Artista">
           <ArtistPicker

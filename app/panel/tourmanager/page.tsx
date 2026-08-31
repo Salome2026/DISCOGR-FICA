@@ -17,17 +17,29 @@ function TourManagerHome() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
+  const [restoringId, setRestoringId] = useState<string | null>(null);
 
   const load = useCallback(() => {
     setLoading(true);
-    fetch("/api/tourmanager")
+    fetch(`/api/tourmanager${showArchived ? "?archived=1" : ""}`)
       .then((r) => r.json())
       .then((d: { hojas?: HojaDeRuta[] }) => setHojas(d.hojas ?? []))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  }, [showArchived]);
 
   useEffect(load, [load]);
+
+  async function handleRestore(id: string) {
+    setRestoringId(id);
+    try {
+      const res = await fetch(`/api/tourmanager/${id}/restore`, { method: "POST" });
+      if (res.ok) load();
+    } finally {
+      setRestoringId(null);
+    }
+  }
 
   const filtered = hojas.filter((h) => {
     const q = search.trim().toLowerCase();
@@ -52,27 +64,47 @@ function TourManagerHome() {
             minWidth: 240,
           }}
         />
-        <button
-          onClick={() => setShowForm(true)}
-          style={{
-            background: "var(--accent-glass-bg)",
-            border: "1px solid var(--accent-glass-border)",
-            borderRadius: 8,
-            padding: "9px 18px",
-            color: "var(--text-1)",
-            fontWeight: 600,
-            fontSize: 13.5,
-            cursor: "pointer",
-          }}
-        >
-          + Nueva hoja de ruta
-        </button>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <button
+            onClick={() => setShowArchived((v) => !v)}
+            style={{
+              background: showArchived ? "var(--accent-glass-bg)" : "transparent",
+              border: "1px solid var(--line-soft)",
+              borderRadius: 8,
+              padding: "9px 14px",
+              color: "var(--text-2)",
+              fontSize: 12.5,
+              cursor: "pointer",
+            }}
+          >
+            {showArchived ? "◂ Ver activas" : "Ver archivadas"}
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            style={{
+              background: "var(--accent-glass-bg)",
+              border: "1px solid var(--accent-glass-border)",
+              borderRadius: 8,
+              padding: "9px 18px",
+              color: "var(--text-1)",
+              fontWeight: 600,
+              fontSize: 13.5,
+              cursor: "pointer",
+            }}
+          >
+            + Nueva hoja de ruta
+          </button>
+        </div>
       </div>
 
       {loading && <p style={{ color: "var(--text-3)", fontSize: 13 }}>Cargando...</p>}
       {!loading && filtered.length === 0 && (
         <div className="tm-card" style={{ textAlign: "center", color: "var(--text-3)", fontSize: 13 }}>
-          {hojas.length === 0 ? "Todavía no hay hojas de ruta cargadas." : "Sin resultados para esa búsqueda."}
+          {hojas.length === 0
+            ? showArchived
+              ? "No hay hojas archivadas."
+              : "Todavía no hay hojas de ruta cargadas."
+            : "Sin resultados para esa búsqueda."}
         </div>
       )}
 
@@ -105,6 +137,30 @@ function TourManagerHome() {
               {formatFecha(h.fecha)}{h.horaShow ? ` · ${h.horaShow}` : ""}{h.tipoEvento ? ` · ${h.tipoEvento}` : ""}
             </div>
             {h.venue && <div style={{ fontSize: 12, color: "var(--text-3)" }}>{h.venue}</div>}
+            {showArchived && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleRestore(h.id);
+                }}
+                disabled={restoringId === h.id}
+                style={{
+                  marginTop: 4,
+                  alignSelf: "flex-start",
+                  background: "transparent",
+                  border: "1px solid var(--line-soft)",
+                  borderRadius: 6,
+                  padding: "5px 10px",
+                  color: "var(--text-2)",
+                  fontSize: 11.5,
+                  cursor: "pointer",
+                }}
+              >
+                {restoringId === h.id ? "Restaurando..." : "↺ Restaurar"}
+              </button>
+            )}
           </Link>
         ))}
       </div>

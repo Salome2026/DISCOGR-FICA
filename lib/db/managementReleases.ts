@@ -1,4 +1,5 @@
 import { sql } from "@vercel/postgres";
+import { ensureFonogramasSheetSchema } from "./fonogramasSheet";
 
 // Same shape the shared ReleaseCalendar/UpcomingReleasesList already expect
 // from /api/pm/releases, so Management's version is a drop-in data source.
@@ -18,6 +19,7 @@ export type ManagementReleaseRow = {
   marketing_plan: boolean;
   marketing_plan_detalle: string | null;
   portada_url: string | null;
+  source?: "sheet";
 };
 
 function normalize(s: string): string {
@@ -34,13 +36,15 @@ function toDateKey(v: unknown): string {
   return String(v).slice(0, 10);
 }
 
-// Most new releases today arrive through the recurring "ogs" catalog import,
-// not through a PM manually creating a pm_releases row — until that changes,
-// Management needs to see both. Rows with a "pm-" id are already mirrored
-// FROM pm_releases (see upsertTrackFromRelease in app/api/pm/releases/route.ts)
-// so they're skipped here to avoid double-counting; anything else that shares
-// an artist/track/date with a real pm_releases row is deduped too, in case a
-// PM later formalizes a catalog-sourced release by hand.
+// Three sources feed this calendar: PM-created releases (pm_releases), the
+// recurring "ogs" catalog import (catalog_tracks), and the synced
+// "Fonogramas MAWZ & INDYANA" sheet — Management needs to see all three so
+// this calendar matches what Dashboard/Publishing/Legal already show. Rows
+// with a "pm-" id are already mirrored FROM pm_releases (see
+// upsertTrackFromRelease in app/api/pm/releases/route.ts) so they're skipped
+// here to avoid double-counting; anything else that shares an artist/track/
+// date with a real pm_releases row (or, for the sheet, with either of the
+// other two sources) is deduped too.
 export async function getManagementReleaseEvents(): Promise<ManagementReleaseRow[]> {
   const { rows: pmRows } = await sql`
     SELECT r.id, r.artist_name, r.sello, r.fonograma_nombre, r.estado, r.distribuidora,
@@ -56,6 +60,17 @@ export async function getManagementReleaseEvents(): Promise<ManagementReleaseRow
     SELECT id, artist_display, participants, track, release_date, company, sello
     FROM catalog_tracks
     WHERE release_date >= CURRENT_DATE::text AND id NOT LIKE 'pm-%'
+    ORDER BY release_date ASC
+  `;
+
+  // Fonogramas de la planilla "MAWZ & INDYANA" sincronizada — mismo criterio
+  // que catalog_tracks arriba (solo próximos), para que Management vea el
+  // mismo calendario completo que ya se ve en el Dashboard/Publishing/Legal.
+  await ensureFonogramasSheetSchema();
+  const { rows: sheetRows } = await sql`
+    SELECT seq, track_artist, track, release_date, provider, sello
+    FROM sheet_fonogramas
+    WHERE release_date >= CURRENT_DATE
     ORDER BY release_date ASC
   `;
 
@@ -93,6 +108,36 @@ export async function getManagementReleaseEvents(): Promise<ManagementReleaseRow
     });
   }
 
+  const catalogKeys = new Set(
+    catalogEvents.map((c) => `${normalize(c.artist_name)}|${normalize(c.fonograma_nombre)}|${c.fecha_lanzamiento}`)
+  );
+
+  const sheetEvents: ManagementReleaseRow[] = [];
+  let sheetSyntheticId = 2_000_000_000;
+  for (const s of sheetRows) {
+    const releaseDate = toDateKey(s.release_date);
+    const key = `${normalize(s.track_artist as string)}|${normalize(s.track as string)}|${releaseDate}`;
+    if (pmKeys.has(key) || catalogKeys.has(key)) continue;
+    sheetEvents.push({
+      id: sheetSyntheticId++,
+      artist_name: s.track_artist as string,
+      sello: (s.sello as string | null) ?? null,
+      fonograma_nombre: s.track as string,
+      estado: "Publicado",
+      distribuidora: (s.provider as string | null) ?? null,
+      fecha_lanzamiento: releaseDate,
+      hora_lanzamiento: null,
+      colaboradores: null,
+      group_id: null,
+      group_tipo: null,
+      group_nombre: null,
+      marketing_plan: false,
+      marketing_plan_detalle: null,
+      portada_url: null,
+      source: "sheet",
+    });
+  }
+
   const pmEvents: ManagementReleaseRow[] = pmRows.map((r) => ({
     id: r.id as number,
     artist_name: r.artist_name as string,
@@ -111,5 +156,5 @@ export async function getManagementReleaseEvents(): Promise<ManagementReleaseRow
     portada_url: r.portada_url as string | null,
   }));
 
-  return [...pmEvents, ...catalogEvents];
+  return [...pmEvents, ...catalogEvents, ...sheetEvents];
 }

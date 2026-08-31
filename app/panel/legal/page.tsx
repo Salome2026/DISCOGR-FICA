@@ -13,7 +13,7 @@ export default function LegalHomePage() {
         <div className="legal-home-grid">
           <ReleaseRequestsPending limit={5} />
 
-          <ReleaseCalendar readOnly />
+          <ReleaseCalendar readOnly apiUrl="/api/pm/releases/dashboard-calendar" />
 
           <div className="legal-home-buttons legal-ficha-buttons">
             <Link href="/panel/legal/contratos" className="legal-big-btn">

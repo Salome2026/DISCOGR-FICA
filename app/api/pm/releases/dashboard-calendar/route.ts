@@ -1,24 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@vercel/postgres";
-import { auth } from "@/auth";
+import { getSessionUser } from "@/lib/session";
 import { listReleasesFor } from "@/lib/db/releases";
 import { ensureFonogramasSheetSchema } from "@/lib/db/fonogramasSheet";
 import { getArtistImagesByNames } from "@/lib/db/listeners";
 
 // Merges the PM-created pipeline (pm_releases, task-tracked, editable) with
 // the external "Fonogramas MAWZ & INDYANA" sheet (read-only catalog synced
-// via /api/pm/releases/sync-fonogramas-sheet) into one feed for the
-// dashboard's calendar — the only consumer that needs both. Every other
-// ReleaseCalendar embed (Legal, PM's own board) keeps hitting the plain
-// /api/pm/releases feed unchanged.
-export async function GET(_req: NextRequest) {
-  const session = await auth();
-  const user = session?.user as { email?: string; role?: string } | undefined;
-  if (!user?.email || user.role !== "admin") {
+// via /api/pm/releases/sync-fonogramas-sheet) into one feed — shared by every
+// read-only ReleaseCalendar embed (Dashboard, Publishing, Legal) so they all
+// show the same complete calendar. listReleasesFor already scopes the
+// pm_releases half by role (full list for admin/legal/editorial/management,
+// own-only otherwise); PM's own task-management board never uses this route
+// — it hits the plain /api/pm/releases feed, since sheet rows have no real
+// pm_releases id to attach a Release/Split task to.
+export async function GET(req: NextRequest) {
+  const user = await getSessionUser(req);
+  if (!user?.email || !user.role) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const pmReleases = (await listReleasesFor(user.email, "admin")) as { artist_name: string }[];
+  const pmReleases = (await listReleasesFor(user.email, user.role)) as { artist_name: string }[];
 
   await ensureFonogramasSheetSchema();
   const { rows: sheetRows } = await sql`

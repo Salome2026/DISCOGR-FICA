@@ -24,7 +24,7 @@ export default function PublishingHomePage() {
           </Link>
         </div>
 
-        <ReleaseCalendar readOnly />
+        <ReleaseCalendar readOnly apiUrl="/api/pm/releases/dashboard-calendar" />
       </PublishingShell>
     </RequireRole>
   );

@@ -129,7 +129,7 @@ function PMFonogramaInner() {
 
       <div className="inner">
         <div className="crumb" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span><Link href="/pm">Project Managers</Link> › Fonograma</span>
+          <span><Link href="/pm">Project Manager</Link> › Fonograma</span>
           <button className="btn-ghost" onClick={() => signOut({ callbackUrl: "/" })}>
             Cerrar sesión
           </button>

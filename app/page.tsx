@@ -176,7 +176,7 @@ export default function Landing() {
               </button>
             </div>
             <div className="access-card">
-              <h2>Project Managers</h2>
+              <h2>Project Manager</h2>
               <p>Módulo de carga para fonogramas, split y releases.</p>
               <button className="access-btn" onClick={() => setActive("pm")}>
                 Ingresar
@@ -238,7 +238,7 @@ export default function Landing() {
                 : active === "label"
                 ? "Acceso Label"
                 : active === "pm"
-                ? "Acceso Project Managers"
+                ? "Acceso Project Manager"
                 : active === "legal"
                 ? "Acceso Legales"
                 : active === "editorial"

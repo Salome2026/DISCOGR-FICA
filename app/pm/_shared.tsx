@@ -99,7 +99,7 @@ export function PMShell({
                 ← Volver
               </Link>
             )}
-            <div className="pmx-kicker">Project Managers</div>
+            <div className="pmx-kicker">Project Manager</div>
             <h1 className="pmx-title">{title}</h1>
             <div className="pmx-sub">{subtitle ?? session?.user?.email}</div>
           </div>

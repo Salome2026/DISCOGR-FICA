@@ -6,6 +6,26 @@ import RequireRole from "@/app/components/RequireRole";
 import { PMShell } from "../../../_shared";
 import { RELEASE_TIPOS, type ReleaseTipo } from "@discografica/shared/types/legalReleaseRequests";
 
+type PublishingMatch = {
+  id: string;
+  nombreArtistico: string;
+  nombreCompleto: string | null;
+  apellido: string | null;
+  dni: string | null;
+  fechaNacimiento: string | null;
+  direccion: string | null;
+  email: string | null;
+};
+
+function useDebounced(value: string, delay = 250): string {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
+}
+
 const RLX_STYLES = `
   .rlx-field-label { font-size:12.5px; color:var(--text-2); margin-bottom:6px; display:block; font-weight:600; }
   .rlx-input { width:100%; background:var(--bg-2); border:1px solid var(--line-soft); border-radius:8px; padding:9px 12px; color:var(--text-1); font-size:13.5px; }
@@ -21,6 +41,13 @@ const RLX_STYLES = `
   .rlx-section-title { font-size:15px; font-weight:700; letter-spacing:.02em; margin-bottom:10px; }
   .rlx-participant { background:var(--bg-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px; margin-bottom:10px; }
   .rlx-participant-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .rlx-name-field { position:relative; }
+  .rlx-dropdown-list { position:absolute; z-index:20; top:calc(100% + 4px); left:0; right:0; background:var(--bg-1); border:1px solid var(--glass-border); border-radius:10px; box-shadow:var(--shadow-glass-lg); max-height:220px; overflow-y:auto; }
+  .rlx-dropdown-item { padding:9px 14px; cursor:pointer; font-size:13px; border-bottom:1px solid var(--line-soft); color:var(--text-1); }
+  .rlx-dropdown-item:last-child { border-bottom:none; }
+  .rlx-dropdown-item:hover { background:var(--accent-glass-bg); }
+  .rlx-dropdown-item .meta { font-size:11.5px; color:var(--text-3); margin-top:2px; }
+  .rlx-autofilled-note { font-size:11px; color:var(--good-ink); margin-top:4px; }
   .rlx-participant-percent { display:flex; align-items:center; gap:8px; margin-top:8px; }
   .rlx-participant-percent input { width:90px; text-align:right; }
   .rlx-remove { background:transparent; border:none; color:var(--text-3); cursor:pointer; font-size:12px; text-decoration:underline; margin-top:8px; }
@@ -64,6 +91,7 @@ type ParticipantRow = {
   domicilio: string;
   email: string;
   percentRaw: string;
+  autofilledFrom: string | null;
 };
 
 function newParticipant(): ParticipantRow {
@@ -76,7 +104,64 @@ function newParticipant(): ParticipantRow {
     domicilio: "",
     email: "",
     percentRaw: "",
+    autofilledFrom: null,
   };
+}
+
+// Reusa /api/pm/split-editorial/people (misma ficha de Publishing que ya
+// usa Split editorial) para autocompletar apellido/DNI/fecha de
+// nacimiento/domicilio/email cuando el nombre tipeado matchea a alguien
+// ya cargado — evita errores de tipeo re-escribiendo datos que ya
+// existen. Los campos quedan igual de editables después de autocompletar
+// (acá no se crea ni edita la ficha de Publishing, solo se copian los
+// valores a este formulario).
+function ParticipantNameField({ value, onPick, onType }: { value: string; onPick: (m: PublishingMatch) => void; onType: (v: string) => void }) {
+  const [results, setResults] = useState<PublishingMatch[]>([]);
+  const [open, setOpen] = useState(false);
+  const debounced = useDebounced(value);
+
+  useEffect(() => {
+    if (!debounced.trim()) {
+      setResults([]);
+      return;
+    }
+    fetch(`/api/pm/split-editorial/people?q=${encodeURIComponent(debounced)}`)
+      .then((r) => r.json())
+      .then((d) => setResults(d.people ?? []));
+  }, [debounced]);
+
+  return (
+    <div className="rlx-name-field">
+      <input
+        className="rlx-input"
+        placeholder="Nombre"
+        value={value}
+        onChange={(e) => {
+          onType(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+      />
+      {open && value.trim() && results.length > 0 && (
+        <div className="rlx-dropdown-list">
+          {results.map((p) => (
+            <div
+              key={p.id}
+              className="rlx-dropdown-item"
+              onMouseDown={() => {
+                onPick(p);
+                setOpen(false);
+              }}
+            >
+              {p.nombreArtistico}
+              {p.nombreCompleto && <div className="meta">{p.nombreCompleto} {p.apellido || ""}</div>}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 type FonogramaInfo = {
@@ -248,13 +333,30 @@ function ReleaseForm({ pmReleaseId }: { pmReleaseId: number }) {
         {participants.map((p) => (
           <div key={p.key} className="rlx-participant">
             <div className="rlx-participant-grid">
-              <input className="rlx-input" placeholder="Nombre" value={p.nombre} onChange={(e) => updateParticipant(p.key, { nombre: e.target.value })} />
+              <ParticipantNameField
+                value={p.nombre}
+                onType={(v) => updateParticipant(p.key, { nombre: v, autofilledFrom: null })}
+                onPick={(m) =>
+                  updateParticipant(p.key, {
+                    nombre: m.nombreCompleto || m.nombreArtistico,
+                    apellido: m.apellido || p.apellido,
+                    dni: m.dni || p.dni,
+                    fechaNacimiento: m.fechaNacimiento || p.fechaNacimiento,
+                    domicilio: m.direccion || p.domicilio,
+                    email: m.email || p.email,
+                    autofilledFrom: m.nombreArtistico,
+                  })
+                }
+              />
               <input className="rlx-input" placeholder="Apellido" value={p.apellido} onChange={(e) => updateParticipant(p.key, { apellido: e.target.value })} />
               <input className="rlx-input" placeholder="DNI" value={p.dni} onChange={(e) => updateParticipant(p.key, { dni: e.target.value })} />
               <input className="rlx-input" type="date" placeholder="Fecha de nacimiento" value={p.fechaNacimiento} onChange={(e) => updateParticipant(p.key, { fechaNacimiento: e.target.value })} />
               <input className="rlx-input" placeholder="Domicilio" value={p.domicilio} onChange={(e) => updateParticipant(p.key, { domicilio: e.target.value })} />
               <input className="rlx-input" placeholder="Email" value={p.email} onChange={(e) => updateParticipant(p.key, { email: e.target.value })} />
             </div>
+            {p.autofilledFrom && (
+              <div className="rlx-autofilled-note">✓ Autocompletado desde la ficha de Publishing de {p.autofilledFrom}</div>
+            )}
             <div className="rlx-participant-percent">
               <span style={{ fontSize: 12.5, color: "var(--text-3)" }}>% de participación</span>
               <input

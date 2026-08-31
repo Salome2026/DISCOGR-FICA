@@ -107,14 +107,16 @@ export type RosterArtistEntry = { name: string; sello: string };
 // label actually wants tracked for that sello is the handful of channel
 // profiles themselves (streaming_projects — admin-managed, e.g. "La Juntada
 // de los Artistas"), not each guest artist.
-export async function getRosterArtistEntries(): Promise<RosterArtistEntry[]> {
+export async function getRosterArtistEntries(opts?: { excludeSellos?: string[] }): Promise<RosterArtistEntry[]> {
   const { rows } = await sql`
     SELECT sello, jsonb_array_elements_text(participants) AS name
     FROM catalog_tracks
     WHERE sello IS NOT NULL AND sello <> 'Streamings'
   `;
+  const excluded = new Set(opts?.excludeSellos ?? []);
   const bySello = new Map<string, Map<string, string>>();
   for (const r of rows as { sello: string; name: string }[]) {
+    if (excluded.has(r.sello)) continue;
     const norm = normalizeName(r.name);
     if (!norm) continue;
     if (!bySello.has(r.sello)) bySello.set(r.sello, new Map());
@@ -127,16 +129,18 @@ export async function getRosterArtistEntries(): Promise<RosterArtistEntry[]> {
     for (const name of seen.values()) entries.push({ name, sello });
   }
 
-  const streamingProjects = await listActiveStreamingProjects();
-  for (const p of streamingProjects) entries.push({ name: p.name, sello: "Streamings" });
+  if (!excluded.has("Streamings")) {
+    const streamingProjects = await listActiveStreamingProjects();
+    for (const p of streamingProjects) entries.push({ name: p.name, sello: "Streamings" });
+  }
 
   return entries;
 }
 
 // Flat name list — what things like the Chartmetric sync use to know who
 // "our artists" are, as opposed to every artist in the wider catalog exports.
-export async function getAllRosterArtistNames(): Promise<string[]> {
-  return (await getRosterArtistEntries()).map((e) => e.name);
+export async function getAllRosterArtistNames(opts?: { excludeSellos?: string[] }): Promise<string[]> {
+  return (await getRosterArtistEntries(opts)).map((e) => e.name);
 }
 
 export function matchRosterArtist(

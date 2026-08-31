@@ -27,6 +27,8 @@ function ArContent() {
   const [statusFilter, setStatusFilter] = useState<ArStatus | "">("");
   const [scanning, setScanning] = useState(false);
   const [scanMsg, setScanMsg] = useState<string | null>(null);
+  const [scanningCatalog, setScanningCatalog] = useState(false);
+  const [scanCatalogMsg, setScanCatalogMsg] = useState<string | null>(null);
 
   function load() {
     setLoading(true);
@@ -55,6 +57,22 @@ function ArContent() {
       setScanMsg(err instanceof Error ? err.message : "Error desconocido.");
     } finally {
       setScanning(false);
+    }
+  }
+
+  async function handleScanCatalog() {
+    setScanningCatalog(true);
+    setScanCatalogMsg(null);
+    try {
+      const res = await fetch("/api/ar/scan-catalog-revival", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo escanear.");
+      setScanCatalogMsg(`Revisadas ${data.scanned} canciones propias — ${data.created} nuevas, ${data.updated} actualizadas.`);
+      load();
+    } catch (err) {
+      setScanCatalogMsg(err instanceof Error ? err.message : "Error desconocido.");
+    } finally {
+      setScanningCatalog(false);
     }
   }
 
@@ -98,8 +116,18 @@ function ArContent() {
               </Link>
             )}
             {canEdit && (
+              <Link href="/panel/ar/tendencias" style={{ ...ghostBtn, textDecoration: "none", display: "inline-block" }}>
+                Tendencias
+              </Link>
+            )}
+            {canEdit && (
               <button type="button" onClick={handleScan} style={ghostBtn} disabled={scanning}>
                 {scanning ? "Escaneando..." : "Escanear roster propio"}
+              </button>
+            )}
+            {canEdit && (
+              <button type="button" onClick={handleScanCatalog} style={ghostBtn} disabled={scanningCatalog}>
+                {scanningCatalog ? "Escaneando..." : "Escanear catálogo (tendencias)"}
               </button>
             )}
             <button type="button" onClick={load} style={ghostBtn} disabled={loading}>
@@ -112,6 +140,7 @@ function ArContent() {
         </div>
 
         {scanMsg && <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>{scanMsg}</div>}
+        {scanCatalogMsg && <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>{scanCatalogMsg}</div>}
         {error && <div style={banner}>{error}</div>}
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -142,7 +171,9 @@ function ArContent() {
         )}
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
-          {visible.map((o) => (
+          {visible.map((o) => {
+            const isCatalog = o.category === "OPORTUNIDAD DE CATÁLOGO";
+            return (
             <Link
               key={o.id}
               href={`/panel/ar/${o.id}`}
@@ -150,8 +181,8 @@ function ArContent() {
                 display: "flex",
                 flexDirection: "column",
                 gap: 8,
-                background: "var(--glass-bg)",
-                border: "1px solid var(--glass-border)",
+                background: isCatalog ? "var(--accent-glass-bg)" : "var(--glass-bg)",
+                border: isCatalog ? "1px solid var(--accent-glass-border)" : "1px solid var(--glass-border)",
                 borderRadius: 14,
                 padding: 14,
                 textDecoration: "none",
@@ -161,7 +192,7 @@ function ArContent() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                <span style={pill}>{o.category}</span>
+                <span style={pill}>{isCatalog ? "♻ CATÁLOGO" : o.category}</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: scoreColor(o.opportunityScore) }}>
                   {o.opportunityScore != null ? `${o.opportunityScore}/100` : "—"}
                 </span>
@@ -173,7 +204,8 @@ function ArContent() {
                 <span>{o.regionFocus === "AR" ? "Argentina" : "Exterior → AR"}</span>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

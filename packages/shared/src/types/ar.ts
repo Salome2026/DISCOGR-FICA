@@ -51,6 +51,7 @@ export const AR_SOURCE_TYPES = [
   "manual_tiktok",
   "manual_other",
   "manual_watchlist_seed",
+  "catalog_genre_trend",
 ] as const;
 export type ArSourceType = (typeof AR_SOURCE_TYPES)[number];
 
@@ -82,11 +83,24 @@ export type ArCompatibility = {
   suggestedSello: string | null;
 };
 
+// Base fields (queEstaPasando/etc.) are reserved for a future general
+// narration pass (Fase 3+) — no code writes them yet. catalogRevival is the
+// first real narrative content, written by generateCatalogRevivalNarrative()
+// for category "OPORTUNIDAD DE CATÁLOGO" opportunities.
+export type ArCatalogRevivalNarrative = {
+  cancionesRecomendadas: { trackId: string; track: string; artistDisplay: string; motivo: string }[];
+  artistasCompatibles: { name: string; motivo: string }[];
+  featuringsPosibles: { name: string; motivo: string }[];
+  productoresSugeridos: string[];
+  estrategiaComercial: string;
+};
+
 export type ArNarrative = {
-  queEstaPasando: string;
-  porQueImporta: string;
-  impactoArgentina: string;
-  recomendacion: string;
+  queEstaPasando?: string;
+  porQueImporta?: string;
+  impactoArgentina?: string;
+  recomendacion?: string;
+  catalogRevival?: ArCatalogRevivalNarrative;
   generatedAt: string;
 };
 
@@ -157,4 +171,20 @@ export type ArOpportunityUpdate = {
   status?: ArStatus;
   category?: ArCategory;
   suggestedSello?: string | null;
+};
+
+// Manually-reported "this genre is moving" signal — see lib/db/arGenreTrends.ts.
+export type ArGenreTrendDirection = "growing" | "declining" | "stable";
+
+export type ArGenreTrendSignal = {
+  id: number;
+  genre: string;
+  trendDirection: ArGenreTrendDirection;
+  region: string;
+  sourceType: string;
+  note: string | null;
+  evidenceUrl: string | null;
+  reportedBy: string | null;
+  reportedAt: string;
+  active: boolean;
 };

@@ -7,6 +7,29 @@ import RequirePermission from "@/app/components/RequirePermission";
 import { hasPermission, type SessionUser } from "@/lib/permissions";
 import { AR_STATUSES, type ArOpportunity, type ArOpportunityComment, type ArStatus } from "@discografica/shared/types/ar";
 
+function GhostButton({ children, onClick, disabled }: { children: React.ReactNode; onClick: () => void; disabled?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        background: "var(--accent-glass-bg)",
+        border: "1px solid var(--accent-glass-border)",
+        borderRadius: 8,
+        padding: "7px 14px",
+        color: "var(--text-1)",
+        fontSize: 12.5,
+        fontWeight: 600,
+        cursor: disabled ? "default" : "pointer",
+        opacity: disabled ? 0.6 : 1,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div
@@ -40,6 +63,7 @@ function ArDetailContent({ id }: { id: string }) {
   const [newComment, setNewComment] = useState("");
   const [savingStatus, setSavingStatus] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [generatingNarrative, setGeneratingNarrative] = useState(false);
 
   function load() {
     fetch(`/api/ar/${id}`)
@@ -67,6 +91,21 @@ function ArDetailContent({ id }: { id: string }) {
       setError(err instanceof Error ? err.message : "Error desconocido.");
     } finally {
       setSavingStatus(false);
+    }
+  }
+
+  async function handleGenerateNarrative() {
+    setGeneratingNarrative(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/ar/${id}/narrative`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo generar el análisis.");
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido.");
+    } finally {
+      setGeneratingNarrative(false);
     }
   }
 
@@ -139,15 +178,70 @@ function ArDetailContent({ id }: { id: string }) {
           </div>
         </Section>
 
-        <Section title="Qué está pasando">
-          <Empty note={opportunity.narrative?.queEstaPasando} />
-        </Section>
-        <Section title="Por qué importa">
-          <Empty note={opportunity.narrative?.porQueImporta} />
-        </Section>
-        <Section title="Impacto en Argentina">
-          <Empty note={opportunity.narrative?.impactoArgentina} />
-        </Section>
+        {opportunity.category === "OPORTUNIDAD DE CATÁLOGO" ? (
+          <Section title="Análisis de revival de catálogo">
+            {opportunity.narrative?.catalogRevival ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-3)", marginBottom: 4 }}>ESTRATEGIA COMERCIAL</div>
+                  <div style={{ fontSize: 13.5 }}>{opportunity.narrative.catalogRevival.estrategiaComercial}</div>
+                </div>
+                {opportunity.narrative.catalogRevival.artistasCompatibles.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-3)", marginBottom: 4 }}>ARTISTAS COMPATIBLES</div>
+                    {opportunity.narrative.catalogRevival.artistasCompatibles.map((a, i) => (
+                      <div key={i} style={{ fontSize: 13 }}>
+                        <strong>{a.name}</strong> — {a.motivo}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {opportunity.narrative.catalogRevival.featuringsPosibles.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-3)", marginBottom: 4 }}>FEATURINGS POSIBLES</div>
+                    {opportunity.narrative.catalogRevival.featuringsPosibles.map((a, i) => (
+                      <div key={i} style={{ fontSize: 13 }}>
+                        <strong>{a.name}</strong> — {a.motivo}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {opportunity.narrative.catalogRevival.productoresSugeridos.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-3)", marginBottom: 4 }}>PRODUCTORES SUGERIDOS</div>
+                    <div style={{ fontSize: 13 }}>{opportunity.narrative.catalogRevival.productoresSugeridos.join(", ")}</div>
+                  </div>
+                )}
+                <div>
+                  <GhostButton onClick={handleGenerateNarrative} disabled={generatingNarrative || !canEdit}>
+                    {generatingNarrative ? "Generando..." : "↻ Regenerar análisis"}
+                  </GhostButton>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
+                <Empty />
+                {canEdit && (
+                  <GhostButton onClick={handleGenerateNarrative} disabled={generatingNarrative}>
+                    {generatingNarrative ? "Generando..." : "✦ Generar análisis con IA"}
+                  </GhostButton>
+                )}
+              </div>
+            )}
+          </Section>
+        ) : (
+          <>
+            <Section title="Qué está pasando">
+              <Empty note={opportunity.narrative?.queEstaPasando} />
+            </Section>
+            <Section title="Por qué importa">
+              <Empty note={opportunity.narrative?.porQueImporta} />
+            </Section>
+            <Section title="Impacto en Argentina">
+              <Empty note={opportunity.narrative?.impactoArgentina} />
+            </Section>
+          </>
+        )}
         <Section title="Datos">
           {opportunity.metrics ? (
             <pre style={{ fontSize: 12, color: "var(--text-2)", whiteSpace: "pre-wrap", margin: 0 }}>{JSON.stringify(opportunity.metrics, null, 2)}</pre>
@@ -168,9 +262,11 @@ function ArDetailContent({ id }: { id: string }) {
             <Empty />
           )}
         </Section>
-        <Section title="Recomendación">
-          <Empty note={opportunity.narrative?.recomendacion} />
-        </Section>
+        {opportunity.category !== "OPORTUNIDAD DE CATÁLOGO" && (
+          <Section title="Recomendación">
+            <Empty note={opportunity.narrative?.recomendacion} />
+          </Section>
+        )}
         <Section title="Fuentes">
           {opportunity.sources.length > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

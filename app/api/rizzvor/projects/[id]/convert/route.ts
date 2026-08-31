@@ -140,6 +140,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         streamingProject: null,
         isrc: song.isrc,
         genero: project.genero,
+        producer: song.productor,
       });
       await setSongConvertedRelease(song.id, release.id);
       await finalizeConversion(id, { releaseId: release.id, groupId: null }, user.email);
@@ -223,6 +224,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         streamingProject: null,
         isrc: input.isrc,
         genero: input.genero,
+        producer: input.productor,
       });
       await setSongConvertedRelease(songs[i].id, saved.id);
     }

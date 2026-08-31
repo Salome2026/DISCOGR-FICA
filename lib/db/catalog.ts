@@ -25,6 +25,7 @@ export function ensureCatalogSchema(): Promise<void> {
       `;
       await sql`ALTER TABLE catalog_tracks ADD COLUMN IF NOT EXISTS streaming_project TEXT`;
       await sql`ALTER TABLE catalog_tracks ADD COLUMN IF NOT EXISTS genero TEXT`;
+      await sql`ALTER TABLE catalog_tracks ADD COLUMN IF NOT EXISTS producer TEXT`;
       await sql`CREATE INDEX IF NOT EXISTS catalog_tracks_sello_idx ON catalog_tracks (sello)`;
       await sql`CREATE INDEX IF NOT EXISTS catalog_tracks_streaming_project_idx ON catalog_tracks (streaming_project)`;
     })();
@@ -45,6 +46,7 @@ export type CatalogTrack = {
   sello: string | null;
   streaming_project: string | null;
   genero: string | null;
+  producer: string | null;
   created_at: string;
   updated_by: string | null;
   updated_at: string | null;
@@ -133,16 +135,18 @@ export async function upsertTrackFromRelease(t: {
   streamingProject: string | null;
   isrc?: string | null;
   genero?: string | null;
+  producer?: string | null;
 }): Promise<void> {
   await ensureCatalogSchema();
   const isrc = t.isrc ?? null;
   const genero = t.genero ?? null;
+  const producer = t.producer ?? null;
   await sql`
     INSERT INTO catalog_tracks
-      (id, isrc, track, album, release_date, upc, company, artist_display, participants, sello, streaming_project, genero)
+      (id, isrc, track, album, release_date, upc, company, artist_display, participants, sello, streaming_project, genero, producer)
     VALUES
       (${t.id}, ${isrc}, ${t.track}, ${t.album}, ${t.releaseDate}, NULL, ${t.company}, ${t.artistDisplay},
-       ${JSON.stringify(t.participants)}::jsonb, ${t.sello}, ${t.streamingProject}, ${genero})
+       ${JSON.stringify(t.participants)}::jsonb, ${t.sello}, ${t.streamingProject}, ${genero}, ${producer})
     ON CONFLICT (id) DO UPDATE SET
       track = EXCLUDED.track,
       album = EXCLUDED.album,
@@ -153,7 +157,8 @@ export async function upsertTrackFromRelease(t: {
       sello = EXCLUDED.sello,
       streaming_project = EXCLUDED.streaming_project,
       isrc = COALESCE(EXCLUDED.isrc, catalog_tracks.isrc),
-      genero = COALESCE(EXCLUDED.genero, catalog_tracks.genero)
+      genero = COALESCE(EXCLUDED.genero, catalog_tracks.genero),
+      producer = COALESCE(EXCLUDED.producer, catalog_tracks.producer)
   `;
 }
 

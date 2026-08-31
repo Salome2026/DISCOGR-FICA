@@ -310,6 +310,7 @@ async function handleGroupedCreate(
       streamingProject,
       isrc: input.isrc,
       genero: input.genero,
+      producer: input.productor,
     });
   }
 

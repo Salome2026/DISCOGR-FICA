@@ -344,6 +344,21 @@ export async function listAssignmentsForOpportunity(opportunityId: string): Prom
   return rows.map(rowToAssignment);
 }
 
+// Writes Gemini-generated narrative content (never scores/metrics — those
+// stay purely deterministic, see lib/arScoring.ts). Wholesale overwrite is
+// intentional: "Generar/Regenerar" always replaces the previous narrative
+// for this opportunity, there's no partial-merge concept here.
+export async function setOpportunityNarrative(id: string, narrative: ArNarrative): Promise<ArOpportunity | null> {
+  await ensureArOpportunitiesSchema();
+  const { rows } = await sql`
+    UPDATE ar_opportunities
+    SET narrative = ${JSON.stringify(narrative)}::jsonb, updated_at = now()
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  return rows[0] ? rowToOpportunity(rows[0]) : null;
+}
+
 // Shared visibility check — admin/ar see every opportunity, anyone else
 // (a PM) only sees ones assigned to them. Used by every route under
 // app/api/ar/[id]/**, not just GET, so a PM can't read or write an

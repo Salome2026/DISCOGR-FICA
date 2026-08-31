@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
           streamingProject: (release.streaming_project as string | null) ?? null,
           isrc: (release.isrc as string | null) ?? null,
           genero: (release.genero as string | null) ?? null,
+          producer: (release.productor as string | null) ?? null,
         });
         track = await getTrack(catalogTrackId);
       }

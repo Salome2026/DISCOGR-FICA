@@ -336,20 +336,20 @@ export default function StudioCalendar({ mode }: { mode: "pm" | "management" }) 
   }, [weekOffset]);
 
   useEffect(() => {
-    const url = mode === "pm" ? "/api/pm/artistas" : "/api/management/artists";
-    fetch(url)
+    // Temporary: full roster for everyone (PM included), not just a PM's own
+    // assigned artists — see app/api/studio-bookings/artists/route.ts.
+    fetch("/api/studio-bookings/artists")
       .then((r) => r.json())
       .then((d) => {
-        const list = mode === "pm"
-          ? (d.artists ?? []).map((a: { artistId: string; artistName: string; photoUrl: string | null }) => ({ id: a.artistId, name: a.artistName, photoUrl: a.photoUrl }))
-          : (d.artists ?? []).map((a: { id: string; name: string; photoUrl: string | null }) => ({ id: a.id, name: a.name, photoUrl: a.photoUrl }));
+        const list = (d.artists ?? []).map((a: { id: string; name: string; photoUrl: string | null }) => ({ id: a.id, name: a.name, photoUrl: a.photoUrl }));
         setArtistOptions(list);
       });
   }, [mode]);
 
-  function canManage(booking: Booking): boolean {
-    if (mode === "management") return true;
-    return artistOptions.some((a) => a.id === booking.artistId);
+  // Temporary: anyone authenticated can manage any booking while the artist
+  // picker itself is unrestricted (see fetch above).
+  function canManage(_booking: Booking): boolean {
+    return true;
   }
 
   const byCell = useMemo(() => {

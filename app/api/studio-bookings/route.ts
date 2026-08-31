@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
-import { hasPermission } from "@/lib/permissions";
-import { canPmAccessArtist } from "@/lib/db/pmArtistAssignments";
 import { listBookingsForRange, createBooking, STUDIOS, SHIFTS } from "@/lib/db/pmStudioBookings";
 
 function canReadCalendar(role: string | null): boolean {
@@ -43,15 +41,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Turno inválido." }, { status: 400 });
   }
 
-  if (user.role === "project_manager") {
-    if (!(await canPmAccessArtist({ email: user.email, role: user.role }, artistId))) {
-      return NextResponse.json({ error: "No tenés este artista asignado." }, { status: 403 });
-    }
-  } else if (user.role === "management") {
-    if (!hasPermission(user, "editar_management")) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
-  } else if (user.role !== "admin") {
+  // Temporary: any authenticated PM/management/admin can book for any
+  // artist — while PM↔artist assignments aren't fully populated for every
+  // active PM yet, gating this by canPmAccessArtist would block real people
+  // from scheduling real sessions. Revert to the ownership check here once
+  // every PM has real assignments (mirrors the same rollout caution as the
+  // release-creation restriction in app/api/pm/releases/route.ts).
+  if (!["project_manager", "management", "admin"].includes(user.role)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

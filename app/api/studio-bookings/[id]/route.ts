@@ -1,26 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
-import { hasPermission, type SessionUser } from "@/lib/permissions";
-import { canPmAccessArtist } from "@/lib/db/pmArtistAssignments";
+import type { SessionUser } from "@/lib/permissions";
 import { getBooking, updateBooking, cancelBooking, STUDIOS, SHIFTS } from "@/lib/db/pmStudioBookings";
 
-// Management/admin: unrestricted. project_manager: must own the booking's
-// current artist, and — if reassigning to a different artist — must also
-// own the new one.
-async function canManageBooking(
-  user: SessionUser,
-  currentArtistId: string,
-  nextArtistId?: string
-): Promise<boolean> {
-  if (user.role === "admin") return true;
-  if (user.role === "management") return hasPermission(user, "editar_management");
-  if (user.role !== "project_manager" || !user.email) return false;
-  const ownsCurrent = await canPmAccessArtist({ email: user.email, role: user.role }, currentArtistId);
-  if (!ownsCurrent) return false;
-  if (nextArtistId && nextArtistId !== currentArtistId) {
-    return canPmAccessArtist({ email: user.email, role: user.role }, nextArtistId);
-  }
-  return true;
+// Temporary: any authenticated PM/management/admin can manage any booking —
+// see the matching note in app/api/studio-bookings/route.ts. Revert to an
+// ownership check (canPmAccessArtist) here once every PM has real
+// assignments.
+function canManageBooking(user: SessionUser): boolean {
+  return !!user.role && ["project_manager", "management", "admin"].includes(user.role);
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -42,7 +30,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (shift !== undefined && !(SHIFTS as readonly string[]).includes(shift)) {
     return NextResponse.json({ error: "Turno inválido." }, { status: 400 });
   }
-  if (!(await canManageBooking(user, current.artistId, artistId))) {
+  if (!canManageBooking(user)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
@@ -62,7 +50,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const current = await getBooking(id);
   if (!current) return NextResponse.json({ error: "No encontrada." }, { status: 404 });
 
-  if (!(await canManageBooking(user, current.artistId))) {
+  if (!canManageBooking(user)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 

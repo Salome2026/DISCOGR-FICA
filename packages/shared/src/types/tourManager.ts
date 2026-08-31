@@ -217,3 +217,50 @@ export type HojaInput = {
 // server-side from the authenticated session, never sent by a client
 // (web or mobile), and estado is optional (defaults to "Borrador").
 export type HojaBody = Omit<HojaInput, "actorEmail" | "estado"> & { estado?: string };
+
+// The lighter, second kind of hoja de ruta — several shows in one sheet,
+// just pickup point + venue + the route between them, deliberately without
+// any of the ~30 fields HojaDeRuta has (punto de encuentro, prueba de
+// sonido, hotel, internal schedule). distanciaKm/duracionMin are always
+// server-computed (same getRoute() the especializada already uses), never
+// hand-typed — same "computed, not editable" convention as HojaDeRuta's
+// own distanciaIdaKm/duracionIdaMin.
+export type GenericShow = {
+  fecha: string | null;
+  horaShow: string | null;
+  busquedaDireccion: string | null;
+  busquedaFullAddress: string | null;
+  busquedaLat: number | null;
+  busquedaLng: number | null;
+  venue: string | null;
+  venueDireccion: string | null;
+  venueFullAddress: string | null;
+  venueLat: number | null;
+  venueLng: number | null;
+  distanciaKm: number | null;
+  duracionMin: number | null;
+};
+
+export type HojaGenerica = {
+  id: string;
+  artistName: string;
+  nombre: string | null;
+  shows: GenericShow[];
+  estado: string;
+  createdBy: string;
+  createdAt: string;
+  updatedBy: string | null;
+  updatedAt: string | null;
+  archivedAt: string | null;
+  archivedBy: string | null;
+};
+
+export type HojaGenericaInput = {
+  artistName: string;
+  nombre?: string | null;
+  shows: GenericShow[];
+  estado?: string;
+  actorEmail: string;
+};
+
+export type HojaGenericaBody = Omit<HojaGenericaInput, "actorEmail">;

@@ -1,6 +1,6 @@
-import { getMultiLegRoute } from "./routing";
+import { getRoute, getMultiLegRoute } from "./routing";
 import { buildWaypoints } from "./staticMap";
-import type { HojaBody } from "@discografica/shared/types/tourManager";
+import type { HojaBody, GenericShow } from "@discografica/shared/types/tourManager";
 
 // Called from the create/update API routes (not inside createHoja/updateHoja
 // themselves — those stay pure DB access) right before saving, so the ruta
@@ -38,4 +38,24 @@ export async function computeRutaCompleta(body: Partial<HojaBody>): Promise<unkn
   const result = await getMultiLegRoute(waypoints.map((w) => ({ lat: w.lat, lng: w.lng, label: w.label })));
   if (result.coordinates.length === 0) return null;
   return { type: "LineString", coordinates: result.coordinates };
+}
+
+// One pickup→venue leg per show in a hoja genérica — each show is
+// independent (not chained to the next one, unlike the especializada's
+// single multi-stage route), so this is a plain getRoute() per show,
+// sequentially (same OSRM-politeness reasoning as everywhere else in this
+// file), not getMultiLegRoute(). A show missing either coordinate pair
+// just keeps distanciaKm/duracionMin null — same "cae a carga manual"
+// discipline as the especializada.
+export async function computeGenericShowRoutes(shows: GenericShow[]): Promise<GenericShow[]> {
+  const out: GenericShow[] = [];
+  for (const show of shows) {
+    if (show.busquedaLat == null || show.busquedaLng == null || show.venueLat == null || show.venueLng == null) {
+      out.push({ ...show, distanciaKm: null, duracionMin: null });
+      continue;
+    }
+    const result = await getRoute({ lat: show.busquedaLat, lng: show.busquedaLng }, { lat: show.venueLat, lng: show.venueLng });
+    out.push({ ...show, distanciaKm: result?.distanceKm ?? null, duracionMin: result?.durationMin ?? null });
+  }
+  return out;
 }

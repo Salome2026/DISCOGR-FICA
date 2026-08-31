@@ -12,7 +12,10 @@ export default function ManagementHomePage() {
   return (
     <RequireRole allow={["management"]}>
       <ManagementShell title="Management">
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, marginBottom: 8 }}>
+          <Link href="/panel/management/estudios" style={{ fontSize: 13, color: "var(--accent)", textDecoration: "none" }}>
+            Calendario de estudios de grabación →
+          </Link>
           <Link href="/panel/management/asignaciones" style={{ fontSize: 13, color: "var(--accent)", textDecoration: "none" }}>
             Gestionar asignaciones de PM →
           </Link>

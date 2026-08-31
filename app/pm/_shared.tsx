@@ -9,8 +9,12 @@ export const PM_STYLES = `
   .pmx-inner.pmx-home { max-width: 1800px; }
   .pmx-topbar { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:1.75rem; flex-wrap:wrap; }
   .pmx-back { background:none; border:none; color:var(--text-3); font-size:12.5px; cursor:pointer; padding:0; margin-bottom:10px; display:inline-block; text-decoration:none; }
-  .pmx-kicker { font-size:11px; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; font-weight:600; }
-  .pmx-title { font-size:26px; font-weight:700; margin:0; letter-spacing:-.02em; }
+  .pmx-kicker {
+    font-size:32px; font-weight:700; letter-spacing:-.03em; text-transform:uppercase; margin-bottom:4px;
+    background:linear-gradient(180deg,var(--text-1) 30%,var(--text-2) 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .pmx-title { font-size:16px; font-weight:600; margin:0; color:var(--text-2); letter-spacing:-.01em; }
   .pmx-sub { font-size:13px; color:var(--text-3); margin-top:4px; }
   .pmx-signout { background: var(--glass-bg); border:1px solid var(--glass-border); border-radius:8px; padding:8px 16px; color:var(--text-2); cursor:pointer; font-size:12.5px; backdrop-filter: blur(20px) saturate(1.7); -webkit-backdrop-filter: blur(20px) saturate(1.7); }
 

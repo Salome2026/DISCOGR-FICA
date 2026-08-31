@@ -67,8 +67,6 @@ function ArtistGrid() {
             <Link key={a.id} href={`/panel/publishing/artistas/${a.id}`} className="pub-artist-card">
               <div className="pub-artist-avatar">{a.nombreArtistico.charAt(0).toUpperCase()}</div>
               <div className="pub-artist-name">{a.nombreArtistico}</div>
-              <div className="pub-artist-meta">{a.sello ?? "Sin sello"}</div>
-              <span className={`pub-artist-tag ${a.tipo === "Propio" ? "propio" : "externo"}`}>{a.tipo}</span>
             </Link>
           ))}
         </div>

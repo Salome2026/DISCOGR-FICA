@@ -6,6 +6,18 @@ import RequireRole from "@/app/components/RequireRole";
 import { PublishingShell } from "../../_shared";
 
 type SplitPerson = { personId: string; personName: string; percentX100: number };
+type PersonFicha = {
+  id: string;
+  nombreCompleto: string | null;
+  apellido: string | null;
+  dni: string | null;
+  fechaNacimiento: string | null;
+  direccion: string | null;
+  email: string | null;
+  telefono: string | null;
+  sadaic: string | null;
+  ipi: string | null;
+};
 type EditorialSplit = {
   id: string;
   trackName: string;
@@ -31,17 +43,41 @@ function formatDateTime(v: string): string {
   return new Date(v).toLocaleString("es-AR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
-function SplitPersonList({ title, people }: { title: string; people: SplitPerson[] }) {
+// Publishing necesita DNI/domicilio/fecha de nacimiento/SADAIC/IPI reales
+// para poder registrar el split — antes esta vista solo mostraba nombre y
+// porcentaje, así que había que ir a buscar el resto a mano en "Datos de
+// artistas". La ficha completa se trae por separado (fichas keyed por
+// personId) porque el split en sí solo guarda nombre+%, no una copia de
+// los datos personales.
+function SplitPersonList({ title, people, fichas }: { title: string; people: SplitPerson[]; fichas: Record<string, PersonFicha | undefined> }) {
   const total = people.reduce((s, p) => s + p.percentX100, 0);
   return (
     <div className="split-detail-section">
       <div className="split-detail-title">{title}</div>
-      {people.map((p) => (
-        <div key={p.personId} className="split-person-row">
-          <span>{p.personName}</span>
-          <span>{formatX100(p.percentX100)}%</span>
-        </div>
-      ))}
+      {people.map((p) => {
+        const f = fichas[p.personId];
+        return (
+          <div key={p.personId} className="split-person-block">
+            <div className="split-person-row">
+              <span>{p.personName}</span>
+              <span>{formatX100(p.percentX100)}%</span>
+            </div>
+            {f ? (
+              <div className="split-person-ficha">
+                <span>DNI: {f.dni || "—"}</span>
+                <span>Nacimiento: {f.fechaNacimiento || "—"}</span>
+                <span>SADAIC: {f.sadaic || "—"}</span>
+                <span>IPI: {f.ipi || "—"}</span>
+                <span>Domicilio: {f.direccion || "—"}</span>
+                <span>Email: {f.email || "—"}</span>
+                <span>Teléfono: {f.telefono || "—"}</span>
+              </div>
+            ) : (
+              <div className="split-person-ficha muted">No encontramos su ficha en Datos de artistas.</div>
+            )}
+          </div>
+        );
+      })}
       <div className="split-total-row">
         <span>TOTAL</span>
         <span>{formatX100(total)}%</span>
@@ -64,6 +100,7 @@ export default function SplitDetailPage({ params }: { params: Promise<{ id: stri
 function SplitDetail({ id }: { id: string }) {
   const router = useRouter();
   const [split, setSplit] = useState<EditorialSplit | null | undefined>(undefined);
+  const [fichas, setFichas] = useState<Record<string, PersonFicha | undefined>>({});
   const [marking, setMarking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,6 +110,18 @@ function SplitDetail({ id }: { id: string }) {
       .then((d) => setSplit(d.split ?? null));
   }
   useEffect(load, [id]);
+
+  useEffect(() => {
+    if (!split) return;
+    const ids = [...new Set([...split.letra, ...split.musica].map((p) => p.personId))];
+    Promise.all(
+      ids.map((personId) =>
+        fetch(`/api/publishing/artists/${personId}`)
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => [personId, d?.artist as PersonFicha | undefined] as const)
+      )
+    ).then((entries) => setFichas(Object.fromEntries(entries)));
+  }, [split]);
 
   async function handleMarkSent() {
     setMarking(true);
@@ -141,8 +190,8 @@ function SplitDetail({ id }: { id: string }) {
         </div>
       )}
 
-      <SplitPersonList title="LETRA" people={split.letra} />
-      <SplitPersonList title="MÚSICA" people={split.musica} />
+      <SplitPersonList title="LETRA" people={split.letra} fichas={fichas} />
+      <SplitPersonList title="MÚSICA" people={split.musica} fichas={fichas} />
 
       {error && <div style={{ color: "var(--crit-ink)", fontSize: 13, marginTop: 14 }}>{error}</div>}
 

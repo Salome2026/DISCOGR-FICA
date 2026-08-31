@@ -40,19 +40,31 @@ export const PUBLISHING_STYLES = `
   .pub-doc-link { color: var(--pub-accent); text-decoration: none; font-size: 12px; }
   .muted { color: var(--text-3); }
 
-  .pub-home-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .pub-home-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
   @media (max-width: 640px) { .pub-home-buttons { grid-template-columns: 1fr; } }
   .pub-big-btn {
-    display: flex; flex-direction: column; gap: 8px; align-items: flex-start; text-align: left;
+    display: flex; flex-direction: column; gap: 12px; align-items: flex-start; text-align: left;
     background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);
-    padding: 1.75rem; text-decoration: none; color: var(--text-1);
+    padding: 2.25rem 2rem; text-decoration: none; color: var(--text-1); min-height: 168px;
     backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7);
     box-shadow: var(--shadow-glass); cursor: pointer;
     transition: border-color var(--dur-base) var(--ease-out), transform var(--dur-fast) var(--ease-out);
   }
   .pub-big-btn:hover { border-color: var(--pub-accent); transform: translateY(-2px); }
-  .pub-big-btn h2 { font-size: 17px; font-weight: 700; margin: 0; }
-  .pub-big-btn p { font-size: 12.5px; color: var(--text-3); margin: 0; line-height: 1.5; }
+  .pub-big-btn h2 { font-size: 21px; font-weight: 700; margin: 0; }
+  .pub-big-btn p { font-size: 13.5px; color: var(--text-3); margin: 0; line-height: 1.55; }
+
+  /* Estado de "Splits pendientes de envío": verde sin nada pendiente,
+     amarillo con algunos, rojo cuando se acumulan demasiados sin enviar. */
+  .pub-big-btn.status-ok { border-color: var(--good-ink); }
+  .pub-big-btn.status-ok:hover { border-color: var(--good-ink); }
+  .pub-big-btn.status-ok h2 { color: var(--good-ink); }
+  .pub-big-btn.status-warn { border-color: var(--warn-ink); }
+  .pub-big-btn.status-warn:hover { border-color: var(--warn-ink); }
+  .pub-big-btn.status-warn h2 { color: var(--warn-ink); }
+  .pub-big-btn.status-crit { border-color: var(--crit-ink); }
+  .pub-big-btn.status-crit:hover { border-color: var(--crit-ink); }
+  .pub-big-btn.status-crit h2 { color: var(--crit-ink); }
 
   .pub-artist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
   .pub-artist-card {
@@ -94,7 +106,9 @@ export const PUBLISHING_STYLES = `
 
   .split-detail-section { margin-top: 1.25rem; }
   .split-detail-title { font-size: 14px; font-weight: 700; letter-spacing: .02em; margin-bottom: 8px; }
-  .split-person-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+  .split-person-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 6px 0; }
+  .split-person-block { padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+  .split-person-ficha { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--text-2); padding-bottom: 4px; }
   .split-total-row { display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 700; padding: 8px 0 0; color: var(--good-ink); }
 `;
 

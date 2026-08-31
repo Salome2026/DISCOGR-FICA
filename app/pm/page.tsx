@@ -22,6 +22,10 @@ export default function PMLandingPage() {
             <h2>Release</h2>
             <p>Cargá los datos de derechos de máster de un fonograma.</p>
           </Link>
+          <Link href="/pm/artistas" className="pmx-big-btn">
+            <h2>Mis Artistas</h2>
+            <p>Plan anual, objetivos, historial y reuniones con Management.</p>
+          </Link>
         </div>
 
         <ReleaseCalendar readOnly apiUrl="/api/pm/releases/dashboard-calendar" />

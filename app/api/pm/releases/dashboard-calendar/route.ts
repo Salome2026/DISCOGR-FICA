@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@vercel/postgres";
 import { getSessionUser } from "@/lib/session";
-import { listReleasesFor } from "@/lib/db/releases";
+import { listAllReleases } from "@/lib/db/releases";
 import { ensureFonogramasSheetSchema } from "@/lib/db/fonogramasSheet";
 import { getArtistImagesByNames } from "@/lib/db/listeners";
 
@@ -9,18 +9,20 @@ import { getArtistImagesByNames } from "@/lib/db/listeners";
 // the external "Fonogramas MAWZ & INDYANA" sheet (read-only catalog synced
 // via /api/pm/releases/sync-fonogramas-sheet) into one feed — shared by every
 // read-only ReleaseCalendar embed (Dashboard, Publishing, Legal) so they all
-// show the same complete calendar. listReleasesFor already scopes the
-// pm_releases half by role (full list for admin/legal/editorial/management,
-// own-only otherwise); PM's own task-management board never uses this route
-// — it hits the plain /api/pm/releases feed, since sheet rows have no real
-// pm_releases id to attach a Release/Split task to.
+// show the same complete calendar. Deliberately global for every role,
+// including project_manager — PMs need to see the full label calendar to
+// spot cross-artist conflicts, independent of which artists are assigned to
+// them (that scoping only applies to editing, not to this read-only view).
+// PM's own task-management board never uses this route — it hits the plain
+// /api/pm/releases feed (own-only), since sheet rows have no real pm_releases
+// id to attach a Release/Split task to.
 export async function GET(req: NextRequest) {
   const user = await getSessionUser(req);
   if (!user?.email || !user.role) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const pmReleases = (await listReleasesFor(user.email, user.role)) as { artist_name: string }[];
+  const pmReleases = (await listAllReleases()) as { artist_name: string }[];
 
   await ensureFonogramasSheetSchema();
   const { rows: sheetRows } = await sql`

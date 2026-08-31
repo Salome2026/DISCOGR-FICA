@@ -218,26 +218,48 @@ export async function createGroupedRelease(group: NewReleaseGroup, tracks: NewGr
   return { group: groupRow, tracks: trackRows };
 }
 
+export async function listAllReleases() {
+  await ensureReleasesSchema();
+  const { rows } = await sql`
+    SELECT r.*, g.tipo AS group_tipo, g.nombre AS group_nombre
+    FROM pm_releases r
+    LEFT JOIN pm_release_groups g ON g.id = r.group_id
+    WHERE r.archived = false
+    ORDER BY r.created_at DESC
+  `;
+  return rows;
+}
+
 export async function listReleasesFor(email: string, role: string) {
   await ensureReleasesSchema();
   // Legal and Editorial have no releases of their own — they need the same
   // full calendar as Label Management to know what's coming up, same live
   // data, same rule as admin's "see everything" branch below.
   if (role === "admin" || role === "legal" || role === "editorial" || role === "management") {
-    const { rows } = await sql`
-      SELECT r.*, g.tipo AS group_tipo, g.nombre AS group_nombre
-      FROM pm_releases r
-      LEFT JOIN pm_release_groups g ON g.id = r.group_id
-      WHERE r.archived = false
-      ORDER BY r.created_at DESC
-    `;
-    return rows;
+    return listAllReleases();
   }
   const { rows } = await sql`
     SELECT r.*, g.tipo AS group_tipo, g.nombre AS group_nombre
     FROM pm_releases r
     LEFT JOIN pm_release_groups g ON g.id = r.group_id
     WHERE r.archived = false AND r.created_by = ${email}
+    ORDER BY r.created_at DESC
+  `;
+  return rows;
+}
+
+// Per-artist feed for the PM artist-workspace calendar embed (Fase 2 of the
+// PM↔Management assignment feature) — same row shape as listReleasesFor/
+// listAllReleases, so it drops straight into <ReleaseCalendar>. Matches by
+// name (case-insensitive), same join criterion the rest of the app already
+// uses across modules (no FK from pm_releases to artists).
+export async function listReleasesForArtist(artistName: string) {
+  await ensureReleasesSchema();
+  const { rows } = await sql`
+    SELECT r.*, g.tipo AS group_tipo, g.nombre AS group_nombre
+    FROM pm_releases r
+    LEFT JOIN pm_release_groups g ON g.id = r.group_id
+    WHERE r.archived = false AND r.artist_name ILIKE ${artistName}
     ORDER BY r.created_at DESC
   `;
   return rows;

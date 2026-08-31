@@ -14,7 +14,7 @@ export const PM_STYLES = `
   .pmx-sub { font-size:13px; color:var(--text-3); margin-top:4px; }
   .pmx-signout { background: var(--glass-bg); border:1px solid var(--glass-border); border-radius:8px; padding:8px 16px; color:var(--text-2); cursor:pointer; font-size:12.5px; backdrop-filter: blur(20px) saturate(1.7); -webkit-backdrop-filter: blur(20px) saturate(1.7); }
 
-  .pmx-home-buttons { display:grid; grid-template-columns: repeat(3, 1fr); gap:1.25rem; }
+  .pmx-home-buttons { display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:1.25rem; }
   @media (max-width:640px) { .pmx-home-buttons { grid-template-columns: 1fr; } }
   .pmx-big-btn {
     display:flex; flex-direction:column; gap:8px; align-items:flex-start; text-align:left; justify-content:center;
@@ -50,6 +50,19 @@ export const PM_STYLES = `
   .pmx-fono-task-btn { background:transparent; border:1px solid var(--line-soft); border-radius:6px; padding:4px 10px; color:var(--text-2); cursor:pointer; font-size:11.5px; text-decoration:none; }
   .pmx-fono-task-btn:hover { border-color:var(--accent-color); color:var(--text-1); }
   .pmx-fono-footer { display:flex; justify-content:flex-end; margin-top:2px; }
+
+  .pmx-artist-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px; }
+  .pmx-artist-card {
+    display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--text-1);
+    background: var(--glass-bg); border:1px solid var(--glass-border); border-radius: var(--radius-lg);
+    padding:1rem 1.1rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7);
+    box-shadow: var(--shadow-glass); transition: border-color var(--dur-base) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  }
+  .pmx-artist-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .pmx-artist-avatar-img { width:48px; height:48px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+  .pmx-artist-avatar-fallback { width:48px; height:48px; border-radius:50%; background:var(--bg-2); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--text-2); flex-shrink:0; }
+  .pmx-artist-card-name { font-size:14.5px; font-weight:700; }
+  .pmx-artist-card-sello { font-size:11.5px; color:var(--text-3); margin-top:2px; }
 `;
 
 export function PMShell({

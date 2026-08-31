@@ -300,25 +300,25 @@ function PersonSlot({ row, onChange, onRemove }: { row: Row; onChange: (patch: P
               <div className="spx-new-person-fields">
                 <input
                   className="spx-input"
-                  placeholder="Nombre completo (opcional)"
+                  placeholder="Nombre completo"
                   value={row.newNombreCompleto}
                   onChange={(e) => onChange({ newNombreCompleto: e.target.value })}
                 />
                 <input
                   className="spx-input"
-                  placeholder="Apellido (opcional)"
+                  placeholder="Apellido"
                   value={row.newApellido}
                   onChange={(e) => onChange({ newApellido: e.target.value })}
                 />
                 <input
                   className="spx-input"
-                  placeholder="DNI (opcional)"
+                  placeholder="DNI"
                   value={row.newDni}
                   onChange={(e) => onChange({ newDni: e.target.value })}
                 />
                 <input
                   className="spx-input"
-                  placeholder="Fecha de nacimiento (opcional)"
+                  placeholder="Fecha de nacimiento"
                   type="date"
                   value={row.newFechaNacimiento}
                   onChange={(e) => onChange({ newFechaNacimiento: e.target.value })}
@@ -337,13 +337,13 @@ function PersonSlot({ row, onChange, onRemove }: { row: Row; onChange: (patch: P
                 />
                 <input
                   className="spx-input"
-                  placeholder="Domicilio (opcional)"
+                  placeholder="Domicilio"
                   value={row.newDireccion}
                   onChange={(e) => onChange({ newDireccion: e.target.value })}
                 />
                 <input
                   className="spx-input"
-                  placeholder="Email (opcional)"
+                  placeholder="Email"
                   value={row.newEmail}
                   onChange={(e) => onChange({ newEmail: e.target.value })}
                 />
@@ -479,7 +479,24 @@ function SplitEditorialForm() {
 
   const letraSum = letra.reduce((s, r) => s + (parsePercent(r.percentRaw) ?? 0), 0);
   const musicaSum = musica.reduce((s, r) => s + (parsePercent(r.percentRaw) ?? 0), 0);
-  const rowsReady = (rows: Row[]) => rows.length > 0 && rows.every((r) => r.personName.trim() && (parsePercent(r.percentRaw) ?? 0) > 0);
+  const rowsReady = (rows: Row[]) =>
+    rows.length > 0 &&
+    rows.every((r) => {
+      if (!r.personName.trim() || (parsePercent(r.percentRaw) ?? 0) <= 0) return false;
+      if (r.isNew) {
+        // SADAIC e IPI son los únicos campos opcionales de una persona
+        // nueva — todo lo demás (identidad + contacto) es obligatorio.
+        return !!(
+          r.newNombreCompleto.trim() &&
+          r.newApellido.trim() &&
+          r.newDni.trim() &&
+          r.newDireccion.trim() &&
+          r.newFechaNacimiento.trim() &&
+          r.newEmail.trim()
+        );
+      }
+      return true;
+    });
   const canSubmit = !!track && letraSum === 5000 && musicaSum === 5000 && rowsReady(letra) && rowsReady(musica);
 
   function toInput(rows: Row[]): SplitPersonInput[] {
@@ -583,7 +600,7 @@ function SplitEditorialForm() {
       {error && <div className="spx-error">{error}</div>}
 
       <div className="spx-submit-bar">
-        {!canSubmit && track && <span className="spx-submit-hint">Completá letra y música al 50% para enviar.</span>}
+        {!canSubmit && track && <span className="spx-submit-hint">Completá letra y música al 50%, con los datos obligatorios de cada persona nueva, para enviar.</span>}
         <button type="button" className="spx-submit-btn" disabled={!canSubmit || submitting} onClick={handleSubmit}>
           {submitting ? "Enviando..." : "Enviar split"}
         </button>

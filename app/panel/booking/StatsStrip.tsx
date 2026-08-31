@@ -42,8 +42,6 @@ export default function StatsStrip() {
       // vs. upcoming is honest regardless of where a show came from.
       historico: shows.filter((s) => s.fecha < today).length,
       proximos: shows.filter((s) => s.fecha >= today).length,
-      confirmados: shows.filter((s) => s.estado === "Confirmado").length,
-      cerrados: shows.filter((s) => s.estado === "Cerrado").length,
       artistaTop: topArtista ? `${topArtista[0]} (${topArtista[1]})` : "—",
     };
   }, [shows]);
@@ -51,9 +49,8 @@ export default function StatsStrip() {
   return (
     <div className="bkg-section">
       <style>{`
-        .bksp-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: .9rem; }
-        @media (max-width: 1100px) { .bksp-row { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 600px) { .bksp-row { grid-template-columns: repeat(2, 1fr); } }
+        .bksp-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: .9rem; }
+        @media (max-width: 900px) { .bksp-row { grid-template-columns: repeat(2, 1fr); } }
         .bksp-kpi { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 1.1rem 1.2rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); }
         .bksp-kpi .l { font-size: 12px; color: var(--text-2); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
         .bksp-kpi .n { font-size: 26px; font-weight: 700; margin-top: 6px; font-variant-numeric: tabular-nums; }
@@ -62,8 +59,6 @@ export default function StatsStrip() {
         <div className="bksp-kpi"><div className="l">Shows este mes</div><div className="n">{stats?.totalMes ?? "—"}</div></div>
         <div className="bksp-kpi"><div className="l">Histórico</div><div className="n">{stats?.historico ?? "—"}</div></div>
         <div className="bksp-kpi"><div className="l">Próximos</div><div className="n">{stats?.proximos ?? "—"}</div></div>
-        <div className="bksp-kpi"><div className="l">Confirmados</div><div className="n">{stats?.confirmados ?? "—"}</div></div>
-        <div className="bksp-kpi"><div className="l">Cerrados</div><div className="n">{stats?.cerrados ?? "—"}</div></div>
         <div className="bksp-kpi"><div className="l">Artista con más shows</div><div className="n" style={{ fontSize: 16 }}>{stats?.artistaTop ?? "—"}</div></div>
       </div>
     </div>

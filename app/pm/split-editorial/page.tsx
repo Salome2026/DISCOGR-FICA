@@ -15,7 +15,7 @@ const SPX_STYLES = `
   .spx-track-chip span { font-size:12px; color:var(--text-3); }
   .spx-dropdown { position:relative; }
   .spx-dropdown-list { position:absolute; z-index:20; top:calc(100% + 4px); left:0; right:0; background:var(--glass-bg-strong); border:1px solid var(--glass-border); border-radius:10px; box-shadow:var(--shadow-glass-lg); max-height:240px; overflow-y:auto; backdrop-filter:blur(30px) saturate(1.7); -webkit-backdrop-filter:blur(30px) saturate(1.7); }
-  .spx-dropdown-item { padding:9px 14px; cursor:pointer; font-size:13px; border-bottom:1px solid var(--line-soft); }
+  .spx-dropdown-item { padding:9px 14px; cursor:pointer; font-size:13px; border-bottom:1px solid var(--line-soft); color:var(--text-1); }
   .spx-dropdown-item:last-child { border-bottom:none; }
   .spx-dropdown-item:hover, .spx-dropdown-item.active { background:var(--accent-glass-bg); }
   .spx-dropdown-item .meta { font-size:11.5px; color:var(--text-3); margin-top:2px; }

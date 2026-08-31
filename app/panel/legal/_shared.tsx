@@ -71,7 +71,8 @@ export const LEGAL_STYLES = `
   table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   th { text-align: left; color: var(--text-3); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
   td { padding: 8px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
-  .legal-doc-link { color: var(--legal-accent); text-decoration: none; font-size: 12px; }
+  .legal-doc-link { color: var(--legal-accent); text-decoration: none; font-size: 14.5px; font-weight: 600; }
+  .legal-doc-link:hover { text-decoration: underline; }
   .legal-warn { color: var(--crit-ink); font-size: 10.5px; margin-left: 6px; }
   .muted { color: var(--text-3); }
 

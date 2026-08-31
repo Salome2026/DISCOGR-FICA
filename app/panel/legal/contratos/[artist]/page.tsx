@@ -153,7 +153,7 @@ function CategoryModal({
         )}
 
         {contracts.map((c) => (
-          <div key={c.id} style={{ background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: 14, display: "flex", flexDirection: "column", gap: 8 }}>
+          <div key={c.id} style={{ background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: 18, display: "flex", flexDirection: "column", gap: 10 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                 <Badge label={c.estado} />
@@ -163,7 +163,7 @@ function CategoryModal({
                 Editar
               </button>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, fontSize: 12.5 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, rowGap: 12 }}>
               <MiniField label="Fecha de firma" value={c.fechaFirma ?? "—"} />
               <MiniField label="Vencimiento" value={c.fechaVencimiento ?? "—"} />
               <MiniField label="Contraparte" value={c.contraparte ?? "—"} />
@@ -181,7 +181,7 @@ function CategoryModal({
             )}
             {c.notas && <div style={{ fontSize: 12, color: "var(--text-2)" }}>{c.notas}</div>}
             {c.documentoUrl ? (
-              <div style={{ display: "flex", gap: 10, marginTop: 2 }}>
+              <div style={{ display: "flex", gap: 14, marginTop: 4 }}>
                 <a className="legal-doc-link" href={legalFileUrl(c.documentoUrl)} target="_blank" rel="noreferrer">
                   Ver documento
                 </a>
@@ -190,7 +190,7 @@ function CategoryModal({
                 </a>
               </div>
             ) : (
-              <span className="muted" style={{ fontSize: 12 }}>Sin documento cargado</span>
+              <span className="muted" style={{ fontSize: 13.5 }}>Sin documento cargado</span>
             )}
           </div>
         ))}
@@ -206,8 +206,8 @@ function CategoryModal({
 function MiniField({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div style={{ fontSize: 9.5, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</div>
-      <div>{value}</div>
+      <div style={{ fontSize: 11.5, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</div>
+      <div style={{ fontSize: 15, marginTop: 2 }}>{value}</div>
     </div>
   );
 }

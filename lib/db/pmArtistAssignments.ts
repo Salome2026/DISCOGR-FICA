@@ -1,6 +1,7 @@
 import { sql } from "@vercel/postgres";
 import { recordAudit, getAuditLog, type AuditEntry } from "@/lib/db/users";
 import { ensureArtistExists } from "@/lib/db/artists";
+import { hasPermission, type SessionUser } from "@/lib/permissions";
 
 let ready: Promise<void> | null = null;
 
@@ -124,6 +125,14 @@ export async function canPmAccessArtist(
   if (user.role !== "project_manager") return false;
   const assignment = await getAssignment(artistId);
   return assignment?.pmEmail === user.email;
+}
+
+// Read access for the Plan Anual family of routes: the owning PM, or
+// Management (they need to read it to write their own observaciones and to
+// download the PDF for meetings), or admin.
+export async function canViewAnnualPlan(user: SessionUser, artistId: string): Promise<boolean> {
+  if (hasPermission(user, "ver_management")) return true;
+  return canPmAccessArtist({ email: user.email, role: user.role }, artistId);
 }
 
 // Reuses the platform's generic audit log rather than a bespoke history

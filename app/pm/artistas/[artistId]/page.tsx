@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
+import Link from "next/link";
 import RequireRole from "@/app/components/RequireRole";
 import ReleaseCalendar from "@/app/dashboard/ReleaseCalendar";
 import { PMShell } from "../../_shared";
@@ -46,12 +47,12 @@ const listInputStyle: React.CSSProperties = {
 };
 const checkboxStyle: React.CSSProperties = { width: 20, height: 20, cursor: "pointer" };
 
+type AnnualPlanSummary = { periodStart: string | null; periodEnd: string | null; cantidadLanzamientosProyectados: number | null };
+
 function ArtistProfileInner({ artistId }: { artistId: string }) {
   const [data, setData] = useState<Bundle | null | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
-  const [planAnual, setPlanAnual] = useState("");
-  const [objetivos, setObjetivos] = useState("");
-  const [savingProfile, setSavingProfile] = useState(false);
+  const [annualPlan, setAnnualPlan] = useState<AnnualPlanSummary | null | undefined>(undefined);
   const [newItem, setNewItem] = useState("");
   const [newNote, setNewNote] = useState("");
   const [meetingRequests, setMeetingRequests] = useState<MeetingRequest[]>([]);
@@ -72,13 +73,14 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
           return;
         }
         setData(d);
-        setPlanAnual(d.profile?.planAnual ?? "");
-        setObjetivos(d.profile?.objetivosGenerales ?? "");
       })
       .catch((e) => setError(String(e)));
     fetch(`/api/pm/artistas/${artistId}/meeting-requests`)
       .then((r) => r.json())
       .then((d) => setMeetingRequests(d.requests ?? []));
+    fetch(`/api/pm/artistas/${artistId}/plan-anual`)
+      .then((r) => r.json())
+      .then((d) => setAnnualPlan(d.plan ?? null));
   }
 
   useEffect(() => {
@@ -94,20 +96,6 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [artistId]);
-
-  async function saveProfile() {
-    setSavingProfile(true);
-    try {
-      await fetch(`/api/pm/artistas/${artistId}/profile`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planAnual, objetivosGenerales: objetivos }),
-      });
-      load();
-    } finally {
-      setSavingProfile(false);
-    }
-  }
 
   async function addItem() {
     if (!newItem.trim()) return;
@@ -188,13 +176,22 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
   return (
     <PMShell title={data.artist.name} subtitle={data.artist.sello ?? undefined} backHref="/pm/artistas">
       <div className="pmx-card" style={sectionStyle}>
-        <div style={sectionLabelStyle}>Plan anual del artista</div>
-        <textarea style={textareaStyle} value={planAnual} onChange={(e) => setPlanAnual(e.target.value)} placeholder="Objetivos, hitos y estrategia del año para este artista..." />
-        <div style={sectionLabelStyle}>Objetivos generales</div>
-        <textarea style={textareaStyle} value={objetivos} onChange={(e) => setObjetivos(e.target.value)} placeholder="Objetivos generales del proyecto..." />
-        <button style={smallBtn} onClick={saveProfile} disabled={savingProfile}>
-          {savingProfile ? "Guardando..." : "Guardar"}
-        </button>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <div style={sectionLabelStyle}>Plan Anual</div>
+          <Link href={`/pm/artistas/${artistId}/plan-anual`} style={{ ...smallBtn, textDecoration: "none", display: "inline-block" }}>
+            {annualPlan ? "Abrir plan anual completo →" : "Crear plan anual →"}
+          </Link>
+        </div>
+        {annualPlan === undefined && <p style={{ color: "var(--text-3)", fontSize: 15 }}>Cargando...</p>}
+        {annualPlan === null && <p style={{ color: "var(--text-3)", fontSize: 15 }}>Todavía no se creó un plan anual para este artista.</p>}
+        {annualPlan && (
+          <p style={{ color: "var(--text-2)", fontSize: 15 }}>
+            {annualPlan.periodStart && annualPlan.periodEnd
+              ? `Período ${formatFecha(annualPlan.periodStart)} - ${formatFecha(annualPlan.periodEnd)}`
+              : "Período sin definir"}
+            {annualPlan.cantidadLanzamientosProyectados != null && ` · ${annualPlan.cantidadLanzamientosProyectados} lanzamientos proyectados`}
+          </p>
+        )}
       </div>
 
       <div className="pmx-card" style={sectionStyle}>

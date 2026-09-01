@@ -52,7 +52,7 @@ const fieldLabel: React.CSSProperties = { fontSize: 13, color: "var(--text-2)", 
 // text — used for rows of same-height fields (Período y objetivos) so a
 // label that wraps to 2 lines doesn't push just its own input down relative
 // to the siblings whose labels fit on 1 line.
-const rowFieldLabel: React.CSSProperties = { ...fieldLabel, minHeight: 34, display: "flex", alignItems: "flex-end" };
+const rowFieldLabel: React.CSSProperties = { ...fieldLabel, minHeight: 40, display: "flex", alignItems: "flex-end" };
 const inputStyle: React.CSSProperties = {
   width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8,
   padding: "10px 12px", color: "var(--text-1)", fontSize: 14,

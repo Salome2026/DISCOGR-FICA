@@ -148,9 +148,9 @@ function newId(): string {
 // sees only what's been assigned to them — this branch is the reason the
 // scoping can't live in a static permission, it depends on the assignments
 // table. Same shape as listReleasesFor() in lib/db/releases.ts.
-export async function listOpportunitiesFor(email: string, role: string): Promise<ArOpportunity[]> {
+export async function listOpportunitiesFor(email: string, roles: string[]): Promise<ArOpportunity[]> {
   await ensureArOpportunitiesSchema();
-  if (role === "admin" || role === "ar") {
+  if (roles.includes("admin") || roles.includes("ar")) {
     const { rows } = await sql`
       SELECT * FROM ar_opportunities WHERE archived = false ORDER BY created_at DESC
     `;
@@ -381,8 +381,8 @@ export async function setOpportunityNarrative(id: string, narrative: ArNarrative
 // (a PM) only sees ones assigned to them. Used by every route under
 // app/api/ar/[id]/**, not just GET, so a PM can't read or write an
 // opportunity nobody assigned to them.
-export async function canSeeOpportunity(user: { email: string; role: string | null }, opportunityId: string): Promise<boolean> {
-  if (user.role === "admin" || user.role === "ar") return true;
+export async function canSeeOpportunity(user: { email: string; roles: string[] }, opportunityId: string): Promise<boolean> {
+  if (user.roles.includes("admin") || user.roles.includes("ar")) return true;
   const assignments = await listAssignmentsForOpportunity(opportunityId);
   return assignments.some((a) => a.pmEmail === user.email);
 }

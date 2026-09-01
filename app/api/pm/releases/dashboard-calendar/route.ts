@@ -18,7 +18,7 @@ import { getArtistImagesByNames } from "@/lib/db/listeners";
 // id to attach a Release/Split task to.
 export async function GET(req: NextRequest) {
   const user = await getSessionUser(req);
-  if (!user?.email || !user.role) {
+  if (!user?.email || !user.roles?.length) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

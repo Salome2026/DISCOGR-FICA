@@ -76,7 +76,7 @@ function ArDetailContent({ id }: { id: string }) {
   const [assignComment, setAssignComment] = useState("");
   const [assigning, setAssigning] = useState(false);
 
-  const isOverseer = user?.role === "admin" || user?.role === "ar";
+  const isOverseer = !!user?.roles?.includes("admin") || !!user?.roles?.includes("ar");
 
   function load() {
     fetch(`/api/ar/${id}`)

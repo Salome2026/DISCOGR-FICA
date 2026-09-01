@@ -9,8 +9,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user?.email || role !== "admin") {
+  const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
+  if (!session?.user?.email || !roles.includes("admin")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const { id } = await params;
@@ -24,9 +24,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
+  const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
   const email = session?.user?.email;
-  if (!email || role !== "admin") {
+  if (!email || !roles.includes("admin")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

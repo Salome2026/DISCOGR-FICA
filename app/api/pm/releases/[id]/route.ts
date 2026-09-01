@@ -6,9 +6,9 @@ const ESTADOS: EstadoRelease[] = ["Contactado", "Firmado", "Necesito ayuda"];
 
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
+  const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
   const email = session?.user?.email;
-  if (!email || role === "sin_acceso" || !role) {
+  if (!email || roles.length === 0) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const { id } = await params;
@@ -16,7 +16,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   if (!release) {
     return NextResponse.json({ error: "Lanzamiento no encontrado." }, { status: 404 });
   }
-  if (role !== "admin" && release.created_by !== email) {
+  if (!roles.includes("admin") && release.created_by !== email) {
     return NextResponse.json({ error: "No tenés acceso a este lanzamiento." }, { status: 403 });
   }
   return NextResponse.json({ release });
@@ -24,9 +24,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
+  const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
   const email = session?.user?.email;
-  if (!email || role === "sin_acceso" || !role) {
+  if (!email || roles.length === 0) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const { id } = await params;
@@ -42,7 +42,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     // Mismo alcance que crear_split_editorial (project_manager + admin) —
     // esta ruta ya solo la usan esos dos roles, así que alcanza con el
     // mismo chequeo de rol que el resto del archivo.
-    if (role !== "admin" && role !== "project_manager") {
+    if (!roles.includes("admin") && !roles.includes("project_manager")) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
     await setSplitOverride(Number(id), body.splitOverride, email);
@@ -58,9 +58,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
+  const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
   const email = session?.user?.email;
-  if (!email || role === "sin_acceso" || !role) {
+  if (!email || roles.length === 0) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const { id } = await params;
@@ -68,7 +68,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (!owner) {
     return NextResponse.json({ error: "Lanzamiento no encontrado." }, { status: 404 });
   }
-  if (role !== "admin" && owner.created_by !== email) {
+  if (!roles.includes("admin") && owner.created_by !== email) {
     return NextResponse.json(
       { error: "Solo podés eliminar los lanzamientos que vos cargaste." },
       { status: 403 }

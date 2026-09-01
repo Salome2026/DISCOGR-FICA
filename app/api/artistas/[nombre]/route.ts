@@ -13,8 +13,8 @@ export async function GET(
   { params }: { params: Promise<{ nombre: string }> }
 ) {
   const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user?.email || (role !== "admin" && role !== "management")) {
+  const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
+  if (!session?.user?.email || (!roles.includes("admin") && !roles.includes("management"))) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

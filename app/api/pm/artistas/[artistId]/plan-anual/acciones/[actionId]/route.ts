@@ -5,8 +5,8 @@ import { updateAction, deleteAction, ANNUAL_PLAN_ACTION_STATUSES } from "@/lib/d
 
 async function checkAccess(req: NextRequest, artistId: string) {
   const user = await getSessionUser(req);
-  if (!user?.email || !user.role) return null;
-  if (!(await canPmAccessArtist({ email: user.email, role: user.role }, artistId))) return null;
+  if (!user?.email || !user.roles?.length) return null;
+  if (!(await canPmAccessArtist({ email: user.email, roles: user.roles }, artistId))) return null;
   return user;
 }
 

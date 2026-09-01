@@ -7,10 +7,12 @@ import Image from "next/image";
 import VPOScrollHero from "./components/VPOScrollHero";
 
 type Card = "label" | "pm" | "legal" | "editorial" | "management" | "booking" | "tourmanager" | "ar" | null;
+type ModuleOption = { role: string; label: string; home: string };
 
 export default function Landing() {
   const router = useRouter();
   const [active, setActive] = useState<Card>(null);
+  const [modules, setModules] = useState<ModuleOption[] | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +79,13 @@ export default function Landing() {
     // into, worst case is just being asked for the code again next time.
     fetch("/api/auth/trust-device", { method: "POST" }).catch(() => {});
     const me = await fetch("/api/me").then((r) => r.json());
-    router.push(me.home ?? "/acceso-denegado");
+    if (me.modules?.length === 1) {
+      router.push(me.modules[0].home);
+    } else if (me.modules?.length > 1) {
+      setModules(me.modules);
+    } else {
+      router.push("/acceso-denegado");
+    }
   }
 
   async function handleForgotSubmit(e: React.FormEvent) {
@@ -166,7 +174,21 @@ export default function Landing() {
         priority={false}
       />
       <div className="landing-inner">
-        {active === null && (
+        {modules !== null && (
+          <div className="cards">
+            {modules.map((m) => (
+              <div className="access-card" key={m.role}>
+                <h2>{m.label}</h2>
+                <p>Ingresar a este módulo.</p>
+                <button className="access-btn" onClick={() => router.push(m.home)}>
+                  Ingresar
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {modules === null && active === null && (
           <div className="cards">
             <div className="access-card">
               <h2>Label</h2>
@@ -227,7 +249,7 @@ export default function Landing() {
           </div>
         )}
 
-        {active !== null && (
+        {modules === null && active !== null && (
           <div className="login-panel" ref={panelRef}>
             <button className="back-link" onClick={backToCards}>
               ← Volver

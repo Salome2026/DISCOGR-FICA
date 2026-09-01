@@ -12,7 +12,7 @@ export default function QuickAccessPanel({ onChanged }: { onChanged: () => void 
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [accountType, setAccountType] = useState<AccountType>("empresa");
-  const [role, setRole] = useState<Role>("project_manager");
+  const [roles, setRoles] = useState<Role[]>([]);
   const [noAdminUsuarios, setNoAdminUsuarios] = useState(false);
   const [addSaving, setAddSaving] = useState(false);
   const [addMsg, setAddMsg] = useState<string | null>(null);
@@ -47,9 +47,17 @@ export default function QuickAccessPanel({ onChanged }: { onChanged: () => void 
     }
   }
 
+  function toggleRole(r: Role, checked: boolean) {
+    setRoles((prev) => (checked ? [...prev, r] : prev.filter((x) => x !== r)));
+  }
+
   async function quickAdd(e: React.FormEvent) {
     e.preventDefault();
     setAddMsg(null);
+    if (roles.length === 0) {
+      setAddMsg("Seleccioná al menos un módulo.");
+      return;
+    }
     setAddSaving(true);
     try {
       const res = await fetch("/api/admin/quick-add", {
@@ -59,8 +67,8 @@ export default function QuickAccessPanel({ onChanged }: { onChanged: () => void 
           email,
           name,
           accountType,
-          role,
-          revokedPermissions: role === "admin" && noAdminUsuarios ? ["administrar_usuarios"] : [],
+          roles,
+          revokedPermissions: roles.includes("admin") && noAdminUsuarios ? ["administrar_usuarios"] : [],
         }),
       });
       const data = await res.json();
@@ -68,6 +76,7 @@ export default function QuickAccessPanel({ onChanged }: { onChanged: () => void 
       setAddMsg(`${email} agregado — entra con la contraseña común.`);
       setEmail("");
       setName("");
+      setRoles([]);
       setNoAdminUsuarios(false);
       onChanged();
     } catch (err) {
@@ -118,7 +127,7 @@ export default function QuickAccessPanel({ onChanged }: { onChanged: () => void 
             onChange={(e) => {
               const at = e.target.value as AccountType;
               setAccountType(at);
-              setRole(ROLES_BY_ACCOUNT_TYPE[at][0]);
+              setRoles([]);
             }}
             style={inputStyle}
           >
@@ -127,20 +136,21 @@ export default function QuickAccessPanel({ onChanged }: { onChanged: () => void 
           </select>
         </div>
         <div>
-          <label style={{ fontSize: 12, color: "var(--text-2)" }}>Rol</label>
-          <select value={role} onChange={(e) => setRole(e.target.value as Role)} style={inputStyle}>
+          <label style={{ fontSize: 12, color: "var(--text-2)" }}>Módulos</label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 10px", marginTop: 4, maxWidth: 320 }}>
             {ROLES_BY_ACCOUNT_TYPE[accountType].map((r) => (
-              <option key={r} value={r}>
+              <label key={r} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12.5 }}>
+                <input type="checkbox" checked={roles.includes(r)} onChange={(e) => toggleRole(r, e.target.checked)} />
                 {ROLE_LABELS[r]}
-              </option>
+              </label>
             ))}
-          </select>
+          </div>
         </div>
         <button type="submit" disabled={addSaving} className="btn-primary" style={{ height: 34 }}>
           {addSaving ? "Agregando..." : "+ Agregar acceso"}
         </button>
       </form>
-      {role === "admin" && (
+      {roles.includes("admin") && (
         <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "var(--text-2)", marginTop: 10 }}>
           <input type="checkbox" checked={noAdminUsuarios} onChange={(e) => setNoAdminUsuarios(e.target.checked)} />
           Acceso a Label, pero sin poder administrar usuarios

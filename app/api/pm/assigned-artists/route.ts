@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   if (!user?.email) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  if (user.role === "project_manager") {
+  if (user.roles.includes("project_manager")) {
     const assignments = await listAssignmentsForPm(user.email);
     return NextResponse.json({ artists: assignments.map((a) => a.artistName) });
   }

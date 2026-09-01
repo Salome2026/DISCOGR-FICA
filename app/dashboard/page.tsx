@@ -403,7 +403,7 @@ function DashboardInner() {
             <span className="nav-pill active">Dashboard</span>
             <Link href="/catalogo" className="nav-pill">Catálogo</Link>
             <Link href="/nuevo" className="nav-pill">+ Nuevo acuerdo</Link>
-            <Link href="/admin/usuarios" className="nav-pill">Usuarios</Link>
+            <Link href="/admin/usuarios" className="nav-pill">Usuarios y permisos</Link>
             <Link href="/admin/artistas" className="nav-pill">Artistas</Link>
             <Link href="/panel/playlists" className="nav-pill">Playlists</Link>
             <Link href="/cuenta" className="nav-pill">Mi cuenta</Link>

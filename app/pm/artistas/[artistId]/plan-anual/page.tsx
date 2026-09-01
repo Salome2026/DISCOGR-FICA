@@ -231,8 +231,8 @@ function VersionHistoryModal({ artistId, onClose }: { artistId: string; onClose:
 
 function PlanAnualInner({ artistId }: { artistId: string }) {
   const { data: session } = useSession();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  const isManagement = role === "management";
+  const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
+  const isManagement = roles.includes("management");
 
   const [plan, setPlan] = useState<Plan | undefined>(undefined);
   const [launches, setLaunches] = useState<Launch[]>([]);

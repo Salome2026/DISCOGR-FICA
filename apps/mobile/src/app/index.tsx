@@ -8,7 +8,7 @@ import { GlassCard } from "@/components/glass-card";
 
 const ROLE_LABEL: Record<string, string> = {
   admin: "Label",
-  project_manager: "Project Managers",
+  project_manager: "Project Manager",
   legal: "Legales",
   editorial: "Publishing",
   management: "Management",
@@ -30,16 +30,20 @@ const MODULES: { key: string; label: string; route: string; check: (u: SessionUs
   { key: "legal", label: "Legales", route: "/legal", check: (u) => hasPermission(u, "ver_legal") },
   { key: "management", label: "Management", route: "/management", check: (u) => hasPermission(u, "ver_management") },
   { key: "publishing", label: "Publishing", route: "/publishing", check: (u) => hasPermission(u, "ver_publishing") },
-  { key: "pm", label: "PM", route: "/pm", check: (u) => u.role === "admin" || u.role === "project_manager" },
+  { key: "pm", label: "PM", route: "/pm", check: (u) => u.roles.includes("admin") || u.roles.includes("project_manager") },
   { key: "playlists", label: "Playlists", route: "/playlists", check: (u) => hasPermission(u, "ver_playlists") },
-  { key: "dashboard", label: "Label (Dashboard)", route: "/dashboard", check: (u) => u.role === "admin" },
+  { key: "dashboard", label: "Label (Dashboard)", route: "/dashboard", check: (u) => u.roles.includes("admin") },
 ];
 
 export default function HomeScreen() {
   const { user, logout } = useAuth();
   if (!user) return null;
 
-  const roleLabel = ROLE_LABEL[user.role] ?? user.role;
+  // Multi-module accounts show every enabled role's label, joined — the
+  // module button list right below already doubles as the module picker
+  // (it always showed one tile per accessible module), so no separate
+  // "choose a module" screen is needed on mobile.
+  const roleLabel = user.roles.map((r) => ROLE_LABEL[r] ?? r).join(" · ");
   const availableModules = MODULES.filter((m) => m.check(user));
 
   return (
@@ -49,7 +53,7 @@ export default function HomeScreen() {
       <Text style={styles.email}>{user.email}</Text>
 
       <GlassCard style={styles.card}>
-        <Text style={styles.cardLabel}>Rol</Text>
+        <Text style={styles.cardLabel}>Módulos</Text>
         <Text style={styles.cardValue}>{roleLabel}</Text>
       </GlassCard>
 

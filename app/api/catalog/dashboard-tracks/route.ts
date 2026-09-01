@@ -14,7 +14,7 @@ import { ensureFonogramasSheetSchema } from "@/lib/db/fonogramasSheet";
 // to sheet rows.
 export async function GET(req: NextRequest) {
   const user = await getSessionUser(req);
-  if (!user?.email || user.role !== "admin") {
+  if (!user?.email || !user.roles?.includes("admin")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

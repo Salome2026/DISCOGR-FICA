@@ -31,7 +31,7 @@ const STYLES = `
   .acc-mandatory-banner { background: var(--warn-bg, rgba(230,160,40,0.12)); border: 1px solid var(--warn-ink, #e6a028); color: var(--warn-ink, #e6a028); border-radius: 10px; padding: 12px 14px; font-size: 12.5px; line-height: 1.5; margin-bottom: 1.25rem; }
 `;
 
-type Me = { authenticated: boolean; email?: string; name?: string; role?: string; totpEnabled?: boolean };
+type Me = { authenticated: boolean; email?: string; name?: string; roles?: string[]; totpEnabled?: boolean };
 
 export default function CuentaPage() {
   const router = useRouter();
@@ -66,7 +66,7 @@ export default function CuentaPage() {
           </button>
         </div>
 
-        {me.role === "admin" && !me.totpEnabled && (
+        {me.roles?.includes("admin") && !me.totpEnabled && (
           <div className="acc-mandatory-banner">
             Las cuentas admin necesitan verificación en dos pasos activada — activala para poder seguir usando el resto del panel.
           </div>

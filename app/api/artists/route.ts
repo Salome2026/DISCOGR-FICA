@@ -5,7 +5,7 @@ import { SELLOS } from "@/lib/sellos";
 
 async function requireAdmin(req: NextRequest): Promise<string | null> {
   const user = await getSessionUser(req);
-  if (!user?.email || user.role !== "admin") return null;
+  if (!user?.email || !user.roles?.includes("admin")) return null;
   return user.email;
 }
 

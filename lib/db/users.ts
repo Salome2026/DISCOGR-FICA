@@ -50,6 +50,15 @@ export function ensureUsersSchema(): Promise<void> {
       // module's shell — self-service (any user can set their own) or set
       // for someone else by an admin.
       await sql`ALTER TABLE app_users ADD COLUMN IF NOT EXISTS photo_url TEXT`;
+      // Multi-module accounts: a user can hold several roles at once under one
+      // email/password (e.g. project_manager + tourmanager). `role` (above) is
+      // frozen going forward — kept only so the NOT NULL constraint is trivial
+      // to satisfy and as a human-readable "created with" breadcrumb; nothing
+      // reads it for authorization anymore. `roles` is the real source of
+      // truth. Backfill is idempotent so it's safe to leave running on every
+      // cold start — it's a no-op after the first successful run.
+      await sql`ALTER TABLE app_users ADD COLUMN IF NOT EXISTS roles TEXT[] NOT NULL DEFAULT '{}'`;
+      await sql`UPDATE app_users SET roles = ARRAY[role]::text[] WHERE roles = '{}'`;
       await sql`
         CREATE TABLE IF NOT EXISTS pm_artist_assignments (
           id BIGSERIAL PRIMARY KEY,
@@ -94,7 +103,7 @@ export type AppUser = {
   email: string;
   name: string;
   account_type: AccountType;
-  role: Role;
+  roles: Role[];
   extra_permissions: Permission[];
   revoked_permissions: Permission[];
   active: boolean;
@@ -203,7 +212,7 @@ function toAppUser(row: Record<string, unknown>): AppUser {
     email: row.email as string,
     name: row.name as string,
     account_type: row.account_type as AccountType,
-    role: row.role as Role,
+    roles: (row.roles as Role[]) ?? [],
     extra_permissions: (row.extra_permissions as Permission[]) ?? [],
     revoked_permissions: (row.revoked_permissions as Permission[]) ?? [],
     active: row.active as boolean,
@@ -219,15 +228,17 @@ export async function createUser(input: {
   name: string;
   password: string;
   accountType: AccountType;
-  role: Role;
+  roles: Role[];
   createdBy: string;
 }) {
+  if (input.roles.length === 0) throw new Error("Debés seleccionar al menos un módulo.");
   await ensureUsersSchema();
   const email = normalizeEmail(input.email);
   const hash = await bcrypt.hash(input.password, 10);
+  const rolesLit = pgArrayLiteral(input.roles);
   await sql`
-    INSERT INTO app_users (email, name, password_hash, uses_shared_password, account_type, role, created_by)
-    VALUES (${email}, ${input.name}, ${hash}, false, ${input.accountType}, ${input.role}, ${input.createdBy})
+    INSERT INTO app_users (email, name, password_hash, uses_shared_password, account_type, role, roles, created_by)
+    VALUES (${email}, ${input.name}, ${hash}, false, ${input.accountType}, ${input.roles[0]}, ${rolesLit}::text[], ${input.createdBy})
   `;
   await logActivity(input.createdBy, "user_created", email);
 }
@@ -238,18 +249,20 @@ export async function createUserWithSharedPassword(input: {
   email: string;
   name: string;
   accountType: AccountType;
-  role: Role;
+  roles: Role[];
   revokedPermissions?: Permission[];
   createdBy: string;
 }) {
+  if (input.roles.length === 0) throw new Error("Debés seleccionar al menos un módulo.");
   await ensureUsersSchema();
   const email = normalizeEmail(input.email);
   const revokedLit = pgArrayLiteral(input.revokedPermissions ?? []);
+  const rolesLit = pgArrayLiteral(input.roles);
   await sql`
-    INSERT INTO app_users (email, name, password_hash, uses_shared_password, account_type, role, revoked_permissions, created_by)
-    VALUES (${email}, ${input.name}, NULL, true, ${input.accountType}, ${input.role}, ${revokedLit}::text[], ${input.createdBy})
+    INSERT INTO app_users (email, name, password_hash, uses_shared_password, account_type, role, roles, revoked_permissions, created_by)
+    VALUES (${email}, ${input.name}, NULL, true, ${input.accountType}, ${input.roles[0]}, ${rolesLit}::text[], ${revokedLit}::text[], ${input.createdBy})
     ON CONFLICT (email) DO UPDATE SET
-      uses_shared_password = true, role = ${input.role}, account_type = ${input.accountType},
+      uses_shared_password = true, role = ${input.roles[0]}, roles = ${rolesLit}::text[], account_type = ${input.accountType},
       revoked_permissions = ${revokedLit}::text[], active = true
   `;
   await logActivity(input.createdBy, "user_quick_added", email);
@@ -266,7 +279,7 @@ export async function listUsers(): Promise<AppUser[]> {
 // (that stays admin-only via listUsers()).
 export async function listUsersByRole(role: Role): Promise<AppUser[]> {
   await ensureUsersSchema();
-  const { rows } = await sql`SELECT * FROM app_users WHERE role = ${role} AND active = true ORDER BY name ASC`;
+  const { rows } = await sql`SELECT * FROM app_users WHERE ${role} = ANY(roles) AND active = true ORDER BY name ASC`;
   return rows.map(toAppUser);
 }
 
@@ -274,9 +287,55 @@ function pgArrayLiteral(items: string[]): string {
   return `{${items.map((i) => `"${i.replace(/"/g, '\\"')}"`).join(",")}}`;
 }
 
-export async function updateUserRole(
+// Multi-module account management: add/remove one module (role) at a time —
+// deliberately not a "set the whole roles array" action. Each toggle in the
+// admin UI fires one of these immediately (same pattern as
+// activate/deactivate/force-logout on this same screen), so there's no stale
+// "desired state" snapshot that could clobber a concurrent edit the way a
+// full-array diff could.
+export async function addRole(email: string, role: Role, actorEmail: string): Promise<void> {
+  await ensureUsersSchema();
+  const normalized = normalizeEmail(email);
+  const before = await getUserByEmail(normalized);
+  await sql`
+    UPDATE app_users
+    SET roles = CASE WHEN ${role} = ANY(roles) THEN roles ELSE array_append(roles, ${role}) END
+    WHERE lower(email) = ${normalized}
+  `;
+  const after = await getUserByEmail(normalized);
+  await recordAudit({
+    actorEmail,
+    action: "module_added",
+    entityType: "user",
+    entityId: normalized,
+    detail: normalized,
+    before: before ? { roles: before.roles } : undefined,
+    after: { roles: after?.roles ?? [] },
+  });
+}
+
+export async function removeRole(email: string, role: Role, actorEmail: string): Promise<void> {
+  await ensureUsersSchema();
+  const normalized = normalizeEmail(email);
+  const before = await getUserByEmail(normalized);
+  if (!before || !before.roles.includes(role)) return;
+  if (before.roles.length === 1) {
+    throw new Error("No se puede quitar el último módulo habilitado.");
+  }
+  await sql`UPDATE app_users SET roles = array_remove(roles, ${role}) WHERE lower(email) = ${normalized}`;
+  await recordAudit({
+    actorEmail,
+    action: "module_removed",
+    entityType: "user",
+    entityId: normalized,
+    detail: normalized,
+    before: { roles: before.roles },
+    after: { roles: before.roles.filter((r) => r !== role) },
+  });
+}
+
+export async function setPermissionOverrides(
   email: string,
-  role: Role,
   extraPermissions: Permission[],
   revokedPermissions: Permission[],
   actorEmail: string
@@ -288,19 +347,18 @@ export async function updateUserRole(
   const revokedLit = pgArrayLiteral(revokedPermissions);
   await sql`
     UPDATE app_users
-    SET role = ${role},
-        extra_permissions = ${extraLit}::text[],
+    SET extra_permissions = ${extraLit}::text[],
         revoked_permissions = ${revokedLit}::text[]
     WHERE lower(email) = ${normalized}
   `;
   await recordAudit({
     actorEmail,
-    action: "role_updated",
+    action: "permission_overrides_updated",
     entityType: "user",
     entityId: normalized,
     detail: normalized,
-    before: before ? { role: before.role, extraPermissions: before.extra_permissions, revokedPermissions: before.revoked_permissions } : undefined,
-    after: { role, extraPermissions, revokedPermissions },
+    before: before ? { extraPermissions: before.extra_permissions, revokedPermissions: before.revoked_permissions } : undefined,
+    after: { extraPermissions, revokedPermissions },
   });
 }
 

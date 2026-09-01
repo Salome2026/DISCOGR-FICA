@@ -6,7 +6,7 @@ export type AppUser = {
   email: string;
   name: string;
   account_type: AccountType;
-  role: Role;
+  roles: Role[];
   extra_permissions: Permission[];
   revoked_permissions: Permission[];
   active: boolean;

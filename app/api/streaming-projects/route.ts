@@ -8,13 +8,13 @@ import {
 
 export async function GET(req: NextRequest) {
   const user = await getSessionUser(req);
-  if (!user?.email || !user.role) {
+  if (!user?.email || !user.roles?.length) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   const { searchParams } = new URL(req.url);
   const all = searchParams.get("all") === "1";
-  if (all && user.role !== "admin") {
+  if (all && !user.roles?.includes("admin")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const user = await getSessionUser(req);
   const email = user?.email;
-  if (!email || user?.role !== "admin") {
+  if (!email || !user?.roles?.includes("admin")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

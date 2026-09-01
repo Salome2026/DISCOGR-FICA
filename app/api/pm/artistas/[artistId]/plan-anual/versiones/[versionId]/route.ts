@@ -5,7 +5,7 @@ import { getVersion } from "@/lib/db/pmAnnualPlan";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ artistId: string; versionId: string }> }) {
   const user = await getSessionUser(req);
-  if (!user?.email || !user.role) {
+  if (!user?.email || !user.roles?.length) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const { artistId, versionId } = await params;

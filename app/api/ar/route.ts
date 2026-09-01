@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   if (!user || !hasPermission(user, "ver_ar")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  const opportunities = await listOpportunitiesFor(user.email, user.role ?? "");
+  const opportunities = await listOpportunitiesFor(user.email, user.roles);
   return NextResponse.json({ opportunities });
 }
 

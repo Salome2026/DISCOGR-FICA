@@ -155,21 +155,32 @@ export const ROLE_LABELS: Record<Role, string> = {
   invitado: "Invitado",
 };
 
+// A single account can hold several roles at once (multi-module accounts) —
+// `roles` is always an array, empty meaning "no access" (equivalent to the
+// old `role: null`). Every permission/home lookup below unions or maps over
+// this array instead of doing a single-role lookup.
 export type SessionUser = {
   email: string;
-  role: Role | null;
+  roles: Role[];
   extraPermissions?: Permission[];
   revokedPermissions?: Permission[];
 };
 
 export function hasPermission(user: SessionUser | null | undefined, perm: Permission): boolean {
-  if (!user || !user.role) return false;
+  if (!user || !user.roles?.length) return false;
   if (user.revokedPermissions?.includes(perm)) return false;
   if (user.extraPermissions?.includes(perm)) return true;
-  return ROLE_PERMISSIONS[user.role]?.includes(perm) ?? false;
+  return user.roles.some((r) => ROLE_PERMISSIONS[r]?.includes(perm));
 }
 
-export function homeFor(role: Role | null): string {
-  if (!role) return "/acceso-denegado";
+export function homeFor(role: Role): string {
   return ROLE_HOME[role] ?? "/acceso-denegado";
+}
+
+export type ModuleOption = { role: Role; label: string; home: string };
+
+// One entry per enabled role — the source both the post-login module picker
+// (app/page.tsx) and the admin "Módulos" column build on.
+export function resolveModules(roles: Role[]): ModuleOption[] {
+  return roles.map((role) => ({ role, label: ROLE_LABELS[role], home: ROLE_HOME[role] }));
 }

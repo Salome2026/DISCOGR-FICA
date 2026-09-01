@@ -4,8 +4,8 @@ import { syncFonogramasSheet } from "@/lib/fonogramasSheetSync";
 
 export async function POST(_req: NextRequest) {
   const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (role !== "admin") {
+  const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
+  if (!roles.includes("admin")) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   try {

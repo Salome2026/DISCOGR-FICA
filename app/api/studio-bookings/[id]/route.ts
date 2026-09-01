@@ -8,12 +8,12 @@ import { getBooking, updateBooking, cancelBooking, STUDIOS, SHIFTS } from "@/lib
 // ownership check (canPmAccessArtist) here once every PM has real
 // assignments.
 function canManageBooking(user: SessionUser): boolean {
-  return !!user.role && ["project_manager", "management", "admin"].includes(user.role);
+  return user.roles.some((r) => ["project_manager", "management", "admin"].includes(r));
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await getSessionUser(req);
-  if (!user?.email || !user.role) {
+  if (!user?.email || !user.roles?.length) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const { id } = await params;
@@ -43,7 +43,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await getSessionUser(req);
-  if (!user?.email || !user.role) {
+  if (!user?.email || !user.roles?.length) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const { id } = await params;

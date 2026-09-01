@@ -9,7 +9,7 @@ import { listAllArtists } from "@/lib/db/artists";
 // the release-creation restriction) is untouched.
 export async function GET(req: NextRequest) {
   const user = await getSessionUser(req);
-  if (!user?.role || !["project_manager", "management", "admin"].includes(user.role)) {
+  if (!user?.roles?.length || !user.roles.some((r) => ["project_manager", "management", "admin"].includes(r))) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const artists = await listAllArtists();

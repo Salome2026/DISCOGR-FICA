@@ -118,11 +118,11 @@ export async function isArtistAssignedToPm(pmEmail: string, artistName: string):
 }
 
 export async function canPmAccessArtist(
-  user: { email: string; role: string | null },
+  user: { email: string; roles: string[] },
   artistId: string
 ): Promise<boolean> {
-  if (user.role === "admin") return true;
-  if (user.role !== "project_manager") return false;
+  if (user.roles.includes("admin")) return true;
+  if (!user.roles.includes("project_manager")) return false;
   const assignment = await getAssignment(artistId);
   return assignment?.pmEmail === user.email;
 }
@@ -132,11 +132,11 @@ export async function canPmAccessArtist(
 // download the PDF for meetings), or admin.
 export async function canViewAnnualPlan(user: SessionUser, artistId: string): Promise<boolean> {
   if (hasPermission(user, "ver_management")) return true;
-  return canPmAccessArtist({ email: user.email, role: user.role }, artistId);
+  return canPmAccessArtist({ email: user.email, roles: user.roles }, artistId);
 }
 
 // Reuses the platform's generic audit log rather than a bespoke history
-// table — same pattern already proven for updateUserRole()/assignToPm().
+// table — same pattern already proven for addRole()/removeRole()/assignToPm().
 export async function getAssignmentHistory(artistId: string): Promise<AuditEntry[]> {
   return getAuditLog({ entityType: "pm_roster_assignment", entityId: artistId });
 }

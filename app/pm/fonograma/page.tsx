@@ -47,7 +47,8 @@ function PMFonogramaInner() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [overridingId, setOverridingId] = useState<number | null>(null);
 
-  const role = (session?.user as { role?: string } | undefined)?.role;
+  const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
+  const isAdmin = roles.includes("admin");
   const email = session?.user?.email;
   // Esta página ya está restringida a admin/project_manager (RequireRole
   // arriba) y ambos roles tienen el permiso crear_split_editorial — no hace
@@ -101,12 +102,15 @@ function PMFonogramaInner() {
 
   useEffect(() => {
     loadReleases();
-    if (role === "project_manager") {
+    if (roles.includes("project_manager")) {
       fetch("/api/pm/assigned-artists")
         .then((r) => r.json())
         .then((d) => setAssignedArtists(d.artists ?? []));
     }
-  }, [role, loadReleases]);
+    // roles.join(",") (not `roles` itself) as the dependency — the `?? []`
+    // fallback creates a new array reference every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roles.join(","), loadReleases]);
 
   return (
     <div className="dash-root bg-atmosphere">
@@ -160,10 +164,10 @@ function PMFonogramaInner() {
         <div className="topbar">
           <div>
             <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "-.02em" }}>
-              {role === "admin" ? "Todos los lanzamientos" : "Mis lanzamientos"}
+              {isAdmin ? "Todos los lanzamientos" : "Mis lanzamientos"}
             </h1>
             <p style={{ fontSize: 12.5, color: "var(--text-3)", margin: "4px 0 0" }}>
-              {session?.user?.email} · {role === "admin" ? "Administrador" : "Project Manager"}
+              {session?.user?.email} · {isAdmin ? "Administrador" : "Project Manager"}
             </p>
           </div>
         </div>
@@ -193,7 +197,7 @@ function PMFonogramaInner() {
                         {r.group_tipo === "ep" ? "EP" : "Álbum"} · {r.group_nombre}
                       </>
                     )}
-                    {role === "admin" && <><br />Cargado por {r.created_by}</>}
+                    {isAdmin && <><br />Cargado por {r.created_by}</>}
                   </div>
                 </div>
 
@@ -246,7 +250,7 @@ function PMFonogramaInner() {
                   </div>
                 </div>
 
-                {(role === "admin" || r.created_by === email) && (
+                {(isAdmin || r.created_by === email) && (
                   <div className="pmx-fono-footer">
                     <button
                       onClick={() => handleDelete(r)}
@@ -272,10 +276,10 @@ function PMFonogramaInner() {
         )}
       </div>
 
-      {showForm && role && (
+      {showForm && roles.length > 0 && (
         <NuevoLanzamientoForm
-          role={role as "admin" | "project_manager"}
-          assignedArtists={role === "admin" ? null : assignedArtists}
+          role={isAdmin ? "admin" : "project_manager"}
+          assignedArtists={isAdmin ? null : assignedArtists}
           onClose={() => {
             setShowForm(false);
             loadReleases();

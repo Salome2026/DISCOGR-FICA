@@ -10,7 +10,7 @@ type AppUser = {
   email: string;
   name: string;
   account_type: AccountType;
-  role: Role;
+  roles: Role[];
   active: boolean;
   last_login: string | null;
   extra_permissions: Permission[];
@@ -29,6 +29,7 @@ function AdminUsuariosInner() {
   const [users, setUsers] = useState<AppUser[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [editingModulesFor, setEditingModulesFor] = useState<AppUser | null>(null);
 
   function load() {
     fetch("/api/admin/users")
@@ -57,12 +58,14 @@ function AdminUsuariosInner() {
     load();
   }
 
-  async function changeRole(u: AppUser, role: Role) {
-    await fetch(`/api/admin/users/${encodeURIComponent(u.email)}`, {
+  async function toggleModule(u: AppUser, role: Role, checked: boolean) {
+    const res = await fetch(`/api/admin/users/${encodeURIComponent(u.email)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "set_role", role, extraPermissions: [], revokedPermissions: [] }),
+      body: JSON.stringify({ action: checked ? "add_role" : "remove_role", role }),
     });
+    const data = await res.json();
+    if (data.error) alert(data.error);
     load();
   }
 
@@ -73,7 +76,7 @@ function AdminUsuariosInner() {
     await fetch(`/api/admin/users/${encodeURIComponent(u.email)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action: "set_role", role: u.role, extraPermissions: u.extra_permissions, revokedPermissions }),
+      body: JSON.stringify({ action: "set_permission_overrides", extraPermissions: u.extra_permissions, revokedPermissions }),
     });
     load();
   }
@@ -115,10 +118,10 @@ function AdminUsuariosInner() {
       `}</style>
       <div className="inner">
         <div className="crumb">
-          <Link href="/dashboard">Dashboard</Link> › Usuarios
+          <Link href="/dashboard">Dashboard</Link> › Usuarios y permisos
         </div>
         <div className="topbar">
-          <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "-.02em" }}>Usuarios</h1>
+          <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "-.02em" }}>Usuarios y permisos</h1>
           <button className="btn-primary" onClick={() => setShowCreate(true)}>
             + Nuevo usuario
           </button>
@@ -142,7 +145,7 @@ function AdminUsuariosInner() {
                   <th>Nombre</th>
                   <th>Email</th>
                   <th>Tipo</th>
-                  <th>Rol</th>
+                  <th>Módulos</th>
                   <th>Sin administrar usuarios</th>
                   <th>Último acceso</th>
                   <th>Estado</th>
@@ -156,18 +159,19 @@ function AdminUsuariosInner() {
                     <td>{u.email}</td>
                     <td>{u.account_type}</td>
                     <td>
-                      <select value={u.role} onChange={(e) => changeRole(u, e.target.value as Role)}>
-                        {(u.account_type === "empresa" ? ROLES_BY_ACCOUNT_TYPE.empresa : ROLES_BY_ACCOUNT_TYPE.artista).map(
-                          (r) => (
-                            <option key={r} value={r}>
-                              {ROLE_LABELS[r]}
-                            </option>
-                          )
-                        )}
-                      </select>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, alignItems: "center" }}>
+                        {u.roles.map((r) => (
+                          <span key={r} className="pill" style={{ background: "var(--glass-bg)", border: "1px solid var(--line-soft)", color: "var(--text-2)" }}>
+                            {ROLE_LABELS[r]}
+                          </span>
+                        ))}
+                        <button className="btn-ghost" onClick={() => setEditingModulesFor(u)}>
+                          Editar módulos
+                        </button>
+                      </div>
                     </td>
                     <td>
-                      {u.role === "admin" && (
+                      {u.roles.includes("admin") && (
                         <input
                           type="checkbox"
                           checked={u.revoked_permissions.includes("administrar_usuarios")}
@@ -215,6 +219,56 @@ function AdminUsuariosInner() {
           }}
         />
       )}
+
+      {editingModulesFor && (
+        <EditModulesModal
+          user={users?.find((u) => u.email === editingModulesFor.email) ?? editingModulesFor}
+          onClose={() => setEditingModulesFor(null)}
+          onToggle={toggleModule}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditModulesModal({
+  user,
+  onClose,
+  onToggle,
+}: {
+  user: AppUser;
+  onClose: () => void;
+  onToggle: (u: AppUser, role: Role, checked: boolean) => Promise<void>;
+}) {
+  const availableRoles = ROLES_BY_ACCOUNT_TYPE[user.account_type];
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem" }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: "var(--glass-bg-strong)", backdropFilter: "blur(40px) saturate(1.7)", WebkitBackdropFilter: "blur(40px) saturate(1.7)", color: "var(--text-1)", borderRadius: 16, border: "1px solid var(--glass-border)", boxShadow: "var(--shadow-glass-lg)", width: "100%", maxWidth: 380, padding: "1.5rem", display: "flex", flexDirection: "column", gap: 12 }}
+      >
+        <div style={{ fontSize: 17, fontWeight: 600 }}>Módulos de {user.name}</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {availableRoles.map((r) => (
+            <label key={r} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5 }}>
+              <input
+                type="checkbox"
+                checked={user.roles.includes(r)}
+                onChange={(e) => onToggle(user, r, e.target.checked)}
+              />
+              {ROLE_LABELS[r]}
+            </label>
+          ))}
+        </div>
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <button type="button" onClick={onClose} style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 16px", color: "var(--text-2)", cursor: "pointer", fontSize: 13 }}>
+            Cerrar
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -224,21 +278,29 @@ function CreateUserForm({ onClose, onCreated }: { onClose: () => void; onCreated
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [accountType, setAccountType] = useState<AccountType>("empresa");
-  const [role, setRole] = useState<Role>("project_manager");
+  const [roles, setRoles] = useState<Role[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   const availableRoles = ROLES_BY_ACCOUNT_TYPE[accountType];
 
+  function toggleRole(r: Role, checked: boolean) {
+    setRoles((prev) => (checked ? [...prev, r] : prev.filter((x) => x !== r)));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (roles.length === 0) {
+      setError("Seleccioná al menos un módulo.");
+      return;
+    }
     setSaving(true);
     try {
       const res = await fetch("/api/admin/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, name, password, accountType, role }),
+        body: JSON.stringify({ email, name, password, accountType, roles }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "No se pudo crear.");
@@ -270,7 +332,7 @@ function CreateUserForm({ onClose, onCreated }: { onClose: () => void; onCreated
             onChange={(e) => {
               const at = e.target.value as AccountType;
               setAccountType(at);
-              setRole(ROLES_BY_ACCOUNT_TYPE[at][0]);
+              setRoles([]);
             }}
             style={inputStyle}
           >
@@ -278,14 +340,15 @@ function CreateUserForm({ onClose, onCreated }: { onClose: () => void; onCreated
             <option value="artista">Artista</option>
           </select>
         </Field>
-        <Field label="Rol">
-          <select value={role} onChange={(e) => setRole(e.target.value as Role)} style={inputStyle}>
+        <Field label="Módulos">
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 4 }}>
             {availableRoles.map((r) => (
-              <option key={r} value={r}>
+              <label key={r} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13.5 }}>
+                <input type="checkbox" checked={roles.includes(r)} onChange={(e) => toggleRole(r, e.target.checked)} />
                 {ROLE_LABELS[r]}
-              </option>
+              </label>
             ))}
-          </select>
+          </div>
         </Field>
         {error && <div style={{ color: "var(--crit-ink)", fontSize: 12.5 }}>{error}</div>}
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>

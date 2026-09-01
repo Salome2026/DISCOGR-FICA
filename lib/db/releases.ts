@@ -230,12 +230,12 @@ export async function listAllReleases() {
   return rows;
 }
 
-export async function listReleasesFor(email: string, role: string) {
+export async function listReleasesFor(email: string, roles: string[]) {
   await ensureReleasesSchema();
   // Legal and Editorial have no releases of their own — they need the same
   // full calendar as Label Management to know what's coming up, same live
   // data, same rule as admin's "see everything" branch below.
-  if (role === "admin" || role === "legal" || role === "editorial" || role === "management") {
+  if (["admin","legal","editorial","management"].some((r) => roles.includes(r))) {
     return listAllReleases();
   }
   const { rows } = await sql`
@@ -270,11 +270,11 @@ export async function listReleasesForArtist(artistName: string) {
 // pendientes necesita columnas extra (de dos tablas más) que esas pantallas
 // no piden, así que vive en su propia función en vez de arriesgar romper algo
 // que ya funciona.
-export async function listReleasesForBoard(email: string, role: string) {
+export async function listReleasesForBoard(email: string, roles: string[]) {
   await ensureReleasesSchema();
   await ensureLegalReleaseRequestsSchema();
   await ensureEditorialSplitsSchema();
-  const roleFilter = role === "admin" || role === "legal" || role === "editorial" || role === "management";
+  const roleFilter = ["admin","legal","editorial","management"].some((r) => roles.includes(r));
   const { rows } = roleFilter
     ? await sql`
         SELECT r.*, g.tipo AS group_tipo, g.nombre AS group_nombre,

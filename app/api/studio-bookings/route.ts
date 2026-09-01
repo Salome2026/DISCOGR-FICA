@@ -2,13 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 import { listBookingsForRange, createBooking, STUDIOS, SHIFTS } from "@/lib/db/pmStudioBookings";
 
-function canReadCalendar(role: string | null): boolean {
-  return role === "project_manager" || role === "management" || role === "admin";
+function canReadCalendar(roles: string[]): boolean {
+  return ["project_manager", "management", "admin"].some((r) => roles.includes(r));
 }
 
 export async function GET(req: NextRequest) {
   const user = await getSessionUser(req);
-  if (!user?.email || !canReadCalendar(user.role)) {
+  if (!user?.email || !canReadCalendar(user.roles)) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const { searchParams } = new URL(req.url);
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const user = await getSessionUser(req);
-  if (!user?.email || !user.role) {
+  if (!user?.email || !user.roles?.length) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
   // from scheduling real sessions. Revert to the ownership check here once
   // every PM has real assignments (mirrors the same rollout caution as the
   // release-creation restriction in app/api/pm/releases/route.ts).
-  if (!["project_manager", "management", "admin"].includes(user.role)) {
+  if (!user.roles.some((r) => ["project_manager", "management", "admin"].includes(r))) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

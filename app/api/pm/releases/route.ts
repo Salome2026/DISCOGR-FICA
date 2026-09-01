@@ -26,19 +26,19 @@ function normalizeHora(hora: unknown): string {
 // Accepts either the web cookie session or a mobile Bearer token.
 export async function GET(req: NextRequest) {
   const user = await getSessionUser(req);
-  if (!user?.email || !user.role) {
+  if (!user?.email || !user.roles?.length) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  const releases = await listReleasesFor(user.email, user.role);
+  const releases = await listReleasesFor(user.email, user.roles);
   return NextResponse.json({ releases });
 }
 
-async function checkArtistAssignment(role: string, email: string, artist: string) {
-  if (role === "artista" || role === "representante") {
+async function checkArtistAssignment(roles: string[], email: string, artist: string) {
+  if (roles.includes("artista") || roles.includes("representante")) {
     const assigned = await getAssignedArtists(email);
     return assigned.map((a) => a.toLowerCase()).includes(String(artist).toLowerCase());
   }
-  if (role === "project_manager") {
+  if (roles.includes("project_manager")) {
     return isArtistAssignedToPm(email, artist);
   }
   return true;
@@ -62,9 +62,9 @@ function buildParticipants(mainArtist: string, colaboradores: string | null): st
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
+  const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
   const email = session?.user?.email;
-  if (!email || role === "sin_acceso" || !role) {
+  if (!email || roles.length === 0) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
@@ -85,14 +85,14 @@ export async function POST(req: NextRequest) {
   }
 
   if (tipo === "ep" || tipo === "album") {
-    return handleGroupedCreate(body, tipo, role, email, sello ?? null, streamingProject);
+    return handleGroupedCreate(body, tipo, roles, email, sello ?? null, streamingProject);
   }
-  return handleSingleCreate(body, role, email, sello ?? null, streamingProject);
+  return handleSingleCreate(body, roles, email, sello ?? null, streamingProject);
 }
 
 async function handleSingleCreate(
   body: Record<string, unknown>,
-  role: string,
+  roles: string[],
   email: string,
   sello: string | null,
   streamingProject: string | null
@@ -119,7 +119,7 @@ async function handleSingleCreate(
   if (fecha && Number.isNaN(Date.parse(fecha))) {
     return NextResponse.json({ error: "Fecha inválida." }, { status: 400 });
   }
-  if (!(await checkArtistAssignment(role, email, artist))) {
+  if (!(await checkArtistAssignment(roles, email, artist))) {
     return NextResponse.json({ error: "No tenés este artista asignado." }, { status: 403 });
   }
 
@@ -217,7 +217,7 @@ type TrackInput = {
 async function handleGroupedCreate(
   body: Record<string, unknown>,
   tipo: "ep" | "album",
-  role: string,
+  roles: string[],
   email: string,
   sello: string | null,
   streamingProject: string | null
@@ -246,7 +246,7 @@ async function handleGroupedCreate(
       { status: 400 }
     );
   }
-  if (!(await checkArtistAssignment(role, email, artist))) {
+  if (!(await checkArtistAssignment(roles, email, artist))) {
     return NextResponse.json({ error: "No tenés este artista asignado." }, { status: 403 });
   }
 

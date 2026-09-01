@@ -25,7 +25,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Asignación no encontrada." }, { status: 404 });
   }
   const isOwner = assignment.pmEmail === user.email;
-  const isOverseer = user.role === "admin" || user.role === "ar";
+  const isOverseer = user.roles.includes("admin") || user.roles.includes("ar");
   if (!isOwner && !isOverseer) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }

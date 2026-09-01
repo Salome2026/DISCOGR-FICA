@@ -1,26 +1,29 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { homeFor } from "@/lib/permissions";
+import { resolveModules } from "@/lib/permissions";
 import type { Role } from "@/lib/permissions";
 import { getUserPhotoUrl } from "@/lib/db/users";
 
 export async function GET() {
   const session = await auth();
   const user = session?.user as
-    | { email?: string; name?: string; role?: Role | null; accountType?: string; invalid?: boolean; totpEnabled?: boolean }
+    | { email?: string; name?: string; roles?: Role[]; accountType?: string; invalid?: boolean; totpEnabled?: boolean }
     | undefined;
-  if (!user?.email || !user.role || user.invalid) {
+  const roles = user?.roles ?? [];
+  if (!user?.email || roles.length === 0 || user.invalid) {
     return NextResponse.json({ authenticated: false, home: "/" });
   }
   const photoUrl = await getUserPhotoUrl(user.email);
+  const modules = resolveModules(roles);
   return NextResponse.json({
     authenticated: true,
     email: user.email,
     name: user.name,
-    role: user.role,
+    roles,
     accountType: user.accountType,
     totpEnabled: user.totpEnabled ?? false,
     photoUrl,
-    home: homeFor(user.role),
+    modules,
+    home: modules.length === 1 ? modules[0].home : null,
   });
 }

@@ -6,7 +6,7 @@ import { searchArtists } from "@/lib/db/artists";
 // so nobody has to leave the platform to go find an artist.
 export async function GET(req: NextRequest) {
   const user = await getSessionUser(req);
-  if (!user?.email || !user.role) {
+  if (!user?.email || !user.roles?.length) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

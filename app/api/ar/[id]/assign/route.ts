@@ -22,7 +22,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 // *by* one.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await getSessionUser(req);
-  if (!user || (user.role !== "admin" && user.role !== "ar")) {
+  if (!user || (!user.roles.includes("admin") && !user.roles.includes("ar"))) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
   const { id } = await params;

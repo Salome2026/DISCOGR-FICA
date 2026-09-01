@@ -31,8 +31,8 @@ function sanitizeFilename(s: string): string {
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  if (!session?.user?.email || role === "sin_acceso" || !role) {
+  const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
+  if (!session?.user?.email || roles.length === 0) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 

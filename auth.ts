@@ -66,10 +66,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const user = await getUserByEmail(token.email as string);
         const knownVersion = token.sessionVersion as number | undefined;
         if (!user || !user.active || (knownVersion != null && knownVersion !== user.session_version)) {
-          token.role = null;
+          token.roles = [];
           token.invalid = true;
         } else {
-          token.role = user.role;
+          token.roles = user.roles;
           token.accountType = user.account_type;
           token.extraPermissions = user.extra_permissions;
           token.revokedPermissions = user.revoked_permissions;
@@ -87,7 +87,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         Object.assign(session.user, {
-          role: token.role ?? null,
+          roles: token.roles ?? [],
           accountType: token.accountType ?? null,
           extraPermissions: token.extraPermissions ?? [],
           revokedPermissions: token.revokedPermissions ?? [],

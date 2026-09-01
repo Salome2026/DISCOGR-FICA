@@ -22,7 +22,7 @@ export function getAuthToken(): Promise<string | null> {
   return SecureStore.getItemAsync(TOKEN_KEY);
 }
 
-export type MobileUser = { email: string; name: string; role: Role; accountType: AccountType };
+export type MobileUser = { email: string; name: string; roles: Role[]; accountType: AccountType };
 
 export async function loginRequest(email: string, password: string): Promise<MobileUser> {
   const res = await apiFetch<{ token: string; user: MobileUser }>("/api/auth/mobile-login", {

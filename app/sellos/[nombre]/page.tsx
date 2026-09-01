@@ -16,8 +16,8 @@ export default function SelloPage({ params }: { params: Promise<{ nombre: string
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-  const canSeeProyectos = role === "admin" || role === "project_manager";
+  const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
+  const canSeeProyectos = roles.includes("admin") || roles.includes("project_manager");
   // Sellos with an A&R "Proyectos" pre-production pipeline alongside their
   // Lanzamientos — same module/data model for every sello here, just scoped
   // by the `sello` field (see lib/db/rizzvorProjects.ts).

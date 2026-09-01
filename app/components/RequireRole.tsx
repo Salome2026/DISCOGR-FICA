@@ -14,20 +14,25 @@ export default function RequireRole({
 }) {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const role = (session?.user as { role?: Role | null } | undefined)?.role ?? null;
+  const roles = (session?.user as { roles?: Role[] } | undefined)?.roles ?? [];
   const invalid = (session?.user as { invalid?: boolean } | undefined)?.invalid;
   // admin always passes every single-purpose module's gate — same principle
   // ROLE_PERMISSIONS.admin=ALL already gives it everywhere hasPermission()
   // is used, this closes the gap for the modules that instead gate on an
   // exact role match (Legal/Editorial/Management/Booking/Tour Manager/...).
-  const authorized = status === "authenticated" && !invalid && !!role && (role === "admin" || allow.includes(role));
+  // A multi-module account only needs ONE of its roles to match `allow`.
+  const authorized =
+    status === "authenticated" && !invalid && roles.length > 0 && (roles.includes("admin") || allow.some((r) => roles.includes(r)));
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/");
-    if (status === "authenticated" && (invalid || !role)) {
+    if (status === "authenticated" && (invalid || roles.length === 0)) {
       signOut({ redirect: false }).then(() => router.replace("/"));
     }
-  }, [status, invalid, role, router]);
+    // roles.length (not `roles` itself) as the dependency — the `?? []`
+    // fallback creates a new array reference every render, which would
+    // re-fire this effect on every render if `roles` were used directly.
+  }, [status, invalid, roles.length, router]);
 
   // The landing page's scroll position (deep into the scroll-hero) otherwise
   // carries over into whatever page router.push lands on after login, so
@@ -39,10 +44,10 @@ export default function RequireRole({
   if (status === "loading" || status === "unauthenticated") {
     return <FullPageMessage text="Cargando..." />;
   }
-  if (invalid || !role) {
+  if (invalid || roles.length === 0) {
     return <FullPageMessage text="Redirigiendo..." />;
   }
-  if (role !== "admin" && !allow.includes(role)) {
+  if (!roles.includes("admin") && !allow.some((r) => roles.includes(r))) {
     return <AccesoDenegado />;
   }
   return <>{children}</>;

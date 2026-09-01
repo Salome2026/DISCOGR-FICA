@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   if (!release) {
     return NextResponse.json({ error: "No encontramos ese fonograma." }, { status: 404 });
   }
-  if (user.role !== "admin" && release.created_by !== user.email) {
+  if (!user.roles.includes("admin") && release.created_by !== user.email) {
     return NextResponse.json({ error: "No tenés acceso a este fonograma." }, { status: 403 });
   }
   if (!Array.isArray(participants) || !participants.every(isValidParticipant) || participants.length === 0) {

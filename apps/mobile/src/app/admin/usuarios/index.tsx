@@ -1,26 +1,33 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, TextInput, Pressable, ScrollView, Modal, FlatList, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { router, Stack } from "expo-router";
-import { listAppUsers, createAppUser, setUserRole, setUserActive, resetUserPassword, forceUserLogout } from "@discografica/shared/api/admin";
-import { ROLES_BY_ACCOUNT_TYPE, type Role, type AccountType } from "@discografica/shared/permissions";
+import { listAppUsers, createAppUser, addUserRole, removeUserRole, setUserActive, resetUserPassword, forceUserLogout } from "@discografica/shared/api/admin";
+import { ROLES_BY_ACCOUNT_TYPE, ROLE_LABELS, type Role, type AccountType } from "@discografica/shared/permissions";
 import type { AppUser } from "@discografica/shared/types/admin";
 
-function RolePickerModal({ accountType, current, onSelect, onClose }: { accountType: AccountType; current: Role; onSelect: (r: Role) => void; onClose: () => void }) {
+// Multi-module accounts: each row toggles one module on/off — mirrors the
+// web admin's checkbox modal, not a single-pick selector.
+function ModulesPickerModal({ accountType, current, onToggle, onClose }: { accountType: AccountType; current: Role[]; onToggle: (r: Role, checked: boolean) => void; onClose: () => void }) {
   const options = ROLES_BY_ACCOUNT_TYPE[accountType];
   return (
     <Modal visible animationType="slide" transparent onRequestClose={onClose}>
       <View style={styles.overlay}>
         <View style={styles.sheet}>
-          <Text style={styles.sheetTitle}>Elegir rol</Text>
+          <Text style={styles.sheetTitle}>Módulos</Text>
           <FlatList
             data={options}
             keyExtractor={(r) => r}
             contentContainerStyle={{ paddingBottom: 30 }}
-            renderItem={({ item }) => (
-              <Pressable onPress={() => onSelect(item)} style={[styles.roleOption, item === current && styles.roleOptionActive]}>
-                <Text style={[styles.roleOptionText, item === current && styles.roleOptionTextActive]}>{item}</Text>
-              </Pressable>
-            )}
+            renderItem={({ item }) => {
+              const checked = current.includes(item);
+              return (
+                <Pressable onPress={() => onToggle(item, !checked)} style={[styles.roleOption, checked && styles.roleOptionActive]}>
+                  <Text style={[styles.roleOptionText, checked && styles.roleOptionTextActive]}>
+                    {checked ? "✓ " : ""}{ROLE_LABELS[item]}
+                  </Text>
+                </Pressable>
+              );
+            }}
           />
         </View>
       </View>
@@ -83,20 +90,24 @@ function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [accountType, setAccountType] = useState<AccountType>("empresa");
-  const [role, setRole] = useState<Role>(ROLES_BY_ACCOUNT_TYPE.empresa[0]);
-  const [pickingRole, setPickingRole] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [pickingRoles, setPickingRoles] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  function toggleRole(r: Role, checked: boolean) {
+    setRoles((prev) => (checked ? [...prev, r] : prev.filter((x) => x !== r)));
+  }
+
   async function submit() {
-    if (!email.trim() || !name.trim() || password.length < 8) {
-      setError("Completá nombre, email y una contraseña de al menos 8 caracteres.");
+    if (!email.trim() || !name.trim() || password.length < 8 || roles.length === 0) {
+      setError("Completá nombre, email, una contraseña de al menos 8 caracteres y al menos un módulo.");
       return;
     }
     setSaving(true);
     setError(null);
     try {
-      await createAppUser({ email: email.trim(), name: name.trim(), password, accountType, role });
+      await createAppUser({ email: email.trim(), name: name.trim(), password, accountType, roles });
       onCreated();
     } catch {
       setError("No se pudo crear el usuario.");
@@ -119,14 +130,16 @@ function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
           <Text style={styles.label}>Tipo de cuenta</Text>
           <View style={styles.chipRow}>
             {(["empresa", "artista"] as AccountType[]).map((at) => (
-              <Pressable key={at} onPress={() => { setAccountType(at); setRole(ROLES_BY_ACCOUNT_TYPE[at][0]); }} style={[styles.chip, accountType === at && styles.chipActive]}>
+              <Pressable key={at} onPress={() => { setAccountType(at); setRoles([]); }} style={[styles.chip, accountType === at && styles.chipActive]}>
                 <Text style={[styles.chipText, accountType === at && styles.chipTextActive]}>{at}</Text>
               </Pressable>
             ))}
           </View>
-          <Text style={styles.label}>Rol</Text>
-          <Pressable onPress={() => setPickingRole(true)} style={styles.input}>
-            <Text style={{ color: "#fff", fontSize: 14 }}>{role}</Text>
+          <Text style={styles.label}>Módulos</Text>
+          <Pressable onPress={() => setPickingRoles(true)} style={styles.input}>
+            <Text style={{ color: "#fff", fontSize: 14 }}>
+              {roles.length > 0 ? roles.map((r) => ROLE_LABELS[r]).join(", ") : "Elegir módulos"}
+            </Text>
           </Pressable>
 
           {error && <Text style={styles.error}>{error}</Text>}
@@ -138,8 +151,8 @@ function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
           </View>
         </ScrollView>
       </View>
-      {pickingRole && (
-        <RolePickerModal accountType={accountType} current={role} onSelect={(r) => { setRole(r); setPickingRole(false); }} onClose={() => setPickingRole(false)} />
+      {pickingRoles && (
+        <ModulesPickerModal accountType={accountType} current={roles} onToggle={toggleRole} onClose={() => setPickingRoles(false)} />
       )}
     </Modal>
   );
@@ -147,7 +160,7 @@ function CreateUserModal({ onClose, onCreated }: { onClose: () => void; onCreate
 
 export default function AdminUsuariosScreen() {
   const [users, setUsers] = useState<AppUser[] | null>(null);
-  const [pickingRoleFor, setPickingRoleFor] = useState<AppUser | null>(null);
+  const [pickingRolesFor, setPickingRolesFor] = useState<AppUser | null>(null);
   const [resettingFor, setResettingFor] = useState<AppUser | null>(null);
   const [showCreate, setShowCreate] = useState(false);
 
@@ -169,9 +182,9 @@ export default function AdminUsuariosScreen() {
     ]);
   }
 
-  async function changeRole(u: AppUser, role: Role) {
-    await setUserRole(u.email, role).catch(() => {});
-    setPickingRoleFor(null);
+  async function toggleModule(u: AppUser, role: Role, checked: boolean) {
+    const res = await (checked ? addUserRole(u.email, role) : removeUserRole(u.email, role)).catch(() => ({ error: "No se pudo actualizar." }));
+    if (res?.error) Alert.alert("Error", res.error);
     load();
   }
 
@@ -204,9 +217,9 @@ export default function AdminUsuariosScreen() {
                 </View>
               </View>
 
-              <Pressable onPress={() => setPickingRoleFor(u)} style={styles.roleButton}>
-                <Text style={styles.roleButtonLabel}>Rol</Text>
-                <Text style={styles.roleButtonValue}>{u.role}</Text>
+              <Pressable onPress={() => setPickingRolesFor(u)} style={styles.roleButton}>
+                <Text style={styles.roleButtonLabel}>Módulos</Text>
+                <Text style={styles.roleButtonValue}>{u.roles.map((r) => ROLE_LABELS[r]).join(", ")}</Text>
               </Pressable>
 
               <Text style={styles.lastLogin}>
@@ -229,12 +242,12 @@ export default function AdminUsuariosScreen() {
         </View>
       )}
 
-      {pickingRoleFor && (
-        <RolePickerModal
-          accountType={pickingRoleFor.account_type}
-          current={pickingRoleFor.role}
-          onSelect={(r) => changeRole(pickingRoleFor, r)}
-          onClose={() => setPickingRoleFor(null)}
+      {pickingRolesFor && (
+        <ModulesPickerModal
+          accountType={pickingRolesFor.account_type}
+          current={(users?.find((u) => u.email === pickingRolesFor.email) ?? pickingRolesFor).roles}
+          onToggle={(r, checked) => toggleModule(pickingRolesFor, r, checked)}
+          onClose={() => setPickingRolesFor(null)}
         />
       )}
       {resettingFor && (

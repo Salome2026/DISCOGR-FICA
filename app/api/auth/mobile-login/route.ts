@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
   const token = await new SignJWT({
     email: user.email,
-    role: user.role,
+    roles: user.roles,
     extraPermissions: user.extra_permissions,
     revokedPermissions: user.revoked_permissions,
   })
@@ -48,6 +48,6 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     token,
-    user: { email: user.email, name: user.name, role: user.role, accountType: user.account_type },
+    user: { email: user.email, name: user.name, roles: user.roles, accountType: user.account_type },
   });
 }

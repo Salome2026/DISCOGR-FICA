@@ -24,10 +24,10 @@ export default function RequirePermission({
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/");
-    if (status === "authenticated" && (invalid || !user?.role)) {
+    if (status === "authenticated" && (invalid || !user?.roles?.length)) {
       signOut({ redirect: false }).then(() => router.replace("/"));
     }
-  }, [status, invalid, user?.role, router]);
+  }, [status, invalid, user?.roles?.length, router]);
 
   useEffect(() => {
     if (authorized) window.scrollTo(0, 0);
@@ -40,7 +40,7 @@ export default function RequirePermission({
       </div>
     );
   }
-  if (invalid || !user?.role) {
+  if (invalid || !user?.roles?.length) {
     return (
       <div className="bg-atmosphere" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text-3)", fontFamily: "var(--font-display)" }}>
         Redirigiendo...

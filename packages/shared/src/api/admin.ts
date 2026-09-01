@@ -8,7 +8,7 @@ export function listAppUsers(): Promise<{ users: AppUser[] }> {
   return apiFetch("/api/admin/users");
 }
 
-export function createAppUser(input: { email: string; name: string; password: string; accountType: AccountType; role: Role }): Promise<{ user: AppUser }> {
+export function createAppUser(input: { email: string; name: string; password: string; accountType: AccountType; roles: Role[] }): Promise<{ user: AppUser }> {
   return apiFetch("/api/admin/users", { method: "POST", body: JSON.stringify(input) });
 }
 
@@ -16,8 +16,12 @@ function patchUser(email: string, body: Record<string, unknown>): Promise<{ ok: 
   return apiFetch(`/api/admin/users/${encodeURIComponent(email)}`, { method: "PATCH", body: JSON.stringify(body) });
 }
 
-export function setUserRole(email: string, role: Role): Promise<{ ok: true }> {
-  return patchUser(email, { action: "set_role", role, extraPermissions: [], revokedPermissions: [] }) as Promise<{ ok: true }>;
+export function addUserRole(email: string, role: Role): Promise<{ ok: true; error?: string }> {
+  return patchUser(email, { action: "add_role", role });
+}
+
+export function removeUserRole(email: string, role: Role): Promise<{ ok: true; error?: string }> {
+  return patchUser(email, { action: "remove_role", role });
 }
 
 export function setUserActive(email: string, active: boolean): Promise<{ ok: true }> {

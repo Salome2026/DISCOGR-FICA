@@ -21,7 +21,7 @@ export default function PMLandingPage() {
           </Link>
           <Link href="/pm/split-editorial" className="pmx-big-btn">
             <h2>Split editorial</h2>
-            <p>Cargá quién cobra letra y música de una canción.</p>
+            <p>Cargá la división de % de autoría y composición de la obra.</p>
           </Link>
           <Link href="/pm/release" className="pmx-big-btn">
             <h2>Release</h2>

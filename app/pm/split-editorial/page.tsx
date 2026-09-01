@@ -612,7 +612,7 @@ function SplitEditorialForm() {
 export default function SplitEditorialPage() {
   return (
     <RequireRole allow={["admin", "project_manager"]}>
-      <PMShell title="Split editorial" subtitle="Cargá qué autores/compositores cobran letra y música de una canción." backHref="/pm">
+      <PMShell title="Split editorial" subtitle="Cargá la división de % de autoría y composición de la obra." backHref="/pm">
         <SplitEditorialForm />
       </PMShell>
     </RequireRole>

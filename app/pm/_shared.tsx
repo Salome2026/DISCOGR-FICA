@@ -20,10 +20,10 @@ export const PM_STYLES = `
   .pmx-sub { font-size:13px; color:var(--text-3); margin-top:4px; }
   .pmx-signout { background: var(--glass-bg); border:1px solid var(--glass-border); border-radius:8px; padding:8px 16px; color:var(--text-2); cursor:pointer; font-size:12.5px; backdrop-filter: blur(20px) saturate(1.7); -webkit-backdrop-filter: blur(20px) saturate(1.7); }
 
-  .pmx-topbar-right { display:flex; align-items:center; gap:14px; }
-  .pmx-profile-avatar { position:relative; width:44px; height:44px; border-radius:50%; cursor:pointer; flex-shrink:0; }
-  .pmx-profile-avatar img { width:44px; height:44px; border-radius:50%; object-fit:cover; display:block; border:2px solid var(--glass-border); }
-  .pmx-profile-avatar-fallback { width:44px; height:44px; border-radius:50%; background:var(--glass-bg); border:2px solid var(--glass-border); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--text-2); }
+  .pmx-header-left { display:flex; align-items:center; gap:18px; }
+  .pmx-profile-avatar { position:relative; width:72px; height:72px; border-radius:50%; cursor:pointer; flex-shrink:0; }
+  .pmx-profile-avatar img { width:72px; height:72px; border-radius:50%; object-fit:cover; display:block; border:2px solid var(--glass-border); }
+  .pmx-profile-avatar-fallback { width:72px; height:72px; border-radius:50%; background:var(--glass-bg); border:2px solid var(--glass-border); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:700; color:var(--text-2); }
   .pmx-profile-avatar:hover img, .pmx-profile-avatar:hover .pmx-profile-avatar-fallback { border-color:var(--accent); }
   .pmx-profile-avatar input[type="file"] { display:none; }
 
@@ -130,17 +130,7 @@ export function PMShell({
       <style>{PM_STYLES}</style>
       <div className={`pmx-inner ${homeMaxWidth ? "pmx-home" : ""}`}>
         <div className="pmx-topbar">
-          <div>
-            {backHref && (
-              <Link href={backHref} className="pmx-back">
-                ← Volver
-              </Link>
-            )}
-            <div className="pmx-kicker">Project Manager</div>
-            <h1 className="pmx-title">{title}</h1>
-            <div className="pmx-sub">{subtitle ?? session?.user?.email}</div>
-          </div>
-          <div className="pmx-topbar-right">
+          <div className="pmx-header-left">
             <label className="pmx-profile-avatar" title={uploading ? "Subiendo..." : "Cambiar foto de perfil"}>
               {photoUrl ? <img src={photoUrl} alt={name} /> : <div className="pmx-profile-avatar-fallback">{initials || "?"}</div>}
               <input
@@ -153,10 +143,20 @@ export function PMShell({
                 }}
               />
             </label>
-            <button className="pmx-signout" onClick={() => signOut({ callbackUrl: "/" })}>
-              Cerrar sesión
-            </button>
+            <div>
+              {backHref && (
+                <Link href={backHref} className="pmx-back">
+                  ← Volver
+                </Link>
+              )}
+              <div className="pmx-kicker">Project Manager</div>
+              <h1 className="pmx-title">{title}</h1>
+              <div className="pmx-sub">{subtitle ?? session?.user?.email}</div>
+            </div>
           </div>
+          <button className="pmx-signout" onClick={() => signOut({ callbackUrl: "/" })}>
+            Cerrar sesión
+          </button>
         </div>
         {children}
       </div>

@@ -24,6 +24,7 @@ function ResponseModal({ request, onClose, onSaved }: { request: MeetingRequest;
   const [scheduledTime, setScheduledTime] = useState(request.scheduledTime ?? "");
   const [notes, setNotes] = useState(request.managementNotes ?? "");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function save() {
     setSaving(true);
@@ -41,6 +42,17 @@ function ResponseModal({ request, onClose, onSaved }: { request: MeetingRequest;
       onSaved();
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function remove() {
+    if (!confirm(`¿Eliminar la solicitud de reunión de ${request.artistName}?`)) return;
+    setDeleting(true);
+    try {
+      await fetch(`/api/management/meeting-requests/${request.id}`, { method: "DELETE" });
+      onSaved();
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -72,13 +84,18 @@ function ResponseModal({ request, onClose, onSaved }: { request: MeetingRequest;
           <div style={{ fontSize: 12.5, color: "var(--text-2)" }}>Anotaciones</div>
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} style={{ width: "100%", minHeight: 70, background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "10px 12px", color: "var(--text-1)", fontSize: 13, marginTop: 4, fontFamily: "inherit", resize: "vertical" }} />
         </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
-          <button onClick={onClose} style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "9px 16px", color: "var(--text-2)", cursor: "pointer", fontSize: 13 }}>
-            Cancelar
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
+          <button onClick={remove} disabled={deleting} style={{ background: "transparent", border: "1px solid var(--crit-ink)", borderRadius: 8, padding: "9px 16px", color: "var(--crit-ink)", cursor: "pointer", fontSize: 13 }}>
+            {deleting ? "Eliminando..." : "Eliminar"}
           </button>
-          <button onClick={save} disabled={saving} style={{ background: "var(--accent-gradient)", border: "none", borderRadius: 8, padding: "9px 20px", color: "var(--accent-ink)", fontWeight: 700, cursor: "pointer", fontSize: 13.5 }}>
-            {saving ? "Guardando..." : "Guardar"}
-          </button>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={onClose} style={{ background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "9px 16px", color: "var(--text-2)", cursor: "pointer", fontSize: 13 }}>
+              Cancelar
+            </button>
+            <button onClick={save} disabled={saving} style={{ background: "var(--accent-gradient)", border: "none", borderRadius: 8, padding: "9px 20px", color: "var(--accent-ink)", fontWeight: 700, cursor: "pointer", fontSize: 13.5 }}>
+              {saving ? "Guardando..." : "Guardar"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

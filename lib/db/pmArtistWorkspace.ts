@@ -336,3 +336,8 @@ export async function updateMeetingRequest(
   `;
   return rowToMeetingRequest(rows[0]);
 }
+
+export async function deleteMeetingRequest(id: string): Promise<void> {
+  await ensurePmArtistWorkspaceSchema();
+  await sql`DELETE FROM pm_meeting_requests WHERE id = ${id}`;
+}

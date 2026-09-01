@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
+import { upload } from "@vercel/blob/client";
 
 export const PM_STYLES = `
   .pmx-root { font-family: var(--font-display); color: var(--text-1); min-height: 100vh; padding-bottom: 5rem; }
@@ -17,6 +19,13 @@ export const PM_STYLES = `
   .pmx-title { font-size:16px; font-weight:600; margin:0; color:var(--text-2); letter-spacing:-.01em; }
   .pmx-sub { font-size:13px; color:var(--text-3); margin-top:4px; }
   .pmx-signout { background: var(--glass-bg); border:1px solid var(--glass-border); border-radius:8px; padding:8px 16px; color:var(--text-2); cursor:pointer; font-size:12.5px; backdrop-filter: blur(20px) saturate(1.7); -webkit-backdrop-filter: blur(20px) saturate(1.7); }
+
+  .pmx-topbar-right { display:flex; align-items:center; gap:14px; }
+  .pmx-profile-avatar { position:relative; width:44px; height:44px; border-radius:50%; cursor:pointer; flex-shrink:0; }
+  .pmx-profile-avatar img { width:44px; height:44px; border-radius:50%; object-fit:cover; display:block; border:2px solid var(--glass-border); }
+  .pmx-profile-avatar-fallback { width:44px; height:44px; border-radius:50%; background:var(--glass-bg); border:2px solid var(--glass-border); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--text-2); }
+  .pmx-profile-avatar:hover img, .pmx-profile-avatar:hover .pmx-profile-avatar-fallback { border-color:var(--accent); }
+  .pmx-profile-avatar input[type="file"] { display:none; }
 
   .pmx-home-buttons { display:grid; grid-template-columns: repeat(4, 1fr); gap:1.25rem; }
   @media (max-width:900px) { .pmx-home-buttons { grid-template-columns: repeat(2, 1fr); } }
@@ -88,6 +97,34 @@ export function PMShell({
   children: React.ReactNode;
 }) {
   const { data: session } = useSession();
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  function loadPhoto() {
+    fetch("/api/me")
+      .then((r) => r.json())
+      .then((d) => setPhotoUrl(d.photoUrl ?? null));
+  }
+  useEffect(loadPhoto, []);
+
+  async function handlePhotoChange(file: File) {
+    setUploading(true);
+    try {
+      const blob = await upload(file.name, file, { access: "public", handleUploadUrl: "/api/me/photo" });
+      await fetch("/api/me/photo", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photoUrl: blob.url }),
+      });
+      setPhotoUrl(blob.url);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  const name = session?.user?.name ?? session?.user?.email ?? "";
+  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("");
+
   return (
     <div className="pmx-root bg-atmosphere">
       <style>{PM_STYLES}</style>
@@ -103,9 +140,23 @@ export function PMShell({
             <h1 className="pmx-title">{title}</h1>
             <div className="pmx-sub">{subtitle ?? session?.user?.email}</div>
           </div>
-          <button className="pmx-signout" onClick={() => signOut({ callbackUrl: "/" })}>
-            Cerrar sesión
-          </button>
+          <div className="pmx-topbar-right">
+            <label className="pmx-profile-avatar" title={uploading ? "Subiendo..." : "Cambiar foto de perfil"}>
+              {photoUrl ? <img src={photoUrl} alt={name} /> : <div className="pmx-profile-avatar-fallback">{initials || "?"}</div>}
+              <input
+                type="file"
+                accept="image/png,image/jpeg"
+                disabled={uploading}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) handlePhotoChange(f);
+                }}
+              />
+            </label>
+            <button className="pmx-signout" onClick={() => signOut({ callbackUrl: "/" })}>
+              Cerrar sesión
+            </button>
+          </div>
         </div>
         {children}
       </div>

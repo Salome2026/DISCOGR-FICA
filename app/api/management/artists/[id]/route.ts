@@ -12,17 +12,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { id } = await params;
   const body = await req.json();
-  const { name, photoUrl, chartPosition, estadoGeneral, genero } = body as {
+  const { name, photoUrl, chartPosition, estadoGeneral, genero, notas } = body as {
     name?: string;
     photoUrl?: string | null;
     chartPosition?: number | null;
     estadoGeneral?: string | null;
     genero?: string | null;
+    notas?: string | null;
   };
   if (!name) {
     return NextResponse.json({ error: "Falta el nombre del artista." }, { status: 400 });
   }
 
-  const artist = await updateArtistManagementFields(id, name, { photoUrl, chartPosition, estadoGeneral, genero }, user.email);
+  const artist = await updateArtistManagementFields(id, name, { photoUrl, chartPosition, estadoGeneral, genero, notas }, user.email);
   return NextResponse.json({ artist });
 }

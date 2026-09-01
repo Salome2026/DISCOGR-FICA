@@ -18,6 +18,7 @@ export type ManagementArtistRow = {
   chartPosition: number | null;
   estadoGeneral: string | null;
   genero: string | null;
+  notas: string | null;
   monthlyListeners: number | null;
   nextRelease: {
     titulo: string;
@@ -95,6 +96,7 @@ export async function getManagementArtistOverview(): Promise<ManagementArtistRow
       chartPosition: null,
       estadoGeneral: null,
       genero: null,
+      notas: null,
       updatedAt: null,
     });
   }
@@ -119,6 +121,7 @@ export async function getManagementArtistOverview(): Promise<ManagementArtistRow
         chartPosition: a.chartPosition,
         estadoGeneral: a.estadoGeneral,
         genero: a.genero,
+        notas: a.notas,
         monthlyListeners: listenersByName.get(key) ?? null,
         nextRelease: nextReleaseByName.get(key) ?? null,
       };

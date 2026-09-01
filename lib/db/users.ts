@@ -46,6 +46,10 @@ export function ensureUsersSchema(): Promise<void> {
       await sql`ALTER TABLE app_users ADD COLUMN IF NOT EXISTS totp_secret TEXT`;
       await sql`ALTER TABLE app_users ADD COLUMN IF NOT EXISTS totp_enabled BOOLEAN NOT NULL DEFAULT false`;
       await sql`ALTER TABLE app_users ADD COLUMN IF NOT EXISTS totp_backup_codes TEXT[] NOT NULL DEFAULT '{}'`;
+      // Corporate-style profile photo, shown as a circular avatar in each
+      // module's shell — self-service (any user can set their own) or set
+      // for someone else by an admin.
+      await sql`ALTER TABLE app_users ADD COLUMN IF NOT EXISTS photo_url TEXT`;
       await sql`
         CREATE TABLE IF NOT EXISTS pm_artist_assignments (
           id BIGSERIAL PRIMARY KEY,
@@ -482,6 +486,19 @@ export async function setAssignedArtists(email: string, artists: string[]) {
       ON CONFLICT DO NOTHING
     `;
   }
+}
+
+export async function getUserPhotoUrl(email: string): Promise<string | null> {
+  await ensureUsersSchema();
+  const normalized = normalizeEmail(email);
+  const { rows } = await sql`SELECT photo_url FROM app_users WHERE lower(email) = ${normalized}`;
+  return (rows[0]?.photo_url as string | null) ?? null;
+}
+
+export async function setUserPhotoUrl(email: string, photoUrl: string | null): Promise<void> {
+  await ensureUsersSchema();
+  const normalized = normalizeEmail(email);
+  await sql`UPDATE app_users SET photo_url = ${photoUrl} WHERE lower(email) = ${normalized}`;
 }
 
 // ---- 2FA (TOTP) ----

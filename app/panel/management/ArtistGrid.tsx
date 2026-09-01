@@ -13,6 +13,7 @@ type ManagementArtistRow = {
   chartPosition: number | null;
   estadoGeneral: string | null;
   genero: string | null;
+  notas: string | null;
   monthlyListeners: number | null;
   nextRelease: { titulo: string; fecha: string; hora: string | null; estado: string } | null;
 };
@@ -127,7 +128,7 @@ export default function ArtistGrid() {
         .mgrid-modal h2 { font-size: 18px; font-weight: 700; margin: 0; }
         .mgrid-field { display: flex; flex-direction: column; gap: 6px; }
         .mgrid-field label { font-size: 12px; color: var(--text-3); }
-        .mgrid-field select, .mgrid-field input { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 9px 11px; color: var(--text-1); font-size: 13.5px; font-family: inherit; }
+        .mgrid-field select, .mgrid-field input, .mgrid-field textarea { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 9px 11px; color: var(--text-1); font-size: 13.5px; font-family: inherit; resize: vertical; }
         .mgrid-modal-photo { display: flex; align-items: center; gap: 14px; }
         .mgrid-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 4px; }
         .mgrid-btn-primary { background: var(--accent-gradient); border: none; border-radius: 8px; padding: 9px 16px; color: var(--accent-ink); font-weight: 700; cursor: pointer; font-size: 13px; }
@@ -248,6 +249,7 @@ function EditArtistModal({
   const [otroGenero, setOtroGenero] = useState(() =>
     artist.genero && !GENEROS.includes(artist.genero) ? artist.genero : ""
   );
+  const [notas, setNotas] = useState(artist.notas ?? "");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -282,6 +284,7 @@ function EditArtistModal({
           photoUrl,
           estadoGeneral: estadoGeneral || null,
           genero: submittedGenero,
+          notas: notas.trim() || null,
         }),
       });
       const data = await res.json();
@@ -348,6 +351,16 @@ function EditArtistModal({
             />
           </div>
         )}
+
+        <div className="mgrid-field">
+          <label>Notas</label>
+          <textarea
+            value={notas}
+            onChange={(e) => setNotas(e.target.value)}
+            placeholder="Notas internas sobre este artista..."
+            rows={4}
+          />
+        </div>
 
         {error && <p style={{ color: "var(--crit-ink)", fontSize: 12.5 }}>{error}</p>}
 

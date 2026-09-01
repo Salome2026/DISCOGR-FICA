@@ -32,6 +32,7 @@ export function ensureArtistsSchema(): Promise<void> {
       await sql`ALTER TABLE artists ADD COLUMN IF NOT EXISTS chart_position INTEGER`;
       await sql`ALTER TABLE artists ADD COLUMN IF NOT EXISTS estado_general TEXT`;
       await sql`ALTER TABLE artists ADD COLUMN IF NOT EXISTS genero TEXT`;
+      await sql`ALTER TABLE artists ADD COLUMN IF NOT EXISTS notas TEXT`;
       await sql`CREATE INDEX IF NOT EXISTS artists_chart_position_idx ON artists (chart_position) WHERE chart_position IS NOT NULL`;
     })();
   }
@@ -52,6 +53,7 @@ export type Artist = {
   chartPosition: number | null;
   estadoGeneral: string | null;
   genero: string | null;
+  notas: string | null;
   updatedAt: string | null;
 };
 
@@ -93,6 +95,7 @@ function rowToArtist(r: Record<string, unknown>): Artist {
     chartPosition: (r.chart_position as number | null) ?? null,
     estadoGeneral: (r.estado_general as string | null) ?? null,
     genero: (r.genero as string | null) ?? null,
+    notas: (r.notas as string | null) ?? null,
     updatedAt: (r.updated_at as string | null) ?? null,
   };
 }
@@ -126,6 +129,7 @@ export async function listAllArtists(): Promise<Artist[]> {
       chartPosition: null,
       estadoGeneral: null,
       genero: null,
+      notas: null,
       updatedAt: null,
     }));
 
@@ -222,7 +226,7 @@ export async function upsertArtist(input: {
 export async function updateArtistManagementFields(
   id: string,
   name: string,
-  input: { photoUrl?: string | null; chartPosition?: number | null; estadoGeneral?: string | null; genero?: string | null },
+  input: { photoUrl?: string | null; chartPosition?: number | null; estadoGeneral?: string | null; genero?: string | null; notas?: string | null },
   actorEmail: string
 ): Promise<Artist> {
   await ensureArtistsSchema();
@@ -231,6 +235,7 @@ export async function updateArtistManagementFields(
   const chartPosition = input.chartPosition !== undefined ? input.chartPosition : current?.chartPosition ?? null;
   const estadoGeneral = input.estadoGeneral !== undefined ? input.estadoGeneral : current?.estadoGeneral ?? null;
   const genero = input.genero !== undefined ? input.genero : current?.genero ?? null;
+  const notas = input.notas !== undefined ? input.notas : current?.notas ?? null;
   // An artist with no row yet (curation-only fields have never been touched
   // for them) is often still "static roster only" — falling straight to
   // null here silently detached them from their label the first time anyone
@@ -239,13 +244,14 @@ export async function updateArtistManagementFields(
   // row exists.
   const sello = current?.sello ?? staticRosterIndex().find((a) => a.id === id)?.sello ?? null;
   const { rows } = await sql`
-    INSERT INTO artists (id, name, aliases, sello, photo_url, chart_position, estado_general, genero, updated_by, updated_at)
-    VALUES (${id}, ${name}, '[]'::jsonb, ${sello}, ${photoUrl}, ${chartPosition}, ${estadoGeneral}, ${genero}, ${actorEmail}, now())
+    INSERT INTO artists (id, name, aliases, sello, photo_url, chart_position, estado_general, genero, notas, updated_by, updated_at)
+    VALUES (${id}, ${name}, '[]'::jsonb, ${sello}, ${photoUrl}, ${chartPosition}, ${estadoGeneral}, ${genero}, ${notas}, ${actorEmail}, now())
     ON CONFLICT (id) DO UPDATE SET
       photo_url = EXCLUDED.photo_url,
       chart_position = EXCLUDED.chart_position,
       estado_general = EXCLUDED.estado_general,
       genero = EXCLUDED.genero,
+      notas = EXCLUDED.notas,
       updated_by = EXCLUDED.updated_by,
       updated_at = now()
     RETURNING *

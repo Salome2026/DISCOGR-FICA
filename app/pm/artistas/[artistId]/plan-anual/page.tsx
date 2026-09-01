@@ -290,10 +290,41 @@ function PlanAnualInner({ artistId }: { artistId: string }) {
       });
   }
 
+  // Background refresh (poll + tab-focus) only touches fields the CURRENT
+  // role can't edit — otherwise it was wiping out whatever the PM/Management
+  // had mid-typed in their own fields the moment 30s passed or they switched
+  // tabs and back, since it reset every field to the last *saved* value.
+  // Launches/actions/reviews are lists someone else adds to, always safe to
+  // refresh; header fields are split by who owns editing them.
+  function loadBackground() {
+    fetch(`/api/pm/artistas/${artistId}/plan-anual`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.error) return;
+        setPlan(d.plan);
+        setLaunches(d.launches ?? []);
+        setActions(d.actions ?? []);
+        setQuarterlyReviews(d.quarterlyReviews ?? []);
+        if (isManagement) {
+          setPeriodStart(d.plan?.periodStart?.slice(0, 10) ?? "");
+          setPeriodEnd(d.plan?.periodEnd?.slice(0, 10) ?? "");
+          setObjetivoGeneral(d.plan?.objetivoGeneral ?? "");
+          setObjetivosEspecificos(d.plan?.objetivosEspecificos ?? []);
+          setCantidadLanzamientos(d.plan?.cantidadLanzamientosProyectados?.toString() ?? "");
+          setMetasYResultados(d.plan?.metasYResultados ?? "");
+          setPresupuesto(d.plan?.presupuestoEstimado?.toString() ?? "");
+          setResumenEjecutivo(d.plan?.resumenEjecutivo ?? "");
+          setObservacionesPm(d.plan?.observacionesPm ?? "");
+        } else {
+          setObservacionesManagement(d.plan?.observacionesManagement ?? "");
+        }
+      });
+  }
+
   useEffect(() => {
     load();
-    const interval = setInterval(load, 30000);
-    const onVisible = () => { if (document.visibilityState === "visible") load(); };
+    const interval = setInterval(loadBackground, 30000);
+    const onVisible = () => { if (document.visibilityState === "visible") loadBackground(); };
     document.addEventListener("visibilitychange", onVisible);
     return () => {
       clearInterval(interval);

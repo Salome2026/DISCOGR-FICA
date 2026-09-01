@@ -7,6 +7,14 @@ import { syncSheetShows, type SheetShow } from "@/lib/db/booking";
 const SHEET_ID = "1qlGsPv06U0_W7jyxshLWGG4FwiJF7zYQE3kXQev3Ygk";
 const AGENDA_GID = "0";
 
+// A second, separate agenda some artists keep for themselves — same grid
+// shape as the main sheet (artist-rows by date-columns), but only G Sony's
+// rows are pulled from it. Candu Domínguez also has a block in this sheet,
+// but she's already covered by the main agenda above, so her rows here are
+// filtered out to avoid showing the same show twice in Booking.
+const GSONY_SHEET_ID = "16LiZw6aiZ8UxMbMSzNgb-Gqy3gp0tCvPXhQ9WxdKeTc";
+const GSONY_GID = "0";
+
 // The sheet spells some names inconsistently across rows (e.g. "gusty" vs
 // "Gusty" vs the artist's actual full name) — without this, the same person
 // shows up as separate-looking entries in the calendar, the agenda picker,
@@ -21,6 +29,7 @@ const ARTIST_ALIASES: Record<string, string> = {
   gusty: "Gusty DJ",
   lazerk: "Lazer K",
   "juana vincet": "Juana Vincent",
+  "g sony": "G Sony",
 };
 
 function canonicalArtistName(name: string): string {
@@ -195,9 +204,9 @@ function extractValor(text: string): string | null {
   return null;
 }
 
-async function fetchSheetCSV(params: string): Promise<string> {
+async function fetchSheetCSV(sheetId: string, params: string): Promise<string> {
   const res = await fetch(
-    `https://docs.google.com/spreadsheets/d/${SHEET_ID}/${params}`,
+    `https://docs.google.com/spreadsheets/d/${sheetId}/${params}`,
     { cache: "no-store" }
   );
   const text = await res.text();
@@ -208,7 +217,11 @@ async function fetchSheetCSV(params: string): Promise<string> {
 }
 
 function fetchAgendaCSV(): Promise<string> {
-  return fetchSheetCSV(`export?format=csv&gid=${AGENDA_GID}`);
+  return fetchSheetCSV(SHEET_ID, `export?format=csv&gid=${AGENDA_GID}`);
+}
+
+function fetchGSonySheetCSV(): Promise<string> {
+  return fetchSheetCSV(GSONY_SHEET_ID, `export?format=csv&gid=${GSONY_GID}`);
 }
 
 // The three Hist tabs aren't exposed as a stable gid the same way the first
@@ -216,7 +229,7 @@ function fetchAgendaCSV(): Promise<string> {
 // param takes the tab's display name directly instead, which works the same
 // way for a link-shared (not "published to web") spreadsheet.
 function fetchNamedSheetCSV(sheetName: string): Promise<string> {
-  return fetchSheetCSV(`gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`);
+  return fetchSheetCSV(SHEET_ID, `gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`);
 }
 
 let lastSyncAt = 0;
@@ -246,6 +259,13 @@ export async function syncAgendaFromSheet(): Promise<{ upserted: number; removed
     const csv = await fetchNamedSheetCSV(HIST_SHEET_NAMES[config.sheetTab]);
     cells.push(...parseGrid(parseCSV(csv), config));
   }
+
+  // Same artist-rows-by-date-columns shape as the main agenda tab. Only
+  // G Sony's rows are kept — Candu Domínguez also has a block in this sheet,
+  // but she's already synced from the main agenda above.
+  const gsonyCsv = await fetchGSonySheetCSV();
+  const gsonyCells = parseGrid(parseCSV(gsonyCsv), { sheetTab: "agenda-gsony", monthRowIdx: 0, dayRowIdx: 2, dataStartRow: 3 });
+  cells.push(...gsonyCells.filter((c) => c.artistName === "G Sony"));
 
   return syncSheetShows(cells);
 }

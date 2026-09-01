@@ -17,7 +17,10 @@ const styles = StyleSheet.create({
   page: { padding: "40 44 50", fontSize: 10.5, fontFamily: "Helvetica", color: INK, lineHeight: 1.4 },
   headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 },
   kicker: { fontSize: 9, color: TEAL, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 },
-  title: { fontSize: 22, fontFamily: "Helvetica-Bold", color: INK, marginBottom: 4 },
+  // marginBottom needs real room below a 22px bold title, not just 4px — a
+  // name with descenders (g, y, p, q, j) reaches low enough to visually
+  // collide with the subtitle line directly under it otherwise.
+  title: { fontSize: 22, lineHeight: 1.3, fontFamily: "Helvetica-Bold", color: INK, marginBottom: 10 },
   subtitle: { fontSize: 10.5, color: GRAY },
   photo: { width: 56, height: 56, borderRadius: 8, objectFit: "cover" },
   hRule: { height: 2, backgroundColor: TEAL, width: 40, marginBottom: 18 },

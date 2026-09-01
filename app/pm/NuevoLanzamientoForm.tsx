@@ -55,6 +55,7 @@ type TrackDraft = {
   colaboradores: string;
   productor: string;
   genero: string;
+  otroGenero: string;
   tipoObra: string;
   comentario: string;
   audioFile: File | null;
@@ -76,6 +77,7 @@ function emptyTrack(artistaPrincipal: string): TrackDraft {
     colaboradores: "",
     productor: "",
     genero: "",
+    otroGenero: "",
     tipoObra: "",
     comentario: "",
     audioFile: null,
@@ -133,6 +135,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
   const [featuring, setFeaturing] = useState("");
   const [featuringRoles, setFeaturingRoles] = useState<Record<string, "main" | "featuring">>({});
   const [genero, setGenero] = useState("");
+  const [otroGenero, setOtroGenero] = useState("");
   const [tipoObra, setTipoObra] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [portadaFile, setPortadaFile] = useState<File | null>(null);
@@ -447,7 +450,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
               .map((n) => n.trim())
               .filter((n) => n && featuringRoles[n] === "main")
               .join(", ") || null,
-            genero: genero || null,
+            genero: (genero === "Otro" ? otroGenero.trim() : genero) || null,
             tipoObra,
             audioUrl,
             portadaUrl,
@@ -506,7 +509,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
             artist: t.artistaPrincipal,
             colaboradores: t.colaboradores || null,
             productor: t.productor || null,
-            genero: t.genero || null,
+            genero: (t.genero === "Otro" ? t.otroGenero.trim() : t.genero) || null,
             tipoObra: t.tipoObra,
             comentario: t.comentario || null,
             audioUrl: uploaded[i].audioUrl,
@@ -1266,6 +1269,17 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
                 </div>
               </div>
             )}
+            {tipo === "single" && genero === "Otro" && (
+              <div>
+                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>¿Qué género es?</label>
+                <input
+                  value={otroGenero}
+                  onChange={(e) => setOtroGenero(e.target.value)}
+                  placeholder="Ej: Bachata, Corridos, R&B..."
+                  style={inputStyle}
+                />
+              </div>
+            )}
 
             <div>
               <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Estado del release</label>
@@ -1452,6 +1466,17 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
                                 </select>
                               </div>
                             </div>
+                            {t.genero === "Otro" && (
+                              <div>
+                                <label style={smallLabel}>¿Qué género es?</label>
+                                <input
+                                  value={t.otroGenero}
+                                  onChange={(e) => updateTrack(t.key, { otroGenero: e.target.value })}
+                                  placeholder="Ej: Bachata, Corridos, R&B..."
+                                  style={inputStyle}
+                                />
+                              </div>
+                            )}
                             <div>
                               <label style={smallLabel}>Audio (.wav) — estado: {t.audioFile ? "Cargado" : "Pendiente"}</label>
                               <input type="file" accept=".wav,audio/wav" onChange={(e) => handleTrackAudioChange(t.key, e)} style={missingStyle(!t.audioFile, fileInputStyle)} />

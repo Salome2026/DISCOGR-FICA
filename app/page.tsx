@@ -9,6 +9,20 @@ import VPOScrollHero from "./components/VPOScrollHero";
 type Card = "label" | "pm" | "legal" | "editorial" | "management" | "booking" | "tourmanager" | "ar" | null;
 type ModuleOption = { role: string; label: string; home: string };
 
+// Which module the pre-login card the user clicked corresponds to — lets a
+// multi-module account skip the module picker when the card they picked
+// already says which one they want, instead of asking again after login.
+const CARD_TO_ROLE: Record<Exclude<Card, null>, string> = {
+  label: "admin",
+  pm: "project_manager",
+  legal: "legal",
+  editorial: "editorial",
+  management: "management",
+  booking: "booking",
+  tourmanager: "tourmanager",
+  ar: "ar",
+};
+
 export default function Landing() {
   const router = useRouter();
   const [active, setActive] = useState<Card>(null);
@@ -79,12 +93,23 @@ export default function Landing() {
     // into, worst case is just being asked for the code again next time.
     fetch("/api/auth/trust-device", { method: "POST" }).catch(() => {});
     const me = await fetch("/api/me").then((r) => r.json());
-    if (me.modules?.length === 1) {
-      router.push(me.modules[0].home);
-    } else if (me.modules?.length > 1) {
-      setModules(me.modules);
-    } else {
+    const availableModules: ModuleOption[] = me.modules ?? [];
+    if (availableModules.length === 0) {
       router.push("/acceso-denegado");
+      return;
+    }
+    // The card picked before login already declares intent for a
+    // multi-module account — honor it and skip the picker. Only falls back
+    // to the picker when that card isn't one of this account's modules
+    // (or the account has just one module, which always goes direct).
+    const wantedRole = active ? CARD_TO_ROLE[active] : null;
+    const wantedModule = wantedRole ? availableModules.find((m) => m.role === wantedRole) : undefined;
+    if (wantedModule) {
+      router.push(wantedModule.home);
+    } else if (availableModules.length === 1) {
+      router.push(availableModules[0].home);
+    } else {
+      setModules(availableModules);
     }
   }
 

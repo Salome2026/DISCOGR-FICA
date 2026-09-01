@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 import { hasPermission } from "@/lib/permissions";
 import { listHojasGenericas, createHojaGenerica } from "@/lib/db/tourManagerGenericas";
-import { computeGenericShowRoutes } from "@/lib/tourManagerRoute";
 import type { HojaGenericaBody } from "@discografica/shared/types/tourManager";
 
 export async function GET(req: NextRequest) {
@@ -28,6 +27,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Agregá al menos un show." }, { status: 400 });
   }
 
+  // Dynamic import: kept out of GET's module graph — see
+  // app/api/tourmanager/route.ts for why (sharp's native binary).
+  const { computeGenericShowRoutes } = await import("@/lib/tourManagerRoute");
   const shows = await computeGenericShowRoutes(body.shows);
   const hoja = await createHojaGenerica({ ...body, shows, actorEmail: user.email });
   return NextResponse.json({ hoja });

@@ -17,14 +17,22 @@ const nextConfig: NextConfig = {
   // node_modules — outputFileTracingIncludes below forces those files into
   // every function that transitively imports lib/staticMap.ts or
   // lib/imageResize.ts (the only two files that import sharp).
+  //
+  // The include keys are route globs matched against the route path itself
+  // (picomatch) — "/api/tourmanager/**/*" requires at least one segment
+  // *after* tourmanager, so it never matched the base "/api/tourmanager"
+  // route (only "/api/tourmanager/genericas" and deeper). Same story for
+  // "/api/playlists/ingest/**/*" vs. the base "/api/playlists/ingest" route,
+  // which is its *only* route. Trailing "/**" (no extra "/*") matches both
+  // the base path and everything under it.
   serverExternalPackages: ["docusign-esign", "sharp"],
   outputFileTracingIncludes: {
-    "/api/tourmanager/**/*": [
+    "/api/tourmanager/**": [
       "./node_modules/sharp/**/*",
       "./node_modules/@img/sharp-linux-x64/**/*",
       "./node_modules/@img/sharp-libvips-linux-x64/**/*",
     ],
-    "/api/playlists/ingest/**/*": [
+    "/api/playlists/ingest/**": [
       "./node_modules/sharp/**/*",
       "./node_modules/@img/sharp-linux-x64/**/*",
       "./node_modules/@img/sharp-libvips-linux-x64/**/*",

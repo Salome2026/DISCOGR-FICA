@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 import { hasPermission } from "@/lib/permissions";
 import { getHoja, updateHoja, deleteHoja, ESTADOS_HOJA, type HojaInput } from "@/lib/db/tourManager";
-import { computeRutaCompleta } from "@/lib/tourManagerRoute";
 
 type HojaBody = Omit<HojaInput, "actorEmail" | "estado"> & { estado?: string };
 
@@ -36,6 +35,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // transient OSRM hiccup on this save should never wipe out a route that
   // computed fine on a previous one (updateHoja preserves it whenever this
   // key is left out of the payload entirely).
+  // Dynamic import: kept out of GET/DELETE's module graph — see
+  // app/api/tourmanager/route.ts for why (sharp's native binary).
+  const { computeRutaCompleta } = await import("@/lib/tourManagerRoute");
   const rutaCompletaGeojson = await computeRutaCompleta(body);
 
   const hoja = await updateHoja(id, {

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 import { hasPermission } from "@/lib/permissions";
 import { getHojaGenerica, updateHojaGenerica, archiveHojaGenerica } from "@/lib/db/tourManagerGenericas";
-import { computeGenericShowRoutes } from "@/lib/tourManagerRoute";
 import type { HojaGenericaBody } from "@discografica/shared/types/tourManager";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -29,6 +28,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!Array.isArray(body.shows) || body.shows.length === 0) {
     return NextResponse.json({ error: "Agregá al menos un show." }, { status: 400 });
   }
+  // Dynamic import: kept out of GET/DELETE's module graph — see
+  // app/api/tourmanager/route.ts for why (sharp's native binary).
+  const { computeGenericShowRoutes } = await import("@/lib/tourManagerRoute");
   const shows = await computeGenericShowRoutes(body.shows);
   const hoja = await updateHojaGenerica(id, { ...body, shows, actorEmail: user.email });
   if (!hoja) return NextResponse.json({ error: "No encontrada." }, { status: 404 });

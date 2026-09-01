@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 import { hasPermission } from "@/lib/permissions";
 import { listHojas, createHoja, ESTADOS_HOJA, type HojaInput } from "@/lib/db/tourManager";
-import { computeRutaCompleta } from "@/lib/tourManagerRoute";
 
 type HojaBody = Omit<HojaInput, "actorEmail" | "estado"> & { estado?: string };
 
@@ -31,6 +30,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Estado inválido." }, { status: 400 });
   }
 
+  // Dynamic import: this module pulls in lib/staticMap.ts, which loads
+  // sharp's native binary — kept out of GET's module graph so listing
+  // hojas never pays that cost (or fails if sharp isn't loadable).
+  const { computeRutaCompleta } = await import("@/lib/tourManagerRoute");
   const rutaCompletaGeojson = await computeRutaCompleta(body);
 
   const hoja = await createHoja({

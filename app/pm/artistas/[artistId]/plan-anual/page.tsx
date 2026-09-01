@@ -23,7 +23,34 @@ const ACTION_TYPES = [
   { slug: "personalizada", label: "Agregar una acción personalizada" },
 ];
 const ACTION_STATUSES = ["Pendiente", "En proceso", "Realizada", "Cancelada"];
-const QUARTERS = ["Q1", "Q2", "Q3", "Q4"];
+
+// Which "2026-Q3" style quarters actually fall inside the plan's own period —
+// a plan doesn't have to align with a calendar year (e.g. 01/09/2026 to
+// 01/09/2027 spans 2026-Q3 through 2027-Q3), so this can't be a fixed Q1-Q4
+// of whatever year happens to be "now". Falls back to the current year's 4
+// quarters only when the period hasn't been set yet.
+function quartersInRange(periodStart: string, periodEnd: string): string[] {
+  if (!periodStart || !periodEnd) {
+    const y = new Date().getFullYear();
+    return [1, 2, 3, 4].map((q) => `${y}-Q${q}`);
+  }
+  const start = new Date(periodStart);
+  const end = new Date(periodEnd);
+  let year = start.getFullYear();
+  let quarter = Math.ceil((start.getMonth() + 1) / 3);
+  const endYear = end.getFullYear();
+  const endQuarter = Math.ceil((end.getMonth() + 1) / 3);
+  const quarters: string[] = [];
+  while (year < endYear || (year === endYear && quarter <= endQuarter)) {
+    quarters.push(`${year}-Q${quarter}`);
+    quarter++;
+    if (quarter > 4) {
+      quarter = 1;
+      year++;
+    }
+  }
+  return quarters;
+}
 const STATUS_TONE: Record<string, string> = {
   Pendiente: "var(--warn-ink)", "En proceso": "var(--accent)", Realizada: "var(--good-ink)", Cancelada: "var(--crit-ink)",
 };
@@ -257,6 +284,7 @@ function PlanAnualInner({ artistId }: { artistId: string }) {
   const [observacionesPm, setObservacionesPm] = useState("");
   const [observacionesManagement, setObservacionesManagement] = useState("");
   const [savingHeader, setSavingHeader] = useState(false);
+  const [saveHeaderMsg, setSaveHeaderMsg] = useState<{ type: "ok" | "error"; text: string } | null>(null);
 
   const [newLaunchTitulo, setNewLaunchTitulo] = useState("");
   const [newLaunchFecha, setNewLaunchFecha] = useState("");
@@ -335,8 +363,9 @@ function PlanAnualInner({ artistId }: { artistId: string }) {
 
   async function saveHeader() {
     setSavingHeader(true);
+    setSaveHeaderMsg(null);
     try {
-      await fetch(`/api/pm/artistas/${artistId}/plan-anual`, {
+      const res = await fetch(`/api/pm/artistas/${artistId}/plan-anual`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -347,19 +376,38 @@ function PlanAnualInner({ artistId }: { artistId: string }) {
           resumenEjecutivo: resumenEjecutivo || null, observacionesPm: observacionesPm || null,
         }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setSaveHeaderMsg({ type: "error", text: data?.error || "No se pudo guardar el plan." });
+        return;
+      }
       load();
+      setSaveHeaderMsg({ type: "ok", text: "Plan guardado." });
+    } catch {
+      setSaveHeaderMsg({ type: "error", text: "No se pudo guardar el plan. Revisá tu conexión." });
     } finally {
       setSavingHeader(false);
     }
   }
 
   async function saveManagementNotes() {
-    await fetch(`/api/management/artistas/${artistId}/plan-anual/observaciones`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ observacionesManagement: observacionesManagement || null }),
-    });
-    load();
+    setSaveHeaderMsg(null);
+    try {
+      const res = await fetch(`/api/management/artistas/${artistId}/plan-anual/observaciones`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ observacionesManagement: observacionesManagement || null }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setSaveHeaderMsg({ type: "error", text: data?.error || "No se pudieron guardar las observaciones." });
+        return;
+      }
+      load();
+      setSaveHeaderMsg({ type: "ok", text: "Observaciones guardadas." });
+    } catch {
+      setSaveHeaderMsg({ type: "error", text: "No se pudieron guardar las observaciones. Revisá tu conexión." });
+    }
   }
 
   async function addLaunch() {
@@ -399,7 +447,10 @@ function PlanAnualInner({ artistId }: { artistId: string }) {
     }
   }
 
-  const quartersData = useMemo(() => QUARTERS.map((q) => quarterlyReviews.find((r) => r.quarter.endsWith(q)) ?? { quarter: `${new Date().getFullYear()}-${q}`, fecha: null, observacionesPm: null, observacionesManagement: null }), [quarterlyReviews]);
+  const quartersData = useMemo(
+    () => quartersInRange(periodStart, periodEnd).map((quarter) => quarterlyReviews.find((r) => r.quarter === quarter) ?? { quarter, fecha: null, observacionesPm: null, observacionesManagement: null }),
+    [quarterlyReviews, periodStart, periodEnd]
+  );
 
   if (plan === undefined && !error) {
     return <PMShell title="Cargando..." backHref={`/pm/artistas/${artistId}`}><p style={{ color: "var(--text-3)" }}>Cargando...</p></PMShell>;
@@ -474,11 +525,18 @@ function PlanAnualInner({ artistId }: { artistId: string }) {
             <textarea value={observacionesManagement} onChange={(e) => setObservacionesManagement(e.target.value)} disabled={!isManagement} style={textareaStyle} placeholder={isManagement ? "" : "Management todavía no dejó observaciones."} />
           </div>
         </div>
-        {!isManagement ? (
-          <button onClick={saveHeader} disabled={savingHeader} style={primaryBtn}>{savingHeader ? "Guardando..." : "Guardar plan"}</button>
-        ) : (
-          <button onClick={saveManagementNotes} style={primaryBtn}>Guardar observaciones</button>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {!isManagement ? (
+            <button onClick={saveHeader} disabled={savingHeader} style={primaryBtn}>{savingHeader ? "Guardando..." : "Guardar plan"}</button>
+          ) : (
+            <button onClick={saveManagementNotes} style={primaryBtn}>Guardar observaciones</button>
+          )}
+          {saveHeaderMsg && (
+            <span style={{ fontSize: 13, fontWeight: 600, color: saveHeaderMsg.type === "ok" ? "var(--good-ink, #4ade80)" : "var(--crit-ink, #f87171)" }}>
+              {saveHeaderMsg.type === "ok" ? "✓ " : "⚠ "}{saveHeaderMsg.text}
+            </span>
+          )}
+        </div>
       </div>
 
       {!isManagement && (

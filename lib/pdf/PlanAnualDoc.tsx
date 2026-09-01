@@ -72,6 +72,32 @@ function monthName(fecha: string): string {
   return MESES[Number(fecha.slice(5, 7)) - 1] ?? fecha;
 }
 
+// Same rule as the web page's quartersInRange(): the plan's period doesn't
+// have to be a calendar year (e.g. 01/09/2026 to 01/09/2027 spans 2026-Q3
+// through 2027-Q3), so this can't be a fixed Q1-Q4 of "now".
+function quartersInRange(periodStart: string | null, periodEnd: string | null): string[] {
+  if (!periodStart || !periodEnd) {
+    const y = new Date().getFullYear();
+    return [1, 2, 3, 4].map((q) => `${y}-Q${q}`);
+  }
+  const start = new Date(periodStart);
+  const end = new Date(periodEnd);
+  let year = start.getFullYear();
+  let quarter = Math.ceil((start.getMonth() + 1) / 3);
+  const endYear = end.getFullYear();
+  const endQuarter = Math.ceil((end.getMonth() + 1) / 3);
+  const quarters: string[] = [];
+  while (year < endYear || (year === endYear && quarter <= endQuarter)) {
+    quarters.push(`${year}-Q${quarter}`);
+    quarter++;
+    if (quarter > 4) {
+      quarter = 1;
+      year++;
+    }
+  }
+  return quarters;
+}
+
 function Footer({ artist }: { artist: string }) {
   return (
     <View style={styles.footer} fixed>
@@ -263,11 +289,11 @@ export default function PlanAnualDoc({
           <View style={styles.h1Rule} />
         </View>
         <View style={styles.quarterGrid}>
-          {["Q1", "Q2", "Q3", "Q4"].map((q) => {
-            const review = quarterlyReviews.find((r) => r.quarter.endsWith(q));
+          {quartersInRange(plan?.periodStart ?? null, plan?.periodEnd ?? null).map((quarter) => {
+            const review = quarterlyReviews.find((r) => r.quarter === quarter);
             return (
-              <View key={q} style={styles.quarterBox} wrap={false}>
-                <Text style={styles.quarterTitle}>{q}{review?.fecha ? ` · ${formatFecha(review.fecha)}` : ""}</Text>
+              <View key={quarter} style={styles.quarterBox} wrap={false}>
+                <Text style={styles.quarterTitle}>{quarter}{review?.fecha ? ` · ${formatFecha(review.fecha)}` : ""}</Text>
                 <Text style={[styles.cellText, { marginBottom: 4 }]}><Text style={styles.actionMetaLabel}>PM: </Text>{review?.observacionesPm ? t(review.observacionesPm) : "Sin completar."}</Text>
                 <Text style={styles.cellText}><Text style={styles.actionMetaLabel}>Management: </Text>{review?.observacionesManagement ? t(review.observacionesManagement) : "Sin completar."}</Text>
               </View>

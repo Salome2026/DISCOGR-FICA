@@ -54,6 +54,7 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [annualPlan, setAnnualPlan] = useState<AnnualPlanSummary | null | undefined>(undefined);
   const [newItem, setNewItem] = useState("");
+  const [addingItem, setAddingItem] = useState(false);
   const [newNote, setNewNote] = useState("");
   const [meetingRequests, setMeetingRequests] = useState<MeetingRequest[]>([]);
   const [showMeetingModal, setShowMeetingModal] = useState(false);
@@ -98,14 +99,20 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
   }, [artistId]);
 
   async function addItem() {
-    if (!newItem.trim()) return;
-    await fetch(`/api/pm/artistas/${artistId}/action-items`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: newItem.trim() }),
-    });
-    setNewItem("");
-    load();
+    if (!newItem.trim() || addingItem) return;
+    setAddingItem(true);
+    const title = newItem.trim();
+    setNewItem(""); // clear right away — the guard above is what actually stops duplicates, this just avoids the input sitting there looking unresponsive
+    try {
+      await fetch(`/api/pm/artistas/${artistId}/action-items`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+      load();
+    } finally {
+      setAddingItem(false);
+    }
   }
 
   async function toggleItem(itemId: number, done: boolean) {
@@ -114,6 +121,11 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ done }),
     });
+    load();
+  }
+
+  async function deleteItem(itemId: number) {
+    await fetch(`/api/pm/artistas/${artistId}/action-items/${itemId}`, { method: "DELETE" });
     load();
   }
 
@@ -203,10 +215,19 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
         <div style={sectionLabelStyle}>Próximas acciones y temas pendientes</div>
         {pendientes.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 15 }}>Sin pendientes.</p>}
         {pendientes.map((i) => (
-          <label key={i.id} style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 16 }}>
-            <input type="checkbox" checked={false} onChange={() => toggleItem(i.id, true)} style={checkboxStyle} />
-            {i.title}
-          </label>
+          <div key={i.id} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 16, flex: 1 }}>
+              <input type="checkbox" checked={false} onChange={() => toggleItem(i.id, true)} style={checkboxStyle} />
+              {i.title}
+            </label>
+            <button
+              onClick={() => deleteItem(i.id)}
+              style={{ background: "transparent", border: "none", color: "var(--crit-ink)", cursor: "pointer", fontSize: 13, padding: "2px 6px" }}
+              aria-label="Eliminar"
+            >
+              Eliminar
+            </button>
+          </div>
         ))}
         <div style={{ display: "flex", gap: 10 }}>
           <input
@@ -216,7 +237,7 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
             placeholder="Nueva acción o tema pendiente..."
             style={listInputStyle}
           />
-          <button style={smallBtn} onClick={addItem}>Agregar</button>
+          <button style={smallBtn} onClick={addItem} disabled={addingItem}>{addingItem ? "..." : "Agregar"}</button>
         </div>
       </div>
 

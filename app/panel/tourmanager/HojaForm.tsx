@@ -78,6 +78,7 @@ export function AddressField({
         onChange={(e) => { onChange(e.target.value); setNotFound(false); }}
         onBlur={(e) => handleBlur(e.target.value)}
         placeholder="Dirección o link de Google Maps"
+        autoComplete="off"
         style={inputStyle}
       />
       {resolving && <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 4 }}>Resolviendo dirección...</div>}
@@ -535,7 +536,7 @@ export default function HojaForm({
           </select>
         </Field>
         <Field label="Lugar del show">
-          <input value={venue} onChange={(e) => setVenue(e.target.value)} style={inputStyle} />
+          <input value={venue} onChange={(e) => setVenue(e.target.value)} autoComplete="off" style={inputStyle} />
         </Field>
         <AddressField
           label="Dirección del show"
@@ -622,7 +623,7 @@ export default function HojaForm({
               2 · Punto de encuentro del equipo técnico
             </div>
             <Field label="¿Dónde se encuentra el equipo técnico?">
-              <input value={puntoEncuentroNombre} onChange={(e) => setPuntoEncuentroNombre(e.target.value)} style={inputStyle} />
+              <input value={puntoEncuentroNombre} onChange={(e) => setPuntoEncuentroNombre(e.target.value)} autoComplete="off" style={inputStyle} />
             </Field>
             <div style={{ display: "flex", gap: 10 }}>
               <div style={{ flex: 2 }}>
@@ -677,10 +678,10 @@ export default function HojaForm({
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <div style={{ flex: 1 }}>
-                <Field label="Contacto del venue"><input value={venueContactoNombre} onChange={(e) => setVenueContactoNombre(e.target.value)} style={inputStyle} /></Field>
+                <Field label="Contacto del venue"><input value={venueContactoNombre} onChange={(e) => setVenueContactoNombre(e.target.value)} autoComplete="off" style={inputStyle} /></Field>
               </div>
               <div style={{ flex: 1 }}>
-                <Field label="Tel. contacto venue"><input value={venueContactoTelefono} onChange={(e) => setVenueContactoTelefono(e.target.value)} style={inputStyle} /></Field>
+                <Field label="Tel. contacto venue"><input value={venueContactoTelefono} onChange={(e) => setVenueContactoTelefono(e.target.value)} autoComplete="off" style={inputStyle} /></Field>
               </div>
             </div>
             <Field label="Duración del show (min)">
@@ -703,7 +704,7 @@ export default function HojaForm({
               </div>
             </div>
             <Field label="¿Dónde se hace la prueba de sonido?">
-              <input value={lugarPruebaSonido} onChange={(e) => setLugarPruebaSonido(e.target.value)} placeholder="Dejalo vacío si es el mismo lugar del show" style={inputStyle} />
+              <input value={lugarPruebaSonido} onChange={(e) => setLugarPruebaSonido(e.target.value)} placeholder="Dejalo vacío si es el mismo lugar del show" autoComplete="off" style={inputStyle} />
             </Field>
             {lugarPruebaSonido.trim() && (
               <AddressField
@@ -729,7 +730,7 @@ export default function HojaForm({
               7 · Hotel
             </div>
             <Field label="¿Dónde se hospedan?">
-              <input value={hotelNombre} onChange={(e) => setHotelNombre(e.target.value)} style={inputStyle} />
+              <input value={hotelNombre} onChange={(e) => setHotelNombre(e.target.value)} autoComplete="off" style={inputStyle} />
             </Field>
             <AddressField
               label="Dirección del hotel"
@@ -755,7 +756,7 @@ export default function HojaForm({
                 <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
                   <div style={{ flex: 1 }}>
                     <Field label="Nombre de la parada">
-                      <input value={p.nombre} onChange={(e) => updateParada(i, { nombre: e.target.value })} style={inputStyle} />
+                      <input value={p.nombre} onChange={(e) => updateParada(i, { nombre: e.target.value })} autoComplete="off" style={inputStyle} />
                     </Field>
                   </div>
                   <div style={{ flex: 1 }}>
@@ -827,36 +828,36 @@ export default function HojaForm({
             </Field>
             <div style={{ display: "flex", gap: 10 }}>
               <div style={{ flex: 1 }}>
-                <Field label="Driver"><input value={driverNombre} onChange={(e) => setDriverNombre(e.target.value)} style={inputStyle} /></Field>
+                <Field label="Driver"><input value={driverNombre} onChange={(e) => setDriverNombre(e.target.value)} autoComplete="off" style={inputStyle} /></Field>
               </div>
               <div style={{ flex: 1 }}>
-                <Field label="Tel. driver"><input value={driverTelefono} onChange={(e) => setDriverTelefono(e.target.value)} style={inputStyle} /></Field>
+                <Field label="Tel. driver"><input value={driverTelefono} onChange={(e) => setDriverTelefono(e.target.value)} autoComplete="off" style={inputStyle} /></Field>
               </div>
             </div>
 
             <div style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text-2)", marginTop: 4 }}>Contactos</div>
             <div style={{ display: "flex", gap: 10 }}>
               <div style={{ flex: 1 }}>
-                <Field label="Contacto artista"><input value={contactoArtistaNombre} onChange={(e) => setContactoArtistaNombre(e.target.value)} style={inputStyle} /></Field>
+                <Field label="Contacto artista"><input value={contactoArtistaNombre} onChange={(e) => setContactoArtistaNombre(e.target.value)} autoComplete="off" style={inputStyle} /></Field>
               </div>
               <div style={{ flex: 1 }}>
-                <Field label="Tel. contacto artista"><input value={contactoArtistaTelefono} onChange={(e) => setContactoArtistaTelefono(e.target.value)} style={inputStyle} /></Field>
+                <Field label="Tel. contacto artista"><input value={contactoArtistaTelefono} onChange={(e) => setContactoArtistaTelefono(e.target.value)} autoComplete="off" style={inputStyle} /></Field>
               </div>
             </div>
             <div style={{ display: "flex", gap: 10 }}>
               <div style={{ flex: 1 }}>
-                <Field label="Artist Liaison"><input value={artistLiaisonNombre} onChange={(e) => setArtistLiaisonNombre(e.target.value)} style={inputStyle} /></Field>
+                <Field label="Artist Liaison"><input value={artistLiaisonNombre} onChange={(e) => setArtistLiaisonNombre(e.target.value)} autoComplete="off" style={inputStyle} /></Field>
               </div>
               <div style={{ flex: 1 }}>
-                <Field label="Tel. Artist Liaison"><input value={artistLiaisonTelefono} onChange={(e) => setArtistLiaisonTelefono(e.target.value)} style={inputStyle} /></Field>
+                <Field label="Tel. Artist Liaison"><input value={artistLiaisonTelefono} onChange={(e) => setArtistLiaisonTelefono(e.target.value)} autoComplete="off" style={inputStyle} /></Field>
               </div>
             </div>
 
             <Field label="Running Order">
-              <textarea value={runningOrder} onChange={(e) => setRunningOrder(e.target.value)} rows={2} placeholder={"Ej: Sofi B: 03.30"} style={{ ...inputStyle, resize: "vertical" }} />
+              <textarea value={runningOrder} onChange={(e) => setRunningOrder(e.target.value)} rows={2} placeholder={"Ej: Sofi B: 03.30"} autoComplete="off" style={{ ...inputStyle, resize: "vertical" }} />
             </Field>
             <Field label="Observaciones generales">
-              <textarea value={notas} onChange={(e) => setNotas(e.target.value)} rows={3} style={{ ...inputStyle, resize: "vertical" }} />
+              <textarea value={notas} onChange={(e) => setNotas(e.target.value)} rows={3} autoComplete="off" style={{ ...inputStyle, resize: "vertical" }} />
             </Field>
             <Field label="Estado">
               <select value={estado} onChange={(e) => setEstado(e.target.value)} style={inputStyle}>

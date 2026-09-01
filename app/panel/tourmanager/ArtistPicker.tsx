@@ -82,6 +82,7 @@ export default function ArtistPicker({
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         placeholder="Nombre del artista"
         required
+        autoComplete="off"
         style={inputStyle}
       />
       {open && results.length > 0 && (

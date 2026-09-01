@@ -128,12 +128,12 @@ export default function HojaGenericaForm({
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ flex: 1 }}>
             <Field label="Artista">
-              <input value={artistName} onChange={(e) => setArtistName(e.target.value)} style={inputStyle} />
+              <input value={artistName} onChange={(e) => setArtistName(e.target.value)} autoComplete="off" style={inputStyle} />
             </Field>
           </div>
           <div style={{ flex: 1 }}>
             <Field label="Nombre de la gira (opcional)">
-              <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Gira México Nov 2026" style={inputStyle} />
+              <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Gira México Nov 2026" autoComplete="off" style={inputStyle} />
             </Field>
           </div>
         </div>
@@ -171,7 +171,7 @@ export default function HojaGenericaForm({
                 resolvedAddress={s.busquedaFullAddress}
               />
               <Field label="Venue">
-                <input value={s.venue ?? ""} onChange={(e) => updateShow(s.key, { venue: e.target.value })} style={inputStyle} />
+                <input value={s.venue ?? ""} onChange={(e) => updateShow(s.key, { venue: e.target.value })} autoComplete="off" style={inputStyle} />
               </Field>
               <AddressField
                 label="Dirección del venue"

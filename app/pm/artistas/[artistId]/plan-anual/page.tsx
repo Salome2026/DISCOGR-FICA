@@ -371,7 +371,11 @@ function PlanAnualInner({ artistId }: { artistId: string }) {
     });
     setNewLaunchTitulo("");
     setNewLaunchFecha("");
-    load();
+    // loadBackground(), not load() — adding a launch has nothing to do with
+    // the header fields; a full load() here would wipe any unsaved typing
+    // in "Objetivo general del año" etc. the same way the polling refresh
+    // used to.
+    loadBackground();
   }
 
   async function downloadPdf() {
@@ -481,7 +485,7 @@ function PlanAnualInner({ artistId }: { artistId: string }) {
         <div style={cardStyle}>
           <div style={labelStyle}>Cronograma de lanzamientos</div>
           {launches.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 14 }}>Todavía no hay lanzamientos en el cronograma.</p>}
-          {launches.map((l) => <LaunchCard key={l.id} launch={l} actions={actions} artistId={artistId} onChanged={load} />)}
+          {launches.map((l) => <LaunchCard key={l.id} launch={l} actions={actions} artistId={artistId} onChanged={loadBackground} />)}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <input value={newLaunchTitulo} onChange={(e) => setNewLaunchTitulo(e.target.value)} placeholder="Título del lanzamiento" style={{ ...inputStyle, flex: 2, minWidth: 180 }} />
             <input type="date" value={newLaunchFecha} onChange={(e) => setNewLaunchFecha(e.target.value)} style={{ ...inputStyle, flex: 1, minWidth: 140 }} />
@@ -492,7 +496,7 @@ function PlanAnualInner({ artistId }: { artistId: string }) {
       {isManagement && launches.length > 0 && (
         <div style={cardStyle}>
           <div style={labelStyle}>Cronograma de lanzamientos</div>
-          {launches.map((l) => <LaunchCard key={l.id} launch={l} actions={actions} artistId={artistId} onChanged={load} />)}
+          {launches.map((l) => <LaunchCard key={l.id} launch={l} actions={actions} artistId={artistId} onChanged={loadBackground} />)}
         </div>
       )}
 
@@ -500,7 +504,7 @@ function PlanAnualInner({ artistId }: { artistId: string }) {
         <div style={labelStyle}>Revisiones trimestrales</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
           {quartersData.map((q) => (
-            <QuarterlyReviewCard key={q.quarter} review={q} artistId={artistId} isManagement={isManagement} onChanged={load} />
+            <QuarterlyReviewCard key={q.quarter} review={q} artistId={artistId} isManagement={isManagement} onChanged={loadBackground} />
           ))}
         </div>
       </div>

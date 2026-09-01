@@ -80,12 +80,14 @@ const secondaryBtn: React.CSSProperties = {
   background: "transparent", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "9px 16px",
   color: "var(--text-2)", cursor: "pointer", fontSize: 13,
 };
-// Self-contained glass-card styling (same tokens as .pmx-card/.card) — this
-// component is shared between the PM shell and the Management shell, whose
-// card classes aren't interchangeable, so it never depends on either.
-const cardStyle: React.CSSProperties = {
-  background: "var(--glass-bg)", border: "1px solid var(--glass-border)", borderRadius: "var(--radius-lg)",
-  padding: "1.5rem", boxShadow: "var(--shadow-glass)",
+// Modal panels float on top of the busy calendar grid, not the plain page
+// background — --glass-bg is a semi-transparent gradient (fine for a card
+// sitting on empty space) and lets the grid's colored bookings/text bleed
+// through underneath it, making the modal itself hard to read. A solid
+// surface color keeps it legible regardless of what's behind it.
+const modalPanelStyle: React.CSSProperties = {
+  background: "var(--bg-1)", border: "1px solid var(--line-soft)", borderRadius: "var(--radius-lg)",
+  padding: "1.5rem", boxShadow: "0 20px 60px rgba(0,0,0,0.5)",
 };
 
 function CreateModal({
@@ -125,7 +127,7 @@ function CreateModal({
 
   return (
     <div style={modalOverlay} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: 12, width: 420, maxWidth: "95vw" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ ...modalPanelStyle, display: "flex", flexDirection: "column", gap: 12, width: 420, maxWidth: "95vw" }}>
         <div style={{ fontSize: 16, fontWeight: 700 }}>Reservar estudio</div>
         {artistOptions.length === 0 ? (
           <p style={{ color: "var(--crit-ink)", fontSize: 13 }}>No tenés artistas asignados — pedile a Management que te asigne uno.</p>
@@ -229,7 +231,7 @@ function DetailModal({
 
   return (
     <div style={modalOverlay} onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: 12, width: 440, maxWidth: "95vw" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ ...modalPanelStyle, display: "flex", flexDirection: "column", gap: 12, width: 440, maxWidth: "95vw" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <Avatar name={booking.artistName} url={booking.artistPhotoUrl} />
           <div style={{ fontSize: 16, fontWeight: 700 }}>{booking.artistName}</div>

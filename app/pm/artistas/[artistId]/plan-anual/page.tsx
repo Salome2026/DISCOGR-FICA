@@ -48,6 +48,11 @@ const cardStyle: React.CSSProperties = {
 };
 const labelStyle: React.CSSProperties = { fontSize: 18, fontWeight: 700, color: "var(--text-1)" };
 const fieldLabel: React.CSSProperties = { fontSize: 13, color: "var(--text-2)", marginBottom: 4, display: "block" };
+// Same as fieldLabel, but reserves room for two lines and bottom-aligns the
+// text — used for rows of same-height fields (Período y objetivos) so a
+// label that wraps to 2 lines doesn't push just its own input down relative
+// to the siblings whose labels fit on 1 line.
+const rowFieldLabel: React.CSSProperties = { ...fieldLabel, minHeight: 34, display: "flex", alignItems: "flex-end" };
 const inputStyle: React.CSSProperties = {
   width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8,
   padding: "10px 12px", color: "var(--text-1)", fontSize: 14,
@@ -374,19 +379,19 @@ function PlanAnualInner({ artistId }: { artistId: string }) {
         <div style={labelStyle}>Período y objetivos</div>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={fieldLabel}>Fecha de inicio</label>
+            <label style={rowFieldLabel}>Fecha de inicio</label>
             <input type="date" value={periodStart} onChange={(e) => setPeriodStart(e.target.value)} disabled={isManagement} style={inputStyle} />
           </div>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={fieldLabel}>Fecha de finalización</label>
+            <label style={rowFieldLabel}>Fecha de finalización</label>
             <input type="date" value={periodEnd} onChange={(e) => setPeriodEnd(e.target.value)} disabled={isManagement} style={inputStyle} />
           </div>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={fieldLabel}>Cantidad de lanzamientos proyectados</label>
+            <label style={rowFieldLabel}>Cantidad de lanzamientos proyectados</label>
             <input type="number" min={0} value={cantidadLanzamientos} onChange={(e) => setCantidadLanzamientos(e.target.value)} disabled={isManagement} style={inputStyle} />
           </div>
           <div style={{ flex: 1, minWidth: 160 }}>
-            <label style={fieldLabel}>Presupuesto estimado</label>
+            <label style={rowFieldLabel}>Presupuesto estimado</label>
             <input type="number" min={0} value={presupuesto} onChange={(e) => setPresupuesto(e.target.value)} disabled={isManagement} placeholder="Si corresponde" style={inputStyle} />
           </div>
         </div>

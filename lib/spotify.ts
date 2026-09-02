@@ -175,6 +175,26 @@ export async function getMe(): Promise<SpotifyMe> {
   return spotifyJson<SpotifyMe>("/me");
 }
 
+export type SpotifyArtistMatch = { id: string; name: string; imageUrl: string | null };
+
+function normalizeArtistName(s: string): string {
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").trim();
+}
+
+// Only returns a match on an exact (normalized) name match — same principle
+// as the Chartmetric-based booking photo sync (app/api/booking/artists/sync-photos):
+// a short/generic stage name has real look-alikes on Spotify, and a
+// confident-looking wrong photo is worse than no photo at all.
+export async function searchArtistByName(name: string): Promise<SpotifyArtistMatch | null> {
+  const data = await spotifyJson<{ artists: { items: { id: string; name: string; images: { url: string }[] }[] } }>(
+    `/search?type=artist&limit=5&q=${encodeURIComponent(name)}`
+  );
+  const key = normalizeArtistName(name);
+  const match = data.artists?.items?.find((a) => normalizeArtistName(a.name) === key);
+  if (!match) return null;
+  return { id: match.id, name: match.name, imageUrl: match.images?.[0]?.url ?? null };
+}
+
 export type SpotifyPlaylistSummary = {
   id: string;
   name: string;

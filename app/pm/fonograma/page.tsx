@@ -279,12 +279,14 @@ function PMFonogramaInner() {
                   </div>
                 </div>
 
-                <Link
-                  href={`/panel/cm/lanzamientos/${r.group_id != null ? `cml-group-${r.group_id}` : `cml-release-${r.id}`}`}
-                  style={{ fontSize: 11.5, color: "var(--text-3)", textDecoration: "none" }}
-                >
-                  Ver en Community Manager →
-                </Link>
+                {r.sello !== "Streamings" && (
+                  <Link
+                    href={`/panel/cm/lanzamientos/${r.group_id != null ? `cml-group-${r.group_id}` : `cml-release-${r.id}`}`}
+                    style={{ fontSize: 11.5, color: "var(--text-3)", textDecoration: "none" }}
+                  >
+                    Ver en Community Manager →
+                  </Link>
+                )}
 
                 {(isAdmin || r.created_by === email) && (
                   <div className="pmx-fono-footer">

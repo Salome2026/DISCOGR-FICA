@@ -60,6 +60,7 @@ type TrackDraft = {
   tipoObra: string;
   comentario: string;
   audioFile: File | null;
+  audioLinkUrl: string;
   portadaFile: File | null;
   collapsed: boolean;
 };
@@ -82,6 +83,7 @@ function emptyTrack(artistaPrincipal: string): TrackDraft {
     tipoObra: "",
     comentario: "",
     audioFile: null,
+    audioLinkUrl: "",
     portadaFile: null,
     collapsed: false,
   };
@@ -144,6 +146,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
   const [otroGenero, setOtroGenero] = useState("");
   const [tipoObra, setTipoObra] = useState("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioLinkUrl, setAudioLinkUrl] = useState("");
   const [portadaFile, setPortadaFile] = useState<File | null>(null);
 
   // EP/álbum-only
@@ -223,6 +226,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
       return;
     }
     setAudioFile(f);
+    setAudioLinkUrl("");
   }
 
   async function handlePortadaChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -294,7 +298,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
       updateTrack(key, { audioFile: null });
       return;
     }
-    updateTrack(key, { audioFile: f });
+    updateTrack(key, { audioFile: f, audioLinkUrl: "" });
   }
 
   async function handleTrackPortadaChange(key: string, e: React.ChangeEvent<HTMLInputElement>) {
@@ -324,7 +328,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
   // productor, and comentario — same "everything but Featuring" rule as the
   // rest of the form.
   const incompleteTracks = useMemo(
-    () => tracks.filter((t) => !t.fonograma.trim() || !t.artistaPrincipal.trim() || !t.tipoObra || !t.audioFile || !t.portadaFile),
+    () => tracks.filter((t) => !t.fonograma.trim() || !t.artistaPrincipal.trim() || !t.tipoObra || (!t.audioFile && !t.audioLinkUrl.trim()) || !t.portadaFile),
     [tracks]
   );
 
@@ -344,7 +348,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
       if (!fonograma.trim()) missing.push("Nombre del fonograma");
       if (!autores.trim()) missing.push("Autores y compositores");
       if (!tipoObra) missing.push("Tipo de obra");
-      if (!audioFile) missing.push("Audio (.wav)");
+      if (!audioFile && !audioLinkUrl.trim()) missing.push("Audio (.wav)");
       if (!portadaFile) missing.push("Portada");
     } else {
       if (!groupNombre.trim()) missing.push(`Nombre del ${tipo === "ep" ? "EP" : "álbum"}`);
@@ -353,7 +357,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
     if (!fecha) missing.push("Fecha de lanzamiento");
     if (!hora) missing.push("Hora de lanzamiento");
     return missing;
-  }, [tipo, artist, sello, streamingProject, fonograma, autores, tipoObra, audioFile, portadaFile, groupNombre, distribuidora, fecha, hora]);
+  }, [tipo, artist, sello, streamingProject, fonograma, autores, tipoObra, audioFile, audioLinkUrl, portadaFile, groupNombre, distribuidora, fecha, hora]);
 
   const formIncomplete =
     missingFields.length > 0 || (isGrouped && (tracks.length === 0 || incompleteTracks.length > 0));
@@ -384,6 +388,8 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
         onUploadProgress: (p) => setUploadStep(`Subiendo audio ${idx + 1}/${total}... ${Math.round(p.percentage)}%`),
       });
       audioUrl = blob.url;
+    } else if (t.audioLinkUrl.trim()) {
+      audioUrl = t.audioLinkUrl.trim();
     }
     if (t.portadaFile) {
       setUploadStep(`Subiendo portada ${idx + 1}/${total}...`);
@@ -428,6 +434,8 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
             onUploadProgress: (p) => setUploadStep(`Subiendo audio... ${Math.round(p.percentage)}%`),
           });
           audioUrl = blob.url;
+        } else if (audioLinkUrl.trim()) {
+          audioUrl = audioLinkUrl.trim();
         }
         if (portadaFile) {
           setUploadStep("Subiendo portada... 0%");
@@ -1364,8 +1372,15 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
               <>
                 <div>
                   <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Audio (.wav)</label>
-                  <input type="file" accept=".wav,audio/wav" onChange={handleAudioChange} style={missingStyle(!audioFile, fileInputStyle)} />
+                  <input type="file" accept=".wav,audio/wav" onChange={handleAudioChange} style={missingStyle(!audioFile && !audioLinkUrl.trim(), fileInputStyle)} />
                   {audioFile && <p style={{ fontSize: 11.5, color: "var(--good)", marginTop: 4 }}>✓ {audioFile.name}</p>}
+                  <input
+                    value={audioLinkUrl}
+                    onChange={(e) => setAudioLinkUrl(e.target.value)}
+                    placeholder="...o pegá un link para descargarlo (WeTransfer, Drive, etc.)"
+                    disabled={!!audioFile}
+                    style={{ ...missingStyle(!audioFile && !audioLinkUrl.trim(), inputStyle), marginTop: 6 }}
+                  />
                 </div>
                 <div>
                   <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>
@@ -1444,23 +1459,19 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
                             </div>
                             <div>
                               <label style={smallLabel}>Artista principal</label>
-                              {restrictedArtists === null || restrictedArtists.length === 0 ? (
-                                <input
-                                  value={t.artistaPrincipal}
-                                  onChange={(e) => updateTrack(t.key, { artistaPrincipal: e.target.value })}
-                                  style={missingStyle(!t.artistaPrincipal.trim())}
-                                />
-                              ) : (
-                                <select
-                                  value={t.artistaPrincipal}
-                                  onChange={(e) => updateTrack(t.key, { artistaPrincipal: e.target.value })}
-                                  style={missingStyle(!t.artistaPrincipal.trim())}
-                                >
-                                  <option value="">Elegir...</option>
+                              <input
+                                value={t.artistaPrincipal}
+                                onChange={(e) => updateTrack(t.key, { artistaPrincipal: e.target.value })}
+                                placeholder="Escribí el nombre del artista"
+                                list={restrictedArtists && restrictedArtists.length > 0 ? `artistas-track-${t.key}` : undefined}
+                                style={missingStyle(!t.artistaPrincipal.trim())}
+                              />
+                              {restrictedArtists && restrictedArtists.length > 0 && (
+                                <datalist id={`artistas-track-${t.key}`}>
                                   {restrictedArtists.map((a) => (
-                                    <option key={a} value={a}>{a}</option>
+                                    <option key={a} value={a} />
                                   ))}
-                                </select>
+                                </datalist>
                               )}
                             </div>
                             <div>
@@ -1520,8 +1531,15 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
                               </div>
                             )}
                             <div>
-                              <label style={smallLabel}>Audio (.wav) — estado: {t.audioFile ? "Cargado" : "Pendiente"}</label>
-                              <input type="file" accept=".wav,audio/wav" onChange={(e) => handleTrackAudioChange(t.key, e)} style={missingStyle(!t.audioFile, fileInputStyle)} />
+                              <label style={smallLabel}>Audio (.wav) — estado: {t.audioFile || t.audioLinkUrl.trim() ? "Cargado" : "Pendiente"}</label>
+                              <input type="file" accept=".wav,audio/wav" onChange={(e) => handleTrackAudioChange(t.key, e)} style={missingStyle(!t.audioFile && !t.audioLinkUrl.trim(), fileInputStyle)} />
+                              <input
+                                value={t.audioLinkUrl}
+                                onChange={(e) => updateTrack(t.key, { audioLinkUrl: e.target.value })}
+                                placeholder="...o pegá un link para descargarlo (WeTransfer, Drive, etc.)"
+                                disabled={!!t.audioFile}
+                                style={{ ...missingStyle(!t.audioFile && !t.audioLinkUrl.trim()), marginTop: 6 }}
+                              />
                             </div>
                             <div>
                               <label style={smallLabel}>

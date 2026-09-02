@@ -19,6 +19,7 @@ export function ensureCmAccountsSchema(): Promise<void> {
           platform TEXT NOT NULL,
           handle TEXT,
           url TEXT,
+          photo_url TEXT,
           linked_artist_id TEXT,
           sello TEXT,
           frecuencia_publicacion_acordada TEXT,

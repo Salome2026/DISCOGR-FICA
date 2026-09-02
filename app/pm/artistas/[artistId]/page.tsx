@@ -63,6 +63,23 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
   const [meetingSuggestedDate, setMeetingSuggestedDate] = useState("");
   const [sendingMeeting, setSendingMeeting] = useState(false);
   const [meetingError, setMeetingError] = useState<string | null>(null);
+  const [editingPhoto, setEditingPhoto] = useState(false);
+  const [photoUrlInput, setPhotoUrlInput] = useState("");
+  const [savingPhoto, setSavingPhoto] = useState(false);
+
+  async function savePhoto() {
+    setSavingPhoto(true);
+    try {
+      const res = await fetch(`/api/pm/artistas/${artistId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photoUrl: photoUrlInput.trim() || null }),
+      });
+      if (res.ok) { setEditingPhoto(false); load(); }
+    } finally {
+      setSavingPhoto(false);
+    }
+  }
 
   function load() {
     fetch(`/api/pm/artistas/${artistId}`)
@@ -187,6 +204,38 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
 
   return (
     <PMShell title={data.artist.name} subtitle={data.artist.sello ?? undefined} backHref="/pm/artistas">
+      <div className="pmx-card" style={sectionStyle}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          {data.artist.photoUrl ? (
+            <img src={data.artist.photoUrl} alt="" style={{ width: 64, height: 64, borderRadius: 12, objectFit: "cover", flexShrink: 0 }} />
+          ) : (
+            <div style={{ width: 64, height: 64, borderRadius: 12, background: "var(--bg-2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 700, color: "var(--text-2)", flexShrink: 0 }}>
+              {data.artist.name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("")}
+            </div>
+          )}
+          {!editingPhoto ? (
+            <button
+              type="button"
+              onClick={() => { setPhotoUrlInput(data.artist.photoUrl ?? ""); setEditingPhoto(true); }}
+              style={smallBtn}
+            >
+              {data.artist.photoUrl ? "Cambiar foto" : "Agregar foto"}
+            </button>
+          ) : (
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flex: 1, minWidth: 220 }}>
+              <input
+                value={photoUrlInput}
+                onChange={(e) => setPhotoUrlInput(e.target.value)}
+                placeholder="URL de la imagen"
+                style={{ flex: 1, background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-1)", fontSize: 13.5 }}
+              />
+              <button type="button" style={smallBtn} disabled={savingPhoto} onClick={savePhoto}>{savingPhoto ? "..." : "Guardar"}</button>
+              <button type="button" style={smallBtn} onClick={() => setEditingPhoto(false)}>Cancelar</button>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="pmx-card" style={sectionStyle}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <div style={sectionLabelStyle}>Plan Anual</div>

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import RequireRole from "@/app/components/RequireRole";
 import { CmShell, CM_TIPO_LABELS, CM_ESTADO_LABELS } from "../_shared";
 import { CM_TIPOS_CONTENIDO, CM_ESTADOS } from "@/lib/db/cmContent";
+import ReleaseCalendar from "@/app/dashboard/ReleaseCalendar";
 
 type ContentItem = {
   id: number; accountId: string; artistName: string | null; tipoContenido: string;
@@ -96,6 +97,13 @@ function CmCalendarioInner() {
       `}</style>
 
       {error && <div className="cm-badge crit" style={{ marginBottom: 16 }}>{error}</div>}
+
+      <div className="cm-section">
+        <div className="cm-section-title">Calendario de lanzamientos (compartido con todo el sello)</div>
+        <ReleaseCalendar readOnly apiUrl="/api/cm/releases" />
+      </div>
+
+      <div className="cm-section-title" style={{ marginBottom: 10 }}>Contenido planificado</div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button className="cm-btn-ghost" onClick={() => setCursor(new Date(cursor.getFullYear(), cursor.getMonth() - 1, 1))}>‹</button>

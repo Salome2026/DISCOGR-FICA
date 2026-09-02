@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const enriched = await Promise.all(
     assignments.map(async (a) => {
       const artist = await getArtist(a.artistId);
-      return { ...a, photoUrl: artist?.photoUrl ?? null, sello: artist?.sello ?? null };
+      return { ...a, photoUrl: a.photoUrl ?? artist?.photoUrl ?? null, sello: artist?.sello ?? null };
     })
   );
   return NextResponse.json({ artists: enriched });

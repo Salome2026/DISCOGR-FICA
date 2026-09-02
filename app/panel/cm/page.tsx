@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequireRole from "@/app/components/RequireRole";
 import { CmShell, CM_TIPO_LABELS, CM_ESTADO_LABELS, CM_MATERIALES_LABELS } from "./_shared";
+import ReleaseCalendar from "@/app/dashboard/ReleaseCalendar";
 
 type ContentItem = {
   id: number; accountId: string; artistName: string | null; tipoContenido: string;
@@ -46,6 +47,11 @@ function CmHomeInner() {
 
   return (
     <CmShell title="Community Manager" subtitle="Portada del día" active="home">
+      <div className="cm-section">
+        <div className="cm-section-title">Calendario de lanzamientos (compartido con todo el sello)</div>
+        <ReleaseCalendar readOnly apiUrl="/api/cm/releases" />
+      </div>
+
       <div className="cm-section">
         <div className="cm-section-title">Publicaciones de hoy y próximos días</div>
         {items === null ? (

@@ -18,6 +18,13 @@ export function ensurePmArtistAssignmentsSchema(): Promise<void> {
         )
       `;
       await sql`CREATE INDEX IF NOT EXISTS pm_roster_assignments_pm_idx ON pm_roster_assignments (pm_email)`;
+      // Foto propia de la asignación, no del artista — necesaria para las
+      // "unidades" (streaming, sello) que a propósito nunca tienen fila en
+      // `artists` (ver skipArtistRegistry más abajo), así que no tienen de
+      // dónde heredar una foto real. Para un artista real de verdad, esto
+      // queda NULL y se sigue usando artists.photo_url (ver el enriquecido
+      // en app/api/pm/artistas/route.ts).
+      await sql`ALTER TABLE pm_roster_assignments ADD COLUMN IF NOT EXISTS photo_url TEXT`;
       // Secondary PMs on a shared project (e.g. two PMs covering the same
       // artist) — additive on top of the single "owner" row above, so the
       // owner concept (transfer history, one canonical assignment) stays
@@ -45,6 +52,7 @@ export type PmRosterAssignment = {
   pmEmail: string;
   assignedBy: string;
   assignedAt: string;
+  photoUrl: string | null;
   role: "owner" | "collaborator";
 };
 
@@ -55,8 +63,17 @@ function rowToAssignment(r: Record<string, unknown>): PmRosterAssignment {
     pmEmail: r.pm_email as string,
     assignedBy: r.assigned_by as string,
     assignedAt: r.assigned_at as string,
+    photoUrl: (r.photo_url as string) ?? null,
     role: "owner",
   };
+}
+
+// Foto propia de una asignación — pensada para las "unidades" sin fila de
+// artista real, pero funciona igual para cualquier artist_id.
+export async function setAssignmentPhoto(artistId: string, photoUrl: string | null, actorEmail: string): Promise<void> {
+  await ensurePmArtistAssignmentsSchema();
+  await sql`UPDATE pm_roster_assignments SET photo_url = ${photoUrl} WHERE artist_id = ${artistId}`;
+  await recordAudit({ actorEmail, action: "pm_roster_assignment_photo_updated", entityType: "pm_roster_assignment", entityId: artistId, after: { photoUrl } });
 }
 
 export async function getAssignment(artistId: string): Promise<PmRosterAssignment | null> {

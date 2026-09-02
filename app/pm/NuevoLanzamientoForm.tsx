@@ -6,6 +6,7 @@ import porCompania from "@/data/por_compania.json";
 import { assignSello, SELLOS } from "@/lib/sellos";
 import { GENEROS } from "@/lib/genres";
 import { TIPOS_OBRA } from "@/lib/tiposObra";
+import { isValidYoutubeUrl } from "@/lib/youtubeLinkValidation";
 
 const distribuidoras = [
   ...(porCompania as { companies: { company: string }[] }).companies
@@ -128,6 +129,11 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
   const [distribuidora, setDistribuidora] = useState("");
   const [fecha, setFecha] = useState("");
   const [hora, setHora] = useState("20:00");
+  // Nivel lanzamiento, no por track — para un EP/álbum es un solo video y
+  // una sola carpeta para todo el lanzamiento, no uno por canción.
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [driveAssetsUrl, setDriveAssetsUrl] = useState("");
+  const [youtubeUrlError, setYoutubeUrlError] = useState<string | null>(null);
 
   // Single-only
   const [fonograma, setFonograma] = useState("");
@@ -401,6 +407,11 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
       setError(`Faltan completar: ${missingFields.join(", ")}.`);
       return;
     }
+    if (youtubeUrl.trim() && !isValidYoutubeUrl(youtubeUrl)) {
+      setYoutubeUrlError("El link no tiene un formato válido de YouTube.");
+      setError("El link de YouTube no tiene un formato válido.");
+      return;
+    }
 
     if (tipo === "single") {
       setSaving(true);
@@ -454,6 +465,8 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
             tipoObra,
             audioUrl,
             portadaUrl,
+            youtubeUrl: youtubeUrl.trim() || null,
+            driveAssetsUrl: driveAssetsUrl.trim() || null,
           }),
         });
         const data = await res.json();
@@ -503,6 +516,8 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
           fecha: fecha || null,
           hora: hora || null,
           comentarios: comentariosGrupo || null,
+          youtubeUrl: youtubeUrl.trim() || null,
+          driveAssetsUrl: driveAssetsUrl.trim() || null,
           tracks: tracks.map((t, i) => ({
             trackNumber: i + 1,
             fonograma: t.fonograma,
@@ -1315,6 +1330,33 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
                     </option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>
+                  Link del video de YouTube <span style={{ color: "var(--text-3)", fontWeight: 400 }}>(opcional)</span>
+                </label>
+                <input
+                  value={youtubeUrl}
+                  onChange={(e) => { setYoutubeUrl(e.target.value); setYoutubeUrlError(null); }}
+                  onBlur={() => setYoutubeUrlError(youtubeUrl.trim() && !isValidYoutubeUrl(youtubeUrl) ? "El link no tiene un formato válido de YouTube." : null)}
+                  placeholder="https://youtube.com/watch?v=... o youtu.be/..."
+                  style={missingStyle(!!youtubeUrlError, inputStyle)}
+                />
+                {youtubeUrlError && <p style={{ fontSize: 11.5, color: "var(--crit-ink)", marginTop: 4 }}>{youtubeUrlError}</p>}
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>
+                  Link de assets (carpeta de Drive) <span style={{ color: "var(--text-3)", fontWeight: 400 }}>(opcional)</span>
+                </label>
+                <input
+                  value={driveAssetsUrl}
+                  onChange={(e) => setDriveAssetsUrl(e.target.value)}
+                  placeholder="https://drive.google.com/drive/folders/..."
+                  style={inputStyle}
+                />
               </div>
             </div>
 

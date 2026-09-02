@@ -125,6 +125,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         tipoObra: "Tema de autoría propia",
         audioUrl: wav.url,
         portadaUrl: portada.url,
+        youtubeUrl: null,
+        driveAssetsUrl: null,
         createdBy: user.email,
       });
 
@@ -203,6 +205,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         fecha: finalFecha,
         hora: finalHora,
         comentarios: project.notas,
+        youtubeUrl: null,
+        driveAssetsUrl: null,
         createdBy: user.email,
       },
       cleanTracks

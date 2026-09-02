@@ -89,6 +89,15 @@ export function ensureReleasesSchema(): Promise<void> {
       // Permite forzar una tarea de Split editorial incluso en un Cover/Remix.
       await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS split_override BOOLEAN NOT NULL DEFAULT false`;
 
+      // Video de YouTube y carpeta de assets de Drive del lanzamiento — nivel
+      // release, no por track. Mismo criterio que marketing_plan: para un
+      // EP/álbum se escribe igual en cada fila del grupo (WHERE group_id=X en
+      // setReleaseLinks), nunca en pm_release_groups, para no necesitar un
+      // JOIN extra en ningún lugar que ya lee r.* (listReleasesForBoard,
+      // etc.). Alimenta automáticamente el módulo Community Manager.
+      await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS youtube_url TEXT`;
+      await sql`ALTER TABLE pm_releases ADD COLUMN IF NOT EXISTS drive_assets_url TEXT`;
+
       await sql`
         CREATE TABLE IF NOT EXISTS pm_release_history (
           id BIGSERIAL PRIMARY KEY,
@@ -120,6 +129,8 @@ export type NewRelease = {
   tipoObra: string;
   audioUrl: string | null;
   portadaUrl: string | null;
+  youtubeUrl: string | null;
+  driveAssetsUrl: string | null;
   createdBy: string;
 };
 
@@ -140,10 +151,12 @@ export async function createRelease(r: NewRelease) {
   const { rows } = await sql`
     INSERT INTO pm_releases
       (artist_name, sello, streaming_project, fonograma_nombre, estado, distribuidora, fecha_lanzamiento,
-       hora_lanzamiento, autores_compositores, colaboradores, isrc, genero, tipo_obra, audio_url, portada_url, created_by)
+       hora_lanzamiento, autores_compositores, colaboradores, isrc, genero, tipo_obra, audio_url, portada_url,
+       youtube_url, drive_assets_url, created_by)
     VALUES
       (${r.artist}, ${r.sello}, ${r.streamingProject}, ${r.fonograma}, ${r.estado}, ${r.distribuidora}, ${r.fecha},
-       ${r.hora}, ${r.autoresCompositores}, ${r.colaboradores}, ${r.isrc}, ${r.genero}, ${r.tipoObra}, ${r.audioUrl}, ${r.portadaUrl}, ${r.createdBy})
+       ${r.hora}, ${r.autoresCompositores}, ${r.colaboradores}, ${r.isrc}, ${r.genero}, ${r.tipoObra}, ${r.audioUrl}, ${r.portadaUrl},
+       ${r.youtubeUrl}, ${r.driveAssetsUrl}, ${r.createdBy})
     RETURNING *
   `;
   const release = rows[0];
@@ -165,6 +178,8 @@ export type NewReleaseGroup = {
   fecha: string | null;
   hora: string | null;
   comentarios: string | null;
+  youtubeUrl: string | null;
+  driveAssetsUrl: string | null;
   createdBy: string;
 };
 
@@ -199,10 +214,10 @@ export async function createGroupedRelease(group: NewReleaseGroup, tracks: NewGr
     const { rows } = await sql`
       INSERT INTO pm_releases
         (artist_name, sello, streaming_project, fonograma_nombre, estado, distribuidora, fecha_lanzamiento, hora_lanzamiento,
-         audio_url, portada_url, group_id, track_number, colaboradores, productor, isrc, genero, tipo_obra, comentario, created_by)
+         audio_url, portada_url, youtube_url, drive_assets_url, group_id, track_number, colaboradores, productor, isrc, genero, tipo_obra, comentario, created_by)
       VALUES
         (${t.artist}, ${group.sello}, ${group.streamingProject}, ${t.fonograma}, ${group.estado}, ${group.distribuidora}, ${group.fecha}, ${group.hora},
-         ${t.audioUrl}, ${t.portadaUrl}, ${groupRow.id}, ${t.trackNumber}, ${t.colaboradores},
+         ${t.audioUrl}, ${t.portadaUrl}, ${group.youtubeUrl}, ${group.driveAssetsUrl}, ${groupRow.id}, ${t.trackNumber}, ${t.colaboradores},
          ${t.productor}, ${t.isrc}, ${t.genero}, ${t.tipoObra}, ${t.comentario}, ${group.createdBy})
       RETURNING *
     `;
@@ -353,6 +368,37 @@ export async function setMarketingPlan(
   await sql`
     INSERT INTO pm_release_history (release_id, action, actor_email, detail)
     VALUES (${id}, 'updated', ${actorEmail}, ${`Plan de marketing -> ${marketingPlan ? "Sí" : "No"}`})
+  `;
+}
+
+// Editable en cualquier momento después de creado el fonograma — es la
+// única forma de agregar o corregir estos dos links post-carga. Mismo
+// criterio group_id que setMarketingPlan(): un EP/álbum escribe el mismo
+// valor en todas sus filas, nunca en pm_release_groups.
+export async function setReleaseLinks(
+  id: number,
+  groupId: number | null,
+  youtubeUrl: string | null,
+  driveAssetsUrl: string | null,
+  actorEmail: string
+) {
+  await ensureReleasesSchema();
+  if (groupId != null) {
+    await sql`
+      UPDATE pm_releases SET youtube_url = ${youtubeUrl}, drive_assets_url = ${driveAssetsUrl},
+        updated_by = ${actorEmail}, updated_at = now()
+      WHERE group_id = ${groupId}
+    `;
+  } else {
+    await sql`
+      UPDATE pm_releases SET youtube_url = ${youtubeUrl}, drive_assets_url = ${driveAssetsUrl},
+        updated_by = ${actorEmail}, updated_at = now()
+      WHERE id = ${id}
+    `;
+  }
+  await sql`
+    INSERT INTO pm_release_history (release_id, action, actor_email, detail)
+    VALUES (${id}, 'updated', ${actorEmail}, 'Links de YouTube/assets actualizados')
   `;
 }
 

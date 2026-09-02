@@ -21,8 +21,21 @@ type BoardRelease = {
   group_tipo: string | null;
   group_nombre: string | null;
   audio_url: string | null;
+  youtube_url: string | null;
+  drive_assets_url: string | null;
   releaseStatus: TaskStatus;
   splitStatus: TaskStatus;
+  materialesStatus: TaskStatus;
+  materialesEstado: "assets_disponibles" | "video_disponible" | "informacion_parcial" | "assets_pendientes" | "video_pendiente" | "sin_materiales";
+};
+
+const MATERIALES_LABEL: Record<BoardRelease["materialesEstado"], string> = {
+  assets_disponibles: "Materiales completos",
+  video_disponible: "Video disponible",
+  informacion_parcial: "Información parcial",
+  assets_pendientes: "Falta la carpeta de assets",
+  video_pendiente: "Falta el video de YouTube",
+  sin_materiales: "Sin materiales cargados",
 };
 
 function formatFecha(v: string | null): string {
@@ -46,6 +59,7 @@ function PMFonogramaInner() {
   const [assignedArtists, setAssignedArtists] = useState<string[]>([]);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [overridingId, setOverridingId] = useState<number | null>(null);
+  const [editingLinks, setEditingLinks] = useState<BoardRelease | null>(null);
 
   const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
   const isAdmin = roles.includes("admin");
@@ -248,6 +262,21 @@ function PMFonogramaInner() {
                       </span>
                     </div>
                   </div>
+                  <div className="pmx-fono-task">
+                    <span className="pmx-fono-task-label">YouTube / Assets</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <button
+                        type="button"
+                        className="pmx-fono-task-btn"
+                        onClick={() => setEditingLinks(r)}
+                      >
+                        {r.materialesStatus === "Completado" ? "Editar links" : "Agregar links"}
+                      </button>
+                      <span className={`pmx-badge ${r.materialesStatus === "Pendiente" ? "pendiente" : "completado"}`}>
+                        {MATERIALES_LABEL[r.materialesEstado]}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {(isAdmin || r.created_by === email) && (
@@ -287,6 +316,91 @@ function PMFonogramaInner() {
           onCreated={loadReleases}
         />
       )}
+
+      {editingLinks && (
+        <EditLinksModal
+          release={editingLinks}
+          onClose={() => setEditingLinks(null)}
+          onSaved={() => {
+            setEditingLinks(null);
+            loadReleases();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function EditLinksModal({
+  release,
+  onClose,
+  onSaved,
+}: {
+  release: BoardRelease;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
+  const [youtubeUrl, setYoutubeUrl] = useState(release.youtube_url ?? "");
+  const [driveAssetsUrl, setDriveAssetsUrl] = useState(release.drive_assets_url ?? "");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/pm/releases/${release.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ youtubeUrl: youtubeUrl.trim(), driveAssetsUrl: driveAssetsUrl.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo guardar.");
+      onSaved();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60, padding: 20 }}
+      onClick={onClose}
+    >
+      <div
+        className="card"
+        onClick={(e) => e.stopPropagation()}
+        style={{ width: 480, maxWidth: "95vw", display: "flex", flexDirection: "column", gap: 12 }}
+      >
+        <div style={{ fontSize: 16, fontWeight: 700 }}>{release.fonograma_nombre}</div>
+        <div>
+          <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Link del video de YouTube</label>
+          <input
+            value={youtubeUrl}
+            onChange={(e) => setYoutubeUrl(e.target.value)}
+            placeholder="https://youtube.com/watch?v=... o youtu.be/..."
+            style={{ width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "9px 12px", color: "var(--text-1)", fontSize: 13.5, marginTop: 4 }}
+          />
+        </div>
+        <div>
+          <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Link de assets (carpeta de Drive)</label>
+          <input
+            value={driveAssetsUrl}
+            onChange={(e) => setDriveAssetsUrl(e.target.value)}
+            placeholder="https://drive.google.com/drive/folders/..."
+            style={{ width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "9px 12px", color: "var(--text-1)", fontSize: 13.5, marginTop: 4 }}
+          />
+        </div>
+        {error && <div style={{ color: "var(--crit-ink)", fontSize: 12.5 }}>{error}</div>}
+        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
+          <button type="button" className="btn-ghost" onClick={onClose}>Cancelar</button>
+          <button type="button" className="btn-primary" disabled={saving} onClick={handleSave}>
+            {saving ? "Guardando..." : "Guardar"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

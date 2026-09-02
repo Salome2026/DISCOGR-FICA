@@ -15,6 +15,7 @@ import { upsertTrackFromRelease } from "@/lib/db/catalog";
 import { isActiveStreamingProjectName } from "@/lib/db/streamingProjects";
 import { notifyNewLanzamiento } from "@/lib/email";
 import { TIPOS_OBRA } from "@/lib/tiposObra";
+import { isValidYoutubeUrl } from "@/lib/youtubeLinkValidation";
 
 const ESTADOS: EstadoRelease[] = ["Contactado", "Firmado", "Necesito ayuda"];
 const HORA_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -97,10 +98,11 @@ async function handleSingleCreate(
   sello: string | null,
   streamingProject: string | null
 ) {
-  const { artist, fonograma, estado, distribuidora, fecha, hora, autoresCompositores, colaboradores, colaboradoresMain, isrc, genero, tipoObra, audioUrl, portadaUrl } = body as {
+  const { artist, fonograma, estado, distribuidora, fecha, hora, autoresCompositores, colaboradores, colaboradoresMain, isrc, genero, tipoObra, audioUrl, portadaUrl, youtubeUrl, driveAssetsUrl } = body as {
     artist?: string; fonograma?: string; estado?: string; distribuidora?: string;
     fecha?: string; hora?: string; autoresCompositores?: string; colaboradores?: string; colaboradoresMain?: string;
     isrc?: string; genero?: string; tipoObra?: string; audioUrl?: string; portadaUrl?: string;
+    youtubeUrl?: string; driveAssetsUrl?: string;
   };
   const horaNorm = normalizeHora(hora);
 
@@ -118,6 +120,9 @@ async function handleSingleCreate(
   }
   if (fecha && Number.isNaN(Date.parse(fecha))) {
     return NextResponse.json({ error: "Fecha inválida." }, { status: 400 });
+  }
+  if (youtubeUrl && youtubeUrl.trim() && !isValidYoutubeUrl(youtubeUrl)) {
+    return NextResponse.json({ error: "El link de YouTube no tiene un formato válido." }, { status: 400 });
   }
   if (!(await checkArtistAssignment(roles, email, artist))) {
     return NextResponse.json({ error: "No tenés este artista asignado." }, { status: 403 });
@@ -147,6 +152,8 @@ async function handleSingleCreate(
     tipoObra,
     audioUrl: audioUrl || null,
     portadaUrl: portadaUrl || null,
+    youtubeUrl: youtubeUrl?.trim() || null,
+    driveAssetsUrl: driveAssetsUrl?.trim() || null,
     createdBy: email,
   });
 
@@ -222,9 +229,10 @@ async function handleGroupedCreate(
   sello: string | null,
   streamingProject: string | null
 ) {
-  const { artist, nombre, estado, distribuidora, fecha, hora, comentarios, tracks } = body as {
+  const { artist, nombre, estado, distribuidora, fecha, hora, comentarios, tracks, youtubeUrl, driveAssetsUrl } = body as {
     artist?: string; nombre?: string; estado?: string; distribuidora?: string;
     fecha?: string; hora?: string; comentarios?: string; tracks?: TrackInput[];
+    youtubeUrl?: string; driveAssetsUrl?: string;
   };
   const horaNorm = normalizeHora(hora);
 
@@ -239,6 +247,9 @@ async function handleGroupedCreate(
   }
   if (fecha && Number.isNaN(Date.parse(fecha))) {
     return NextResponse.json({ error: "Fecha inválida." }, { status: 400 });
+  }
+  if (youtubeUrl && youtubeUrl.trim() && !isValidYoutubeUrl(youtubeUrl)) {
+    return NextResponse.json({ error: "El link de YouTube no tiene un formato válido." }, { status: 400 });
   }
   if (!Array.isArray(tracks) || tracks.length === 0) {
     return NextResponse.json(
@@ -304,6 +315,8 @@ async function handleGroupedCreate(
       fecha: fecha || null,
       hora: horaNorm,
       comentarios: comentarios || null,
+      youtubeUrl: youtubeUrl?.trim() || null,
+      driveAssetsUrl: driveAssetsUrl?.trim() || null,
       createdBy: email,
     },
     cleanTracks

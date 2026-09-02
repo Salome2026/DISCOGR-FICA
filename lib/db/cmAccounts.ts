@@ -158,6 +158,16 @@ export async function listAllAccounts(): Promise<CmAccount[]> {
   return rows.map(rowToAccount);
 }
 
+// Todas las cuentas vinculadas a un artista puntual — la "vista por
+// artista" agrega estas cuentas (puede ser más de una red por artista),
+// a diferencia de listAccountsBySelloOrArtist que también matchea por
+// sello (usada para enrutar lanzamientos, no para esta vista).
+export async function listAccountsForArtist(artistId: string): Promise<CmAccount[]> {
+  await ensureCmAccountsSchema();
+  const { rows } = await sql`SELECT * FROM cm_accounts WHERE linked_artist_id = ${artistId} AND active = true ORDER BY name ASC`;
+  return rows.map(rowToAccount);
+}
+
 export async function listAccountsBySelloOrArtist(sello: string | null, artistId: string | null): Promise<CmAccount[]> {
   await ensureCmAccountsSchema();
   const { rows } = await sql`

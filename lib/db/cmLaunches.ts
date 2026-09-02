@@ -147,6 +147,12 @@ export async function listAllLaunches(): Promise<CmLaunch[]> {
   return rows.map(rowToLaunch);
 }
 
+export async function listLaunchesForArtist(artistId: string): Promise<CmLaunch[]> {
+  await ensureCmLaunchesSchema();
+  const { rows } = await sql`SELECT * FROM cm_launches WHERE artist_id = ${artistId} ORDER BY fecha_lanzamiento DESC NULLS LAST, created_at DESC`;
+  return rows.map(rowToLaunch);
+}
+
 export async function getLaunch(id: string): Promise<CmLaunch | null> {
   await ensureCmLaunchesSchema();
   const { rows } = await sql`SELECT * FROM cm_launches WHERE id = ${id}`;

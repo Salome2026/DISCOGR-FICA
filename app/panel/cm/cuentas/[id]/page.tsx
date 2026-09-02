@@ -7,7 +7,7 @@ import { CmShell, CM_TIPO_LABELS, CM_ESTADO_LABELS } from "../../_shared";
 
 type Account = {
   id: string; name: string; platform: string; handle: string | null; url: string | null;
-  sello: string | null; frecuenciaPublicacionAcordada: string | null; active: boolean;
+  sello: string | null; frecuenciaPublicacionAcordada: string | null; active: boolean; linkedArtistId: string | null;
 };
 type ContentItem = {
   id: number; tipoContenido: string; fecha: string; hora: string | null; estado: string;
@@ -92,6 +92,9 @@ function AccountDetail({ id }: { id: string }) {
       <div className="cm-section">
         <div className="cm-card" style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "var(--text-2)" }}>
           {account.url && <a href={account.url} target="_blank" rel="noreferrer" style={{ color: "var(--text-1)" }}>Abrir cuenta ↗</a>}
+          {account.linkedArtistId && (
+            <Link href={`/panel/cm/artistas/${account.linkedArtistId}`} style={{ color: "var(--text-1)" }}>Ver vista combinada del artista →</Link>
+          )}
           {account.sello && <span>Sello: <strong style={{ color: "var(--text-1)" }}>{account.sello}</strong></span>}
           {account.frecuenciaPublicacionAcordada && <span>Frecuencia acordada: <strong style={{ color: "var(--text-1)" }}>{account.frecuenciaPublicacionAcordada}</strong></span>}
           <span>Publicados: <strong style={{ color: "var(--text-1)" }}>{publicados.length}</strong></span>

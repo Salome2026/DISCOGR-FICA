@@ -11,6 +11,7 @@ type NotifyTrack = {
   trackNumber?: number;
   fonograma: string;
   artist: string;
+  autoresCompositores: string | null;
   colaboradores: string | null;
   productor: string | null;
   isrc: string | null;
@@ -94,6 +95,7 @@ function buildContent(input: NotifyInput): { rows: [string, string][]; files: Fi
     for (const t of input.tracks ?? []) {
       const n = t.trackNumber ? `#${t.trackNumber} — ` : "";
       rows.push([`Canción ${n}${t.fonograma}`, `Artista: ${t.artist}`]);
+      if (t.autoresCompositores) rows.push(["  Autores y compositores", t.autoresCompositores]);
       if (t.colaboradores) rows.push(["  Colaboradores", t.colaboradores]);
       if (t.productor) rows.push(["  Productor", t.productor]);
       if (t.isrc) rows.push(["  ISRC", t.isrc]);

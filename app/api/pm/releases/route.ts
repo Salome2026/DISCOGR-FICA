@@ -376,6 +376,7 @@ async function handleGroupedCreate(
         trackNumber: t.trackNumber ?? i + 1,
         fonograma: t.fonograma,
         artist: t.artist,
+        autoresCompositores: t.autoresCompositores,
         colaboradores: t.colaboradores,
         productor: t.productor,
         isrc: t.isrc,

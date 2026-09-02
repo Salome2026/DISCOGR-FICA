@@ -15,7 +15,7 @@ export const CM_STYLES = `
   .cm-signout { background: transparent; border: 1px solid var(--line-soft); border-radius: 6px; padding: 8px 16px; color: var(--text-1); font-weight: 500; cursor: pointer; font-size: 13px; }
   .cm-nav { display: flex; gap: 4px; margin-bottom: 1.75rem; border-bottom: 1px solid var(--line-soft); flex-wrap: wrap; }
   .cm-nav a { padding: 10px 14px; font-size: 14px; font-weight: 500; color: var(--text-2); text-decoration: none; border-bottom: 2px solid transparent; }
-  .cm-nav a.active { color: var(--accent-color); font-weight: 700; border-bottom-color: var(--accent-color); }
+  .cm-nav a.active { color: var(--text-1); font-weight: 700; border-bottom-color: var(--text-1); }
   .cm-card { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 10px; padding: 1.25rem; }
   .cm-section { margin-bottom: 1.75rem; }
   .cm-section-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; color: var(--text-1); }
@@ -25,8 +25,8 @@ export const CM_STYLES = `
   .cm-badge.ok { background: var(--good-bg); color: var(--good-ink); border-color: transparent; }
   .cm-badge.warn { background: var(--warn-bg); color: var(--warn-ink); border-color: transparent; }
   .cm-badge.crit { background: var(--crit-bg); color: var(--crit-ink); border-color: transparent; }
-  .cm-btn { background: var(--accent-color); color: var(--accent-color-ink); border: none; border-radius: 6px; padding: 9px 18px; font-weight: 700; font-size: 14px; cursor: pointer; }
-  .cm-btn:hover { filter: brightness(1.08); }
+  .cm-btn { background: var(--text-1); color: var(--bg-1); border: none; border-radius: 6px; padding: 9px 18px; font-weight: 700; font-size: 14px; cursor: pointer; }
+  .cm-btn:hover { filter: brightness(0.92); }
   .cm-btn-ghost { background: transparent; border: 1px solid var(--line-soft); border-radius: 6px; padding: 9px 18px; color: var(--text-1); font-weight: 600; font-size: 14px; cursor: pointer; }
   .cm-btn-ghost:hover { border-color: var(--text-2); }
   .cm-input { width: 100%; background: var(--bg-1); border: 1px solid var(--line-soft); border-radius: 6px; padding: 9px 12px; color: var(--text-1); font-size: 14px; }

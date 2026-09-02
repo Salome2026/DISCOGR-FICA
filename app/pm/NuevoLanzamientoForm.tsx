@@ -1322,7 +1322,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
                   style={inputStyle}
                 />
                 {featuring.trim() && (
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
                     {featuring.split(",").map((raw) => raw.trim()).filter(Boolean).map((name) => {
                       const role = featuringRoles[name] ?? "featuring";
                       return (
@@ -1331,36 +1331,29 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
                           style={{
                             display: "flex",
                             alignItems: "center",
-                            gap: 6,
+                            justifyContent: "space-between",
+                            gap: 10,
                             background: "var(--bg-2)",
                             border: "1px solid var(--line-soft)",
-                            borderRadius: 999,
-                            padding: "4px 6px 4px 12px",
+                            borderRadius: 8,
+                            padding: "6px 8px 6px 12px",
                             fontSize: 12.5,
                           }}
                         >
                           <span>{name}</span>
-                          <button
-                            type="button"
-                            onClick={() =>
+                          <select
+                            value={role}
+                            onChange={(e) =>
                               setFeaturingRoles((prev) => ({
                                 ...prev,
-                                [name]: role === "main" ? "featuring" : "main",
+                                [name]: e.target.value as "main" | "featuring",
                               }))
                             }
-                            style={{
-                              background: role === "main" ? "var(--accent-glass-bg)" : "transparent",
-                              border: "1px solid " + (role === "main" ? "var(--accent-glass-border)" : "var(--line-soft)"),
-                              borderRadius: 999,
-                              padding: "3px 10px",
-                              fontSize: 11,
-                              fontWeight: 600,
-                              color: role === "main" ? "var(--text-1)" : "var(--text-3)",
-                              cursor: "pointer",
-                            }}
+                            style={{ ...inputStyle, width: "auto", padding: "4px 8px", fontSize: 12 }}
                           >
-                            {role === "main" ? "Main" : "Featuring"}
-                          </button>
+                            <option value="featuring">Featuring</option>
+                            <option value="main">Main</option>
+                          </select>
                         </div>
                       );
                     })}
@@ -1595,7 +1588,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
                                 style={inputStyle}
                               />
                               {t.colaboradores.trim() && (
-                                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }}>
                                   {t.colaboradores.split(",").map((raw) => raw.trim()).filter(Boolean).map((name) => {
                                     const role = t.colaboradoresRoles[name] ?? "featuring";
                                     return (
@@ -1604,38 +1597,31 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
                                         style={{
                                           display: "flex",
                                           alignItems: "center",
-                                          gap: 6,
+                                          justifyContent: "space-between",
+                                          gap: 10,
                                           background: "var(--bg-2)",
                                           border: "1px solid var(--line-soft)",
-                                          borderRadius: 999,
-                                          padding: "4px 6px 4px 12px",
+                                          borderRadius: 8,
+                                          padding: "6px 8px 6px 12px",
                                           fontSize: 12.5,
                                         }}
                                       >
                                         <span>{name}</span>
-                                        <button
-                                          type="button"
-                                          onClick={() =>
+                                        <select
+                                          value={role}
+                                          onChange={(e) =>
                                             updateTrack(t.key, {
                                               colaboradoresRoles: {
                                                 ...t.colaboradoresRoles,
-                                                [name]: role === "main" ? "featuring" : "main",
+                                                [name]: e.target.value as "main" | "featuring",
                                               },
                                             })
                                           }
-                                          style={{
-                                            background: role === "main" ? "var(--accent-glass-bg)" : "transparent",
-                                            border: "1px solid " + (role === "main" ? "var(--accent-glass-border)" : "var(--line-soft)"),
-                                            borderRadius: 999,
-                                            padding: "3px 10px",
-                                            fontSize: 11,
-                                            fontWeight: 600,
-                                            color: role === "main" ? "var(--text-1)" : "var(--text-3)",
-                                            cursor: "pointer",
-                                          }}
+                                          style={{ ...inputStyle, width: "auto", padding: "4px 8px", fontSize: 12 }}
                                         >
-                                          {role === "main" ? "Main" : "Featuring"}
-                                        </button>
+                                          <option value="featuring">Featuring</option>
+                                          <option value="main">Main</option>
+                                        </select>
                                       </div>
                                     );
                                   })}

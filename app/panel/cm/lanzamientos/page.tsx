@@ -37,9 +37,9 @@ function CmLanzamientosInner() {
     <CmShell title="Lanzamientos" subtitle="Novedades cargadas por Project Manager" active="lanzamientos">
       {error && <div className="cm-badge crit" style={{ marginBottom: 16 }}>{error}</div>}
       {!launches ? (
-        <p style={{ color: "var(--text-3)" }}>Cargando...</p>
+        <p className="cm-empty">Cargando...</p>
       ) : launches.length === 0 ? (
-        <p style={{ color: "var(--text-3)" }}>Todavía no hay lanzamientos.</p>
+        <p className="cm-empty">Todavía no hay lanzamientos.</p>
       ) : (
         <div className="cm-grid">
           {launches.map((l) => (

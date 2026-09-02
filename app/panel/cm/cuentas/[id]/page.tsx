@@ -3,10 +3,10 @@
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import RequireRole from "@/app/components/RequireRole";
-import { CmShell, CM_TIPO_LABELS, CM_ESTADO_LABELS } from "../../_shared";
+import { CmShell, CmAvatar, CM_TIPO_LABELS, CM_ESTADO_LABELS } from "../../_shared";
 
 type Account = {
-  id: string; name: string; platform: string; handle: string | null; url: string | null;
+  id: string; name: string; platform: string; handle: string | null; url: string | null; photoUrl: string | null;
   sello: string | null; frecuenciaPublicacionAcordada: string | null; active: boolean; linkedArtistId: string | null;
 };
 type ContentItem = {
@@ -37,6 +37,38 @@ function AccountDetail({ id }: { id: string }) {
   const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
   const [suggestionsMsg, setSuggestionsMsg] = useState<string | null>(null);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [canEditAccount, setCanEditAccount] = useState(false);
+  const [editingPhoto, setEditingPhoto] = useState(false);
+  const [photoUrlInput, setPhotoUrlInput] = useState("");
+  const [savingPhoto, setSavingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/me").then((r) => r.json()).then((d) => {
+      const roles: string[] = d.roles ?? [];
+      setCanEditAccount(roles.includes("management") || roles.includes("admin"));
+    });
+  }, []);
+
+  async function savePhoto() {
+    setSavingPhoto(true);
+    setPhotoError(null);
+    try {
+      const res = await fetch(`/api/cm/cuentas/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ photoUrl: photoUrlInput.trim() || null }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "No se pudo guardar la foto.");
+      setEditingPhoto(false);
+      load();
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setSavingPhoto(false);
+    }
+  }
 
   function load() {
     fetch(`/api/cm/cuentas/${id}`)
@@ -77,7 +109,7 @@ function AccountDetail({ id }: { id: string }) {
     if (res.ok) { setNewNote(""); load(); }
   }
 
-  if (account === undefined) return <CmShell active="cuentas"><p style={{ color: "var(--text-3)" }}>Cargando...</p></CmShell>;
+  if (account === undefined) return <CmShell active="cuentas"><p className="cm-empty">Cargando...</p></CmShell>;
   if (account === null) return <CmShell active="cuentas"><div className="cm-badge crit">{error ?? "No encontrada"}</div></CmShell>;
 
   const pendientes = content.filter((c) => !["publicado", "cancelado"].includes(c.estado));
@@ -85,12 +117,47 @@ function AccountDetail({ id }: { id: string }) {
 
   return (
     <CmShell title={account.name} subtitle={`${account.platform}${account.handle ? ` · ${account.handle}` : ""}`} active="cuentas">
-      <Link href="/panel/cm/cuentas" style={{ fontSize: 12.5, color: "var(--text-3)", textDecoration: "none", display: "inline-block", marginBottom: 16 }}>
+      <Link href="/panel/cm/cuentas" style={{ fontSize: 13, fontWeight: 500, color: "var(--text-2)", textDecoration: "none", display: "inline-block", marginBottom: 16 }}>
         ← Volver a cuentas
       </Link>
 
       <div className="cm-section">
-        <div className="cm-card" style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "var(--text-2)" }}>
+        <div className="cm-card" style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <CmAvatar name={account.name} photoUrl={account.photoUrl} size={64} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {editingPhoto ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 420 }}>
+                <label className="cm-label">URL de la foto</label>
+                <input
+                  className="cm-input"
+                  value={photoUrlInput}
+                  onChange={(e) => setPhotoUrlInput(e.target.value)}
+                  placeholder="https://..."
+                  autoFocus
+                />
+                {photoError && <div className="cm-badge crit">{photoError}</div>}
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button type="button" className="cm-btn-ghost" onClick={() => { setEditingPhoto(false); setPhotoError(null); }}>Cancelar</button>
+                  <button type="button" className="cm-btn" disabled={savingPhoto} onClick={savePhoto}>
+                    {savingPhoto ? "Guardando..." : "Guardar"}
+                  </button>
+                </div>
+              </div>
+            ) : canEditAccount ? (
+              <button
+                type="button"
+                className="cm-btn-ghost"
+                onClick={() => { setPhotoUrlInput(account.photoUrl ?? ""); setEditingPhoto(true); }}
+              >
+                {account.photoUrl ? "Cambiar foto" : "Agregar foto"}
+              </button>
+            ) : null}
+          </div>
+        </div>
+      </div>
+
+      <div className="cm-section">
+        <div className="cm-card" style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13.5, fontWeight: 500, color: "var(--text-2)" }}>
           {account.url && <a href={account.url} target="_blank" rel="noreferrer" style={{ color: "var(--text-1)" }}>Abrir cuenta ↗</a>}
           {account.linkedArtistId && (
             <Link href={`/panel/cm/artistas/${account.linkedArtistId}`} style={{ color: "var(--text-1)" }}>Ver vista combinada del artista →</Link>
@@ -117,13 +184,13 @@ function AccountDetail({ id }: { id: string }) {
       <div className="cm-section">
         <div className="cm-section-title">Contenido pendiente</div>
         {pendientes.length === 0 ? (
-          <p style={{ color: "var(--text-3)", fontSize: 13 }}>Sin contenido pendiente.</p>
+          <p className="cm-empty">Sin contenido pendiente.</p>
         ) : (
           <div className="cm-grid">
             {pendientes.map((c) => (
               <div key={c.id} className="cm-card" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <div style={{ fontWeight: 600, fontSize: 13.5 }}>{CM_TIPO_LABELS[c.tipoContenido] ?? c.tipoContenido}</div>
-                <div style={{ fontSize: 12, color: "var(--text-3)" }}>{c.fecha.slice(0, 10)}{c.hora ? ` · ${c.hora}` : ""}</div>
+                <div style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-2)" }}>{c.fecha.slice(0, 10)}{c.hora ? ` · ${c.hora}` : ""}</div>
                 <span className="cm-badge">{CM_ESTADO_LABELS[c.estado] ?? c.estado}</span>
               </div>
             ))}
@@ -134,13 +201,13 @@ function AccountDetail({ id }: { id: string }) {
       <div className="cm-section">
         <div className="cm-section-title">Publicados recientes</div>
         {publicados.length === 0 ? (
-          <p style={{ color: "var(--text-3)", fontSize: 13 }}>Sin publicaciones registradas todavía.</p>
+          <p className="cm-empty">Sin publicaciones registradas todavía.</p>
         ) : (
           <div className="cm-grid">
             {publicados.slice(0, 6).map((c) => (
               <div key={c.id} className="cm-card" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <div style={{ fontWeight: 600, fontSize: 13.5 }}>{CM_TIPO_LABELS[c.tipoContenido] ?? c.tipoContenido}</div>
-                <div style={{ fontSize: 12, color: "var(--text-3)" }}>{c.fecha.slice(0, 10)}</div>
+                <div style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-2)" }}>{c.fecha.slice(0, 10)}</div>
                 {c.publishedUrl && <a href={c.publishedUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12.5 }}>Ver publicación ↗</a>}
               </div>
             ))}
@@ -155,7 +222,7 @@ function AccountDetail({ id }: { id: string }) {
             {loadingSuggestions ? "Generando..." : "Generar sugerencias"}
           </button>
         </div>
-        {suggestionsMsg && <p style={{ color: "var(--text-3)", fontSize: 13 }}>{suggestionsMsg}</p>}
+        {suggestionsMsg && <p className="cm-empty">{suggestionsMsg}</p>}
         {suggestions && suggestions.length > 0 && (
           <div className="cm-grid">
             {suggestions.map((s, i) => {
@@ -165,7 +232,7 @@ function AccountDetail({ id }: { id: string }) {
                   <div style={{ fontWeight: 600, fontSize: 13.5 }}>{SUGGESTION_LABELS[s.tipoSugerencia] ?? s.tipoSugerencia}</div>
                   <div style={{ fontSize: 12.5, color: "var(--text-2)" }}>{s.explicacion}</div>
                   {ref && (
-                    <div style={{ fontSize: 11.5, color: "var(--text-3)" }}>
+                    <div style={{ fontSize: 12, fontWeight: 500, color: "var(--text-2)" }}>
                       Basado en: {CM_TIPO_LABELS[ref.tipoContenido] ?? ref.tipoContenido} del {ref.fecha.slice(0, 10)}
                     </div>
                   )}
@@ -179,10 +246,10 @@ function AccountDetail({ id }: { id: string }) {
       <div className="cm-section">
         <div className="cm-section-title">Observaciones</div>
         <div className="cm-card" style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {notes.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 13 }}>Sin observaciones todavía.</p>}
+          {notes.length === 0 && <p className="cm-empty">Sin observaciones todavía.</p>}
           {notes.map((n) => (
             <div key={n.id} style={{ borderBottom: "1px solid var(--line-soft)", paddingBottom: 8 }}>
-              <div style={{ fontSize: 12, color: "var(--text-3)" }}>{n.author_email} · {new Date(n.created_at).toLocaleString("es-AR")}</div>
+              <div style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-2)" }}>{n.author_email} · {new Date(n.created_at).toLocaleString("es-AR")}</div>
               <div style={{ fontSize: 13.5 }}>{n.body}</div>
             </div>
           ))}

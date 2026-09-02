@@ -46,6 +46,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       platform: typeof body?.platform === "string" ? body.platform.trim() : undefined,
       handle: body?.handle !== undefined ? (typeof body.handle === "string" ? body.handle.trim() || null : null) : undefined,
       url: body?.url !== undefined ? (typeof body.url === "string" ? body.url.trim() || null : null) : undefined,
+      photoUrl: body?.photoUrl !== undefined ? (typeof body.photoUrl === "string" ? body.photoUrl.trim() || null : null) : undefined,
       sello: body?.sello !== undefined ? (typeof body.sello === "string" ? body.sello.trim() || null : null) : undefined,
       frecuenciaPublicacionAcordada: body?.frecuenciaPublicacionAcordada !== undefined ? (typeof body.frecuenciaPublicacionAcordada === "string" ? body.frecuenciaPublicacionAcordada.trim() || null : null) : undefined,
       active: typeof body?.active === "boolean" ? body.active : undefined,

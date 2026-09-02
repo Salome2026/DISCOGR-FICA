@@ -75,12 +75,12 @@ function LaunchDetail({ id }: { id: string }) {
     }
   }
 
-  if (launch === undefined) return <CmShell active="lanzamientos"><p style={{ color: "var(--text-3)" }}>Cargando...</p></CmShell>;
+  if (launch === undefined) return <CmShell active="lanzamientos"><p className="cm-empty">Cargando...</p></CmShell>;
   if (launch === null) return <CmShell active="lanzamientos"><div className="cm-badge crit">{error ?? "No encontrado"}</div></CmShell>;
 
   return (
     <CmShell title={launch.fonogramaNombre} subtitle={`${launch.artistName}${launch.sello ? ` · ${launch.sello}` : ""}`} active="lanzamientos">
-      <Link href="/panel/cm/lanzamientos" style={{ fontSize: 12.5, color: "var(--text-3)", textDecoration: "none", display: "inline-block", marginBottom: 16 }}>
+      <Link href="/panel/cm/lanzamientos" style={{ fontSize: 13, fontWeight: 500, color: "var(--text-2)", textDecoration: "none", display: "inline-block", marginBottom: 16 }}>
         ← Volver a lanzamientos
       </Link>
 
@@ -121,10 +121,10 @@ function LaunchDetail({ id }: { id: string }) {
       <div className="cm-section">
         <div className="cm-section-title">Comentarios (visible para el PM también)</div>
         <div className="cm-card" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {comments.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 13 }}>Todavía no hay comentarios.</p>}
+          {comments.length === 0 && <p className="cm-empty">Todavía no hay comentarios.</p>}
           {comments.map((c) => (
             <div key={c.id} style={{ borderBottom: "1px solid var(--line-soft)", paddingBottom: 10 }}>
-              <div style={{ fontSize: 12, color: "var(--text-3)" }}>{c.author_email} · {new Date(c.created_at).toLocaleString("es-AR")}</div>
+              <div style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-2)" }}>{c.author_email} · {new Date(c.created_at).toLocaleString("es-AR")}</div>
               <div style={{ fontSize: 13.5, marginTop: 2 }}>{c.body}</div>
             </div>
           ))}

@@ -23,7 +23,7 @@ function isSameDay(a: Date, b: Date): boolean {
 }
 
 const ESTADO_DOT: Record<string, string> = {
-  idea: "var(--text-3)", pendiente_material: "var(--warn-ink, #e6a028)", en_produccion: "var(--warn-ink, #e6a028)",
+  idea: "var(--text-2)", pendiente_material: "var(--warn-ink, #e6a028)", en_produccion: "var(--warn-ink, #e6a028)",
   listo: "var(--text-1)", programado: "var(--text-1)", publicado: "var(--good-ink)", cancelado: "var(--crit-ink)",
 };
 
@@ -115,7 +115,7 @@ function CmCalendarioInner() {
       </div>
 
       {!items ? (
-        <p style={{ color: "var(--text-3)" }}>Cargando...</p>
+        <p className="cm-empty">Cargando...</p>
       ) : (
         <div className="cm-cal-grid">
           {DIAS.map((d) => <div key={d} className="cm-cal-dayname">{d}</div>)}
@@ -134,7 +134,7 @@ function CmCalendarioInner() {
                 <div className="cm-cal-daynum">{d.getDate()}</div>
                 {visible.map((it) => (
                   <button key={it.id} className="cm-cal-chip" onClick={() => setSelected(it)}>
-                    <span className="dot" style={{ background: ESTADO_DOT[it.estado] ?? "var(--text-3)" }} />
+                    <span className="dot" style={{ background: ESTADO_DOT[it.estado] ?? "var(--text-2)" }} />
                     <span>{it.hora ? `${it.hora} ` : ""}{CM_TIPO_LABELS[it.tipoContenido] ?? it.tipoContenido}</span>
                   </button>
                 ))}
@@ -189,7 +189,7 @@ function ContentDetailModal({ item, onClose, onChanged }: { item: ContentItem; o
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }} onClick={onClose}>
       <div className="cm-card" onClick={(e) => e.stopPropagation()} style={{ width: 420, maxWidth: "95vw", display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ fontWeight: 700, fontSize: 15 }}>{CM_TIPO_LABELS[item.tipoContenido] ?? item.tipoContenido}{item.artistName ? ` — ${item.artistName}` : ""}</div>
-        <div style={{ fontSize: 12.5, color: "var(--text-3)" }}>{item.fecha.slice(0, 10)}{item.hora ? ` · ${item.hora}` : ""}</div>
+        <div style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-2)" }}>{item.fecha.slice(0, 10)}{item.hora ? ` · ${item.hora}` : ""}</div>
         {item.copyText && <div style={{ fontSize: 13 }}>{item.copyText}</div>}
         <div>
           <label className="cm-label">Estado</label>
@@ -251,7 +251,7 @@ function NewContentModal({
       <div className="cm-card" onClick={(e) => e.stopPropagation()} style={{ width: 460, maxWidth: "95vw", display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ fontWeight: 700, fontSize: 15 }}>Nueva publicación</div>
         {accounts.length === 0 ? (
-          <p style={{ color: "var(--text-3)", fontSize: 13 }}>No tenés cuentas asignadas todavía.</p>
+          <p className="cm-empty">No tenés cuentas asignadas todavía.</p>
         ) : (
           <>
             <div>

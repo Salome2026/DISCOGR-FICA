@@ -76,6 +76,7 @@ export type CmAccount = {
   platform: string;
   handle: string | null;
   url: string | null;
+  photoUrl: string | null;
   linkedArtistId: string | null;
   sello: string | null;
   frecuenciaPublicacionAcordada: string | null;
@@ -93,6 +94,7 @@ function rowToAccount(r: Record<string, unknown>): CmAccount {
     platform: r.platform as string,
     handle: (r.handle as string) ?? null,
     url: (r.url as string) ?? null,
+    photoUrl: (r.photo_url as string) ?? null,
     linkedArtistId: (r.linked_artist_id as string) ?? null,
     sello: (r.sello as string) ?? null,
     frecuenciaPublicacionAcordada: (r.frecuencia_publicacion_acordada as string) ?? null,
@@ -127,7 +129,7 @@ export async function createAccount(input: {
 
 export async function updateAccount(
   id: string,
-  patch: Partial<{ name: string; platform: string; handle: string | null; url: string | null; sello: string | null; frecuenciaPublicacionAcordada: string | null; active: boolean }>,
+  patch: Partial<{ name: string; platform: string; handle: string | null; url: string | null; photoUrl: string | null; sello: string | null; frecuenciaPublicacionAcordada: string | null; active: boolean }>,
   actorEmail: string
 ): Promise<void> {
   await ensureCmAccountsSchema();
@@ -139,6 +141,7 @@ export async function updateAccount(
       platform = ${patch.platform ?? current.platform},
       handle = ${patch.handle !== undefined ? patch.handle : current.handle},
       url = ${patch.url !== undefined ? patch.url : current.url},
+      photo_url = ${patch.photoUrl !== undefined ? patch.photoUrl : current.photoUrl},
       sello = ${patch.sello !== undefined ? patch.sello : current.sello},
       frecuencia_publicacion_acordada = ${patch.frecuenciaPublicacionAcordada !== undefined ? patch.frecuenciaPublicacionAcordada : current.frecuenciaPublicacionAcordada},
       active = ${patch.active ?? current.active},

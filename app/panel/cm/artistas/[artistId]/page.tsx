@@ -30,7 +30,7 @@ function ArtistView({ artistId }: { artistId: string }) {
   }, [artistId]);
 
   if (error) return <CmShell active="cuentas"><div className="cm-badge crit">{error}</div></CmShell>;
-  if (!artist) return <CmShell active="cuentas"><p style={{ color: "var(--text-3)" }}>Cargando...</p></CmShell>;
+  if (!artist) return <CmShell active="cuentas"><p className="cm-empty">Cargando...</p></CmShell>;
 
   const allContent = contentByAccount.flatMap((c) => c.items);
   const pendientes = allContent.filter((c) => !["publicado", "cancelado"].includes(c.estado));
@@ -38,14 +38,14 @@ function ArtistView({ artistId }: { artistId: string }) {
 
   return (
     <CmShell title={artist.name} subtitle="Vista combinada de todas sus redes" active="cuentas">
-      <Link href="/panel/cm/cuentas" style={{ fontSize: 12.5, color: "var(--text-3)", textDecoration: "none", display: "inline-block", marginBottom: 16 }}>
+      <Link href="/panel/cm/cuentas" style={{ fontSize: 13, fontWeight: 500, color: "var(--text-2)", textDecoration: "none", display: "inline-block", marginBottom: 16 }}>
         ← Volver a cuentas
       </Link>
 
       <div className="cm-section">
         <div className="cm-section-title">Redes vinculadas</div>
         {accounts.length === 0 ? (
-          <p style={{ color: "var(--text-3)", fontSize: 13 }}>Este artista todavía no tiene ninguna red vinculada.</p>
+          <p className="cm-empty">Este artista todavía no tiene ninguna red vinculada.</p>
         ) : (
           <div className="cm-grid">
             {accounts.map((a) => {
@@ -53,7 +53,7 @@ function ArtistView({ artistId }: { artistId: string }) {
               return (
                 <Link key={a.id} href={`/panel/cm/cuentas/${a.id}`} className="cm-card" style={{ textDecoration: "none", color: "var(--text-1)", display: "flex", flexDirection: "column", gap: 4 }}>
                   <div style={{ fontWeight: 700, fontSize: 13.5 }}>{a.name}</div>
-                  <div style={{ fontSize: 12, color: "var(--text-3)" }}>{a.platform}{a.handle ? ` · ${a.handle}` : ""}</div>
+                  <div style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-2)" }}>{a.platform}{a.handle ? ` · ${a.handle}` : ""}</div>
                   {g && <div style={{ fontSize: 11.5, color: "var(--text-2)" }}>Seguidores: {String(g.seguidores ?? "—")}</div>}
                 </Link>
               );
@@ -65,13 +65,13 @@ function ArtistView({ artistId }: { artistId: string }) {
       <div className="cm-section">
         <div className="cm-section-title">Lanzamientos</div>
         {launches.length === 0 ? (
-          <p style={{ color: "var(--text-3)", fontSize: 13 }}>Sin lanzamientos registrados todavía.</p>
+          <p className="cm-empty">Sin lanzamientos registrados todavía.</p>
         ) : (
           <div className="cm-grid">
             {launches.map((l) => (
               <Link key={l.id} href={`/panel/cm/lanzamientos/${l.id}`} className="cm-card" style={{ textDecoration: "none", color: "var(--text-1)", display: "flex", flexDirection: "column", gap: 4 }}>
                 <div style={{ fontWeight: 700, fontSize: 13.5 }}>{l.fonogramaNombre}</div>
-                <div style={{ fontSize: 12, color: "var(--text-3)" }}>{l.fechaLanzamiento?.slice(0, 10) ?? "—"}</div>
+                <div style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-2)" }}>{l.fechaLanzamiento?.slice(0, 10) ?? "—"}</div>
                 <span className={`cm-badge ${l.materialesEstado === "assets_disponibles" ? "ok" : "warn"}`}>
                   {CM_MATERIALES_LABELS[l.materialesEstado] ?? l.materialesEstado}
                 </span>
@@ -84,7 +84,7 @@ function ArtistView({ artistId }: { artistId: string }) {
       <div className="cm-section">
         <div className="cm-section-title">Contenido pendiente ({pendientes.length})</div>
         {pendientes.length === 0 ? (
-          <p style={{ color: "var(--text-3)", fontSize: 13 }}>Sin contenido pendiente.</p>
+          <p className="cm-empty">Sin contenido pendiente.</p>
         ) : (
           <div className="cm-grid">
             {pendientes.map((c) => {
@@ -93,7 +93,7 @@ function ArtistView({ artistId }: { artistId: string }) {
               return (
                 <div key={c.id} className="cm-card" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                   <div style={{ fontWeight: 600, fontSize: 13.5 }}>{CM_TIPO_LABELS[c.tipoContenido] ?? c.tipoContenido}</div>
-                  <div style={{ fontSize: 12, color: "var(--text-3)" }}>{accountName} · {c.fecha.slice(0, 10)}</div>
+                  <div style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-2)" }}>{accountName} · {c.fecha.slice(0, 10)}</div>
                   <span className="cm-badge">{CM_ESTADO_LABELS[c.estado] ?? c.estado}</span>
                 </div>
               );

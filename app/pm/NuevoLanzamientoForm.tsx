@@ -691,6 +691,97 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
     }
   }
 
+  // Whether there's anything typed/attached that a careless close (backdrop
+  // click, Cancelar, or — the actual bug report — a two-finger trackpad
+  // "back" gesture navigating the whole page away) would silently destroy.
+  // Once success is true the release is already saved, so nothing more to
+  // protect.
+  const isDirty = useMemo(() => {
+    if (success || !tipo) return false;
+    const topLevelDirty =
+      fonograma.trim() !== "" ||
+      artist.trim() !== "" ||
+      featuring.trim() !== "" ||
+      autores.trim() !== "" ||
+      !!audioFile ||
+      audioLinkUrl.trim() !== "" ||
+      !!portadaFile ||
+      groupNombre.trim() !== "" ||
+      comentariosGrupo.trim() !== "" ||
+      youtubeUrl.trim() !== "" ||
+      driveAssetsUrl.trim() !== "";
+    if (topLevelDirty) return true;
+    return tracks.some(
+      (t) =>
+        t.fonograma.trim() !== "" ||
+        t.artistaPrincipal.trim() !== "" ||
+        t.autoresCompositores.trim() !== "" ||
+        t.colaboradores.trim() !== "" ||
+        t.productor.trim() !== "" ||
+        !!t.audioFile ||
+        t.audioLinkUrl.trim() !== "" ||
+        !!t.portadaFile ||
+        t.comentario.trim() !== ""
+    );
+  }, [
+    success, tipo, fonograma, artist, featuring, autores, audioFile, audioLinkUrl,
+    portadaFile, groupNombre, comentariosGrupo, youtubeUrl, driveAssetsUrl, tracks,
+  ]);
+
+  // Read inside the popstate handler instead of as an effect dependency —
+  // the guard below is armed once per mount, not re-armed on every keystroke.
+  const isDirtyRef = useRef(isDirty);
+  useEffect(() => {
+    isDirtyRef.current = isDirty;
+  }, [isDirty]);
+
+  // Closes only after confirming with the user when there's unsaved data.
+  // Returns whether it actually closed, so the back-gesture guard below
+  // knows whether to let the "back" stand or re-trap it.
+  function requestClose(): boolean {
+    if (!isDirtyRef.current) {
+      onClose();
+      return true;
+    }
+    const leave = window.confirm(
+      "Tenés datos sin guardar en este lanzamiento. Si salís ahora se pierden. ¿Salir de todos modos?"
+    );
+    if (leave) onClose();
+    return leave;
+  }
+
+  // requestClose is a plain function (new identity every render) — routed
+  // through a ref so the mount-once effect below always calls the latest
+  // version without needing to re-run (and re-push a history entry) on
+  // every keystroke.
+  const requestCloseRef = useRef(requestClose);
+  requestCloseRef.current = requestClose;
+
+  // A two-finger trackpad "back" swipe (or Alt+←, or the mouse back button)
+  // fires a real browser popstate. Since this modal has no route of its own,
+  // that used to navigate the whole /pm/fonograma page away and unmount the
+  // form — wiping every track that hadn't been saved yet. Pushing one dummy
+  // history entry on mount means the first back gesture just pops that
+  // entry (same URL, nothing unmounts) so we can intercept it here instead
+  // of letting the browser actually leave the page.
+  useEffect(() => {
+    window.history.pushState({ nuevoLanzamientoGuard: true }, "", window.location.href);
+    function handlePopState() {
+      const closed = requestCloseRef.current();
+      if (!closed) {
+        // User chose to stay — re-arm the trap for the next back attempt.
+        window.history.pushState({ nuevoLanzamientoGuard: true }, "", window.location.href);
+      }
+    }
+    window.addEventListener("popstate", handlePopState);
+    // Deliberately NOT calling history.back() in cleanup to consume the
+    // dummy entry — that itself fires a real popstate that Next's router
+    // reacts to, which caused a remount loop under Strict Mode's mount→
+    // cleanup→mount dev cycle. Leaving one harmless same-URL entry behind
+    // is a fine trade: worst case a later real "back" needs one extra press.
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   if (success) {
     return (
       <div
@@ -1077,7 +1168,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
         padding: "2rem",
         overflowY: "auto",
       }}
-      onClick={onClose}
+      onClick={requestClose}
     >
       <form
         onClick={(e) => e.stopPropagation()}
@@ -1688,7 +1779,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
         <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
           <button
             type="button"
-            onClick={onClose}
+            onClick={requestClose}
             style={{
               background: "transparent",
               border: "1px solid var(--line-soft)",

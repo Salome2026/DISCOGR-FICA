@@ -12,6 +12,7 @@ export const SELLOS = [
   "Sigel",
   "Remix",
   "Streamings",
+  "Bruma Records",
 ] as const;
 
 export type Sello = (typeof SELLOS)[number];
@@ -52,7 +53,6 @@ const INDYANA_ARTISTS = [
   "tibbas",
   "matias mareco",
   "sergio ponce",
-  "pola dj",
   "franco arroyo",
   "acit x",
   "dina",
@@ -80,6 +80,15 @@ const CASERIO_ARTISTS = [
   "tomi rmx",
   "sossa",
 ];
+const BRUMA_ARTISTS = [
+  "nathali torres",
+  "camira",
+  "pola dj",
+  "bautista acevedo",
+  "belen dipolito",
+  "iara cuevas",
+  "cintia ruiz",
+];
 const SECTOR_NINE_ARTISTS = ["sector nine"];
 const SIGEL_ARTISTS = [
   "al rojo vivo",
@@ -102,6 +111,7 @@ export function assignSello(artist: string): Sello | null {
   if (MAWZ_ARTISTS.some((n) => a.includes(n))) return "MAWZ Records";
   if (INDYANA_ARTISTS.some((n) => a.includes(n))) return "Indyana Records";
   if (CASERIO_ARTISTS.some((n) => a.includes(n))) return "Caserio Records";
+  if (BRUMA_ARTISTS.some((n) => a.includes(n))) return "Bruma Records";
   if (SECTOR_NINE_ARTISTS.some((n) => a.includes(n))) return "Sector Nine";
   if (SIGEL_ARTISTS.some((n) => a.includes(n))) return "Sigel";
   return null;

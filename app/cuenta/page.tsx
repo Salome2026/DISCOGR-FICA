@@ -72,8 +72,84 @@ export default function CuentaPage() {
           </div>
         )}
 
+        <ChangePasswordCard totpEnabled={!!me.totpEnabled} />
         <TwoFactorCard totpEnabled={!!me.totpEnabled} onChange={load} />
       </div>
+    </div>
+  );
+}
+
+function ChangePasswordCard({ totpEnabled }: { totpEnabled: boolean }) {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (newPassword !== confirmPassword) {
+      setError("Las contraseñas nuevas no coinciden.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/account/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword, code: code || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo cambiar la contraseña.");
+      setDone(true);
+      setTimeout(() => signOut({ callbackUrl: "/" }), 1800);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (done) {
+    return (
+      <div className="acc-card">
+        <h2>Cambiar contraseña</h2>
+        <p>✓ Contraseña actualizada. Te vamos a cerrar la sesión para que vuelvas a entrar con la nueva.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="acc-card">
+      <h2>Cambiar contraseña</h2>
+      <p>Elegí una contraseña personal — sirve tanto para reemplazar la contraseña inicial compartida como para actualizar la tuya.</p>
+      <form onSubmit={handleSubmit}>
+        <div className="acc-field">
+          <label className="acc-label">Contraseña actual</label>
+          <input className="acc-input" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} autoComplete="current-password" required />
+        </div>
+        <div className="acc-field">
+          <label className="acc-label">Contraseña nueva (mínimo 8 caracteres)</label>
+          <input className="acc-input" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} autoComplete="new-password" required minLength={8} />
+        </div>
+        <div className="acc-field">
+          <label className="acc-label">Repetir contraseña nueva</label>
+          <input className="acc-input" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" required minLength={8} />
+        </div>
+        {totpEnabled && (
+          <div className="acc-field">
+            <label className="acc-label">Código de verificación en dos pasos</label>
+            <input className="acc-input" value={code} onChange={(e) => setCode(e.target.value)} required />
+          </div>
+        )}
+        {error && <div className="acc-error">{error}</div>}
+        <button type="submit" className="acc-btn" disabled={loading}>
+          {loading ? "Guardando..." : "Cambiar contraseña"}
+        </button>
+      </form>
     </div>
   );
 }

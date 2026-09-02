@@ -53,7 +53,9 @@ type TrackDraft = {
   key: string;
   fonograma: string;
   artistaPrincipal: string;
+  autoresCompositores: string;
   colaboradores: string;
+  colaboradoresRoles: Record<string, "main" | "featuring">;
   productor: string;
   genero: string;
   otroGenero: string;
@@ -76,7 +78,9 @@ function emptyTrack(artistaPrincipal: string): TrackDraft {
     key: newTrackKey(),
     fonograma: "",
     artistaPrincipal,
+    autoresCompositores: "",
     colaboradores: "",
+    colaboradoresRoles: {},
     productor: "",
     genero: "",
     otroGenero: "",
@@ -328,7 +332,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
   // productor, and comentario — same "everything but Featuring" rule as the
   // rest of the form.
   const incompleteTracks = useMemo(
-    () => tracks.filter((t) => !t.fonograma.trim() || !t.artistaPrincipal.trim() || !t.tipoObra || (!t.audioFile && !t.audioLinkUrl.trim()) || !t.portadaFile),
+    () => tracks.filter((t) => !t.fonograma.trim() || !t.artistaPrincipal.trim() || !t.autoresCompositores.trim() || !t.tipoObra || (!t.audioFile && !t.audioLinkUrl.trim()) || !t.portadaFile),
     [tracks]
   );
 
@@ -497,7 +501,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
     }
     if (incompleteTracks.length > 0) {
       setError(
-        `Faltan datos en ${incompleteTracks.length} ${cancionPlural(incompleteTracks.length)} (nombre, artista principal, audio y portada son obligatorios).`
+        `Faltan datos en ${incompleteTracks.length} ${cancionPlural(incompleteTracks.length)} (nombre, artista principal, autores y compositores, audio y portada son obligatorios).`
       );
       return;
     }
@@ -530,7 +534,13 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
             trackNumber: i + 1,
             fonograma: t.fonograma,
             artist: t.artistaPrincipal,
+            autoresCompositores: t.autoresCompositores || null,
             colaboradores: t.colaboradores || null,
+            colaboradoresMain: t.colaboradores
+              .split(",")
+              .map((n) => n.trim())
+              .filter((n) => n && t.colaboradoresRoles[n] === "main")
+              .join(", ") || null,
             productor: t.productor || null,
             genero: (t.genero === "Otro" ? t.otroGenero.trim() : t.genero) || null,
             tipoObra: t.tipoObra,
@@ -1475,13 +1485,71 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
                               )}
                             </div>
                             <div>
-                              <label style={smallLabel}>Artistas invitados / colaboradores (opcional)</label>
+                              <label style={smallLabel}>Autores y compositores</label>
+                              <input
+                                value={t.autoresCompositores}
+                                onChange={(e) => updateTrack(t.key, { autoresCompositores: e.target.value })}
+                                placeholder="Nombre y apellido de cada uno, separados por coma"
+                                style={missingStyle(!t.autoresCompositores.trim())}
+                              />
+                            </div>
+                            <div>
+                              <label style={smallLabel}>
+                                Featuring / artistas invitados <span style={{ color: "var(--text-3)", fontWeight: 400 }}>(opcional)</span>
+                              </label>
                               <input
                                 value={t.colaboradores}
                                 onChange={(e) => updateTrack(t.key, { colaboradores: e.target.value })}
-                                placeholder="Separados por coma"
+                                placeholder="Nombres separados por coma (dejar vacío si no hay)"
                                 style={inputStyle}
                               />
+                              {t.colaboradores.trim() && (
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}>
+                                  {t.colaboradores.split(",").map((raw) => raw.trim()).filter(Boolean).map((name) => {
+                                    const role = t.colaboradoresRoles[name] ?? "featuring";
+                                    return (
+                                      <div
+                                        key={name}
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 6,
+                                          background: "var(--bg-2)",
+                                          border: "1px solid var(--line-soft)",
+                                          borderRadius: 999,
+                                          padding: "4px 6px 4px 12px",
+                                          fontSize: 12.5,
+                                        }}
+                                      >
+                                        <span>{name}</span>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            updateTrack(t.key, {
+                                              colaboradoresRoles: {
+                                                ...t.colaboradoresRoles,
+                                                [name]: role === "main" ? "featuring" : "main",
+                                              },
+                                            })
+                                          }
+                                          style={{
+                                            background: role === "main" ? "var(--accent-glass-bg)" : "transparent",
+                                            border: "1px solid " + (role === "main" ? "var(--accent-glass-border)" : "var(--line-soft)"),
+                                            borderRadius: 999,
+                                            padding: "3px 10px",
+                                            fontSize: 11,
+                                            fontWeight: 600,
+                                            color: role === "main" ? "var(--text-1)" : "var(--text-3)",
+                                            cursor: "pointer",
+                                          }}
+                                        >
+                                          {role === "main" ? "Main" : "Featuring"}
+                                        </button>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
                             </div>
                             <div>
                               <label style={smallLabel}>Productor (opcional, si corresponde)</label>

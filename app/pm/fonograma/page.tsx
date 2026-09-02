@@ -218,7 +218,7 @@ function PMFonogramaInner() {
                 <div className="pmx-fono-tasks">
                   <div className="pmx-fono-task">
                     <span className="pmx-fono-task-label">Release</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div className="pmx-fono-task-controls">
                       {r.releaseStatus === "Pendiente" && (
                         <Link
                           href={`/pm/fonograma/${r.id}/release`}
@@ -234,7 +234,7 @@ function PMFonogramaInner() {
                   </div>
                   <div className="pmx-fono-task">
                     <span className="pmx-fono-task-label">Split editorial</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div className="pmx-fono-task-controls">
                       {r.splitStatus === "Pendiente" && (
                         <Link
                           href={`/pm/split-editorial?catalogTrackId=pm-${r.id}&trackName=${encodeURIComponent(r.fonograma_nombre)}&artistDisplay=${encodeURIComponent(r.artist_name)}${r.sello ? `&sello=${encodeURIComponent(r.sello)}` : ""}${r.audio_url ? `&audioUrl=${encodeURIComponent(r.audio_url)}` : ""}`}
@@ -264,7 +264,7 @@ function PMFonogramaInner() {
                   </div>
                   <div className="pmx-fono-task">
                     <span className="pmx-fono-task-label">YouTube / Assets</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <div className="pmx-fono-task-controls">
                       <button
                         type="button"
                         className="pmx-fono-task-btn"

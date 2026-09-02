@@ -221,6 +221,7 @@ export type NewGroupTrack = {
   artist: string;
   colaboradores: string | null;
   productor: string | null;
+  autoresCompositores: string | null;
   isrc: string | null;
   genero: string | null;
   tipoObra: string;
@@ -246,11 +247,11 @@ export async function createGroupedRelease(group: NewReleaseGroup, tracks: NewGr
     const { rows } = await sql`
       INSERT INTO pm_releases
         (artist_name, sello, streaming_project, fonograma_nombre, estado, distribuidora, fecha_lanzamiento, hora_lanzamiento,
-         audio_url, portada_url, youtube_url, drive_assets_url, group_id, track_number, colaboradores, productor, isrc, genero, tipo_obra, comentario, created_by)
+         audio_url, portada_url, youtube_url, drive_assets_url, group_id, track_number, colaboradores, productor, autores_compositores, isrc, genero, tipo_obra, comentario, created_by)
       VALUES
         (${t.artist}, ${group.sello}, ${group.streamingProject}, ${t.fonograma}, ${group.estado}, ${group.distribuidora}, ${group.fecha}, ${group.hora},
          ${t.audioUrl}, ${t.portadaUrl}, ${group.youtubeUrl}, ${group.driveAssetsUrl}, ${groupRow.id}, ${t.trackNumber}, ${t.colaboradores},
-         ${t.productor}, ${t.isrc}, ${t.genero}, ${t.tipoObra}, ${t.comentario}, ${group.createdBy})
+         ${t.productor}, ${t.autoresCompositores}, ${t.isrc}, ${t.genero}, ${t.tipoObra}, ${t.comentario}, ${group.createdBy})
       RETURNING *
     `;
     const track = rows[0];

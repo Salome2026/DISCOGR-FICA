@@ -212,7 +212,9 @@ type TrackInput = {
   fonograma?: string;
   artist?: string;
   colaboradores?: string;
+  colaboradoresMain?: string;
   productor?: string;
+  autoresCompositores?: string;
   isrc?: string;
   genero?: string;
   tipoObra?: string;
@@ -262,6 +264,7 @@ async function handleGroupedCreate(
   }
 
   const cleanTracks = [];
+  const colaboradoresMainByIndex: (string | null)[] = [];
   for (const [i, t] of tracks.entries()) {
     if (!t.fonograma || !t.fonograma.trim()) {
       return NextResponse.json(
@@ -294,6 +297,7 @@ async function handleGroupedCreate(
       artist: t.artist.trim(),
       colaboradores: t.colaboradores?.trim() || null,
       productor: t.productor?.trim() || null,
+      autoresCompositores: t.autoresCompositores?.trim() || null,
       isrc: t.isrc?.trim() || null,
       genero: t.genero || null,
       tipoObra: t.tipoObra,
@@ -301,6 +305,7 @@ async function handleGroupedCreate(
       portadaUrl: t.portadaUrl || null,
       comentario: t.comentario?.trim() || null,
     });
+    colaboradoresMainByIndex.push(t.colaboradoresMain?.trim() || null);
   }
 
   const { group, tracks: savedTracks } = await createGroupedRelease(
@@ -326,13 +331,26 @@ async function handleGroupedCreate(
   for (let i = 0; i < savedTracks.length; i++) {
     const saved = savedTracks[i];
     const input = cleanTracks[i];
+    // Same "Main" folding rule as handleSingleCreate: a collaborator tagged
+    // Main in the Featuring picker gets folded into the displayed artist
+    // name instead of staying in the generic colaboradores blob — only
+    // kicks in when the PM actually tags someone, so untouched tracks keep
+    // the pre-existing pipe-joined display unchanged.
+    const mainNames = (colaboradoresMainByIndex[i] || "")
+      .split(",")
+      .map((n) => n.trim())
+      .filter(Boolean);
+    const artistDisplay =
+      mainNames.length > 0
+        ? [input.artist, ...mainNames].join(" & ")
+        : [input.artist, ...(input.colaboradores ? [input.colaboradores] : [])].join("|");
     await upsertTrackFromRelease({
       id: `pm-${saved.id}`,
       track: input.fonograma,
       album: nombre,
       releaseDate: fecha || null,
       company,
-      artistDisplay: [input.artist, ...(input.colaboradores ? [input.colaboradores] : [])].join("|"),
+      artistDisplay,
       participants: buildParticipants(input.artist, input.colaboradores),
       sello,
       streamingProject,

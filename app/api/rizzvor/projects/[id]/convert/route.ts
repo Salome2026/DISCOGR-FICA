@@ -184,6 +184,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         artist: song.artistPrincipal || project.artistName,
         colaboradores: song.colaboradores,
         productor: song.productor,
+        autoresCompositores: null,
         isrc: song.isrc,
         genero: project.genero,
         tipoObra: "Tema de autoría propia",

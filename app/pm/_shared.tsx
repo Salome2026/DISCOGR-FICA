@@ -58,10 +58,10 @@ export const PM_STYLES = `
   }
   .pmx-fono-title { font-size:15px; font-weight:700; }
   .pmx-fono-meta { font-size:12px; color:var(--text-3); }
-  .pmx-fono-tasks { display:flex; flex-direction:column; gap:8px; margin-top:4px; }
-  .pmx-fono-task { display:grid; grid-template-columns:78px 1fr; align-items:start; gap:8px; }
-  .pmx-fono-task-label { font-size:12px; color:var(--text-2); padding-top:4px; }
-  .pmx-fono-task-controls { display:flex; align-items:center; flex-wrap:wrap; justify-content:flex-end; gap:6px; }
+  .pmx-fono-tasks { display:flex; flex-direction:column; gap:10px; margin-top:4px; }
+  .pmx-fono-task { display:flex; flex-direction:column; gap:5px; }
+  .pmx-fono-task-label { font-size:10.5px; font-weight:600; color:var(--text-3); text-transform:uppercase; letter-spacing:.04em; }
+  .pmx-fono-task-controls { display:flex; align-items:center; flex-wrap:wrap; justify-content:space-between; gap:8px; }
   .pmx-badge { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:3px 10px; border-radius:100px; flex-shrink:0; }
   .pmx-badge.pendiente { background: var(--warn-bg); color: var(--warn-ink); }
   .pmx-badge.completado { background: var(--good-bg); color: var(--good-ink); }

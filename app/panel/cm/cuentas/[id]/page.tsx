@@ -14,6 +14,18 @@ type ContentItem = {
   copyText: string | null; assetsUrl: string | null; publishedUrl: string | null;
 };
 type Note = { id: number; author_email: string; body: string; created_at: string };
+type Suggestion = { tipoSugerencia: string; explicacion: string; contenidoReferenciaId: number };
+
+const SUGGESTION_LABELS: Record<string, string> = {
+  repetir_formato: "Repetir un formato que ya funcionó",
+  adaptar_otra_plataforma: "Adaptar a otra plataforma",
+  idea_artista_similar: "Usar una idea que funcionó con otro artista",
+  segunda_parte: "Crear una segunda parte",
+  reusar_audio: "Reusar un audio",
+  recortar_a_shorts: "Recortar a Shorts/Reels/TikTok",
+  mejor_horario: "Publicar en el mejor horario",
+  recuperar_contenido_viejo: "Recuperar contenido viejo con potencial",
+};
 
 function AccountDetail({ id }: { id: string }) {
   const [account, setAccount] = useState<Account | null | undefined>(undefined);
@@ -22,6 +34,9 @@ function AccountDetail({ id }: { id: string }) {
   const [growth, setGrowth] = useState<Record<string, unknown> | null>(null);
   const [newNote, setNewNote] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [suggestions, setSuggestions] = useState<Suggestion[] | null>(null);
+  const [suggestionsMsg, setSuggestionsMsg] = useState<string | null>(null);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   function load() {
     fetch(`/api/cm/cuentas/${id}`)
@@ -36,6 +51,21 @@ function AccountDetail({ id }: { id: string }) {
       .then((d) => { if (!d.error) { setContent(d.content ?? []); setGrowth(d.growth ?? null); } });
   }
   useEffect(load, [id]);
+
+  async function handleGenerateSuggestions() {
+    setLoadingSuggestions(true);
+    setSuggestionsMsg(null);
+    setSuggestions(null);
+    try {
+      const res = await fetch(`/api/cm/cuentas/${id}/sugerencias`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) { setSuggestionsMsg(data.error || "No se pudo generar."); return; }
+      if (!data.hasData) { setSuggestionsMsg(data.reason); return; }
+      setSuggestions(data.suggestions);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  }
 
   async function handleAddNote() {
     if (!newNote.trim()) return;
@@ -111,6 +141,34 @@ function AccountDetail({ id }: { id: string }) {
                 {c.publishedUrl && <a href={c.publishedUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12.5 }}>Ver publicación ↗</a>}
               </div>
             ))}
+          </div>
+        )}
+      </div>
+
+      <div className="cm-section">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <div className="cm-section-title" style={{ marginBottom: 0 }}>Sugerencias de contenido</div>
+          <button type="button" className="cm-btn-ghost" disabled={loadingSuggestions} onClick={handleGenerateSuggestions}>
+            {loadingSuggestions ? "Generando..." : "Generar sugerencias"}
+          </button>
+        </div>
+        {suggestionsMsg && <p style={{ color: "var(--text-3)", fontSize: 13 }}>{suggestionsMsg}</p>}
+        {suggestions && suggestions.length > 0 && (
+          <div className="cm-grid">
+            {suggestions.map((s, i) => {
+              const ref = content.find((c) => c.id === s.contenidoReferenciaId);
+              return (
+                <div key={i} className="cm-card" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13.5 }}>{SUGGESTION_LABELS[s.tipoSugerencia] ?? s.tipoSugerencia}</div>
+                  <div style={{ fontSize: 12.5, color: "var(--text-2)" }}>{s.explicacion}</div>
+                  {ref && (
+                    <div style={{ fontSize: 11.5, color: "var(--text-3)" }}>
+                      Basado en: {CM_TIPO_LABELS[ref.tipoContenido] ?? ref.tipoContenido} del {ref.fecha.slice(0, 10)}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

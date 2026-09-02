@@ -19,6 +19,9 @@ export default function ManagementHomePage() {
           <Link href="/panel/management/asignaciones" style={{ fontSize: 13, color: "var(--accent)", textDecoration: "none" }}>
             Gestionar asignaciones de PM →
           </Link>
+          <Link href="/panel/management/cm-asignaciones" style={{ fontSize: 13, color: "var(--accent)", textDecoration: "none" }}>
+            Gestionar asignaciones de Community Manager →
+          </Link>
         </div>
         <PendingMeetingRequests />
         <ArtistGrid />

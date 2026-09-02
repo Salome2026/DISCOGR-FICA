@@ -138,6 +138,15 @@ export async function upsertLaunchFromRelease(input: {
   }
 }
 
+// Vista completa para Management/admin — todos los lanzamientos conocidos,
+// tengan o no una cuenta de CM asignada (la ruta filtra los sin-asignar
+// aparte, vía listLaunchesWithoutCm, para la bandeja dedicada de Management).
+export async function listAllLaunches(): Promise<CmLaunch[]> {
+  await ensureCmLaunchesSchema();
+  const { rows } = await sql`SELECT * FROM cm_launches ORDER BY fecha_lanzamiento DESC NULLS LAST, created_at DESC`;
+  return rows.map(rowToLaunch);
+}
+
 export async function getLaunch(id: string): Promise<CmLaunch | null> {
   await ensureCmLaunchesSchema();
   const { rows } = await sql`SELECT * FROM cm_launches WHERE id = ${id}`;
@@ -190,6 +199,22 @@ export async function markLaunchReviewed(id: string, actorEmail: string): Promis
   await ensureCmLaunchesSchema();
   await sql`UPDATE cm_launches SET revisado_por_cm = true, updated_at = now() WHERE id = ${id}`;
   await recordAudit({ actorEmail, action: "cm_launch_reviewed", entityType: "cm_launch", entityId: id });
+}
+
+// El PM dueño, cualquier CM cuya cuenta coincida en sello/artista, o
+// Management/admin — mismo criterio de "ambos ven el mismo hilo" pedido.
+export async function canAccessLaunch(user: { email: string; roles: string[] }, launch: CmLaunch): Promise<boolean> {
+  if (user.roles.includes("admin") || user.roles.includes("management")) return true;
+  if (launch.pmEmail === user.email && user.roles.includes("project_manager")) return true;
+  if (!user.roles.includes("community_manager")) return false;
+  const accounts = await listAccountsBySelloOrArtist(launch.sello, launch.artistId);
+  for (const account of accounts) {
+    const owner = await getAccountAssignment(account.id);
+    if (owner?.cmEmail === user.email) return true;
+    const collaborators = await listCollaboratorsForAccount(account.id);
+    if (collaborators.includes(user.email)) return true;
+  }
+  return false;
 }
 
 export async function addLaunchComment(launchId: string, authorEmail: string, body: string): Promise<void> {

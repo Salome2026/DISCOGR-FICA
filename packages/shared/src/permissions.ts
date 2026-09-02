@@ -41,6 +41,8 @@ export const PERMISSIONS = [
   "ver_ar",
   "editar_ar",
   "administrar_asignaciones_pm",
+  "ver_cm",
+  "editar_cm",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -56,6 +58,7 @@ export const ROLES = [
   "distribucion",
   "marketing",
   "ar",
+  "community_manager",
   "artista",
   "representante",
   "invitado",
@@ -68,7 +71,7 @@ export type AccountType = "empresa" | "artista";
 // Roles available for each landing-page account type. An "artista" role only makes
 // sense behind the Artista card; company roles only behind the Empresa card.
 export const ROLES_BY_ACCOUNT_TYPE: Record<AccountType, Role[]> = {
-  empresa: ["admin", "project_manager", "legal", "editorial", "management", "booking", "tourmanager", "distribucion", "marketing", "ar", "invitado"],
+  empresa: ["admin", "project_manager", "legal", "editorial", "management", "booking", "tourmanager", "distribucion", "marketing", "ar", "community_manager", "invitado"],
   artista: ["artista", "representante"],
 };
 
@@ -106,13 +109,18 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // the one narrow cross-module capability of administering which PM owns
   // which artist (deliberately not administrar_usuarios, which would also
   // unlock role/password/force-logout admin actions).
-  management: ["ver_management", "editar_management", "administrar_asignaciones_pm"],
+  // "ver_cm" (no "editar_cm") es a propósito: Management ve todas las
+  // cuentas y resultados de Community Manager, pero no edita el contenido
+  // de una CM ajena — mismo criterio asimétrico que ya usa PM con "ver_ar".
+  management: ["ver_management", "editar_management", "administrar_asignaciones_pm", "ver_cm"],
   // Same isolation principle again — its own module, own permissions.
   booking: ["ver_booking", "editar_booking"],
   // Same isolation principle again — its own module, own permissions.
   tourmanager: ["ver_tourmanager", "editar_tourmanager"],
   // Same isolation principle again — its own module, own permissions.
   ar: ["ver_ar", "editar_ar"],
+  // Same isolation principle again — its own module, own permissions.
+  community_manager: ["ver_cm", "editar_cm"],
   distribucion: ["editar_acuerdos", "aprobar_releases", "ver_estadisticas"],
   marketing: ["ver_estadisticas", "exportar_datos", "ver_playlists", "editar_playlists"],
   artista: ["subir_audio", "subir_portada"],
@@ -130,6 +138,7 @@ export const ROLE_HOME: Record<Role, string> = {
   booking: "/panel/booking",
   tourmanager: "/panel/tourmanager",
   ar: "/panel/ar",
+  community_manager: "/panel/cm",
   distribucion: "/panel/distribucion",
   marketing: "/panel/marketing",
   artista: "/panel/artista",
@@ -148,6 +157,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   booking: "Booking",
   tourmanager: "Tour Manager",
   ar: "A&R",
+  community_manager: "Community Manager",
   distribucion: "Distribución",
   marketing: "Marketing",
   artista: "Artista",

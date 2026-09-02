@@ -1,6 +1,33 @@
 import { sql } from "@vercel/postgres";
 import { ensureLegalReleaseRequestsSchema } from "./legalReleaseRequests";
 import { ensureEditorialSplitsSchema } from "./editorialSplits";
+import { slugify } from "./artists";
+import { upsertLaunchFromRelease } from "./cmLaunches";
+
+// El lanzamiento llega a Community Manager igual con o sin links — solo
+// cambia su materiales_estado (ver lib/pmTaskStatus.ts) — así que esto se
+// llama siempre que se crea o edita un fonograma, nunca condicionado a que
+// haya algún link cargado.
+async function notifyCm(input: {
+  pmReleaseId: number | null;
+  pmReleaseGroupId: number | null;
+  artistName: string;
+  fonogramaNombre: string;
+  sello: string | null;
+  fechaLanzamiento: string | null;
+  horaLanzamiento: string | null;
+  pmEmail: string;
+  youtubeUrl: string | null;
+  driveAssetsUrl: string | null;
+  comentariosPm: string | null;
+}) {
+  try {
+    await upsertLaunchFromRelease({ ...input, artistId: slugify(input.artistName) });
+  } catch (err) {
+    // Aditivo — un fallo acá nunca debe romper la carga real del fonograma.
+    console.error("upsertLaunchFromRelease failed:", err);
+  }
+}
 
 export type EstadoRelease = "Contactado" | "Firmado" | "Necesito ayuda";
 export type TipoLanzamiento = "single" | "ep" | "album";
@@ -164,6 +191,11 @@ export async function createRelease(r: NewRelease) {
     INSERT INTO pm_release_history (release_id, action, actor_email, detail)
     VALUES (${release.id}, 'created', ${r.createdBy}, ${`Estado inicial: ${r.estado}`})
   `;
+  await notifyCm({
+    pmReleaseId: release.id, pmReleaseGroupId: null, artistName: r.artist, fonogramaNombre: r.fonograma,
+    sello: r.sello, fechaLanzamiento: r.fecha, horaLanzamiento: r.hora, pmEmail: r.createdBy,
+    youtubeUrl: r.youtubeUrl, driveAssetsUrl: r.driveAssetsUrl, comentariosPm: null,
+  });
   return release;
 }
 
@@ -229,6 +261,12 @@ export async function createGroupedRelease(group: NewReleaseGroup, tracks: NewGr
         ${`Canción #${t.trackNumber} de ${group.tipo === "ep" ? "EP" : "álbum"} "${group.nombre}"`})
     `;
   }
+
+  await notifyCm({
+    pmReleaseId: null, pmReleaseGroupId: groupRow.id, artistName: group.artist, fonogramaNombre: group.nombre,
+    sello: group.sello, fechaLanzamiento: group.fecha, horaLanzamiento: group.hora, pmEmail: group.createdBy,
+    youtubeUrl: group.youtubeUrl, driveAssetsUrl: group.driveAssetsUrl, comentariosPm: group.comentarios,
+  });
 
   return { group: groupRow, tracks: trackRows };
 }
@@ -395,6 +433,22 @@ export async function setReleaseLinks(
         updated_by = ${actorEmail}, updated_at = now()
       WHERE id = ${id}
     `;
+  }
+  const release = await getReleaseById(id);
+  if (release) {
+    await notifyCm({
+      pmReleaseId: groupId != null ? null : id,
+      pmReleaseGroupId: groupId,
+      artistName: release.artist_name,
+      fonogramaNombre: (groupId != null ? release.group_nombre : null) ?? release.fonograma_nombre,
+      sello: release.sello,
+      fechaLanzamiento: release.fecha_lanzamiento,
+      horaLanzamiento: release.hora_lanzamiento,
+      pmEmail: release.created_by,
+      youtubeUrl,
+      driveAssetsUrl,
+      comentariosPm: null,
+    });
   }
   await sql`
     INSERT INTO pm_release_history (release_id, action, actor_email, detail)

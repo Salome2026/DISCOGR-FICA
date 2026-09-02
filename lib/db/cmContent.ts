@@ -16,6 +16,9 @@ export type CmTipoContenido = (typeof CM_TIPOS_CONTENIDO)[number];
 export const CM_ESTADOS = ["idea", "pendiente_material", "en_produccion", "listo", "programado", "publicado", "cancelado"] as const;
 export type CmEstado = (typeof CM_ESTADOS)[number];
 
+export const CM_PLATAFORMAS = ["Instagram", "TikTok", "YouTube Shorts", "Otra"] as const;
+export type CmPlataforma = (typeof CM_PLATAFORMAS)[number];
+
 let ready: Promise<void> | null = null;
 
 export function ensureCmContentSchema(): Promise<void> {
@@ -49,6 +52,8 @@ export function ensureCmContentSchema(): Promise<void> {
       await sql`CREATE INDEX IF NOT EXISTS cm_content_items_account_idx ON cm_content_items (account_id)`;
       await sql`CREATE INDEX IF NOT EXISTS cm_content_items_fecha_idx ON cm_content_items (fecha)`;
       await sql`CREATE INDEX IF NOT EXISTS cm_content_items_launch_idx ON cm_content_items (linked_launch_id)`;
+      await sql`ALTER TABLE cm_content_items ADD COLUMN IF NOT EXISTS titulo TEXT`;
+      await sql`ALTER TABLE cm_content_items ADD COLUMN IF NOT EXISTS plataforma TEXT`;
     })();
   }
   return ready;
@@ -60,6 +65,8 @@ export type CmContentItem = {
   artistName: string | null;
   linkedArtistId: string | null;
   tipoContenido: string;
+  titulo: string | null;
+  plataforma: string | null;
   fecha: string;
   hora: string | null;
   copyText: string | null;
@@ -84,6 +91,8 @@ function rowToItem(r: Record<string, unknown>): CmContentItem {
     artistName: (r.artist_name as string) ?? null,
     linkedArtistId: (r.linked_artist_id as string) ?? null,
     tipoContenido: r.tipo_contenido as string,
+    titulo: (r.titulo as string) ?? null,
+    plataforma: (r.plataforma as string) ?? null,
     fecha: r.fecha as string,
     hora: (r.hora as string) ?? null,
     copyText: (r.copy_text as string) ?? null,
@@ -107,6 +116,8 @@ export async function createContentItem(input: {
   artistName: string | null;
   linkedArtistId: string | null;
   tipoContenido: string;
+  titulo: string | null;
+  plataforma: string | null;
   fecha: string;
   hora: string | null;
   copyText: string | null;
@@ -121,9 +132,9 @@ export async function createContentItem(input: {
   await ensureCmContentSchema();
   const { rows } = await sql`
     INSERT INTO cm_content_items
-      (account_id, artist_name, linked_artist_id, tipo_contenido, fecha, hora, copy_text, hashtags, assets_url, audio_url, responsable_email, estado, linked_launch_id, created_by)
+      (account_id, artist_name, linked_artist_id, tipo_contenido, titulo, plataforma, fecha, hora, copy_text, hashtags, assets_url, audio_url, responsable_email, estado, linked_launch_id, created_by)
     VALUES
-      (${input.accountId}, ${input.artistName}, ${input.linkedArtistId}, ${input.tipoContenido}, ${input.fecha}, ${input.hora},
+      (${input.accountId}, ${input.artistName}, ${input.linkedArtistId}, ${input.tipoContenido}, ${input.titulo}, ${input.plataforma}, ${input.fecha}, ${input.hora},
        ${input.copyText}, ${input.hashtags}, ${input.assetsUrl}, ${input.audioUrl}, ${input.responsableEmail}, ${input.estado}, ${input.linkedLaunchId}, ${input.createdBy})
     RETURNING *
   `;
@@ -133,7 +144,7 @@ export async function createContentItem(input: {
 export async function updateContentItem(
   id: number,
   patch: Partial<{
-    tipoContenido: string; fecha: string; hora: string | null; copyText: string | null; hashtags: string | null;
+    tipoContenido: string; titulo: string | null; plataforma: string | null; fecha: string; hora: string | null; copyText: string | null; hashtags: string | null;
     assetsUrl: string | null; audioUrl: string | null; responsableEmail: string | null; estado: string;
     publishedUrl: string | null; bloqueadoMotivo: string | null;
   }>,
@@ -145,6 +156,8 @@ export async function updateContentItem(
   await sql`
     UPDATE cm_content_items SET
       tipo_contenido = ${patch.tipoContenido ?? current.tipoContenido},
+      titulo = ${patch.titulo !== undefined ? patch.titulo : current.titulo},
+      plataforma = ${patch.plataforma !== undefined ? patch.plataforma : current.plataforma},
       fecha = ${patch.fecha ?? current.fecha},
       hora = ${patch.hora !== undefined ? patch.hora : current.hora},
       copy_text = ${patch.copyText !== undefined ? patch.copyText : current.copyText},

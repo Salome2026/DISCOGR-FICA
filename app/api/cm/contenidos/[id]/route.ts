@@ -30,6 +30,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     Number(id),
     {
       tipoContenido: body?.tipoContenido,
+      titulo: body?.titulo !== undefined ? body.titulo || null : undefined,
+      plataforma: body?.plataforma !== undefined ? body.plataforma || null : undefined,
       fecha: body?.fecha,
       hora: body?.hora !== undefined ? body.hora || null : undefined,
       copyText: body?.copyText !== undefined ? body.copyText || null : undefined,

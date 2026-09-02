@@ -46,6 +46,8 @@ export async function POST(req: NextRequest) {
     artistName: typeof body?.artistName === "string" ? body.artistName.trim() || null : null,
     linkedArtistId: typeof body?.linkedArtistId === "string" ? body.linkedArtistId.trim() || null : null,
     tipoContenido,
+    titulo: typeof body?.titulo === "string" ? body.titulo.trim() || null : null,
+    plataforma: typeof body?.plataforma === "string" ? body.plataforma.trim() || null : null,
     fecha,
     hora: typeof body?.hora === "string" ? body.hora.trim() || null : null,
     copyText: typeof body?.copyText === "string" ? body.copyText.trim() || null : null,

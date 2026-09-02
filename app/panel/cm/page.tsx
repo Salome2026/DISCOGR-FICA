@@ -3,15 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import RequireRole from "@/app/components/RequireRole";
-import { CmShell, CM_TIPO_LABELS, CM_ESTADO_LABELS, CM_MATERIALES_LABELS } from "./_shared";
-import { CM_ESTADOS } from "@/lib/db/cmContent";
+import { CmShell, CM_TIPO_LABELS, CM_ESTADO_LABELS, CM_MATERIALES_LABELS, ContentItemModal, type CmContentListItem, type CmAccountLite } from "./_shared";
 import ReleaseCalendar from "@/app/dashboard/ReleaseCalendar";
+import ContentCalendar from "./ContentCalendar";
 
-type ContentItem = {
-  id: number; accountId: string; artistName: string | null; tipoContenido: string;
-  fecha: string; hora: string | null; estado: string; copyText: string | null;
-};
-type Account = { id: string; name: string; platform: string };
+type ContentItem = CmContentListItem;
+type Account = CmAccountLite;
 type Launch = { id: string; artistName: string; fonogramaNombre: string; fechaLanzamiento: string | null; materialesEstado: string; revisadoPorCm: boolean };
 
 function todayStr(): string {
@@ -65,7 +62,7 @@ function CmHomeInner() {
           accountId: quickAccountId,
           tipoContenido: "recordatorio",
           fecha: quickFecha,
-          copyText: quickTitle.trim(),
+          titulo: quickTitle.trim(),
           estado: "idea",
         }),
       });
@@ -114,8 +111,21 @@ function CmHomeInner() {
   return (
     <CmShell title="Community Manager" active="home">
       <div className="cm-section">
-        <div className="cm-section-title">Calendario de lanzamientos (compartido con todo el sello)</div>
-        <ReleaseCalendar readOnly apiUrl="/api/cm/releases" />
+        <div className="cm-dual-calendar">
+          <div>
+            <div className="cm-section-title">Calendario de lanzamientos</div>
+            <ReleaseCalendar readOnly apiUrl="/api/cm/releases" />
+          </div>
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <div className="cm-section-title" style={{ marginBottom: 0 }}>Calendario de contenidos</div>
+              <Link href="/panel/cm/calendario" style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-2)", textDecoration: "none" }}>
+                Ver calendario completo →
+              </Link>
+            </div>
+            <ContentCalendar />
+          </div>
+        </div>
       </div>
 
       <div className="cm-section">
@@ -134,8 +144,8 @@ function CmHomeInner() {
                 className="cm-card"
                 style={{ display: "flex", flexDirection: "column", gap: 4, textAlign: "left", cursor: "pointer", font: "inherit", color: "inherit", width: "100%" }}
               >
-                <div style={{ fontWeight: 600, fontSize: 14 }}>{CM_TIPO_LABELS[i.tipoContenido] ?? i.tipoContenido}{i.artistName ? ` — ${i.artistName}` : ""}</div>
-                {i.copyText && <div style={{ fontSize: 13, color: "var(--text-2)" }}>{i.copyText}</div>}
+                <div style={{ fontWeight: 600, fontSize: 14 }}>{i.titulo || CM_TIPO_LABELS[i.tipoContenido] || i.tipoContenido}{i.artistName ? ` — ${i.artistName}` : ""}</div>
+                {i.titulo && <div style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-2)" }}>{CM_TIPO_LABELS[i.tipoContenido] ?? i.tipoContenido}{i.plataforma ? ` · ${i.plataforma}` : ""}</div>}
                 <div style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-2)" }}>{i.fecha.slice(0, 10)}{i.hora ? ` · ${i.hora}` : ""}</div>
                 <span className="cm-badge">{CM_ESTADO_LABELS[i.estado] ?? i.estado}</span>
               </button>
@@ -227,7 +237,7 @@ function CmHomeInner() {
                   />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: 14 }}>
-                      {i.copyText || CM_TIPO_LABELS[i.tipoContenido] || i.tipoContenido}
+                      {i.titulo || i.copyText || CM_TIPO_LABELS[i.tipoContenido] || i.tipoContenido}
                     </div>
                     <div style={{ fontSize: 12.5, fontWeight: 500, color: "var(--text-2)" }}>
                       {CM_TIPO_LABELS[i.tipoContenido] ?? i.tipoContenido}{i.artistName ? ` — ${i.artistName}` : ""}
@@ -278,95 +288,14 @@ function CmHomeInner() {
       </div>
 
       {selectedItem && (
-        <TaskDetailModal
+        <ContentItemModal
           item={selectedItem}
+          accounts={accounts}
           onClose={() => setSelectedItem(null)}
           onChanged={() => { setSelectedItem(null); refetchItems(); }}
         />
       )}
     </CmShell>
-  );
-}
-
-function TaskDetailModal({ item, onClose, onChanged }: { item: ContentItem; onClose: () => void; onChanged: () => void }) {
-  const [copyText, setCopyText] = useState(item.copyText ?? "");
-  const [fecha, setFecha] = useState(item.fecha.slice(0, 10));
-  const [estado, setEstado] = useState(item.estado);
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSave() {
-    setSaving(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/cm/contenidos/${item.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ copyText: copyText.trim() || null, fecha, estado }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "No se pudo guardar.");
-      onChanged();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  async function handleDelete() {
-    if (!window.confirm("¿Eliminar esta tarea/publicación?")) return;
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/cm/contenidos/${item.id}`, { method: "DELETE" });
-      if (res.ok) onChanged();
-    } finally {
-      setDeleting(false);
-    }
-  }
-
-  return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50, padding: 20 }} onClick={onClose}>
-      <div className="cm-card" onClick={(e) => e.stopPropagation()} style={{ width: 440, maxWidth: "95vw", display: "flex", flexDirection: "column", gap: 10 }}>
-        <div style={{ fontWeight: 700, fontSize: 15 }}>
-          {CM_TIPO_LABELS[item.tipoContenido] ?? item.tipoContenido}{item.artistName ? ` — ${item.artistName}` : ""}
-        </div>
-        <div>
-          <label className="cm-label">Título / detalle</label>
-          <textarea
-            className="cm-input"
-            rows={3}
-            value={copyText}
-            onChange={(e) => setCopyText(e.target.value)}
-            style={{ resize: "vertical" }}
-            placeholder="Qué hay que hacer..."
-          />
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <div style={{ flex: 1 }}>
-            <label className="cm-label">Fecha</label>
-            <input type="date" className="cm-input" value={fecha} onChange={(e) => setFecha(e.target.value)} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <label className="cm-label">Estado</label>
-            <select className="cm-input" value={estado} onChange={(e) => setEstado(e.target.value)}>
-              {CM_ESTADOS.map((s) => <option key={s} value={s}>{CM_ESTADO_LABELS[s] ?? s}</option>)}
-            </select>
-          </div>
-        </div>
-        {error && <div className="cm-badge crit">{error}</div>}
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginTop: 4 }}>
-          <button type="button" className="cm-btn-ghost" style={{ borderColor: "var(--crit-ink)", color: "var(--crit-ink)" }} disabled={deleting} onClick={handleDelete}>
-            {deleting ? "..." : "Eliminar"}
-          </button>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button type="button" className="cm-btn-ghost" onClick={onClose}>Cerrar</button>
-            <button type="button" className="cm-btn" disabled={saving} onClick={handleSave}>{saving ? "Guardando..." : "Guardar"}</button>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
 

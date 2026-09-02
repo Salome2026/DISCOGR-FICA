@@ -90,7 +90,7 @@ function AccountDetail({ id }: { id: string }) {
             {pendientes.map((c) => (
               <div key={c.id} className="cm-card" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <div style={{ fontWeight: 600, fontSize: 13.5 }}>{CM_TIPO_LABELS[c.tipoContenido] ?? c.tipoContenido}</div>
-                <div style={{ fontSize: 12, color: "var(--text-3)" }}>{c.fecha}{c.hora ? ` · ${c.hora}` : ""}</div>
+                <div style={{ fontSize: 12, color: "var(--text-3)" }}>{c.fecha.slice(0, 10)}{c.hora ? ` · ${c.hora}` : ""}</div>
                 <span className="cm-badge">{CM_ESTADO_LABELS[c.estado] ?? c.estado}</span>
               </div>
             ))}
@@ -107,7 +107,7 @@ function AccountDetail({ id }: { id: string }) {
             {publicados.slice(0, 6).map((c) => (
               <div key={c.id} className="cm-card" style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 <div style={{ fontWeight: 600, fontSize: 13.5 }}>{CM_TIPO_LABELS[c.tipoContenido] ?? c.tipoContenido}</div>
-                <div style={{ fontSize: 12, color: "var(--text-3)" }}>{c.fecha}</div>
+                <div style={{ fontSize: 12, color: "var(--text-3)" }}>{c.fecha.slice(0, 10)}</div>
                 {c.publishedUrl && <a href={c.publishedUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12.5 }}>Ver publicación ↗</a>}
               </div>
             ))}

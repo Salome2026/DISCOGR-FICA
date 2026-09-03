@@ -190,20 +190,25 @@ export default function Landing() {
           -webkit-mask-position:center; mask-position:center;
           animation:vpo-logo-shine-sweep 2s cubic-bezier(.45,0,.2,1) .1s 1 both;
         }
-        /* Brillo de BORDE, notorio a propósito: una silueta blanca sólida
-           recortada con la misma máscara del logo (así el brillo sigue el
-           contorno real de cada letra, con los huecos entre ellas) más
-           varios drop-shadow apilados para el halo — drop-shadow calcula el
-           blur sobre el canal alfa de la silueta, o sea que el resplandor
-           efectivamente "abraza" el borde de cada letra, no el interior. Se
-           revela de izquierda a derecha con clip-path, como si la luz fuera
-           iluminando las letras a su paso.  */
+        /* Brillo de CONTORNO (no relleno): dos copias de la misma máscara
+           del logo, una un poco más chica que la otra, restadas entre sí
+           (mask-composite) — el resultado es un anillo delgado que sigue
+           el borde real de cada letra, no la silueta completa. drop-shadow
+           encima difumina ese anillo hacia afuera para el halo. Se revela
+           de izquierda a derecha con clip-path, como si la luz fuera
+           remarcando el contorno de las letras a su paso. */
         .vpo-logo-edge-glow{
           position:absolute; inset:0; pointer-events:none; background:#fff;
-          -webkit-mask-image:url(/vpo-logo.png); mask-image:url(/vpo-logo.png);
-          -webkit-mask-size:contain; mask-size:contain;
-          -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
-          -webkit-mask-position:center; mask-position:center;
+          -webkit-mask-image:url(/vpo-logo.png), url(/vpo-logo.png);
+          -webkit-mask-size:100% 100%, 96% 96%;
+          -webkit-mask-position:center, center;
+          -webkit-mask-repeat:no-repeat, no-repeat;
+          -webkit-mask-composite:xor;
+          mask-image:url(/vpo-logo.png), url(/vpo-logo.png);
+          mask-size:100% 100%, 96% 96%;
+          mask-position:center, center;
+          mask-repeat:no-repeat, no-repeat;
+          mask-composite:exclude;
           filter:
             drop-shadow(0 0 2px rgba(255,255,255,.95))
             drop-shadow(0 0 7px rgba(255,255,255,.85))

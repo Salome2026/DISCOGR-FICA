@@ -168,7 +168,7 @@ export default function Landing() {
            el haz viaje de borde a borde de la pantalla real sin importar
            dónde caiga el logo horizontalmente. */
         .vpo-logo-stage{position:relative; display:inline-block; line-height:0;}
-        .vpo-flash{position:absolute; top:50%; left:50%; width:100vw; height:0; transform:translateY(-50%); pointer-events:none; overflow:visible;}
+        .vpo-flash{position:absolute; top:50%; left:50%; width:100vw; height:0; transform:translate(-50%,-50%); pointer-events:none; overflow:visible;}
         .vpo-flash-beam{
           position:absolute; top:0; left:0; width:160px; height:1.5px; transform:translate(-15vw,-50%);
           background:linear-gradient(90deg, transparent, rgba(255,255,255,.85) 88%, rgba(255,255,255,.95));
@@ -188,7 +188,7 @@ export default function Landing() {
           -webkit-mask-size:contain; mask-size:contain;
           -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
           -webkit-mask-position:center; mask-position:center;
-          animation:vpo-logo-shine-sweep 1s cubic-bezier(.45,0,.2,1) .6s 1 both;
+          animation:vpo-logo-shine-sweep 2s cubic-bezier(.45,0,.2,1) .1s 1 both;
         }
         @keyframes vpo-flash-travel{
           0%{opacity:0; transform:translate(-15vw,-50%);}
@@ -196,9 +196,19 @@ export default function Landing() {
           92%{opacity:1;}
           100%{opacity:0; transform:translate(115vw,-50%);}
         }
+        /* Mismo timing (duración, delay, easing) que vpo-flash-travel a
+           propósito — así ambas animaciones muestrean el mismo progreso
+           "eased" en cada instante, y los % de acá coinciden con el
+           recorrido real del haz (de -15vw a 115vw) en vez de ser una
+           estimación aparte que se desincroniza. El haz atraviesa el ancho
+           del logo (centrado, min(420px,62vw)) aproximadamente entre el
+           28% y el 70% de su recorrido — la ventana se ensancha un poco de
+           más a propósito para cubrir tanto mobile (logo más ancho en vw)
+           como desktop sin necesitar dos animaciones distintas. */
         @keyframes vpo-logo-shine-sweep{
-          0%{background-position:-140% 0;}
-          100%{background-position:140% 0;}
+          0%, 26%{background-position:-140% 0;}
+          49%{background-position:0% 0;}
+          72%, 100%{background-position:140% 0;}
         }
         @media (prefers-reduced-motion: reduce){
           .vpo-flash-beam, .vpo-logo-shine{animation:none; display:none;}

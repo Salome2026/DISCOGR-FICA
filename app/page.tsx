@@ -190,6 +190,26 @@ export default function Landing() {
           -webkit-mask-position:center; mask-position:center;
           animation:vpo-logo-shine-sweep 2s cubic-bezier(.45,0,.2,1) .1s 1 both;
         }
+        /* Brillo de BORDE, notorio a propósito: una silueta blanca sólida
+           recortada con la misma máscara del logo (así el brillo sigue el
+           contorno real de cada letra, con los huecos entre ellas) más
+           varios drop-shadow apilados para el halo — drop-shadow calcula el
+           blur sobre el canal alfa de la silueta, o sea que el resplandor
+           efectivamente "abraza" el borde de cada letra, no el interior. Se
+           revela de izquierda a derecha con clip-path, como si la luz fuera
+           iluminando las letras a su paso.  */
+        .vpo-logo-edge-glow{
+          position:absolute; inset:0; pointer-events:none; background:#fff;
+          -webkit-mask-image:url(/vpo-logo.png); mask-image:url(/vpo-logo.png);
+          -webkit-mask-size:contain; mask-size:contain;
+          -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+          -webkit-mask-position:center; mask-position:center;
+          filter:
+            drop-shadow(0 0 2px rgba(255,255,255,.95))
+            drop-shadow(0 0 7px rgba(255,255,255,.85))
+            drop-shadow(0 0 16px rgba(214,224,255,.6));
+          animation:vpo-logo-edge-reveal 2s cubic-bezier(.45,0,.2,1) .1s 1 both;
+        }
         @keyframes vpo-flash-travel{
           0%{opacity:0; transform:translate(-15vw,-50%);}
           8%{opacity:1;}
@@ -210,8 +230,15 @@ export default function Landing() {
           49%{background-position:0% 0;}
           72%, 100%{background-position:140% 0;}
         }
+        @keyframes vpo-logo-edge-reveal{
+          0%, 24%{clip-path:inset(-30% 100% -30% -30%); opacity:0;}
+          28%{opacity:1;}
+          58%{clip-path:inset(-30% -30% -30% -30%);}
+          84%{opacity:1;}
+          100%{clip-path:inset(-30% -30% -30% -30%); opacity:0;}
+        }
         @media (prefers-reduced-motion: reduce){
-          .vpo-flash-beam, .vpo-logo-shine{animation:none; display:none;}
+          .vpo-flash-beam, .vpo-logo-shine, .vpo-logo-edge-glow{animation:none; display:none;}
         }
         .vpo-hero-text{text-align:center;}
         .vpo-hero-text p{font-size:14px;color:var(--text-3);margin:0;letter-spacing:.01em;}

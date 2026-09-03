@@ -84,6 +84,7 @@ export default function VPOScrollHero() {
             />
             <div key={flashKey} aria-hidden style={{ display: "contents" }}>
               <div className="vpo-logo-shine" />
+              <div className="vpo-logo-edge-glow" />
               <div className="vpo-flash">
                 <div className="vpo-flash-beam" />
               </div>

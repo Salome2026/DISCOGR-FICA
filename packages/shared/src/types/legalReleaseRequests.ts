@@ -19,7 +19,10 @@ export type ReleaseTipo = (typeof RELEASE_TIPOS)[number];
 
 export type LegalReleaseRequest = {
   id: string;
-  pmReleaseId: number;
+  // Nullable: un PM puede cargar el Release antes de que exista el
+  // fonograma en pm_releases — queda "suelto" (sin ancla), Legal lo revisa
+  // igual usando trackName/artistDisplay/sello tipeados a mano.
+  pmReleaseId: number | null;
   trackName: string;
   artistDisplay: string;
   sello: string | null;

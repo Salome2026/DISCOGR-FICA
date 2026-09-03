@@ -139,11 +139,45 @@ function useDebounced(value: string, delay = 250): string {
   return debounced;
 }
 
+// Cuando el PM todavía no cargó el fonograma, permite tipear canción/
+// artista/sello a mano en vez de buscarlos en el catálogo — produce un
+// SplitTrackOption con id:null, que el submit manda como "sin ancla".
+function ManualTrackEntry({ onConfirm, onCancel }: { onConfirm: (t: SplitTrackOption) => void; onCancel: () => void }) {
+  const [track, setTrack] = useState("");
+  const [artistDisplay, setArtistDisplay] = useState("");
+  const [sello, setSello] = useState("");
+  const ready = track.trim() && artistDisplay.trim();
+
+  return (
+    <div className="spx-participant" style={{ background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: 12 }}>
+      <div className="spx-new-person-fields" style={{ marginTop: 0, marginBottom: 8 }}>
+        <input className="spx-input" placeholder="Nombre del fonograma" value={track} onChange={(e) => setTrack(e.target.value)} />
+        <input className="spx-input" placeholder="Artista" value={artistDisplay} onChange={(e) => setArtistDisplay(e.target.value)} />
+        <input className="spx-input" placeholder="Sello (opcional)" value={sello} onChange={(e) => setSello(e.target.value)} />
+      </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button
+          type="button"
+          className="spx-calc-btn"
+          disabled={!ready}
+          onClick={() => onConfirm({ id: null, track: track.trim(), artistDisplay: artistDisplay.trim(), sello: sello.trim() || null, audioUrl: null })}
+        >
+          Confirmar
+        </button>
+        <button type="button" className="spx-change-link" onClick={onCancel}>
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function TrackPicker({ selected, onSelect }: { selected: SplitTrackOption | null; onSelect: (t: SplitTrackOption | null) => void }) {
   const [query, setQuery] = useState("");
   const debounced = useDebounced(query);
   const [results, setResults] = useState<SplitTrackOption[]>([]);
   const [open, setOpen] = useState(false);
+  const [manual, setManual] = useState(false);
 
   useEffect(() => {
     if (!debounced.trim()) {
@@ -160,6 +194,7 @@ function TrackPicker({ selected, onSelect }: { selected: SplitTrackOption | null
       <div className="spx-track-chip">
         <div>
           <strong>{selected.track}</strong>
+          {selected.id === null && <span className="spx-new-badge" style={{ marginLeft: 8 }}>Sin fonograma todavía</span>}
           <br />
           <span>
             {selected.artistDisplay}
@@ -171,6 +206,10 @@ function TrackPicker({ selected, onSelect }: { selected: SplitTrackOption | null
         </button>
       </div>
     );
+  }
+
+  if (manual) {
+    return <ManualTrackEntry onConfirm={onSelect} onCancel={() => setManual(false)} />;
   }
 
   return (
@@ -212,6 +251,9 @@ function TrackPicker({ selected, onSelect }: { selected: SplitTrackOption | null
           <div className="spx-dropdown-item">No encontramos ninguna canción con ese nombre.</div>
         </div>
       )}
+      <button type="button" className="spx-change-link" style={{ marginTop: 6 }} onClick={() => setManual(true)}>
+        Todavía no tengo el fonograma cargado — cargar los datos a mano
+      </button>
     </div>
   );
 }
@@ -530,6 +572,9 @@ function SplitEditorialForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           catalogTrackId: track.id,
+          trackName: track.track,
+          artistDisplay: track.artistDisplay,
+          sello: track.sello,
           letra: toInput(letra),
           musica: toInput(musica),
           letraUrl: letraDoc?.url ?? null,

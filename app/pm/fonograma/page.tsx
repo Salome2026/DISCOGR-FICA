@@ -175,6 +175,33 @@ function PMFonogramaInner() {
           </button>
         </div>
 
+        <div
+          className="card"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 16,
+            flexWrap: "wrap",
+            marginBottom: "1.5rem",
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700 }}>¿Ya tenés los datos de derechos pero todavía no cargaste el fonograma?</div>
+            <p style={{ fontSize: 12.5, color: "var(--text-3)", margin: "4px 0 0" }}>
+              Podés adelantar el Release y el Split editorial a mano — no hace falta esperar a tener el lanzamiento cargado.
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <Link href="/pm/fonograma/nuevo/release" className="btn-ghost" style={{ textDecoration: "none" }}>
+              Cargar Release
+            </Link>
+            <Link href="/pm/split-editorial" className="btn-ghost" style={{ textDecoration: "none" }}>
+              Cargar Split editorial
+            </Link>
+          </div>
+        </div>
+
         <div className="topbar">
           <div>
             <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "-.02em" }}>

@@ -37,7 +37,11 @@ export type SplitCard = {
 };
 
 export type SplitTrackOption = {
-  id: string;
+  // Nullable: un PM puede cargar el split antes de que exista el fonograma
+  // en el catálogo — el track/artist/sello se tipean a mano y el split
+  // queda sin ancla a catalog_tracks (mismo criterio que legal_release_requests
+  // sin pm_release_id).
+  id: string | null;
   track: string;
   artistDisplay: string;
   sello: string | null;

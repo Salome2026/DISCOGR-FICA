@@ -31,6 +31,9 @@ export function ensureLegalReleaseRequestsSchema(): Promise<void> {
       `;
       await sql`CREATE INDEX IF NOT EXISTS legal_release_requests_estado_idx ON legal_release_requests (estado)`;
       await sql`CREATE INDEX IF NOT EXISTS legal_release_requests_pm_release_idx ON legal_release_requests (pm_release_id)`;
+      // Un PM puede cargar el Release antes de que el fonograma exista en
+      // pm_releases — no-op en cualquier corrida donde ya esté relajada.
+      await sql`ALTER TABLE legal_release_requests ALTER COLUMN pm_release_id DROP NOT NULL`;
       // Clasificación del release completo (Artista/Sello/PPD) — le indica a
       // Legal de qué forma procesarlo. Nullable para no romper filas viejas.
       await sql`ALTER TABLE legal_release_requests ADD COLUMN IF NOT EXISTS tipo TEXT`;
@@ -54,7 +57,7 @@ export function ensureLegalReleaseRequestsSchema(): Promise<void> {
 function rowToRequest(r: Record<string, unknown>): LegalReleaseRequest {
   return {
     id: r.id as string,
-    pmReleaseId: Number(r.pm_release_id),
+    pmReleaseId: r.pm_release_id != null ? Number(r.pm_release_id) : null,
     trackName: r.track_name as string,
     artistDisplay: r.artist_display as string,
     sello: (r.sello as string | null) ?? null,
@@ -86,7 +89,7 @@ export async function getReleaseRequestByPmReleaseId(pmReleaseId: number): Promi
 }
 
 export async function createReleaseRequest(input: {
-  pmReleaseId: number;
+  pmReleaseId: number | null;
   trackName: string;
   artistDisplay: string;
   sello: string | null;
@@ -97,9 +100,14 @@ export async function createReleaseRequest(input: {
 }): Promise<LegalReleaseRequest> {
   await ensureLegalReleaseRequestsSchema();
 
-  const existing = await getReleaseRequestByPmReleaseId(input.pmReleaseId);
-  if (existing) {
-    throw new Error("Este fonograma ya tiene un Release cargado.");
+  // El chequeo de "ya tiene un Release" solo aplica cuando hay un fonograma
+  // real al que anclarse — uno cargado antes del fonograma no tiene nada
+  // contra qué deduplicar todavía.
+  if (input.pmReleaseId != null) {
+    const existing = await getReleaseRequestByPmReleaseId(input.pmReleaseId);
+    if (existing) {
+      throw new Error("Este fonograma ya tiene un Release cargado.");
+    }
   }
 
   const sum = input.participants.reduce((s, p) => s + p.percentX100, 0);

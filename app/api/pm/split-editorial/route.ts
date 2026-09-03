@@ -25,54 +25,64 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { catalogTrackId, letra, musica, letraUrl, letraNombre } = body as {
-    catalogTrackId?: string;
+  const { catalogTrackId, trackName, artistDisplay, sello, letra, musica, letraUrl, letraNombre } = body as {
+    catalogTrackId?: string | null;
+    trackName?: string;
+    artistDisplay?: string;
+    sello?: string | null;
     letra?: unknown[];
     musica?: unknown[];
     letraUrl?: string | null;
     letraNombre?: string | null;
   };
 
-  if (!catalogTrackId) {
-    return NextResponse.json({ error: "Elegí la canción." }, { status: 400 });
-  }
-  let track = await getTrack(catalogTrackId);
-  if (!track) {
-    // Fonogramas cargados antes de que cada alta espejara automáticamente
-    // en catalog_tracks se quedaron sin esa fila — en vez de bloquear el
-    // split para siempre, si el id es el de un fonograma real de PM
-    // ("pm-<id>") se genera la fila que falta ahí mismo y se sigue.
-    const pmMatch = /^pm-(\d+)$/.exec(catalogTrackId);
-    if (pmMatch) {
-      const release = await getReleaseById(Number(pmMatch[1]));
-      if (release) {
-        const participants = [release.artist_name as string];
-        if (release.colaboradores) {
-          for (const c of String(release.colaboradores).split(",")) {
-            const n = c.trim();
-            if (n) participants.push(n);
+  // Sin catalogTrackId: el PM está cargando el split antes de que el
+  // fonograma exista en el catálogo — track/artista/sello se toman del
+  // body (tipeados a mano) en vez de resolverse contra catalog_tracks, y
+  // el split queda "suelto" (catalog_track_id NULL, mismo criterio que un
+  // Release cargado sin pm_release_id).
+  let track: Awaited<ReturnType<typeof getTrack>> = null;
+  if (catalogTrackId) {
+    track = await getTrack(catalogTrackId);
+    if (!track) {
+      // Fonogramas cargados antes de que cada alta espejara automáticamente
+      // en catalog_tracks se quedaron sin esa fila — en vez de bloquear el
+      // split para siempre, si el id es el de un fonograma real de PM
+      // ("pm-<id>") se genera la fila que falta ahí mismo y se sigue.
+      const pmMatch = /^pm-(\d+)$/.exec(catalogTrackId);
+      if (pmMatch) {
+        const release = await getReleaseById(Number(pmMatch[1]));
+        if (release) {
+          const participants = [release.artist_name as string];
+          if (release.colaboradores) {
+            for (const c of String(release.colaboradores).split(",")) {
+              const n = c.trim();
+              if (n) participants.push(n);
+            }
           }
+          await upsertTrackFromRelease({
+            id: catalogTrackId,
+            track: release.fonograma_nombre as string,
+            album: null,
+            releaseDate: (release.fecha_lanzamiento as string | null) ?? null,
+            company: release.distribuidora === "Sin definir" ? null : ((release.distribuidora as string | null) ?? null),
+            artistDisplay: release.artist_name as string,
+            participants,
+            sello: (release.sello as string | null) ?? null,
+            streamingProject: (release.streaming_project as string | null) ?? null,
+            isrc: (release.isrc as string | null) ?? null,
+            genero: (release.genero as string | null) ?? null,
+            producer: (release.productor as string | null) ?? null,
+          });
+          track = await getTrack(catalogTrackId);
         }
-        await upsertTrackFromRelease({
-          id: catalogTrackId,
-          track: release.fonograma_nombre as string,
-          album: null,
-          releaseDate: (release.fecha_lanzamiento as string | null) ?? null,
-          company: release.distribuidora === "Sin definir" ? null : ((release.distribuidora as string | null) ?? null),
-          artistDisplay: release.artist_name as string,
-          participants,
-          sello: (release.sello as string | null) ?? null,
-          streamingProject: (release.streaming_project as string | null) ?? null,
-          isrc: (release.isrc as string | null) ?? null,
-          genero: (release.genero as string | null) ?? null,
-          producer: (release.productor as string | null) ?? null,
-        });
-        track = await getTrack(catalogTrackId);
       }
     }
-  }
-  if (!track) {
-    return NextResponse.json({ error: "No encontramos esa canción." }, { status: 400 });
+    if (!track) {
+      return NextResponse.json({ error: "No encontramos esa canción." }, { status: 400 });
+    }
+  } else if (!trackName?.trim() || !artistDisplay?.trim()) {
+    return NextResponse.json({ error: "Completá el nombre del fonograma y el artista." }, { status: 400 });
   }
   if (!Array.isArray(letra) || !letra.every(isValidPersonInput) || letra.length === 0) {
     return NextResponse.json({ error: "Revisá las personas y porcentajes de letra." }, { status: 400 });
@@ -84,9 +94,10 @@ export async function POST(req: NextRequest) {
   // El audio nunca lo manda el cliente: si esta canción viene de un
   // fonograma de PM (catalog_tracks.id = "pm-<id>"), ya se subió cuando se
   // cargó el fonograma — se toma directo de pm_releases.audio_url en vez de
-  // confiar en lo que mande el formulario.
+  // confiar en lo que mande el formulario. Sin track (split cargado antes
+  // del fonograma) no hay nada de dónde tomarlo todavía.
   let audioUrl: string | null = null;
-  const pmMatch = /^pm-(\d+)$/.exec(track.id);
+  const pmMatch = track ? /^pm-(\d+)$/.exec(track.id) : null;
   if (pmMatch) {
     const release = await getReleaseById(Number(pmMatch[1]));
     audioUrl = (release?.audio_url as string | null | undefined) ?? null;
@@ -94,10 +105,10 @@ export async function POST(req: NextRequest) {
 
   try {
     const split = await createSplit({
-      catalogTrackId: track.id,
-      trackName: track.track,
-      artistDisplay: track.artist_display,
-      sello: track.sello,
+      catalogTrackId: track?.id ?? null,
+      trackName: track?.track ?? trackName!.trim(),
+      artistDisplay: track?.artist_display ?? artistDisplay!.trim(),
+      sello: track?.sello ?? (sello?.trim() || null),
       letra: letra as SplitPersonInput[],
       musica: musica as SplitPersonInput[],
       letraUrl: letraUrl?.trim() || null,

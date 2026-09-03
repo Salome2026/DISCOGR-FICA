@@ -21,22 +21,28 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const { pmReleaseId, trackName, artistDisplay, sello, fechaLanzamiento, tipo, participants } = body as {
-    pmReleaseId?: number; trackName?: string; artistDisplay?: string; sello?: string | null;
+    pmReleaseId?: number | null; trackName?: string; artistDisplay?: string; sello?: string | null;
     fechaLanzamiento?: string | null; tipo?: string; participants?: unknown[];
   };
 
-  if (!pmReleaseId || !trackName?.trim() || !artistDisplay?.trim()) {
+  if (!trackName?.trim() || !artistDisplay?.trim()) {
     return NextResponse.json({ error: "Faltan datos del fonograma." }, { status: 400 });
   }
   if (!tipo || !(RELEASE_TIPOS as readonly string[]).includes(tipo)) {
     return NextResponse.json({ error: "Elegí de qué parte es este Release." }, { status: 400 });
   }
-  const release = await getReleaseById(Number(pmReleaseId));
-  if (!release) {
-    return NextResponse.json({ error: "No encontramos ese fonograma." }, { status: 404 });
-  }
-  if (!user.roles.includes("admin") && release.created_by !== user.email) {
-    return NextResponse.json({ error: "No tenés acceso a este fonograma." }, { status: 403 });
+  // pmReleaseId es opcional — un PM puede cargar el Release antes de que el
+  // fonograma exista todavía. Cuando sí viene, se valida que el fonograma
+  // sea real y del PM (el chequeo de ownership no aplica a uno "suelto",
+  // no hay fonograma del que ser dueño).
+  if (pmReleaseId != null) {
+    const release = await getReleaseById(Number(pmReleaseId));
+    if (!release) {
+      return NextResponse.json({ error: "No encontramos ese fonograma." }, { status: 404 });
+    }
+    if (!user.roles.includes("admin") && release.created_by !== user.email) {
+      return NextResponse.json({ error: "No tenés acceso a este fonograma." }, { status: 403 });
+    }
   }
   if (!Array.isArray(participants) || !participants.every(isValidParticipant) || participants.length === 0) {
     return NextResponse.json({ error: "Revisá los participantes y sus porcentajes." }, { status: 400 });
@@ -44,7 +50,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const request = await createReleaseRequest({
-      pmReleaseId: Number(pmReleaseId),
+      pmReleaseId: pmReleaseId != null ? Number(pmReleaseId) : null,
       trackName: trackName.trim(),
       artistDisplay: artistDisplay.trim(),
       sello: sello || null,

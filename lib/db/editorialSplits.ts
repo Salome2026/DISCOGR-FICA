@@ -153,7 +153,7 @@ async function resolvePerson(input: SplitPersonInput, actorEmail: string): Promi
 }
 
 export async function createSplit(input: {
-  catalogTrackId: string;
+  catalogTrackId: string | null;
   trackName: string;
   artistDisplay: string;
   sello: string | null;

@@ -4,6 +4,20 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useReducedMotion, useMotionValueEvent } from "framer-motion";
 
+// Contorno real de "VPO" (V, palo+pancita de la P, vuelta completa de la O
+// y salida), extraído vectorizando el canal alfa de /vpo-logo.png y
+// reconstruido a mano como centerline — no la silueta completa del potrace
+// (que traza los dos bordes de cada trazo), sino una única línea que sigue
+// el medio de cada letra, en las coordenadas nativas del PNG (2539x1298).
+const VPO_TRACE_PATH =
+  "M 123 55 L 513 950 L 808 55 C 848 45, 892 45, 932 55 L 932 965 L 932 470 " +
+  "C 1000 300, 1120 185, 1300 185 C 1520 185, 1660 300, 1660 420 C 1660 500, 1580 545, 1420 545 " +
+  "C 1540 585, 1475 540, 1615 510 " +
+  "C 1615 330.2, 1730.8 170.9, 1901.8 115.3 C 2072.7 59.8, 2260.1 120.6, 2365.7 266.1 " +
+  "C 2471.4 411.5, 2471.4 608.5, 2365.7 753.9 C 2260.1 899.4, 2072.7 960.2, 1901.8 904.7 " +
+  "C 1730.8 849.1, 1615 689.8, 1615 510 " +
+  "C 1615 700, 2200 720, 2900 560 C 3200 480, 3400 420, 3650 400";
+
 // Apple-product-page-style intro: the mark starts large and centered, and
 // pins in place (sticky) while the user scrolls through this section's
 // height — shrinking, drifting up and fading out as it hands off to the
@@ -83,10 +97,16 @@ export default function VPOScrollHero() {
               preload
             />
             <div key={flashKey} aria-hidden style={{ display: "contents" }}>
-              <div className="vpo-logo-shine" />
               <div className="vpo-flash">
                 <div className="vpo-flash-beam" />
               </div>
+              <svg className="vpo-trace-svg" viewBox="0 0 2539 1298" preserveAspectRatio="xMidYMid meet">
+                <path className="vpo-trace-comet" pathLength={1000} d={VPO_TRACE_PATH} />
+                <circle className="vpo-trace-dot" r="13">
+                  <animateMotion path={VPO_TRACE_PATH} dur="1.9s" begin="0.55s" fill="freeze" rotate="auto" />
+                </circle>
+              </svg>
+              <div className="vpo-logo-shine" />
             </div>
           </div>
         </motion.div>

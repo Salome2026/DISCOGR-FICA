@@ -168,17 +168,65 @@ export default function Landing() {
            el haz viaje de borde a borde de la pantalla real sin importar
            dónde caiga el logo horizontalmente. */
         .vpo-logo-stage{position:relative; display:inline-block; line-height:0;}
-        .vpo-flash{position:absolute; top:50%; left:50%; width:100vw; height:0; transform:translate(-50%,-50%); pointer-events:none; overflow:visible;}
+        /* Secuencia completa: (1) el destello se acerca desde el borde real
+           de la pantalla hasta la zona de la V (.vpo-flash-beam, retimeado,
+           más corto que antes); (2) un punto recorre el contorno real de
+           V→P→O sobre un <svg> con las mismas coordenadas del PNG
+           (.vpo-trace-svg, generado vectorizando el canal alfa del logo);
+           (3) al terminar, el destello general tipo "Iron Man" ilumina las
+           tres letras (.vpo-logo-shine, sin cambios en su animación propia,
+           solo se retimea para arrancar después del trazo). Los tres tramos
+           están encadenados con animation-delay sobre el mismo timeline,
+           nunca corren en paralelo. */
+        .vpo-flash{position:absolute; top:39%; left:50%; width:100vw; height:0; transform:translate(-50%,-50%); pointer-events:none; overflow:visible;}
         .vpo-flash-beam{
           position:absolute; top:0; left:0; width:160px; height:1.5px; transform:translate(-15vw,-50%);
           background:linear-gradient(90deg, transparent, rgba(255,255,255,.85) 88%, rgba(255,255,255,.95));
-          animation:vpo-flash-travel 2s cubic-bezier(.45,0,.2,1) .1s 1 both;
+          animation:vpo-flash-approach .6s cubic-bezier(.45,0,.2,1) 1 both;
         }
         .vpo-flash-beam::after{
           content:""; position:absolute; right:-1px; top:50%; width:7px; height:7px; border-radius:50%;
           transform:translate(50%,-50%);
           background:radial-gradient(circle, #fff 0%, rgba(255,255,255,.7) 55%, transparent 75%);
           box-shadow:0 0 14px 3px rgba(255,255,255,.75);
+        }
+        @keyframes vpo-flash-approach{
+          0%{opacity:0; transform:translate(-15vw,-50%);}
+          20%{opacity:1;}
+          100%{opacity:0; transform:translate(38vw,-50%);}
+        }
+        /* El trazo: un <path> único (V, palo y pancita de la P, vuelta
+           completa de la O y salida) recorrido por un punto brillante
+           (SMIL animateMotion, respeta nativamente el viewBox del SVG sin
+           líos de coordenadas CSS) más una racha corta de luz que lo sigue
+           (stroke-dasharray/dashoffset con pathLength=1000, así el % de
+           dashoffset no depende de la longitud real del path). Todo con
+           filter:drop-shadow para el glow — nunca cambia el color del logo
+           en sí, solo se dibuja encima. */
+        .vpo-trace-svg{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible;}
+        .vpo-trace-comet{
+          fill:none; stroke:rgba(255,255,255,.95); stroke-width:9; stroke-linecap:round;
+          stroke-dasharray:45 955; stroke-dashoffset:1000; opacity:0;
+          filter:drop-shadow(0 0 5px rgba(255,255,255,.9)) drop-shadow(0 0 14px rgba(214,224,255,.7));
+          animation:vpo-trace-sweep 1.9s linear .55s 1 both;
+        }
+        .vpo-trace-dot{
+          fill:#fff; opacity:0;
+          filter:drop-shadow(0 0 6px rgba(255,255,255,1)) drop-shadow(0 0 16px rgba(214,224,255,.8));
+          animation:vpo-trace-dot-visibility 1.9s linear .55s 1 both;
+          offset-rotate:0deg;
+        }
+        @keyframes vpo-trace-sweep{
+          0%{stroke-dashoffset:1000; opacity:0;}
+          3%{opacity:1;}
+          97%{opacity:1;}
+          100%{stroke-dashoffset:0; opacity:0;}
+        }
+        @keyframes vpo-trace-dot-visibility{
+          0%{opacity:0;}
+          3%{opacity:1;}
+          95%{opacity:1;}
+          100%{opacity:0;}
         }
         .vpo-logo-shine{
           position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay;
@@ -188,30 +236,15 @@ export default function Landing() {
           -webkit-mask-size:contain; mask-size:contain;
           -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
           -webkit-mask-position:center; mask-position:center;
-          animation:vpo-logo-shine-sweep 2s cubic-bezier(.45,0,.2,1) .1s 1 both;
+          animation:vpo-logo-shine-sweep .85s cubic-bezier(.45,0,.2,1) 2.3s 1 both;
         }
-        @keyframes vpo-flash-travel{
-          0%{opacity:0; transform:translate(-15vw,-50%);}
-          8%{opacity:1;}
-          92%{opacity:1;}
-          100%{opacity:0; transform:translate(115vw,-50%);}
-        }
-        /* Mismo timing (duración, delay, easing) que vpo-flash-travel a
-           propósito — así ambas animaciones muestrean el mismo progreso
-           "eased" en cada instante, y los % de acá coinciden con el
-           recorrido real del haz (de -15vw a 115vw) en vez de ser una
-           estimación aparte que se desincroniza. El haz atraviesa el ancho
-           del logo (centrado, min(420px,62vw)) aproximadamente entre el
-           28% y el 70% de su recorrido — la ventana se ensancha un poco de
-           más a propósito para cubrir tanto mobile (logo más ancho en vw)
-           como desktop sin necesitar dos animaciones distintas. */
         @keyframes vpo-logo-shine-sweep{
           0%, 26%{background-position:-140% 0;}
           49%{background-position:0% 0;}
           72%, 100%{background-position:140% 0;}
         }
         @media (prefers-reduced-motion: reduce){
-          .vpo-flash-beam, .vpo-logo-shine{animation:none; display:none;}
+          .vpo-flash-beam, .vpo-trace-comet, .vpo-trace-dot, .vpo-logo-shine{animation:none; display:none;}
         }
         .vpo-hero-text{text-align:center;}
         .vpo-hero-text p{font-size:14px;color:var(--text-3);margin:0;letter-spacing:.01em;}

@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { upload } from "@vercel/blob/client";
 import RequireRole from "@/app/components/RequireRole";
 import ReleaseCalendar from "@/app/dashboard/ReleaseCalendar";
 import { PMShell } from "../../_shared";
@@ -63,21 +64,28 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
   const [meetingSuggestedDate, setMeetingSuggestedDate] = useState("");
   const [sendingMeeting, setSendingMeeting] = useState(false);
   const [meetingError, setMeetingError] = useState<string | null>(null);
-  const [editingPhoto, setEditingPhoto] = useState(false);
-  const [photoUrlInput, setPhotoUrlInput] = useState("");
-  const [savingPhoto, setSavingPhoto] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
-  async function savePhoto() {
-    setSavingPhoto(true);
+  async function handlePhotoFile(file: File) {
+    setUploadingPhoto(true);
+    setPhotoError(null);
     try {
-      const res = await fetch(`/api/pm/artistas/${artistId}`, {
+      const blob = await upload(file.name, file, {
+        access: "public",
+        handleUploadUrl: `/api/pm/artistas/${artistId}/photo`,
+      });
+      const res = await fetch(`/api/pm/artistas/${artistId}/photo`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ photoUrl: photoUrlInput.trim() || null }),
+        body: JSON.stringify({ photoUrl: blob.url }),
       });
-      if (res.ok) { setEditingPhoto(false); load(); }
+      if (!res.ok) throw new Error((await res.json().catch(() => null))?.error || "No se pudo guardar la foto.");
+      load();
+    } catch (err) {
+      setPhotoError(err instanceof Error ? err.message : "Error al subir la foto.");
     } finally {
-      setSavingPhoto(false);
+      setUploadingPhoto(false);
     }
   }
 
@@ -213,26 +221,23 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
               {data.artist.name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("")}
             </div>
           )}
-          {!editingPhoto ? (
-            <button
-              type="button"
-              onClick={() => { setPhotoUrlInput(data.artist.photoUrl ?? ""); setEditingPhoto(true); }}
-              style={smallBtn}
-            >
-              {data.artist.photoUrl ? "Cambiar foto" : "Agregar foto"}
-            </button>
-          ) : (
-            <div style={{ display: "flex", gap: 8, alignItems: "center", flex: 1, minWidth: 220 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <label style={{ ...smallBtn, alignSelf: "flex-start" }}>
+              {uploadingPhoto ? "Subiendo..." : data.artist.photoUrl ? "Cambiar foto" : "Agregar foto"}
               <input
-                value={photoUrlInput}
-                onChange={(e) => setPhotoUrlInput(e.target.value)}
-                placeholder="URL de la imagen"
-                style={{ flex: 1, background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 12px", color: "var(--text-1)", fontSize: 13.5 }}
+                type="file"
+                accept="image/png,image/jpeg"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  e.target.value = "";
+                  if (f) handlePhotoFile(f);
+                }}
+                disabled={uploadingPhoto}
+                style={{ display: "none" }}
               />
-              <button type="button" style={smallBtn} disabled={savingPhoto} onClick={savePhoto}>{savingPhoto ? "..." : "Guardar"}</button>
-              <button type="button" style={smallBtn} onClick={() => setEditingPhoto(false)}>Cancelar</button>
-            </div>
-          )}
+            </label>
+            {photoError && <span style={{ color: "var(--crit-ink)", fontSize: 13 }}>{photoError}</span>}
+          </div>
         </div>
       </div>
 

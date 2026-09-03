@@ -7,6 +7,8 @@ export type BoardRow = {
   split_id: string | null;
   youtube_url: string | null;
   drive_assets_url: string | null;
+  suggested_release_request_id?: string | null;
+  suggested_split_id?: string | null;
 };
 
 export type TaskStatuses = {
@@ -14,6 +16,11 @@ export type TaskStatuses = {
   splitStatus: TaskStatus;
   materialesStatus: TaskStatus;
   materialesEstado: MaterialesEstado;
+  // Un Release/Split ya cargado a mano (sin fonograma todavía) que coincide
+  // por nombre — solo tiene sentido mostrarlo mientras la tarea sigue
+  // Pendiente, nunca reemplaza el estado real.
+  suggestedReleaseRequestId: string | null;
+  suggestedSplitId: string | null;
 };
 
 // Los 6 estados pedidos para Community Manager. Con solo 2 links posibles
@@ -61,5 +68,12 @@ export function deriveTaskStatuses(row: BoardRow): TaskStatuses {
   const estado = materialesEstado(row.youtube_url, row.drive_assets_url);
   const materialesStatus: TaskStatus = estado === "assets_disponibles" ? "Completado" : "Pendiente";
 
-  return { releaseStatus, splitStatus, materialesStatus, materialesEstado: estado };
+  return {
+    releaseStatus,
+    splitStatus,
+    materialesStatus,
+    materialesEstado: estado,
+    suggestedReleaseRequestId: releaseStatus === "Pendiente" ? (row.suggested_release_request_id ?? null) : null,
+    suggestedSplitId: splitStatus === "Pendiente" ? (row.suggested_split_id ?? null) : null,
+  };
 }

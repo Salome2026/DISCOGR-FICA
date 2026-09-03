@@ -27,6 +27,8 @@ type BoardRelease = {
   splitStatus: TaskStatus;
   materialesStatus: TaskStatus;
   materialesEstado: "assets_disponibles" | "video_disponible" | "informacion_parcial" | "assets_pendientes" | "video_pendiente" | "sin_materiales";
+  suggestedReleaseRequestId: string | null;
+  suggestedSplitId: string | null;
 };
 
 const MATERIALES_LABEL: Record<BoardRelease["materialesEstado"], string> = {
@@ -60,6 +62,7 @@ function PMFonogramaInner() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [overridingId, setOverridingId] = useState<number | null>(null);
   const [editingLinks, setEditingLinks] = useState<BoardRelease | null>(null);
+  const [linkingKey, setLinkingKey] = useState<string | null>(null);
 
   const roles = (session?.user as { roles?: string[] } | undefined)?.roles ?? [];
   const isAdmin = roles.includes("admin");
@@ -93,6 +96,44 @@ function PMFonogramaInner() {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function handleLinkReleaseRequest(r: BoardRelease) {
+    if (!r.suggestedReleaseRequestId) return;
+    setLinkingKey(`release-${r.id}`);
+    try {
+      const res = await fetch(`/api/pm/releases/${r.id}/link-release-request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ releaseRequestId: r.suggestedReleaseRequestId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo vincular el Release.");
+      loadReleases();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLinkingKey(null);
+    }
+  }
+
+  async function handleLinkSplit(r: BoardRelease) {
+    if (!r.suggestedSplitId) return;
+    setLinkingKey(`split-${r.id}`);
+    try {
+      const res = await fetch(`/api/pm/releases/${r.id}/link-split`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ splitId: r.suggestedSplitId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo vincular el split.");
+      loadReleases();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLinkingKey(null);
     }
   }
 
@@ -246,13 +287,25 @@ function PMFonogramaInner() {
                   <div className="pmx-fono-task">
                     <span className="pmx-fono-task-label">Release</span>
                     <div className="pmx-fono-task-controls">
-                      {r.releaseStatus === "Pendiente" && (
-                        <Link
-                          href={`/pm/fonograma/${r.id}/release`}
+                      {r.releaseStatus === "Pendiente" && r.suggestedReleaseRequestId ? (
+                        <button
+                          type="button"
                           className="pmx-fono-task-btn"
+                          disabled={linkingKey === `release-${r.id}`}
+                          onClick={() => handleLinkReleaseRequest(r)}
+                          title="Ya cargaste un Release para este track/artista antes de tener el fonograma — lo vinculamos en vez de repetirlo."
                         >
-                          Completar Release
-                        </Link>
+                          {linkingKey === `release-${r.id}` ? "..." : "Vincular Release ya cargado"}
+                        </button>
+                      ) : (
+                        r.releaseStatus === "Pendiente" && (
+                          <Link
+                            href={`/pm/fonograma/${r.id}/release`}
+                            className="pmx-fono-task-btn"
+                          >
+                            Completar Release
+                          </Link>
+                        )
                       )}
                       <span className={`pmx-badge ${r.releaseStatus === "Pendiente" ? "pendiente" : "completado"}`}>
                         {r.releaseStatus}
@@ -262,13 +315,25 @@ function PMFonogramaInner() {
                   <div className="pmx-fono-task">
                     <span className="pmx-fono-task-label">Split editorial</span>
                     <div className="pmx-fono-task-controls">
-                      {r.splitStatus === "Pendiente" && (
-                        <Link
-                          href={`/pm/split-editorial?catalogTrackId=pm-${r.id}&trackName=${encodeURIComponent(r.fonograma_nombre)}&artistDisplay=${encodeURIComponent(r.artist_name)}${r.sello ? `&sello=${encodeURIComponent(r.sello)}` : ""}${r.audio_url ? `&audioUrl=${encodeURIComponent(r.audio_url)}` : ""}`}
+                      {r.splitStatus === "Pendiente" && r.suggestedSplitId ? (
+                        <button
+                          type="button"
                           className="pmx-fono-task-btn"
+                          disabled={linkingKey === `split-${r.id}`}
+                          onClick={() => handleLinkSplit(r)}
+                          title="Ya cargaste un split para este track/artista antes de tener el fonograma — lo vinculamos en vez de repetirlo."
                         >
-                          Completar Split
-                        </Link>
+                          {linkingKey === `split-${r.id}` ? "..." : "Vincular Split ya cargado"}
+                        </button>
+                      ) : (
+                        r.splitStatus === "Pendiente" && (
+                          <Link
+                            href={`/pm/split-editorial?catalogTrackId=pm-${r.id}&trackName=${encodeURIComponent(r.fonograma_nombre)}&artistDisplay=${encodeURIComponent(r.artist_name)}${r.sello ? `&sello=${encodeURIComponent(r.sello)}` : ""}${r.audio_url ? `&audioUrl=${encodeURIComponent(r.audio_url)}` : ""}`}
+                            className="pmx-fono-task-btn"
+                          >
+                            Completar Split
+                          </Link>
+                        )
                       )}
                       {r.splitStatus === "No corresponde" && (
                         <button

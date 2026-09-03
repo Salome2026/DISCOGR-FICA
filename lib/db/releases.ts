@@ -329,11 +329,26 @@ export async function listReleasesForBoard(email: string, roles: string[]) {
   await ensureLegalReleaseRequestsSchema();
   await ensureEditorialSplitsSchema();
   const roleFilter = ["admin","legal","editorial","management"].some((r) => roles.includes(r));
+  // Las dos subconsultas de "sugerido" buscan un Release/Split cargado a
+  // mano (suelto, sin ancla) para el mismo track+artista — así el board
+  // puede ofrecer "vincular" en vez de que el PM tenga que recargar algo
+  // que ya existe. Coinciden por nombre porque no hay otra clave posible
+  // antes de que el fonograma exista.
   const { rows } = roleFilter
     ? await sql`
         SELECT r.*, g.tipo AS group_tipo, g.nombre AS group_nombre,
           lrr.id AS release_request_id, lrr.estado AS release_request_estado,
-          es.id AS split_id, es.estado AS split_estado
+          es.id AS split_id, es.estado AS split_estado,
+          (SELECT lrr2.id FROM legal_release_requests lrr2
+             WHERE lrr2.pm_release_id IS NULL
+               AND lower(lrr2.track_name) = lower(r.fonograma_nombre)
+               AND lower(lrr2.artist_display) = lower(r.artist_name)
+             ORDER BY lrr2.created_at ASC LIMIT 1) AS suggested_release_request_id,
+          (SELECT es2.id FROM editorial_splits es2
+             WHERE es2.catalog_track_id IS NULL
+               AND lower(es2.track_name) = lower(r.fonograma_nombre)
+               AND lower(es2.artist_display) = lower(r.artist_name)
+             ORDER BY es2.created_at ASC LIMIT 1) AS suggested_split_id
         FROM pm_releases r
         LEFT JOIN pm_release_groups g ON g.id = r.group_id
         LEFT JOIN legal_release_requests lrr ON lrr.pm_release_id = r.id
@@ -344,7 +359,17 @@ export async function listReleasesForBoard(email: string, roles: string[]) {
     : await sql`
         SELECT r.*, g.tipo AS group_tipo, g.nombre AS group_nombre,
           lrr.id AS release_request_id, lrr.estado AS release_request_estado,
-          es.id AS split_id, es.estado AS split_estado
+          es.id AS split_id, es.estado AS split_estado,
+          (SELECT lrr2.id FROM legal_release_requests lrr2
+             WHERE lrr2.pm_release_id IS NULL
+               AND lower(lrr2.track_name) = lower(r.fonograma_nombre)
+               AND lower(lrr2.artist_display) = lower(r.artist_name)
+             ORDER BY lrr2.created_at ASC LIMIT 1) AS suggested_release_request_id,
+          (SELECT es2.id FROM editorial_splits es2
+             WHERE es2.catalog_track_id IS NULL
+               AND lower(es2.track_name) = lower(r.fonograma_nombre)
+               AND lower(es2.artist_display) = lower(r.artist_name)
+             ORDER BY es2.created_at ASC LIMIT 1) AS suggested_split_id
         FROM pm_releases r
         LEFT JOIN pm_release_groups g ON g.id = r.group_id
         LEFT JOIN legal_release_requests lrr ON lrr.pm_release_id = r.id

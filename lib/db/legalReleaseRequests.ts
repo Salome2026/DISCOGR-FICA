@@ -88,6 +88,30 @@ export async function getReleaseRequestByPmReleaseId(pmReleaseId: number): Promi
   return rows[0] ? rowToRequest(rows[0]) : null;
 }
 
+// Vincula un Release cargado "suelto" (sin pm_release_id) al fonograma real
+// una vez que existe — el WHERE pm_release_id IS NULL evita pisar un enlace
+// ya hecho por otra pestaña/usuario en la misma carrera.
+export async function linkReleaseRequestToRelease(id: string, pmReleaseId: number, actorEmail: string): Promise<LegalReleaseRequest | null> {
+  await ensureLegalReleaseRequestsSchema();
+  const { rows } = await sql`
+    UPDATE legal_release_requests SET pm_release_id = ${pmReleaseId}
+    WHERE id = ${id} AND pm_release_id IS NULL
+    RETURNING *
+  `;
+  const request = rows[0] ? rowToRequest(rows[0]) : null;
+  if (request) {
+    await recordAudit({
+      actorEmail,
+      action: "release_request_linked",
+      entityType: "legal_release_request",
+      entityId: id,
+      before: { pmReleaseId: null },
+      after: { pmReleaseId },
+    });
+  }
+  return request;
+}
+
 export async function createReleaseRequest(input: {
   pmReleaseId: number | null;
   trackName: string;

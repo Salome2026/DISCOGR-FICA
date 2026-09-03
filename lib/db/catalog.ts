@@ -1,4 +1,5 @@
 import { sql } from "@vercel/postgres";
+import { getReleaseById } from "./releases";
 
 let ready: Promise<void> | null = null;
 
@@ -160,6 +161,41 @@ export async function upsertTrackFromRelease(t: {
       genero = COALESCE(EXCLUDED.genero, catalog_tracks.genero),
       producer = COALESCE(EXCLUDED.producer, catalog_tracks.producer)
   `;
+}
+
+// Fonogramas cargados antes de que cada alta espejara automáticamente en
+// catalog_tracks se quedaron sin esa fila — genera la que falta a partir del
+// pm_releases real. Reusado tanto por el split-editorial "normal" (canción ya
+// elegida por catalogTrackId) como por el link de un split cargado a mano
+// contra un fonograma recién creado — misma lógica, un solo lugar.
+export async function ensureCatalogTrackForRelease(pmReleaseId: number): Promise<CatalogTrack | null> {
+  const id = `pm-${pmReleaseId}`;
+  const existing = await getTrack(id);
+  if (existing) return existing;
+  const release = await getReleaseById(pmReleaseId);
+  if (!release) return null;
+  const participants = [release.artist_name as string];
+  if (release.colaboradores) {
+    for (const c of String(release.colaboradores).split(",")) {
+      const n = c.trim();
+      if (n) participants.push(n);
+    }
+  }
+  await upsertTrackFromRelease({
+    id,
+    track: release.fonograma_nombre as string,
+    album: null,
+    releaseDate: (release.fecha_lanzamiento as string | null) ?? null,
+    company: release.distribuidora === "Sin definir" ? null : ((release.distribuidora as string | null) ?? null),
+    artistDisplay: release.artist_name as string,
+    participants,
+    sello: (release.sello as string | null) ?? null,
+    streamingProject: (release.streaming_project as string | null) ?? null,
+    isrc: (release.isrc as string | null) ?? null,
+    genero: (release.genero as string | null) ?? null,
+    producer: (release.productor as string | null) ?? null,
+  });
+  return getTrack(id);
 }
 
 export async function updateTrackClassification(

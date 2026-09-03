@@ -92,6 +92,31 @@ export async function getSplit(id: string): Promise<EditorialSplit | null> {
   return rows[0] ? rowToSplit(rows[0]) : null;
 }
 
+// Vincula un split cargado "suelto" (sin catalog_track_id) al fonograma real
+// una vez que existe, y de paso toma el audio que ya se cargó con el
+// fonograma (no había nada de dónde tomarlo al crear el split a mano). El
+// WHERE catalog_track_id IS NULL evita pisar un enlace ya hecho.
+export async function linkSplitToCatalogTrack(id: string, catalogTrackId: string, audioUrl: string | null, actorEmail: string): Promise<EditorialSplit | null> {
+  await ensureEditorialSplitsSchema();
+  const { rows } = await sql`
+    UPDATE editorial_splits SET catalog_track_id = ${catalogTrackId}, audio_url = COALESCE(audio_url, ${audioUrl})
+    WHERE id = ${id} AND catalog_track_id IS NULL
+    RETURNING *
+  `;
+  const split = rows[0] ? rowToSplit(rows[0]) : null;
+  if (split) {
+    await recordAudit({
+      actorEmail,
+      action: "split_linked",
+      entityType: "editorial_split",
+      entityId: id,
+      before: { catalogTrackId: null },
+      after: { catalogTrackId },
+    });
+  }
+  return split;
+}
+
 // Sent splits have no PATCH/edit route at all — "locked after Enviado" is
 // enforced by that omission, not by a flag an editor could bypass. If a
 // correction is ever needed later, it should go through a dedicated

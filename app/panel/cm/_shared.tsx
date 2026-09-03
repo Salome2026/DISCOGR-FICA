@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
-import { CM_TIPOS_CONTENIDO, CM_ESTADOS, CM_PLATAFORMAS } from "@/lib/db/cmContent";
+import { CM_TIPOS_CONTENIDO, CM_ESTADOS, CM_PLATAFORMAS } from "@/lib/cmContentConstants";
 
 // Diseño pedido explícitamente para este módulo: serio, corporativo,
 // minimalista, blanco y negro, sin el efecto "glass"/watermark decorativo
@@ -275,7 +275,7 @@ export function CmShell({
 }: {
   title?: string;
   subtitle?: string;
-  active?: "home" | "cuentas" | "calendario" | "lanzamientos";
+  active?: "home" | "cuentas" | "calendario" | "lanzamientos" | "pms";
   children: React.ReactNode;
 }) {
   return (
@@ -295,6 +295,7 @@ export function CmShell({
           <Link href="/panel/cm" className={active === "home" ? "active" : ""}>Portada</Link>
           <Link href="/panel/cm/cuentas" className={active === "cuentas" ? "active" : ""}>Cuentas</Link>
           <Link href="/panel/cm/lanzamientos" className={active === "lanzamientos" ? "active" : ""}>Lanzamientos</Link>
+          <Link href="/panel/cm/pms" className={active === "pms" ? "active" : ""}>PMs</Link>
         </nav>
         {children}
       </div>

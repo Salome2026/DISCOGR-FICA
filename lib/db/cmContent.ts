@@ -1,6 +1,7 @@
 import { sql } from "@vercel/postgres";
 import { recordAudit } from "@/lib/db/users";
 import { ensureCmAccountsSchema } from "@/lib/db/cmAccounts";
+export { CM_TIPOS_CONTENIDO, CM_ESTADOS, CM_PLATAFORMAS, type CmTipoContenido, type CmEstado, type CmPlataforma } from "@/lib/cmContentConstants";
 
 // @vercel/postgres's sql`` typings only accept Primitive (no arrays), even
 // though the underlying driver happily sends a JS array as a real Postgres
@@ -9,15 +10,6 @@ import { ensureCmAccountsSchema } from "@/lib/db/cmAccounts";
 function arrayParam<T>(items: T[]): string | number | boolean {
   return items as unknown as string;
 }
-
-export const CM_TIPOS_CONTENIDO = ["reel", "historia", "tiktok", "short", "post", "anuncio", "recordatorio"] as const;
-export type CmTipoContenido = (typeof CM_TIPOS_CONTENIDO)[number];
-
-export const CM_ESTADOS = ["idea", "pendiente_material", "en_produccion", "listo", "programado", "publicado", "cancelado"] as const;
-export type CmEstado = (typeof CM_ESTADOS)[number];
-
-export const CM_PLATAFORMAS = ["Instagram", "TikTok", "YouTube Shorts", "Otra"] as const;
-export type CmPlataforma = (typeof CM_PLATAFORMAS)[number];
 
 let ready: Promise<void> | null = null;
 

@@ -43,6 +43,7 @@ export const PERMISSIONS = [
   "administrar_asignaciones_pm",
   "ver_cm",
   "editar_cm",
+  "ver_asignaciones_pm",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -119,8 +120,12 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   tourmanager: ["ver_tourmanager", "editar_tourmanager"],
   // Same isolation principle again — its own module, own permissions.
   ar: ["ver_ar", "editar_ar"],
-  // Same isolation principle again — its own module, own permissions.
-  community_manager: ["ver_cm", "editar_cm"],
+  // "ver_asignaciones_pm" es la única excepción a "own module, own
+  // permissions": la CM necesita saber a qué PM reclamarle materiales de
+  // cada lanzamiento, así que lee (nunca edita) la tabla de asignaciones de
+  // PM que Management administra — mismo criterio asimétrico que
+  // "ver_cm" de Management arriba, en el sentido opuesto.
+  community_manager: ["ver_cm", "editar_cm", "ver_asignaciones_pm"],
   distribucion: ["editar_acuerdos", "aprobar_releases", "ver_estadisticas"],
   marketing: ["ver_estadisticas", "exportar_datos", "ver_playlists", "editar_playlists"],
   artista: ["subir_audio", "subir_portada"],

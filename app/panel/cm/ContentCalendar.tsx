@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CM_TIPO_LABELS, CM_ESTADO_LABELS, ContentItemModal, accountColor, type CmContentListItem, type CmAccountLite } from "./_shared";
-import { CM_PLATAFORMAS } from "@/lib/db/cmContent";
+import { CM_PLATAFORMAS } from "@/lib/cmContentConstants";
 
 const DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];

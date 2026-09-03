@@ -161,6 +161,48 @@ export default function Landing() {
           width:min(420px, 62vw); height:auto; display:block;
           filter:drop-shadow(0 24px 60px rgba(230,230,236,0.22));
         }
+        /* Destello de entrada: una sola pasada al montar, ~2s, izquierda a
+           derecha, a la altura media del logo. .vpo-logo-stage ancla el
+           overlay al tamaño/posición reales del logo (nada de coordenadas
+           fijas), y el truco left:50%+width:100vw+translateX(-50%) hace que
+           el haz viaje de borde a borde de la pantalla real sin importar
+           dónde caiga el logo horizontalmente. */
+        .vpo-logo-stage{position:relative; display:inline-block; line-height:0;}
+        .vpo-flash{position:absolute; top:50%; left:50%; width:100vw; height:0; transform:translateY(-50%); pointer-events:none; overflow:visible;}
+        .vpo-flash-beam{
+          position:absolute; top:0; left:0; width:160px; height:1.5px; transform:translate(-15vw,-50%);
+          background:linear-gradient(90deg, transparent, rgba(255,255,255,.85) 88%, rgba(255,255,255,.95));
+          animation:vpo-flash-travel 2s cubic-bezier(.45,0,.2,1) .1s 1 both;
+        }
+        .vpo-flash-beam::after{
+          content:""; position:absolute; right:-1px; top:50%; width:7px; height:7px; border-radius:50%;
+          transform:translate(50%,-50%);
+          background:radial-gradient(circle, #fff 0%, rgba(255,255,255,.7) 55%, transparent 75%);
+          box-shadow:0 0 14px 3px rgba(255,255,255,.75);
+        }
+        .vpo-logo-shine{
+          position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay;
+          background:linear-gradient(100deg, transparent 30%, rgba(255,255,255,.95) 48%, transparent 66%);
+          background-size:280% 100%; background-repeat:no-repeat; background-position:-140% 0;
+          -webkit-mask-image:url(/vpo-logo.png); mask-image:url(/vpo-logo.png);
+          -webkit-mask-size:contain; mask-size:contain;
+          -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
+          -webkit-mask-position:center; mask-position:center;
+          animation:vpo-logo-shine-sweep 1s cubic-bezier(.45,0,.2,1) .6s 1 both;
+        }
+        @keyframes vpo-flash-travel{
+          0%{opacity:0; transform:translate(-15vw,-50%);}
+          8%{opacity:1;}
+          92%{opacity:1;}
+          100%{opacity:0; transform:translate(115vw,-50%);}
+        }
+        @keyframes vpo-logo-shine-sweep{
+          0%{background-position:-140% 0;}
+          100%{background-position:140% 0;}
+        }
+        @media (prefers-reduced-motion: reduce){
+          .vpo-flash-beam, .vpo-logo-shine{animation:none; display:none;}
+        }
         .vpo-hero-text{text-align:center;}
         .vpo-hero-text p{font-size:14px;color:var(--text-3);margin:0;letter-spacing:.01em;}
         .vpo-hero-scrollhint{position:absolute;bottom:48px;left:0;right:0;text-align:center;font-size:12px;color:var(--text-3);letter-spacing:.02em;}

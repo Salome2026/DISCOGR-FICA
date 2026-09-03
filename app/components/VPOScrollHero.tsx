@@ -44,14 +44,20 @@ export default function VPOScrollHero() {
     <div ref={ref} className="vpo-hero">
       <div className="vpo-hero-sticky">
         <motion.div style={{ scale, y, opacity: markOpacity }}>
-          <Image
-            src="/vpo-logo.png"
-            alt="VPO Corp"
-            width={2539}
-            height={1298}
-            className="vpo-hero-logo"
-            preload
-          />
+          <div className="vpo-logo-stage">
+            <Image
+              src="/vpo-logo.png"
+              alt="VPO Corp"
+              width={2539}
+              height={1298}
+              className="vpo-hero-logo"
+              preload
+            />
+            <div className="vpo-logo-shine" aria-hidden />
+            <div className="vpo-flash" aria-hidden>
+              <div className="vpo-flash-beam" />
+            </div>
+          </div>
         </motion.div>
         <motion.div className="vpo-hero-text" style={{ opacity: textOpacity, y: textY }}>
           <p>Centro de control · acceso interno</p>

@@ -184,12 +184,6 @@ export default function Landing() {
           background:linear-gradient(90deg, transparent, rgba(255,255,255,.85) 88%, rgba(255,255,255,.95));
           animation:vpo-flash-approach .3s cubic-bezier(.45,0,.2,1) 1 both;
         }
-        .vpo-flash-beam::after{
-          content:""; position:absolute; right:-1px; top:50%; width:7px; height:7px; border-radius:50%;
-          transform:translate(50%,-50%);
-          background:radial-gradient(circle, #fff 0%, rgba(255,255,255,.7) 55%, transparent 75%);
-          box-shadow:0 0 14px 3px rgba(255,255,255,.75);
-        }
         @keyframes vpo-flash-approach{
           0%{opacity:0; transform:translate(-15vw,-50%);}
           20%{opacity:1;}
@@ -204,12 +198,6 @@ export default function Landing() {
           position:absolute; top:0; left:0; width:160px; height:1.5px; transform:translate(62vw,-50%);
           background:linear-gradient(90deg, transparent, rgba(255,255,255,.85) 88%, rgba(255,255,255,.95));
           animation:vpo-flash-depart .3s cubic-bezier(.45,0,.2,1) 1.15s 1 both;
-        }
-        .vpo-flash-beam-exit::after{
-          content:""; position:absolute; right:-1px; top:50%; width:7px; height:7px; border-radius:50%;
-          transform:translate(50%,-50%);
-          background:radial-gradient(circle, #fff 0%, rgba(255,255,255,.7) 55%, transparent 75%);
-          box-shadow:0 0 14px 3px rgba(255,255,255,.75);
         }
         @keyframes vpo-flash-depart{
           0%{opacity:0; transform:translate(62vw,-50%);}
@@ -231,42 +219,21 @@ export default function Landing() {
           filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));
           animation:vpo-trace-sweep 1s linear .25s 1 both;
         }
-        /* cx/cy explícitos en el JSX (no 0,0 por default) + visibility acá
-           como refuerzo de opacity — antes de que arranque animateMotion
-           (begin=.25s) el círculo ya está bien ubicado en el inicio real
-           del trazo y encima oculto por completo, así que ningún frame
-           intermedio puede mostrar un puntito huérfano arriba de la V. */
-        .vpo-trace-dot{
-          fill:#fff; opacity:0; visibility:hidden;
-          filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));
-          animation:vpo-trace-dot-visibility 1s linear .25s 1 both;
-          offset-rotate:0deg;
-        }
         /* Plateado durante todo el recorrido salvo al cruzar la P (~24%-55%
            del trazo, medido con getPointAtLength contra el path real) —
-           dorado en referencia al sol de la bandera, con una transición
-           suave de un par de puntos antes/después en vez de un corte
-           brusco. Mismos % en el <path> (stroke/filter) y en el punto
-           (fill/filter) para que cambien de color exactamente juntos. */
+           dorado saturado en referencia al sol de la bandera, con una
+           transición suave de un par de puntos antes/después en vez de un
+           corte brusco. Sin punto/círculo separado liderando el trazo —
+           solo la línea, para no dejar ningún "puntito" suelto en pantalla. */
         @keyframes vpo-trace-sweep{
           0%{stroke-dashoffset:1000; opacity:0; visibility:hidden; stroke:rgba(255,255,255,.95); filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));}
           3%{opacity:1; visibility:visible;}
           22%{stroke:rgba(255,255,255,.95); filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));}
-          25%{stroke:rgba(255,221,107,.98); filter:drop-shadow(0 0 9px rgba(255,230,140,1)) drop-shadow(0 0 22px rgba(255,205,90,.75));}
-          55%{stroke:rgba(255,221,107,.98); filter:drop-shadow(0 0 9px rgba(255,230,140,1)) drop-shadow(0 0 22px rgba(255,205,90,.75));}
+          25%{stroke:rgba(255,196,20,1); filter:drop-shadow(0 0 10px rgba(255,205,40,1)) drop-shadow(0 0 24px rgba(255,160,10,.9));}
+          55%{stroke:rgba(255,196,20,1); filter:drop-shadow(0 0 10px rgba(255,205,40,1)) drop-shadow(0 0 24px rgba(255,160,10,.9));}
           58%{stroke:rgba(255,255,255,.95); filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));}
           97%{opacity:1;}
           100%{stroke-dashoffset:0; opacity:0; visibility:hidden;}
-        }
-        @keyframes vpo-trace-dot-visibility{
-          0%{opacity:0; visibility:hidden; fill:#fff; filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));}
-          3%{opacity:1; visibility:visible;}
-          22%{fill:#fff; filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));}
-          25%{fill:#ffe38a; filter:drop-shadow(0 0 11px rgba(255,236,160,1)) drop-shadow(0 0 30px rgba(255,210,100,.85));}
-          55%{fill:#ffe38a; filter:drop-shadow(0 0 11px rgba(255,236,160,1)) drop-shadow(0 0 30px rgba(255,210,100,.85));}
-          58%{fill:#fff; filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));}
-          95%{opacity:1;}
-          100%{opacity:0; visibility:hidden;}
         }
         .vpo-logo-shine{
           position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay;
@@ -284,7 +251,7 @@ export default function Landing() {
           72%, 100%{background-position:140% 0;}
         }
         @media (prefers-reduced-motion: reduce){
-          .vpo-flash-beam, .vpo-flash-beam-exit, .vpo-trace-comet, .vpo-trace-dot, .vpo-logo-shine{animation:none; display:none;}
+          .vpo-flash-beam, .vpo-flash-beam-exit, .vpo-trace-comet, .vpo-logo-shine{animation:none; display:none;}
         }
         .vpo-hero-text{text-align:center;}
         .vpo-hero-text p{font-size:14px;color:var(--text-3);margin:0;letter-spacing:.01em;}

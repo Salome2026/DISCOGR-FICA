@@ -251,7 +251,12 @@ function TrackPicker({ selected, onSelect }: { selected: SplitTrackOption | null
           <div className="spx-dropdown-item">No encontramos ninguna canción con ese nombre.</div>
         </div>
       )}
-      <button type="button" className="spx-change-link" style={{ marginTop: 6 }} onClick={() => setManual(true)}>
+      <button
+        type="button"
+        className="spx-change-link"
+        style={{ marginTop: 10, fontSize: 15, color: "#fff", fontWeight: 600 }}
+        onClick={() => setManual(true)}
+      >
         Todavía no tengo el fonograma cargado — cargar los datos a mano
       </button>
     </div>

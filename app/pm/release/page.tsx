@@ -13,6 +13,7 @@ const RPX_STYLES = `
   .rpx-item-title { font-size:14px; font-weight:700; }
   .rpx-item-meta { font-size:12px; color:var(--text-3); margin-top:2px; }
   .rpx-empty { color:var(--text-3); font-size:13.5px; padding:1rem 0; text-align:center; }
+  .rpx-manual-link { background:none; border:none; cursor:pointer; text-decoration:underline; padding:0; }
 `;
 
 type Release = {
@@ -96,6 +97,15 @@ function ReleasePicker() {
           ))}
         </div>
       )}
+
+      <button
+        type="button"
+        className="rpx-manual-link"
+        style={{ marginTop: 14, fontSize: 15, color: "#fff", fontWeight: 600 }}
+        onClick={() => router.push("/pm/fonograma/nuevo/release")}
+      >
+        Todavía no tengo el fonograma cargado — cargar los datos a mano
+      </button>
     </div>
   );
 }

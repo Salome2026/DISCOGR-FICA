@@ -102,8 +102,8 @@ export default function VPOScrollHero() {
               </div>
               <svg className="vpo-trace-svg" viewBox="0 0 2539 1298" preserveAspectRatio="xMidYMid meet">
                 <path className="vpo-trace-comet" pathLength={1000} d={VPO_TRACE_PATH} />
-                <circle className="vpo-trace-dot" r="13">
-                  <animateMotion path={VPO_TRACE_PATH} dur="1.3s" begin="0.35s" fill="freeze" rotate="auto" />
+                <circle className="vpo-trace-dot" r="20">
+                  <animateMotion path={VPO_TRACE_PATH} dur="1s" begin="0.25s" fill="freeze" rotate="auto" />
                 </circle>
               </svg>
               <div className="vpo-logo-shine" />

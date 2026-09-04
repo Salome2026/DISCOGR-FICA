@@ -227,27 +227,32 @@ export default function Landing() {
         .vpo-trace-svg{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible;}
         .vpo-trace-comet{
           fill:none; stroke:rgba(255,255,255,.95); stroke-width:13; stroke-linecap:round;
-          stroke-dasharray:45 955; stroke-dashoffset:1000; opacity:0;
+          stroke-dasharray:45 955; stroke-dashoffset:1000; opacity:0; visibility:hidden;
           filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));
           animation:vpo-trace-sweep 1s linear .25s 1 both;
         }
+        /* cx/cy explícitos en el JSX (no 0,0 por default) + visibility acá
+           como refuerzo de opacity — antes de que arranque animateMotion
+           (begin=.25s) el círculo ya está bien ubicado en el inicio real
+           del trazo y encima oculto por completo, así que ningún frame
+           intermedio puede mostrar un puntito huérfano arriba de la V. */
         .vpo-trace-dot{
-          fill:#fff; opacity:0;
+          fill:#fff; opacity:0; visibility:hidden;
           filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));
           animation:vpo-trace-dot-visibility 1s linear .25s 1 both;
           offset-rotate:0deg;
         }
         @keyframes vpo-trace-sweep{
-          0%{stroke-dashoffset:1000; opacity:0;}
-          3%{opacity:1;}
+          0%{stroke-dashoffset:1000; opacity:0; visibility:hidden;}
+          3%{opacity:1; visibility:visible;}
           97%{opacity:1;}
-          100%{stroke-dashoffset:0; opacity:0;}
+          100%{stroke-dashoffset:0; opacity:0; visibility:hidden;}
         }
         @keyframes vpo-trace-dot-visibility{
-          0%{opacity:0;}
-          3%{opacity:1;}
+          0%{opacity:0; visibility:hidden;}
+          3%{opacity:1; visibility:visible;}
           95%{opacity:1;}
-          100%{opacity:0;}
+          100%{opacity:0; visibility:hidden;}
         }
         .vpo-logo-shine{
           position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay;

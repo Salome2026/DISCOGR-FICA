@@ -36,6 +36,7 @@ export async function GET(req: NextRequest) {
   const byPm = new Map<string, { email: string; name: string; artists: Array<{
     artistId: string; artistName: string; photoUrl: string | null; role: "owner" | "collaborator";
     materialesEstado: string | null; fechaLanzamiento: string | null;
+    launchId: string | null; responsiblePms: string[];
   }> }>();
 
   function ensurePm(email: string) {
@@ -46,14 +47,21 @@ export async function GET(req: NextRequest) {
   }
 
   for (const a of withCollaborators) {
+    // Todos los responsables de este artista (dueño + colaboradores) — se
+    // repite igual en la tarjeta del dueño y en la de cada colaborador,
+    // para que el selector de "Solicitar material" siempre pueda ofrecer
+    // "a uno o a todos" sin importar desde qué tarjeta se abre.
+    const responsiblePms = [a.pmEmail, ...a.collaborators];
     ensurePm(a.pmEmail).artists.push({
       artistId: a.artistId, artistName: a.artistName, photoUrl: a.photoUrl, role: "owner",
       materialesEstado: a.launch?.materialesEstado ?? null, fechaLanzamiento: a.launch?.fechaLanzamiento ?? null,
+      launchId: a.launch?.id ?? null, responsiblePms,
     });
     for (const collabEmail of a.collaborators) {
       ensurePm(collabEmail).artists.push({
         artistId: a.artistId, artistName: a.artistName, photoUrl: a.photoUrl, role: "collaborator",
         materialesEstado: a.launch?.materialesEstado ?? null, fechaLanzamiento: a.launch?.fechaLanzamiento ?? null,
+        launchId: a.launch?.id ?? null, responsiblePms,
       });
     }
   }

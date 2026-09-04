@@ -15,6 +15,19 @@ type MeetingRequest = {
   id: string; comment: string; priority: string; suggestedDate: string | null; status: string;
   scheduledDate: string | null; scheduledTime: string | null; managementNotes: string | null; createdAt: string;
 };
+type MaterialNeeds = Record<"driveAssets" | "youtubeVideo" | "portada" | "fotos" | "videosVerticales" | "audio" | "copy" | "fechaHorario", boolean>;
+type CmMaterialRequest = {
+  id: string; artistId: string; tipo: "material" | "link_incorrecto" | "observacion"; status: "Pendiente" | "Resuelto";
+  needs: MaterialNeeds; infoAdicional: string | null; requestedBy: string; createdAt: string;
+  pmResponse: string | null; respondedBy: string | null; respondedAt: string | null;
+};
+const CM_REQUEST_TIPO_LABELS: Record<CmMaterialRequest["tipo"], string> = {
+  material: "Solicitud de material", link_incorrecto: "Enlace incorrecto", observacion: "Observación",
+};
+const MATERIAL_NEEDS_LABELS: Record<keyof MaterialNeeds, string> = {
+  driveAssets: "Link de assets", youtubeVideo: "Video de YouTube", portada: "Portada", fotos: "Fotografías",
+  videosVerticales: "Videos verticales", audio: "Audio", copy: "Copy", fechaHorario: "Fecha/horario",
+};
 
 type Bundle = {
   artist: Artist;
@@ -66,6 +79,36 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
   const [meetingError, setMeetingError] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [materialRequests, setMaterialRequests] = useState<CmMaterialRequest[]>([]);
+  const [respondingId, setRespondingId] = useState<string | null>(null);
+  const [responseText, setResponseText] = useState("");
+  const [sendingResponse, setSendingResponse] = useState(false);
+  const [responseError, setResponseError] = useState<string | null>(null);
+
+  async function sendResponse(id: string) {
+    if (!responseText.trim()) {
+      setResponseError("Escribí una respuesta.");
+      return;
+    }
+    setSendingResponse(true);
+    setResponseError(null);
+    try {
+      const res = await fetch(`/api/pm/material-requests/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ response: responseText.trim() }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || "No se pudo enviar la respuesta.");
+      setRespondingId(null);
+      setResponseText("");
+      load();
+    } catch (err) {
+      setResponseError(err instanceof Error ? err.message : "Error desconocido.");
+    } finally {
+      setSendingResponse(false);
+    }
+  }
 
   async function handlePhotoFile(file: File) {
     setUploadingPhoto(true);
@@ -107,6 +150,9 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
     fetch(`/api/pm/artistas/${artistId}/plan-anual`)
       .then((r) => r.json())
       .then((d) => setAnnualPlan(d.plan ?? null));
+    fetch(`/api/pm/material-requests`)
+      .then((r) => r.json())
+      .then((d) => setMaterialRequests((d.requests ?? []).filter((r: CmMaterialRequest) => r.artistId === artistId)));
   }
 
   useEffect(() => {
@@ -327,6 +373,66 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
           />
           <button style={smallBtn} onClick={addNote}>Agregar</button>
         </div>
+      </div>
+
+      <div className="pmx-card" style={sectionStyle}>
+        <div style={sectionLabelStyle}>Pedidos de Community Manager</div>
+        {materialRequests.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 15 }}>Todavía no hay pedidos de la CM para este artista.</p>}
+        {materialRequests.map((r) => (
+          <div key={r.id} style={{ fontSize: 15.5, borderTop: "1px solid var(--line-soft)", paddingTop: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+              <span style={{ fontWeight: 700, fontSize: 16, color: r.status === "Resuelto" ? "var(--good-ink)" : "var(--warn-ink)" }}>
+                {CM_REQUEST_TIPO_LABELS[r.tipo]} · {r.status}
+              </span>
+              <span style={{ color: "var(--text-3)", fontSize: 13 }}>
+                {r.requestedBy} · {new Date(r.createdAt).toLocaleDateString("es-AR")}
+              </span>
+            </div>
+            {r.tipo === "material" && (
+              <div style={{ marginTop: 6, display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {(Object.keys(r.needs) as (keyof MaterialNeeds)[])
+                  .filter((k) => r.needs[k])
+                  .map((k) => (
+                    <span key={k} className="pmx-badge pendiente" style={{ fontSize: 12 }}>{MATERIAL_NEEDS_LABELS[k]}</span>
+                  ))}
+              </div>
+            )}
+            {r.infoAdicional && <div style={{ marginTop: 6 }}>{r.infoAdicional}</div>}
+            {r.pmResponse && (
+              <div style={{ color: "var(--good-ink)", marginTop: 6 }}>
+                Tu respuesta: {r.pmResponse}
+              </div>
+            )}
+            {r.status === "Pendiente" && (
+              respondingId === r.id ? (
+                <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <textarea
+                    value={responseText}
+                    onChange={(e) => setResponseText(e.target.value)}
+                    style={{ ...textareaStyle, minHeight: 80 }}
+                    placeholder="Escribí tu respuesta..."
+                  />
+                  {responseError && <div style={{ color: "var(--crit-ink)", fontSize: 13 }}>{responseError}</div>}
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button style={smallBtn} disabled={sendingResponse} onClick={() => sendResponse(r.id)}>
+                      {sendingResponse ? "..." : "Enviar respuesta"}
+                    </button>
+                    <button
+                      style={{ ...smallBtn, background: "transparent" }}
+                      onClick={() => { setRespondingId(null); setResponseText(""); setResponseError(null); }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button style={{ ...smallBtn, marginTop: 8 }} onClick={() => { setRespondingId(r.id); setResponseText(""); setResponseError(null); }}>
+                  Responder
+                </button>
+              )
+            )}
+          </div>
+        ))}
       </div>
 
       <div className="pmx-card" style={sectionStyle}>

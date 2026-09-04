@@ -27,6 +27,7 @@ function Avatar({ name, url }: { name: string; url: string | null }) {
 function ArtistasInner() {
   const [artists, setArtists] = useState<AssignedArtist[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [pendingByArtist, setPendingByArtist] = useState<Record<string, number>>({});
 
   function load() {
     fetch("/api/pm/artistas")
@@ -36,6 +37,13 @@ function ArtistasInner() {
         else setArtists(d.artists);
       })
       .catch((e) => setError(String(e)));
+    fetch("/api/pm/material-requests?status=Pendiente")
+      .then((r) => r.json())
+      .then((d) => {
+        const counts: Record<string, number> = {};
+        for (const r of d.requests ?? []) counts[r.artistId] = (counts[r.artistId] ?? 0) + 1;
+        setPendingByArtist(counts);
+      });
   }
 
   useEffect(() => {
@@ -60,7 +68,17 @@ function ArtistasInner() {
       )}
       <div className="pmx-artist-grid">
         {artists?.map((a) => (
-          <Link key={a.artistId} href={`/pm/artistas/${a.artistId}`} className="pmx-artist-card">
+          <Link key={a.artistId} href={`/pm/artistas/${a.artistId}`} className="pmx-artist-card" style={{ position: "relative" }}>
+            {pendingByArtist[a.artistId] > 0 && (
+              <span
+                style={{
+                  position: "absolute", top: 8, right: 8, background: "var(--warn-ink)", color: "#fff",
+                  borderRadius: 100, fontSize: 11, fontWeight: 700, padding: "2px 7px", lineHeight: 1.4,
+                }}
+              >
+                {pendingByArtist[a.artistId]} pedido{pendingByArtist[a.artistId] > 1 ? "s" : ""}
+              </span>
+            )}
             <Avatar name={a.artistName} url={a.photoUrl} />
             <div>
               <div className="pmx-artist-card-name">{a.artistName}</div>

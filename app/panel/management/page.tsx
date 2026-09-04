@@ -13,6 +13,9 @@ export default function ManagementHomePage() {
     <RequireRole allow={["management"]}>
       <ManagementShell title="Management">
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, marginBottom: 8 }}>
+          <Link href="/panel/management/reuniones" style={{ fontSize: 13, color: "var(--accent)", textDecoration: "none" }}>
+            Reuniones de Management →
+          </Link>
           <Link href="/panel/management/estudios" style={{ fontSize: 13, color: "var(--accent)", textDecoration: "none" }}>
             Calendario de estudios de grabación →
           </Link>

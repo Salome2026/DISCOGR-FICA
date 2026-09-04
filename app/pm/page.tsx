@@ -10,6 +10,11 @@ export default function PMLandingPage() {
   return (
     <RequireRole allow={["admin", "project_manager"]}>
       <PMShell title="¿Qué querés cargar?" homeMaxWidth>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 12 }}>
+          <Link href="/pm/reuniones" style={{ fontSize: 13, color: "var(--accent)", textDecoration: "none" }}>
+            Reuniones de Management →
+          </Link>
+        </div>
         <div className="pmx-home-buttons" style={{ marginBottom: "1.75rem" }}>
           <Link href="/pm/artistas" className="pmx-big-btn">
             <h2>Mis Artistas</h2>

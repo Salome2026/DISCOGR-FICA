@@ -61,6 +61,18 @@ export function ensurePmArtistWorkspaceSchema(): Promise<void> {
       await sql`CREATE INDEX IF NOT EXISTS pm_meeting_requests_artist_idx ON pm_meeting_requests (artist_id)`;
       await sql`CREATE INDEX IF NOT EXISTS pm_meeting_requests_status_idx ON pm_meeting_requests (status)`;
       await sql`CREATE INDEX IF NOT EXISTS pm_meeting_requests_created_idx ON pm_meeting_requests (created_at DESC)`;
+      // Campos del calendario "Reuniones de Management" — aditivos sobre la
+      // misma tabla en vez de un sistema paralelo: toda fila de acá YA ES
+      // una reunión con Management (nunca se mezcla con lanzamientos/shows/
+      // estudios), así que el calendario nuevo solo necesita más columnas,
+      // no otra tabla. requested_by pasa a cubrir también "PM responsable"
+      // cuando Management crea la reunión directamente (no solo cuando un
+      // PM la pidió) — mismo campo, alcance un poco más amplio, sin romper
+      // nada de lo que ya lo usa.
+      await sql`ALTER TABLE pm_meeting_requests ADD COLUMN IF NOT EXISTS participantes TEXT`;
+      await sql`ALTER TABLE pm_meeting_requests ADD COLUMN IF NOT EXISTS modalidad TEXT`;
+      await sql`ALTER TABLE pm_meeting_requests ADD COLUMN IF NOT EXISTS direccion_o_link TEXT`;
+      await sql`CREATE INDEX IF NOT EXISTS pm_meeting_requests_scheduled_idx ON pm_meeting_requests (scheduled_date)`;
     })();
   }
   return ready;
@@ -70,10 +82,23 @@ function newId(prefix: string): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-export const MEETING_REQUEST_STATUSES = ["Pendiente", "Agendada", "Realizada"] as const;
+// "Cancelada" sumado a pedido del calendario de Management — las 3 de
+// siempre (Pendiente/Agendada/Realizada) no se renombran acá para no romper
+// nada de lo que ya filtra/compara por esos literales; el calendario nuevo
+// simplemente traduce estas mismas 4 a Solicitada/Confirmada/Realizada/
+// Cancelada solo en su propia UI (ver MEETING_STATUS_CALENDAR_LABELS).
+export const MEETING_REQUEST_STATUSES = ["Pendiente", "Agendada", "Realizada", "Cancelada"] as const;
 export type MeetingRequestStatus = (typeof MEETING_REQUEST_STATUSES)[number];
 export const MEETING_REQUEST_PRIORITIES = ["Alta", "Media", "Baja"] as const;
 export type MeetingRequestPriority = (typeof MEETING_REQUEST_PRIORITIES)[number];
+export const MEETING_MODALIDADES = ["Presencial", "Virtual"] as const;
+export type MeetingModalidad = (typeof MEETING_MODALIDADES)[number];
+export const MEETING_STATUS_CALENDAR_LABELS: Record<MeetingRequestStatus, string> = {
+  Pendiente: "Solicitada",
+  Agendada: "Confirmada",
+  Realizada: "Realizada",
+  Cancelada: "Cancelada",
+};
 
 export type PmArtistProfile = {
   artistId: string;
@@ -251,6 +276,9 @@ export type PmMeetingRequest = {
   scheduledDate: string | null;
   scheduledTime: string | null;
   managementNotes: string | null;
+  participantes: string | null;
+  modalidad: string | null;
+  direccionOLink: string | null;
   createdAt: string;
   updatedBy: string | null;
   updatedAt: string | null;
@@ -269,6 +297,9 @@ function rowToMeetingRequest(r: Record<string, unknown>): PmMeetingRequest {
     scheduledDate: (r.scheduled_date as string | null) ?? null,
     scheduledTime: (r.scheduled_time as string | null) ?? null,
     managementNotes: (r.management_notes as string | null) ?? null,
+    participantes: (r.participantes as string | null) ?? null,
+    modalidad: (r.modalidad as string | null) ?? null,
+    direccionOLink: (r.direccion_o_link as string | null) ?? null,
     createdAt: r.created_at as string,
     updatedBy: (r.updated_by as string | null) ?? null,
     updatedAt: (r.updated_at as string | null) ?? null,
@@ -312,7 +343,10 @@ export async function createMeetingRequest(input: {
 
 export async function updateMeetingRequest(
   id: string,
-  patch: { status?: string; scheduledDate?: string | null; scheduledTime?: string | null; managementNotes?: string | null },
+  patch: {
+    status?: string; scheduledDate?: string | null; scheduledTime?: string | null; managementNotes?: string | null;
+    participantes?: string | null; modalidad?: string | null; direccionOLink?: string | null; comment?: string;
+  },
   actorEmail: string
 ): Promise<PmMeetingRequest | null> {
   await ensurePmArtistWorkspaceSchema();
@@ -323,12 +357,20 @@ export async function updateMeetingRequest(
   const scheduledDate = patch.scheduledDate !== undefined ? patch.scheduledDate : existing.scheduledDate;
   const scheduledTime = patch.scheduledTime !== undefined ? patch.scheduledTime : existing.scheduledTime;
   const managementNotes = patch.managementNotes !== undefined ? patch.managementNotes : existing.managementNotes;
+  const participantes = patch.participantes !== undefined ? patch.participantes : existing.participantes;
+  const modalidad = patch.modalidad !== undefined ? patch.modalidad : existing.modalidad;
+  const direccionOLink = patch.direccionOLink !== undefined ? patch.direccionOLink : existing.direccionOLink;
+  const comment = patch.comment !== undefined ? patch.comment : existing.comment;
   const { rows } = await sql`
     UPDATE pm_meeting_requests SET
       status = ${status},
       scheduled_date = ${scheduledDate},
       scheduled_time = ${scheduledTime},
       management_notes = ${managementNotes},
+      participantes = ${participantes},
+      modalidad = ${modalidad},
+      direccion_o_link = ${direccionOLink},
+      comment = ${comment},
       updated_by = ${actorEmail},
       updated_at = now()
     WHERE id = ${id}
@@ -340,4 +382,70 @@ export async function updateMeetingRequest(
 export async function deleteMeetingRequest(id: string): Promise<void> {
   await ensurePmArtistWorkspaceSchema();
   await sql`DELETE FROM pm_meeting_requests WHERE id = ${id}`;
+}
+
+// ---------- Calendario "Reuniones de Management" ----------
+
+export async function getMeetingRequest(id: string): Promise<PmMeetingRequest | null> {
+  await ensurePmArtistWorkspaceSchema();
+  const { rows } = await sql`SELECT * FROM pm_meeting_requests WHERE id = ${id}`;
+  return rows[0] ? rowToMeetingRequest(rows[0]) : null;
+}
+
+// Para el grid semanal: por fecha "real" del evento — scheduled_date si ya
+// está confirmada/realizada, si no suggested_date (así una solicitud con
+// fecha propuesta igual aparece en el calendario, más tenue). Las que no
+// tienen ninguna fecha (recién pedidas, sin sugerencia) no tienen dónde
+// ubicarse en una grilla y siguen viéndose solo en la bandeja de pendientes
+// de Management, sin cambios.
+export async function listMeetingsInRange(startDate: string, endDate: string): Promise<PmMeetingRequest[]> {
+  await ensurePmArtistWorkspaceSchema();
+  const { rows } = await sql`
+    SELECT * FROM pm_meeting_requests
+    WHERE COALESCE(scheduled_date, suggested_date) BETWEEN ${startDate} AND ${endDate}
+    ORDER BY COALESCE(scheduled_date, suggested_date) ASC, scheduled_time ASC NULLS LAST
+  `;
+  return rows.map(rowToMeetingRequest);
+}
+
+export async function listMeetingsInRangeForPm(startDate: string, endDate: string, pmEmail: string): Promise<PmMeetingRequest[]> {
+  await ensurePmArtistWorkspaceSchema();
+  const { rows } = await sql`
+    SELECT * FROM pm_meeting_requests
+    WHERE COALESCE(scheduled_date, suggested_date) BETWEEN ${startDate} AND ${endDate}
+      AND requested_by = ${pmEmail}
+    ORDER BY COALESCE(scheduled_date, suggested_date) ASC, scheduled_time ASC NULLS LAST
+  `;
+  return rows.map(rowToMeetingRequest);
+}
+
+// Alta directa desde el calendario de Management (a diferencia de
+// createMeetingRequest, que es el pedido que arranca un PM) — nace
+// 'Agendada' porque quien la crea ya eligió fecha/hora reales, no está
+// "pidiendo" una.
+export async function createManagementMeeting(input: {
+  artistId: string;
+  artistName: string;
+  pmEmail: string;
+  comment: string;
+  scheduledDate: string;
+  scheduledTime: string | null;
+  participantes: string | null;
+  modalidad: string | null;
+  direccionOLink: string | null;
+  actorEmail: string;
+}): Promise<PmMeetingRequest> {
+  await ensurePmArtistWorkspaceSchema();
+  const id = newId("mtg");
+  const { rows } = await sql`
+    INSERT INTO pm_meeting_requests
+      (id, artist_id, artist_name, requested_by, comment, priority, scheduled_date, scheduled_time, status,
+       participantes, modalidad, direccion_o_link, updated_by, updated_at)
+    VALUES
+      (${id}, ${input.artistId}, ${input.artistName}, ${input.pmEmail}, ${input.comment}, 'Media',
+       ${input.scheduledDate}, ${input.scheduledTime}, 'Agendada',
+       ${input.participantes}, ${input.modalidad}, ${input.direccionOLink}, ${input.actorEmail}, now())
+    RETURNING *
+  `;
+  return rowToMeetingRequest(rows[0]);
 }

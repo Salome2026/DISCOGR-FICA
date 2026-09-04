@@ -4,36 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useReducedMotion, useMotionValueEvent } from "framer-motion";
 
-// Contorno real de "V" y de "O" (extraído vectorizando el canal alfa de
-// /vpo-logo.png y reconstruido a mano como centerline, en las coordenadas
-// nativas del PNG 2539x1298) — la P deliberadamente NO se traza: en su
-// lugar hay una pausa y un destello dorado (ver VPO_P_BURST_CENTER más
-// abajo), a pedido explícito ("no quiero que recorra ni dibuje su
-// contorno"). V_TRACE_PATH llega hasta la arribada a la P (932,55) como
-// gesto de "acercarse" a la letra, sin entrar a dibujarla.
-const V_TRACE_PATH = "M 123 55 L 513 950 L 808 55 C 848 45, 892 45, 932 55";
-const O_TRACE_PATH =
-  "M 1615 510 " +
+// Contorno real de "VPO" (V, palo+pancita de la P, vuelta completa de la O
+// y salida), extraído vectorizando el canal alfa de /vpo-logo.png y
+// reconstruido a mano como centerline — no la silueta completa del potrace
+// (que traza los dos bordes de cada trazo), sino una única línea que sigue
+// el medio de cada letra, en las coordenadas nativas del PNG (2539x1298).
+const VPO_TRACE_PATH =
+  "M 123 55 L 513 950 L 808 55 C 848 45, 892 45, 932 55 L 932 965 L 932 470 " +
+  "C 1000 300, 1120 185, 1300 185 C 1520 185, 1660 300, 1660 420 C 1660 500, 1580 545, 1420 545 " +
+  "C 1540 585, 1475 540, 1615 510 " +
   "C 1615 330.2, 1730.8 170.9, 1901.8 115.3 C 2072.7 59.8, 2260.1 120.6, 2365.7 266.1 " +
   "C 2471.4 411.5, 2471.4 608.5, 2365.7 753.9 C 2260.1 899.4, 2072.7 960.2, 1901.8 904.7 " +
   "C 1730.8 849.1, 1615 689.8, 1615 510 " +
   "C 1615 650, 2100 600, 2600 520";
-
-// Centro visual de la P (verificado a ojo contra el logo real, no un
-// cálculo geométrico puro — la P está fusionada con la O en este isotipo,
-// así que "el centro" es una elección de diseño, no una única respuesta
-// matemática). El destello (núcleo + rayos) se ancla acá vía transform.
-const VPO_P_BURST_CENTER = { x: 1050, y: 380 };
-const VPO_P_BURST_RAYS = [
-  { angle: 0, long: true }, { angle: 22.5, long: false },
-  { angle: 45, long: true }, { angle: 67.5, long: false },
-  { angle: 90, long: true }, { angle: 112.5, long: false },
-  { angle: 135, long: true }, { angle: 157.5, long: false },
-  { angle: 180, long: true }, { angle: 202.5, long: false },
-  { angle: 225, long: true }, { angle: 247.5, long: false },
-  { angle: 270, long: true }, { angle: 292.5, long: false },
-  { angle: 315, long: true }, { angle: 337.5, long: false },
-];
 
 // Apple-product-page-style intro: the mark starts large and centered, and
 // pins in place (sticky) while the user scrolls through this section's
@@ -119,32 +102,9 @@ export default function VPOScrollHero() {
                 <div className="vpo-flash-beam-exit" />
               </div>
               <svg className="vpo-trace-svg" viewBox="0 0 2539 1298" preserveAspectRatio="xMidYMid meet">
-                <path className="vpo-trace-comet vpo-trace-comet-v" pathLength={1000} d={V_TRACE_PATH} />
-                <circle className="vpo-trace-dot vpo-trace-dot-v" r="20" cx="123" cy="55">
-                  <animateMotion path={V_TRACE_PATH} dur="0.35s" begin="0.22s" fill="freeze" rotate="auto" />
-                </circle>
-
-                <g
-                  className="vpo-p-burst"
-                  transform={`translate(${VPO_P_BURST_CENTER.x} ${VPO_P_BURST_CENTER.y})`}
-                >
-                  {VPO_P_BURST_RAYS.map((r) => (
-                    <rect
-                      key={r.angle}
-                      className={`vpo-p-burst-ray${r.long ? "" : " short"}`}
-                      x={-3}
-                      y={r.long ? -100 : -62}
-                      width={6}
-                      height={r.long ? 100 : 62}
-                      style={{ "--angle": `${r.angle}deg` } as React.CSSProperties}
-                    />
-                  ))}
-                  <circle className="vpo-p-burst-core" r="30" />
-                </g>
-
-                <path className="vpo-trace-comet vpo-trace-comet-o" pathLength={1000} d={O_TRACE_PATH} />
-                <circle className="vpo-trace-dot vpo-trace-dot-o" r="20" cx="1615" cy="510">
-                  <animateMotion path={O_TRACE_PATH} dur="0.5s" begin="0.85s" fill="freeze" rotate="auto" />
+                <path className="vpo-trace-comet" pathLength={1000} d={VPO_TRACE_PATH} />
+                <circle className="vpo-trace-dot" r="20" cx="123" cy="55">
+                  <animateMotion path={VPO_TRACE_PATH} dur="1s" begin="0.25s" fill="freeze" rotate="auto" />
                 </circle>
               </svg>
               <div className="vpo-logo-shine" />

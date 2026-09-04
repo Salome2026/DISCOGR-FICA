@@ -242,15 +242,29 @@ export default function Landing() {
           animation:vpo-trace-dot-visibility 1s linear .25s 1 both;
           offset-rotate:0deg;
         }
+        /* Plateado durante todo el recorrido salvo al cruzar la P (~24%-55%
+           del trazo, medido con getPointAtLength contra el path real) —
+           dorado en referencia al sol de la bandera, con una transición
+           suave de un par de puntos antes/después en vez de un corte
+           brusco. Mismos % en el <path> (stroke/filter) y en el punto
+           (fill/filter) para que cambien de color exactamente juntos. */
         @keyframes vpo-trace-sweep{
-          0%{stroke-dashoffset:1000; opacity:0; visibility:hidden;}
+          0%{stroke-dashoffset:1000; opacity:0; visibility:hidden; stroke:rgba(255,255,255,.95); filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));}
           3%{opacity:1; visibility:visible;}
+          22%{stroke:rgba(255,255,255,.95); filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));}
+          25%{stroke:rgba(255,196,64,.97); filter:drop-shadow(0 0 8px rgba(255,196,64,.95)) drop-shadow(0 0 20px rgba(255,150,20,.75));}
+          55%{stroke:rgba(255,196,64,.97); filter:drop-shadow(0 0 8px rgba(255,196,64,.95)) drop-shadow(0 0 20px rgba(255,150,20,.75));}
+          58%{stroke:rgba(255,255,255,.95); filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));}
           97%{opacity:1;}
           100%{stroke-dashoffset:0; opacity:0; visibility:hidden;}
         }
         @keyframes vpo-trace-dot-visibility{
-          0%{opacity:0; visibility:hidden;}
+          0%{opacity:0; visibility:hidden; fill:#fff; filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));}
           3%{opacity:1; visibility:visible;}
+          22%{fill:#fff; filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));}
+          25%{fill:#ffcb52; filter:drop-shadow(0 0 10px rgba(255,205,70,1)) drop-shadow(0 0 28px rgba(255,150,20,.85));}
+          55%{fill:#ffcb52; filter:drop-shadow(0 0 10px rgba(255,205,70,1)) drop-shadow(0 0 28px rgba(255,150,20,.85));}
+          58%{fill:#fff; filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));}
           95%{opacity:1;}
           100%{opacity:0; visibility:hidden;}
         }

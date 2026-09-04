@@ -144,9 +144,21 @@ function AppleCalendarLinkModal({ onClose }: { onClose: () => void }) {
             >
               Suscribirme en Apple Calendar
             </a>
+            <div style={{ fontSize: 11.5, color: "var(--text-3)" }}>
+              Este botón funciona mejor abierto directamente desde Safari en el mismo iPhone/Mac donde querés que aparezcan las reuniones. Si lo mandás por WhatsApp o Mensajes a otro dispositivo, a veces el enlace <code>webcal://</code> no abre — en ese caso usá el método manual de abajo, que siempre funciona.
+            </div>
             <div>
               <div style={fieldLabel}>Enlace alternativo (https)</div>
               <input readOnly value={links.httpsUrl} onFocus={(e) => e.target.select()} style={fieldInput} />
+            </div>
+            <div style={{ background: "var(--bg-2)", borderRadius: 8, padding: "10px 12px", fontSize: 12, color: "var(--text-2)", lineHeight: 1.6 }}>
+              <strong>Para agregarlo a mano en el iPhone (100% confiable):</strong>
+              <br />
+              1. Copiá el enlace de arriba (enfocá el campo y copiá todo el texto).
+              <br />
+              2. Abrí <strong>Ajustes → Calendario → Cuentas → Agregar cuenta → Otra → Agregar calendario suscrito</strong>.
+              <br />
+              3. Pegá el enlace y guardá.
             </div>
           </>
         )}
@@ -166,7 +178,7 @@ function AppleCalendarLinkModal({ onClose }: { onClose: () => void }) {
 function CreateModal({
   date, artistOptions, pmOptions, onClose, onCreated,
 }: { date: string; artistOptions: ArtistOption[]; pmOptions: PmOption[]; onClose: () => void; onCreated: () => void }) {
-  const [artistId, setArtistId] = useState(artistOptions[0]?.id ?? "");
+  const [artistName, setArtistName] = useState("");
   const [pmEmail, setPmEmail] = useState(pmOptions[0]?.email ?? "");
   const [scheduledDate, setScheduledDate] = useState(date);
   const [scheduledTime, setScheduledTime] = useState("");
@@ -178,20 +190,23 @@ function CreateModal({
   const [saving, setSaving] = useState(false);
 
   async function save() {
-    const artist = artistOptions.find((a) => a.id === artistId);
-    if (!artist || !pmEmail || !comment.trim() || !scheduledDate) {
+    if (!artistName.trim() || !pmEmail || !comment.trim() || !scheduledDate) {
       setError("Completá artista, PM responsable, fecha y temario.");
       return;
     }
     setSaving(true);
     setError(null);
     try {
+      // Puede ser un artista ya cargado (matchea por nombre en el servidor)
+      // o un nombre escrito a mano — en ese caso el servidor arma un id
+      // propio para la reunión, sin necesidad de que el artista ya exista.
+      const known = artistOptions.find((a) => a.name.trim().toLowerCase() === artistName.trim().toLowerCase());
       const res = await fetch("/api/management-meetings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          artistId: artist.id,
-          artistName: artist.name,
+          artistId: known?.id ?? null,
+          artistName: artistName.trim(),
           pmEmail,
           comment: comment.trim(),
           scheduledDate,
@@ -215,58 +230,57 @@ function CreateModal({
     <div style={modalOverlay} onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()} style={{ ...modalPanelStyle, display: "flex", flexDirection: "column", gap: 12, width: 460, maxWidth: "95vw", maxHeight: "90vh", overflowY: "auto" }}>
         <div style={{ fontSize: 16, fontWeight: 700 }}>Nueva reunión de Management</div>
-        {artistOptions.length === 0 ? (
-          <p style={{ color: "var(--crit-ink)", fontSize: 13 }}>No hay artistas disponibles.</p>
-        ) : (
-          <>
-            <div>
-              <div style={fieldLabel}>Artista o proyecto</div>
-              <select value={artistId} onChange={(e) => setArtistId(e.target.value)} style={fieldInput}>
-                {artistOptions.map((a) => <option key={a.id} value={a.id}>{a.name}</option>)}
-              </select>
-            </div>
-            <div>
-              <div style={fieldLabel}>PM responsable</div>
-              <select value={pmEmail} onChange={(e) => setPmEmail(e.target.value)} style={fieldInput}>
-                {pmOptions.map((p) => <option key={p.email} value={p.email}>{p.name || p.email}</option>)}
-              </select>
-            </div>
-            <div style={{ display: "flex", gap: 10 }}>
-              <div style={{ flex: 1 }}>
-                <div style={fieldLabel}>Fecha</div>
-                <input type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} style={fieldInput} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={fieldLabel}>Horario (opcional)</div>
-                <input type="time" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} style={fieldInput} />
-              </div>
-            </div>
-            <div>
-              <div style={fieldLabel}>Participantes</div>
-              <input value={participantes} onChange={(e) => setParticipantes(e.target.value)} placeholder="Nombres de quienes participan" style={fieldInput} />
-            </div>
-            <div>
-              <div style={fieldLabel}>Modalidad</div>
-              <select value={modalidad} onChange={(e) => setModalidad(e.target.value)} style={fieldInput}>
-                {MODALIDADES.map((m) => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
-            <div>
-              <div style={fieldLabel}>Dirección o enlace de videollamada</div>
-              <input value={direccionOLink} onChange={(e) => setDireccionOLink(e.target.value)} style={fieldInput} />
-            </div>
-            <div>
-              <div style={fieldLabel}>Temario o motivo</div>
-              <textarea value={comment} onChange={(e) => setComment(e.target.value)} style={{ ...fieldInput, minHeight: 70, fontFamily: "inherit", resize: "vertical" }} />
-            </div>
-          </>
-        )}
+        <div>
+          <div style={fieldLabel}>Artista o proyecto</div>
+          <input
+            value={artistName}
+            onChange={(e) => setArtistName(e.target.value)}
+            placeholder="Elegí uno existente o escribí un nombre nuevo"
+            list="mmc-artist-options"
+            style={fieldInput}
+          />
+          <datalist id="mmc-artist-options">
+            {artistOptions.map((a) => <option key={a.id} value={a.name} />)}
+          </datalist>
+        </div>
+        <div>
+          <div style={fieldLabel}>PM responsable</div>
+          <select value={pmEmail} onChange={(e) => setPmEmail(e.target.value)} style={fieldInput}>
+            {pmOptions.map((p) => <option key={p.email} value={p.email}>{p.name || p.email}</option>)}
+          </select>
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ flex: 1 }}>
+            <div style={fieldLabel}>Fecha</div>
+            <input type="date" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} style={fieldInput} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={fieldLabel}>Horario (opcional)</div>
+            <input type="time" value={scheduledTime} onChange={(e) => setScheduledTime(e.target.value)} style={fieldInput} />
+          </div>
+        </div>
+        <div>
+          <div style={fieldLabel}>Participantes</div>
+          <input value={participantes} onChange={(e) => setParticipantes(e.target.value)} placeholder="Nombres de quienes participan" style={fieldInput} />
+        </div>
+        <div>
+          <div style={fieldLabel}>Modalidad</div>
+          <select value={modalidad} onChange={(e) => setModalidad(e.target.value)} style={fieldInput}>
+            {MODALIDADES.map((m) => <option key={m} value={m}>{m}</option>)}
+          </select>
+        </div>
+        <div>
+          <div style={fieldLabel}>Dirección o enlace de videollamada</div>
+          <input value={direccionOLink} onChange={(e) => setDireccionOLink(e.target.value)} style={fieldInput} />
+        </div>
+        <div>
+          <div style={fieldLabel}>Temario o motivo</div>
+          <textarea value={comment} onChange={(e) => setComment(e.target.value)} style={{ ...fieldInput, minHeight: 70, fontFamily: "inherit", resize: "vertical" }} />
+        </div>
         {error && <div style={{ color: "var(--crit-ink)", fontSize: 13 }}>{error}</div>}
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
           <button onClick={onClose} style={secondaryBtn}>Cancelar</button>
-          {artistOptions.length > 0 && (
-            <button onClick={save} disabled={saving} style={primaryBtn}>{saving ? "Creando..." : "Crear reunión"}</button>
-          )}
+          <button onClick={save} disabled={saving} style={primaryBtn}>{saving ? "Creando..." : "Crear reunión"}</button>
         </div>
       </div>
     </div>
@@ -285,6 +299,23 @@ function DetailModal({
   const [status, setStatus] = useState(meeting.status);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function remove() {
+    if (!confirm(`¿Eliminar la reunión con ${meeting.artistName}? Esta acción no se puede deshacer.`)) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/management-meetings/${meeting.id}`, { method: "DELETE" });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || "No se pudo eliminar.");
+      onChanged();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido.");
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   async function save() {
     setSaving(true);
@@ -379,9 +410,16 @@ function DetailModal({
         )}
 
         <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-          <a href={`/api/management-meetings/${meeting.id}/ics`} style={{ ...secondaryBtn, textDecoration: "none", display: "inline-block" }}>
-            Agregar a Apple Calendar
-          </a>
+          <div style={{ display: "flex", gap: 10 }}>
+            <a href={`/api/management-meetings/${meeting.id}/ics`} style={{ ...secondaryBtn, textDecoration: "none", display: "inline-block" }}>
+              Agregar a Apple Calendar
+            </a>
+            {canManage && (
+              <button onClick={remove} disabled={deleting} style={{ ...secondaryBtn, color: "var(--crit-ink)", borderColor: "var(--crit-ink)" }}>
+                {deleting ? "Eliminando..." : "Eliminar reunión"}
+              </button>
+            )}
+          </div>
           <div style={{ display: "flex", gap: 10 }}>
             <button onClick={onClose} style={secondaryBtn}>Cerrar</button>
             {canManage && (

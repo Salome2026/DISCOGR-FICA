@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 import { hasPermission } from "@/lib/permissions";
 import { listMeetingsInRange, listMeetingsInRangeForPm, createManagementMeeting, MEETING_MODALIDADES } from "@/lib/db/pmArtistWorkspace";
-import { getArtist } from "@/lib/db/artists";
+import { getArtist, slugify } from "@/lib/db/artists";
 
 // Ver el calendario: Management/admin ven todas las reuniones de la semana;
 // un PM ve solo las suyas (mismo criterio de "para las que tengan
@@ -38,26 +38,29 @@ export async function POST(req: NextRequest) {
   }
   const body = await req.json().catch(() => null);
   const {
-    artistId, artistName: bodyArtistName, pmEmail, comment, scheduledDate, scheduledTime,
+    artistId: bodyArtistId, artistName: bodyArtistName, pmEmail, comment, scheduledDate, scheduledTime,
     participantes, modalidad, direccionOLink,
   } = (body ?? {}) as {
-    artistId?: string; artistName?: string; pmEmail?: string; comment?: string;
+    artistId?: string | null; artistName?: string; pmEmail?: string; comment?: string;
     scheduledDate?: string; scheduledTime?: string | null;
     participantes?: string | null; modalidad?: string | null; direccionOLink?: string | null;
   };
 
-  if (!artistId || !pmEmail || !comment?.trim() || !scheduledDate) {
+  if (!bodyArtistName?.trim() || !pmEmail || !comment?.trim() || !scheduledDate) {
     return NextResponse.json({ error: "Faltan datos obligatorios (artista, PM, temario, fecha)." }, { status: 400 });
   }
   if (modalidad && !(MEETING_MODALIDADES as readonly string[]).includes(modalidad)) {
     return NextResponse.json({ error: "Modalidad inválida." }, { status: 400 });
   }
 
+  // El artista puede ser uno ya cargado (llega su id real desde el picker) o
+  // un nombre escrito a mano — en ese caso se deriva un id propio a partir
+  // del nombre (mismo esquema que usa lib/db/artists.ts), sin exigir que el
+  // artista exista de antemano. Si ese id igual matchea uno real, se usa el
+  // nombre canónico guardado en la base.
+  const artistId = bodyArtistId?.trim() || slugify(bodyArtistName.trim());
   const artist = await getArtist(artistId);
-  const artistName = artist?.name ?? bodyArtistName;
-  if (!artistName) {
-    return NextResponse.json({ error: "No encontramos el artista." }, { status: 400 });
-  }
+  const artistName = artist?.name ?? bodyArtistName.trim();
 
   const meeting = await createManagementMeeting({
     artistId,

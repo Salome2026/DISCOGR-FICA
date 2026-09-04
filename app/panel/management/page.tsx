@@ -3,6 +3,7 @@
 import Link from "next/link";
 import RequireRole from "@/app/components/RequireRole";
 import ReleaseCalendar from "@/app/dashboard/ReleaseCalendar";
+import ManagementMeetingsCalendar from "@/app/components/ManagementMeetingsCalendar";
 import { ManagementShell } from "./_shared";
 import ArtistGrid from "./ArtistGrid";
 import UpcomingReleasesList from "./UpcomingReleasesList";
@@ -13,9 +14,6 @@ export default function ManagementHomePage() {
     <RequireRole allow={["management"]}>
       <ManagementShell title="Management">
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, marginBottom: 8 }}>
-          <Link href="/panel/management/reuniones" style={{ fontSize: 13, color: "var(--accent)", textDecoration: "none" }}>
-            Reuniones de Management →
-          </Link>
           <Link href="/panel/management/estudios" style={{ fontSize: 13, color: "var(--accent)", textDecoration: "none" }}>
             Calendario de estudios de grabación →
           </Link>
@@ -25,6 +23,10 @@ export default function ManagementHomePage() {
           <Link href="/panel/management/cm-asignaciones" style={{ fontSize: 13, color: "var(--accent)", textDecoration: "none" }}>
             Gestionar asignaciones de Community Manager →
           </Link>
+        </div>
+        <div className="mgmt-section">
+          <div className="mgmt-section-label">Reuniones de Management</div>
+          <ManagementMeetingsCalendar mode="management" />
         </div>
         <PendingMeetingRequests />
         <ArtistGrid />

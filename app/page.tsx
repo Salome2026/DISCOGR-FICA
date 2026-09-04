@@ -203,7 +203,7 @@ export default function Landing() {
         .vpo-flash-beam-exit{
           position:absolute; top:0; left:0; width:160px; height:1.5px; transform:translate(62vw,-50%);
           background:linear-gradient(90deg, transparent, rgba(255,255,255,.85) 88%, rgba(255,255,255,.95));
-          animation:vpo-flash-depart .3s cubic-bezier(.45,0,.2,1) 1.15s 1 both;
+          animation:vpo-flash-depart .3s cubic-bezier(.45,0,.2,1) 1.25s 1 both;
         }
         .vpo-flash-beam-exit::after{
           content:""; position:absolute; right:-1px; top:50%; width:7px; height:7px; border-radius:50%;
@@ -216,57 +216,76 @@ export default function Landing() {
           15%{opacity:1;}
           100%{opacity:0; transform:translate(115vw,-50%);}
         }
-        /* El trazo: un <path> único (V, palo y pancita de la P, vuelta
-           completa de la O y salida) recorrido por un punto brillante
-           (SMIL animateMotion, respeta nativamente el viewBox del SVG sin
-           líos de coordenadas CSS) más una racha corta de luz que lo sigue
-           (stroke-dasharray/dashoffset con pathLength=1000, así el % de
-           dashoffset no depende de la longitud real del path). Todo con
-           filter:drop-shadow para el glow — nunca cambia el color del logo
-           en sí, solo se dibuja encima. */
+        /* El trazo: dos <path> independientes (V, y O+salida) — la P ya no
+           se dibuja, ver .vpo-p-burst más abajo. Cada tramo tiene su propio
+           punto brillante (SMIL animateMotion) y su racha corta de luz
+           (stroke-dasharray/dashoffset con pathLength=1000). Siempre
+           plateado — el dorado quedó exclusivamente en el destello de la P. */
         .vpo-trace-svg{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible;}
         .vpo-trace-comet{
           fill:none; stroke:rgba(255,255,255,.95); stroke-width:13; stroke-linecap:round;
           stroke-dasharray:45 955; stroke-dashoffset:1000; opacity:0; visibility:hidden;
           filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));
-          animation:vpo-trace-sweep 1s linear .25s 1 both;
         }
+        .vpo-trace-comet-v{ animation:vpo-trace-sweep .35s linear .22s 1 both; }
+        .vpo-trace-comet-o{ animation:vpo-trace-sweep .5s linear .85s 1 both; }
         /* cx/cy explícitos en el JSX (no 0,0 por default) + visibility acá
-           como refuerzo de opacity — antes de que arranque animateMotion
-           (begin=.25s) el círculo ya está bien ubicado en el inicio real
-           del trazo y encima oculto por completo, así que ningún frame
-           intermedio puede mostrar un puntito huérfano arriba de la V. */
+           como refuerzo de opacity — antes de que arranque animateMotion el
+           círculo ya está bien ubicado en el inicio real de su propio tramo
+           y encima oculto por completo, así que ningún frame intermedio
+           puede mostrar un puntito huérfano en cualquier lado. */
         .vpo-trace-dot{
           fill:#fff; opacity:0; visibility:hidden;
           filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));
-          animation:vpo-trace-dot-visibility 1s linear .25s 1 both;
           offset-rotate:0deg;
         }
-        /* Plateado durante todo el recorrido salvo al cruzar la P (~24%-55%
-           del trazo, medido con getPointAtLength contra el path real) —
-           dorado en referencia al sol de la bandera, con una transición
-           suave de un par de puntos antes/después en vez de un corte
-           brusco. Mismos % en el <path> (stroke/filter) y en el punto
-           (fill/filter) para que cambien de color exactamente juntos. */
+        .vpo-trace-dot-v{ animation:vpo-trace-dot-visibility .35s linear .22s 1 both; }
+        .vpo-trace-dot-o{ animation:vpo-trace-dot-visibility .5s linear .85s 1 both; }
         @keyframes vpo-trace-sweep{
-          0%{stroke-dashoffset:1000; opacity:0; visibility:hidden; stroke:rgba(255,255,255,.95); filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));}
-          3%{opacity:1; visibility:visible;}
-          22%{stroke:rgba(255,255,255,.95); filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));}
-          25%{stroke:rgba(255,221,107,.98); filter:drop-shadow(0 0 9px rgba(255,230,140,1)) drop-shadow(0 0 22px rgba(255,205,90,.75));}
-          55%{stroke:rgba(255,221,107,.98); filter:drop-shadow(0 0 9px rgba(255,230,140,1)) drop-shadow(0 0 22px rgba(255,205,90,.75));}
-          58%{stroke:rgba(255,255,255,.95); filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));}
-          97%{opacity:1;}
+          0%{stroke-dashoffset:1000; opacity:0; visibility:hidden;}
+          6%{opacity:1; visibility:visible;}
+          92%{opacity:1;}
           100%{stroke-dashoffset:0; opacity:0; visibility:hidden;}
         }
         @keyframes vpo-trace-dot-visibility{
-          0%{opacity:0; visibility:hidden; fill:#fff; filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));}
-          3%{opacity:1; visibility:visible;}
-          22%{fill:#fff; filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));}
-          25%{fill:#ffe38a; filter:drop-shadow(0 0 11px rgba(255,236,160,1)) drop-shadow(0 0 30px rgba(255,210,100,.85));}
-          55%{fill:#ffe38a; filter:drop-shadow(0 0 11px rgba(255,236,160,1)) drop-shadow(0 0 30px rgba(255,210,100,.85));}
-          58%{fill:#fff; filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));}
-          95%{opacity:1;}
+          0%{opacity:0; visibility:hidden;}
+          6%{opacity:1; visibility:visible;}
+          88%{opacity:1;}
           100%{opacity:0; visibility:hidden;}
+        }
+        /* Destello dorado en el centro de la P — reemplaza el trazo de su
+           contorno por completo. Núcleo + 16 rayos (8 largos + 8 cortos
+           intercalados, como una bengala/lens-flare) que se expanden desde
+           el centro y se desvanecen. transform-box:fill-box hace que
+           rotate/scaleY roten y escalen alrededor del origen local de cada
+           forma (el punto (0,0) del <g>, ya trasladado al centro de la P
+           vía transform en el JSX), no alrededor del viewBox entero. */
+        .vpo-p-burst{ pointer-events:none; }
+        .vpo-p-burst-core{
+          fill:#fff6dd; opacity:0; visibility:hidden;
+          transform-box:fill-box; transform-origin:center;
+          filter:drop-shadow(0 0 16px rgba(255,224,140,1)) drop-shadow(0 0 46px rgba(255,190,80,.9));
+          animation:vpo-p-burst-core .4s ease-out .5s 1 both;
+        }
+        .vpo-p-burst-ray{
+          fill:#ffe9ad; opacity:0; visibility:hidden;
+          transform-box:fill-box; transform-origin:50% 100%;
+          animation:vpo-p-burst-ray .4s ease-out .5s 1 both;
+        }
+        .vpo-p-burst-ray.short{ fill:#ffd97a; }
+        @keyframes vpo-p-burst-core{
+          0%{opacity:0; visibility:hidden; transform:scale(.15);}
+          10%{visibility:visible;}
+          32%{opacity:1; transform:scale(1);}
+          65%{opacity:.85; transform:scale(1.2);}
+          100%{opacity:0; visibility:hidden; transform:scale(1.35);}
+        }
+        @keyframes vpo-p-burst-ray{
+          0%{opacity:0; visibility:hidden; transform:rotate(var(--angle)) scaleY(.1);}
+          10%{visibility:visible;}
+          32%{opacity:1; transform:rotate(var(--angle)) scaleY(1);}
+          65%{opacity:.55; transform:rotate(var(--angle)) scaleY(1.18);}
+          100%{opacity:0; visibility:hidden; transform:rotate(var(--angle)) scaleY(1.3);}
         }
         .vpo-logo-shine{
           position:absolute; inset:0; pointer-events:none; mix-blend-mode:overlay;
@@ -276,7 +295,7 @@ export default function Landing() {
           -webkit-mask-size:contain; mask-size:contain;
           -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
           -webkit-mask-position:center; mask-position:center;
-          animation:vpo-logo-shine-sweep .45s cubic-bezier(.45,0,.2,1) 1.35s 1 both;
+          animation:vpo-logo-shine-sweep .45s cubic-bezier(.45,0,.2,1) 1.45s 1 both;
         }
         @keyframes vpo-logo-shine-sweep{
           0%, 26%{background-position:-140% 0;}
@@ -284,7 +303,7 @@ export default function Landing() {
           72%, 100%{background-position:140% 0;}
         }
         @media (prefers-reduced-motion: reduce){
-          .vpo-flash-beam, .vpo-flash-beam-exit, .vpo-trace-comet, .vpo-trace-dot, .vpo-logo-shine{animation:none; display:none;}
+          .vpo-flash-beam, .vpo-flash-beam-exit, .vpo-trace-comet, .vpo-trace-dot, .vpo-p-burst-core, .vpo-p-burst-ray, .vpo-logo-shine{animation:none; display:none;}
         }
         .vpo-hero-text{text-align:center;}
         .vpo-hero-text p{font-size:14px;color:var(--text-3);margin:0;letter-spacing:.01em;}

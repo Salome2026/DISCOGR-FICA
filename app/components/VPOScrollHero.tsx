@@ -16,7 +16,7 @@ const VPO_TRACE_PATH =
   "C 1615 330.2, 1730.8 170.9, 1901.8 115.3 C 2072.7 59.8, 2260.1 120.6, 2365.7 266.1 " +
   "C 2471.4 411.5, 2471.4 608.5, 2365.7 753.9 C 2260.1 899.4, 2072.7 960.2, 1901.8 904.7 " +
   "C 1730.8 849.1, 1615 689.8, 1615 510 " +
-  "C 1615 700, 2200 720, 2900 560 C 3200 480, 3400 420, 3650 400";
+  "C 1615 650, 2100 600, 2600 520";
 
 // Apple-product-page-style intro: the mark starts large and centered, and
 // pins in place (sticky) while the user scrolls through this section's
@@ -99,6 +99,7 @@ export default function VPOScrollHero() {
             <div key={flashKey} aria-hidden style={{ display: "contents" }}>
               <div className="vpo-flash">
                 <div className="vpo-flash-beam" />
+                <div className="vpo-flash-beam-exit" />
               </div>
               <svg className="vpo-trace-svg" viewBox="0 0 2539 1298" preserveAspectRatio="xMidYMid meet">
                 <path className="vpo-trace-comet" pathLength={1000} d={VPO_TRACE_PATH} />

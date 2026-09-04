@@ -195,6 +195,27 @@ export default function Landing() {
           20%{opacity:1;}
           100%{opacity:0; transform:translate(38vw,-50%);}
         }
+        /* Simétrico al de entrada: retoma el trazo apenas sale de la O y
+           lo lleva hasta el borde real de la pantalla (mismo truco de
+           coordenadas en vw sobre el contenedor .vpo-flash) — el <path>
+           del SVG ya no intenta cruzar toda la pantalla por sí solo, solo
+           llega hasta el borde derecho del logo y este beam retoma desde ahí. */
+        .vpo-flash-beam-exit{
+          position:absolute; top:0; left:0; width:160px; height:1.5px; transform:translate(62vw,-50%);
+          background:linear-gradient(90deg, transparent, rgba(255,255,255,.85) 88%, rgba(255,255,255,.95));
+          animation:vpo-flash-depart .3s cubic-bezier(.45,0,.2,1) 1.15s 1 both;
+        }
+        .vpo-flash-beam-exit::after{
+          content:""; position:absolute; right:-1px; top:50%; width:7px; height:7px; border-radius:50%;
+          transform:translate(50%,-50%);
+          background:radial-gradient(circle, #fff 0%, rgba(255,255,255,.7) 55%, transparent 75%);
+          box-shadow:0 0 14px 3px rgba(255,255,255,.75);
+        }
+        @keyframes vpo-flash-depart{
+          0%{opacity:0; transform:translate(62vw,-50%);}
+          15%{opacity:1;}
+          100%{opacity:0; transform:translate(115vw,-50%);}
+        }
         /* El trazo: un <path> único (V, palo y pancita de la P, vuelta
            completa de la O y salida) recorrido por un punto brillante
            (SMIL animateMotion, respeta nativamente el viewBox del SVG sin
@@ -236,7 +257,7 @@ export default function Landing() {
           -webkit-mask-size:contain; mask-size:contain;
           -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
           -webkit-mask-position:center; mask-position:center;
-          animation:vpo-logo-shine-sweep .45s cubic-bezier(.45,0,.2,1) 1.15s 1 both;
+          animation:vpo-logo-shine-sweep .45s cubic-bezier(.45,0,.2,1) 1.35s 1 both;
         }
         @keyframes vpo-logo-shine-sweep{
           0%, 26%{background-position:-140% 0;}
@@ -244,7 +265,7 @@ export default function Landing() {
           72%, 100%{background-position:140% 0;}
         }
         @media (prefers-reduced-motion: reduce){
-          .vpo-flash-beam, .vpo-trace-comet, .vpo-trace-dot, .vpo-logo-shine{animation:none; display:none;}
+          .vpo-flash-beam, .vpo-flash-beam-exit, .vpo-trace-comet, .vpo-trace-dot, .vpo-logo-shine{animation:none; display:none;}
         }
         .vpo-hero-text{text-align:center;}
         .vpo-hero-text p{font-size:14px;color:var(--text-3);margin:0;letter-spacing:.01em;}

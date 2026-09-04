@@ -182,7 +182,7 @@ export default function Landing() {
         .vpo-flash-beam{
           position:absolute; top:0; left:0; width:160px; height:1.5px; transform:translate(-15vw,-50%);
           background:linear-gradient(90deg, transparent, rgba(255,255,255,.85) 88%, rgba(255,255,255,.95));
-          animation:vpo-flash-approach .6s cubic-bezier(.45,0,.2,1) 1 both;
+          animation:vpo-flash-approach .4s cubic-bezier(.45,0,.2,1) 1 both;
         }
         .vpo-flash-beam::after{
           content:""; position:absolute; right:-1px; top:50%; width:7px; height:7px; border-radius:50%;
@@ -208,12 +208,12 @@ export default function Landing() {
           fill:none; stroke:rgba(255,255,255,.95); stroke-width:9; stroke-linecap:round;
           stroke-dasharray:45 955; stroke-dashoffset:1000; opacity:0;
           filter:drop-shadow(0 0 5px rgba(255,255,255,.9)) drop-shadow(0 0 14px rgba(214,224,255,.7));
-          animation:vpo-trace-sweep 1.9s linear .55s 1 both;
+          animation:vpo-trace-sweep 1.3s linear .35s 1 both;
         }
         .vpo-trace-dot{
           fill:#fff; opacity:0;
           filter:drop-shadow(0 0 6px rgba(255,255,255,1)) drop-shadow(0 0 16px rgba(214,224,255,.8));
-          animation:vpo-trace-dot-visibility 1.9s linear .55s 1 both;
+          animation:vpo-trace-dot-visibility 1.3s linear .35s 1 both;
           offset-rotate:0deg;
         }
         @keyframes vpo-trace-sweep{
@@ -236,7 +236,7 @@ export default function Landing() {
           -webkit-mask-size:contain; mask-size:contain;
           -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat;
           -webkit-mask-position:center; mask-position:center;
-          animation:vpo-logo-shine-sweep .85s cubic-bezier(.45,0,.2,1) 2.3s 1 both;
+          animation:vpo-logo-shine-sweep .6s cubic-bezier(.45,0,.2,1) 1.55s 1 both;
         }
         @keyframes vpo-logo-shine-sweep{
           0%, 26%{background-position:-140% 0;}

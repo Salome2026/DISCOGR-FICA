@@ -252,8 +252,8 @@ export default function Landing() {
           0%{stroke-dashoffset:1000; opacity:0; visibility:hidden; stroke:rgba(255,255,255,.95); filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));}
           3%{opacity:1; visibility:visible;}
           22%{stroke:rgba(255,255,255,.95); filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));}
-          25%{stroke:rgba(255,196,64,.97); filter:drop-shadow(0 0 8px rgba(255,196,64,.95)) drop-shadow(0 0 20px rgba(255,150,20,.75));}
-          55%{stroke:rgba(255,196,64,.97); filter:drop-shadow(0 0 8px rgba(255,196,64,.95)) drop-shadow(0 0 20px rgba(255,150,20,.75));}
+          25%{stroke:rgba(255,221,107,.98); filter:drop-shadow(0 0 9px rgba(255,230,140,1)) drop-shadow(0 0 22px rgba(255,205,90,.75));}
+          55%{stroke:rgba(255,221,107,.98); filter:drop-shadow(0 0 9px rgba(255,230,140,1)) drop-shadow(0 0 22px rgba(255,205,90,.75));}
           58%{stroke:rgba(255,255,255,.95); filter:drop-shadow(0 0 7px rgba(255,255,255,.9)) drop-shadow(0 0 18px rgba(214,224,255,.7));}
           97%{opacity:1;}
           100%{stroke-dashoffset:0; opacity:0; visibility:hidden;}
@@ -262,8 +262,8 @@ export default function Landing() {
           0%{opacity:0; visibility:hidden; fill:#fff; filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));}
           3%{opacity:1; visibility:visible;}
           22%{fill:#fff; filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));}
-          25%{fill:#ffcb52; filter:drop-shadow(0 0 10px rgba(255,205,70,1)) drop-shadow(0 0 28px rgba(255,150,20,.85));}
-          55%{fill:#ffcb52; filter:drop-shadow(0 0 10px rgba(255,205,70,1)) drop-shadow(0 0 28px rgba(255,150,20,.85));}
+          25%{fill:#ffe38a; filter:drop-shadow(0 0 11px rgba(255,236,160,1)) drop-shadow(0 0 30px rgba(255,210,100,.85));}
+          55%{fill:#ffe38a; filter:drop-shadow(0 0 11px rgba(255,236,160,1)) drop-shadow(0 0 30px rgba(255,210,100,.85));}
           58%{fill:#fff; filter:drop-shadow(0 0 9px rgba(255,255,255,1)) drop-shadow(0 0 24px rgba(214,224,255,.8));}
           95%{opacity:1;}
           100%{opacity:0; visibility:hidden;}
@@ -342,6 +342,13 @@ export default function Landing() {
         {modules === null && active === null && (
           <div className="cards">
             <div className="access-card">
+              <h2>Management</h2>
+              <p>Acceso al roster, calendario y próximos lanzamientos.</p>
+              <button className="access-btn" onClick={() => setActive("management")}>
+                Ingresar
+              </button>
+            </div>
+            <div className="access-card">
               <h2>Label</h2>
               <p>Acceso para administradores y gestión de sellos.</p>
               <button className="access-btn" onClick={() => setActive("label")}>
@@ -349,16 +356,9 @@ export default function Landing() {
               </button>
             </div>
             <div className="access-card">
-              <h2>Project Manager</h2>
-              <p>Módulo de carga para fonogramas, split y releases.</p>
-              <button className="access-btn" onClick={() => setActive("pm")}>
-                Ingresar
-              </button>
-            </div>
-            <div className="access-card">
-              <h2>Legales</h2>
-              <p>Acceso para el equipo legal y aprobación de lanzamientos.</p>
-              <button className="access-btn" onClick={() => setActive("legal")}>
+              <h2>Booking</h2>
+              <p>Acceso a la agenda de shows, mapa y contactos.</p>
+              <button className="access-btn" onClick={() => setActive("booking")}>
                 Ingresar
               </button>
             </div>
@@ -370,16 +370,16 @@ export default function Landing() {
               </button>
             </div>
             <div className="access-card">
-              <h2>Management</h2>
-              <p>Acceso al roster, calendario y próximos lanzamientos.</p>
-              <button className="access-btn" onClick={() => setActive("management")}>
+              <h2>Legales</h2>
+              <p>Acceso para el equipo legal y aprobación de lanzamientos.</p>
+              <button className="access-btn" onClick={() => setActive("legal")}>
                 Ingresar
               </button>
             </div>
             <div className="access-card">
-              <h2>Booking</h2>
-              <p>Acceso a la agenda de shows, mapa y contactos.</p>
-              <button className="access-btn" onClick={() => setActive("booking")}>
+              <h2>Project Manager</h2>
+              <p>Módulo de carga para fonogramas, split y releases.</p>
+              <button className="access-btn" onClick={() => setActive("pm")}>
                 Ingresar
               </button>
             </div>

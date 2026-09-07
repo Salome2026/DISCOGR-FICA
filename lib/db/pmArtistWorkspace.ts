@@ -314,11 +314,13 @@ export async function listMeetingRequestsForArtist(artistId: string): Promise<Pm
   return rows.map(rowToMeetingRequest);
 }
 
-// Pending first (so Management sees what needs action at the top), newest first within each group.
+// Solo lo que todavía necesita acción de Management — una vez agendada
+// (o realizada/cancelada) la reunión ya se ve en ManagementMeetingsCalendar,
+// mostrarla acá también sería la misma reunión duplicada en dos secciones.
 export async function listAllMeetingRequests(): Promise<PmMeetingRequest[]> {
   await ensurePmArtistWorkspaceSchema();
   const { rows } = await sql`
-    SELECT * FROM pm_meeting_requests ORDER BY (status = 'Pendiente') DESC, created_at DESC
+    SELECT * FROM pm_meeting_requests WHERE status = 'Pendiente' ORDER BY created_at DESC
   `;
   return rows.map(rowToMeetingRequest);
 }

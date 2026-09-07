@@ -223,6 +223,9 @@ function ArContent() {
                 + Cargar hallazgo
               </Link>
             )}
+            <Link href="/panel/ar/artistas" style={{ ...ghostBtn, textDecoration: "none", display: "inline-block" }}>
+              Análisis por artista
+            </Link>
             {canEdit && (
               <Link href="/panel/ar/tendencias" style={{ ...ghostBtn, textDecoration: "none", display: "inline-block" }}>
                 Tendencias

@@ -22,6 +22,10 @@ function MarketSnapshotCard({ canEdit }: { canEdit: boolean }) {
   const [snapshot, setSnapshot] = useState<ArMarketSnapshot | null | undefined>(undefined);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<ArMarketSnapshot[] | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   function load() {
     fetch("/api/ar/market-snapshot")
@@ -29,6 +33,33 @@ function MarketSnapshotCard({ canEdit }: { canEdit: boolean }) {
       .then((d: { snapshot?: ArMarketSnapshot | null }) => setSnapshot(d.snapshot ?? null));
   }
   useEffect(load, []);
+
+  async function fetchHistory() {
+    setLoadingHistory(true);
+    setHistoryError(null);
+    try {
+      const res = await fetch("/api/ar/market-snapshot/history");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "No se pudo cargar el historial.");
+      setHistory(data.snapshots ?? []);
+    } catch (err) {
+      setHistory(null);
+      setHistoryError(err instanceof Error ? err.message : "Error desconocido.");
+    } finally {
+      setLoadingHistory(false);
+    }
+  }
+
+  async function toggleHistory() {
+    if (showHistory) {
+      setShowHistory(false);
+      return;
+    }
+    setShowHistory(true);
+    if (history === null && !loadingHistory) {
+      await fetchHistory();
+    }
+  }
 
   async function handleGenerate() {
     setGenerating(true);
@@ -38,6 +69,13 @@ function MarketSnapshotCard({ canEdit }: { canEdit: boolean }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "No se pudo generar el resumen.");
       setSnapshot(data.snapshot);
+      // A new current snapshot pushes the previous one into history — the
+      // cached list (if the panel is open) would otherwise miss it.
+      if (showHistory) {
+        fetchHistory();
+      } else {
+        setHistory(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido.");
     } finally {
@@ -91,6 +129,64 @@ function MarketSnapshotCard({ canEdit }: { canEdit: boolean }) {
               {snapshot.narrative.generosEnCrecimientoAR.map((g) => (
                 <span key={g} style={pill}>{g}</span>
               ))}
+            </div>
+          )}
+          {(snapshot.narrative.artistasRosterDestacados?.length ?? 0) > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={sectionLabel}>Artistas del roster destacados</div>
+              {snapshot.narrative.artistasRosterDestacados.map((a, i) => (
+                <div key={i} style={{ fontSize: 13 }}>
+                  <strong>{a.nombre}</strong> — {a.motivo}
+                </div>
+              ))}
+            </div>
+          )}
+          {(snapshot.narrative.oportunidadesParaRevisar?.length ?? 0) > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={sectionLabel}>Oportunidades para revisar</div>
+              {snapshot.narrative.oportunidadesParaRevisar.map((o, i) => (
+                <Link
+                  key={i}
+                  href={`/panel/ar/${o.opportunityId}`}
+                  style={{ fontSize: 13, color: "var(--text-1)", textDecoration: "none" }}
+                >
+                  → {o.motivo}
+                </Link>
+              ))}
+            </div>
+          )}
+          <div>
+            <button type="button" onClick={toggleHistory} style={{ ...ghostBtn, fontSize: 11.5, padding: "5px 10px" }}>
+              {showHistory ? "Ocultar resúmenes anteriores" : "Ver resúmenes anteriores"}
+            </button>
+          </div>
+          {showHistory && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, borderTop: "1px solid var(--glass-border)", paddingTop: 8 }}>
+              {(() => {
+                if (loadingHistory) {
+                  return <div style={{ fontSize: 12, color: "var(--text-3)" }}>Cargando...</div>;
+                }
+                if (historyError) {
+                  return (
+                    <div style={{ fontSize: 12, color: "var(--crit-ink)", display: "flex", alignItems: "center", gap: 8 }}>
+                      {historyError}
+                      <button type="button" onClick={fetchHistory} style={{ ...ghostBtn, fontSize: 11, padding: "3px 8px" }}>
+                        Reintentar
+                      </button>
+                    </div>
+                  );
+                }
+                const previous = (history ?? []).filter((h) => h.id !== snapshot.id);
+                if (previous.length === 0) {
+                  return <div style={{ fontSize: 12, color: "var(--text-3)" }}>No hay resúmenes anteriores todavía.</div>;
+                }
+                return previous.map((h) => (
+                  <div key={h.id} style={{ fontSize: 12.5 }}>
+                    <div style={{ color: "var(--text-3)", fontSize: 11 }}>{timeAgo(h.generatedAt)}</div>
+                    <div>{h.narrative.resumenGeneral}</div>
+                  </div>
+                ));
+              })()}
             </div>
           )}
         </div>
@@ -367,6 +463,14 @@ const primaryBtn: React.CSSProperties = {
   fontWeight: 600,
   fontSize: 12.5,
   cursor: "pointer",
+};
+
+const sectionLabel: React.CSSProperties = {
+  fontSize: 11,
+  fontWeight: 700,
+  color: "var(--text-3)",
+  textTransform: "uppercase",
+  letterSpacing: ".03em",
 };
 
 const pill: React.CSSProperties = {

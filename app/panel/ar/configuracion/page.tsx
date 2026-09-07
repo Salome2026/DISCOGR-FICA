@@ -6,6 +6,12 @@ import { upload } from "@vercel/blob/client";
 import RequirePermission from "@/app/components/RequirePermission";
 
 type Persona = { name: string; avatarUrl: string | null; tone: string; description: string };
+type Thresholds = {
+  explodingGrowthPct: number;
+  producerRepeatMinArtists: number;
+  producerRepeatWindowDays: number;
+  stalledMinDaysSinceRelease: number;
+};
 
 const inputStyle: React.CSSProperties = {
   width: "100%", background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8,
@@ -30,6 +36,11 @@ function ConfiguracionInner() {
   const [criteriaSaved, setCriteriaSaved] = useState(false);
   const [criteriaError, setCriteriaError] = useState<string | null>(null);
 
+  const [thresholds, setThresholds] = useState<Thresholds | null>(null);
+  const [savingThresholds, setSavingThresholds] = useState(false);
+  const [thresholdsSaved, setThresholdsSaved] = useState(false);
+  const [thresholdsError, setThresholdsError] = useState<string | null>(null);
+
   useEffect(() => {
     fetch("/api/ar/agent-status")
       .then((r) => r.json())
@@ -42,7 +53,47 @@ function ConfiguracionInner() {
         setCriteriaLoaded(true);
       })
       .catch((err) => setCriteriaError(err instanceof Error ? err.message : "Error desconocido."));
+    fetch("/api/ar/alert-thresholds")
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || "No se pudieron cargar los umbrales.");
+        setThresholds(d.thresholds);
+      })
+      .catch((err) => setThresholdsError(err instanceof Error ? err.message : "Error desconocido."));
   }, []);
+
+  // Guards against the field going blank mid-edit collapsing to 0 (Number("")
+  // is 0, not NaN) — that would silently push explodingGrowthPct below the
+  // server's floor and surface only a generic "Umbrales inválidos." error.
+  function updateThreshold<K extends keyof Thresholds>(key: K, raw: string, toStored: (n: number) => number = (n) => n) {
+    if (raw === "") return;
+    const n = Number(raw);
+    if (!Number.isFinite(n)) return;
+    setThresholds((prev) => (prev ? { ...prev, [key]: toStored(n) } : prev));
+  }
+
+  async function saveThresholds() {
+    if (!thresholds) return;
+    setSavingThresholds(true);
+    setThresholdsError(null);
+    setThresholdsSaved(false);
+    try {
+      const res = await fetch("/api/ar/alert-thresholds", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(thresholds),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || "No se pudo guardar.");
+      setThresholds(d.thresholds);
+      setThresholdsSaved(true);
+      setTimeout(() => setThresholdsSaved(false), 2500);
+    } catch (err) {
+      setThresholdsError(err instanceof Error ? err.message : "Error desconocido.");
+    } finally {
+      setSavingThresholds(false);
+    }
+  }
 
   async function saveCriteria() {
     if (!criteria.trim()) {
@@ -194,6 +245,73 @@ function ConfiguracionInner() {
               <div style={{ marginTop: 10 }}>
                 <button onClick={saveCriteria} disabled={savingCriteria} style={primaryBtn}>
                   {savingCriteria ? "Guardando..." : "Guardar criterios"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div style={{ borderTop: "1px solid var(--line-soft)", paddingTop: 18, marginTop: 6 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Umbrales de alertas</h2>
+          <p style={{ fontSize: 12.5, color: "var(--text-3)", marginTop: 4 }}>
+            Cuándo el agente dispara cada tipo de alerta — ajustalos si están saltando de más o de menos.
+          </p>
+          {!thresholds && thresholdsError && (
+            <div style={{ color: "var(--crit-ink)", fontSize: 13, marginTop: 10 }}>{thresholdsError}</div>
+          )}
+          {thresholds && (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 10 }}>
+                <div>
+                  <div style={fieldLabel}>Crecimiento para &quot;artista explotando&quot; (%)</div>
+                  <input
+                    type="number"
+                    min={1}
+                    max={500}
+                    value={Math.round(thresholds.explodingGrowthPct * 100)}
+                    onChange={(e) => updateThreshold("explodingGrowthPct", e.target.value, (n) => n / 100)}
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <div style={fieldLabel}>Mín. artistas con mismo productor</div>
+                  <input
+                    type="number"
+                    min={2}
+                    max={20}
+                    value={thresholds.producerRepeatMinArtists}
+                    onChange={(e) => updateThreshold("producerRepeatMinArtists", e.target.value)}
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <div style={fieldLabel}>Ventana de días para productor repetido</div>
+                  <input
+                    type="number"
+                    min={1}
+                    max={3650}
+                    value={thresholds.producerRepeatWindowDays}
+                    onChange={(e) => updateThreshold("producerRepeatWindowDays", e.target.value)}
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <div style={fieldLabel}>Días sin lanzar para &quot;artista estancado&quot;</div>
+                  <input
+                    type="number"
+                    min={1}
+                    max={3650}
+                    value={thresholds.stalledMinDaysSinceRelease}
+                    onChange={(e) => updateThreshold("stalledMinDaysSinceRelease", e.target.value)}
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+              {thresholdsError && <div style={{ color: "var(--crit-ink)", fontSize: 13, marginTop: 8 }}>{thresholdsError}</div>}
+              {thresholdsSaved && <div style={{ color: "var(--good-ink)", fontSize: 13, marginTop: 8 }}>Guardado.</div>}
+              <div style={{ marginTop: 10 }}>
+                <button onClick={saveThresholds} disabled={savingThresholds} style={primaryBtn}>
+                  {savingThresholds ? "Guardando..." : "Guardar umbrales"}
                 </button>
               </div>
             </>

@@ -48,6 +48,14 @@ export async function getLatestMarketSnapshot(scope: ArMarketSnapshotScope = "co
   return rows[0] ? rowToSnapshot(rows[0]) : null;
 }
 
+export async function listMarketSnapshots(scope: ArMarketSnapshotScope = "combined", limit = 10): Promise<ArMarketSnapshot[]> {
+  await ensureArMarketSnapshotsSchema();
+  const { rows } = await sql`
+    SELECT * FROM ar_market_snapshots WHERE scope = ${scope} ORDER BY generated_at DESC LIMIT ${limit}
+  `;
+  return rows.map(rowToSnapshot);
+}
+
 export async function createMarketSnapshot(input: {
   scope: ArMarketSnapshotScope;
   narrative: ArMarketNarrative;

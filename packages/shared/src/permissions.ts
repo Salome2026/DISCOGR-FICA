@@ -44,6 +44,8 @@ export const PERMISSIONS = [
   "ver_cm",
   "editar_cm",
   "ver_asignaciones_pm",
+  "ver_op",
+  "editar_op",
 ] as const;
 
 export type Permission = (typeof PERMISSIONS)[number];
@@ -60,6 +62,7 @@ export const ROLES = [
   "marketing",
   "ar",
   "community_manager",
+  "op",
   "artista",
   "representante",
   "invitado",
@@ -72,7 +75,7 @@ export type AccountType = "empresa" | "artista";
 // Roles available for each landing-page account type. An "artista" role only makes
 // sense behind the Artista card; company roles only behind the Empresa card.
 export const ROLES_BY_ACCOUNT_TYPE: Record<AccountType, Role[]> = {
-  empresa: ["admin", "project_manager", "legal", "editorial", "management", "booking", "tourmanager", "distribucion", "marketing", "ar", "community_manager", "invitado"],
+  empresa: ["admin", "project_manager", "legal", "editorial", "management", "booking", "tourmanager", "distribucion", "marketing", "ar", "community_manager", "op", "invitado"],
   artista: ["artista", "representante"],
 };
 
@@ -126,6 +129,10 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // PM que Management administra — mismo criterio asimétrico que
   // "ver_cm" de Management arriba, en el sentido opuesto.
   community_manager: ["ver_cm", "editar_cm", "ver_asignaciones_pm"],
+  // Módulo OP: de una sola persona, aislado del resto — mismo criterio que
+  // legal/editorial/booking/tourmanager/ar ("own module, own permissions"),
+  // sin ningún permiso compartido con ningún otro rol.
+  op: ["ver_op", "editar_op"],
   distribucion: ["editar_acuerdos", "aprobar_releases", "ver_estadisticas"],
   marketing: ["ver_estadisticas", "exportar_datos", "ver_playlists", "editar_playlists"],
   artista: ["subir_audio", "subir_portada"],
@@ -144,6 +151,7 @@ export const ROLE_HOME: Record<Role, string> = {
   tourmanager: "/panel/tourmanager",
   ar: "/panel/ar",
   community_manager: "/panel/cm",
+  op: "/panel/op",
   distribucion: "/panel/distribucion",
   marketing: "/panel/marketing",
   artista: "/panel/artista",
@@ -163,6 +171,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   tourmanager: "Tour Manager",
   ar: "A&R",
   community_manager: "Community Manager",
+  op: "OP",
   distribucion: "Distribución",
   marketing: "Marketing",
   artista: "Artista",

@@ -6,7 +6,7 @@ import { signIn } from "next-auth/react";
 import Image from "next/image";
 import VPOScrollHero from "./components/VPOScrollHero";
 
-type Card = "label" | "pm" | "legal" | "editorial" | "management" | "booking" | "tourmanager" | "ar" | "cm" | null;
+type Card = "label" | "pm" | "legal" | "editorial" | "management" | "booking" | "tourmanager" | "ar" | "cm" | "op" | null;
 type ModuleOption = { role: string; label: string; home: string };
 
 // Which module the pre-login card the user clicked corresponds to — lets a
@@ -22,6 +22,7 @@ const CARD_TO_ROLE: Record<Exclude<Card, null>, string> = {
   tourmanager: "tourmanager",
   ar: "ar",
   cm: "community_manager",
+  op: "op",
 };
 
 export default function Landing() {
@@ -371,6 +372,13 @@ export default function Landing() {
                 Ingresar
               </button>
             </div>
+            <div className="access-card">
+              <h2>OP</h2>
+              <p>Control operativo de fonogramas, ISRC y repertorio CAPIF.</p>
+              <button className="access-btn" onClick={() => setActive("op")}>
+                Ingresar
+              </button>
+            </div>
           </div>
         )}
 
@@ -398,6 +406,8 @@ export default function Landing() {
                 ? "Acceso A&R"
                 : active === "cm"
                 ? "Acceso Community Manager"
+                : active === "op"
+                ? "Acceso OP"
                 : "Acceso Tour Manager"}
             </h2>
 

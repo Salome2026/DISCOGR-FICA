@@ -4,6 +4,7 @@ import { scanCatalogRevivalOpportunities } from "@/lib/arCatalogRevival";
 import { generateMarketSnapshot } from "@/lib/arMarketIntelligence";
 import { geminiConfigured } from "@/lib/gemini";
 import { withTimeout } from "@/lib/withTimeout";
+import { setAgentStatus } from "@/lib/db/arAgentSettings";
 
 export const maxDuration = 90;
 
@@ -27,12 +28,14 @@ export async function GET(req: NextRequest) {
 
   const steps: Record<string, unknown> = {};
 
+  await setAgentStatus("scanning_roster", "Revisando crecimiento del roster propio").catch(() => {});
   try {
     steps.rosterGrowth = await scanLabelRosterGrowth();
   } catch (err) {
     steps.rosterGrowth = { error: err instanceof Error ? err.message : String(err) };
   }
 
+  await setAgentStatus("scanning_catalog", "Buscando oportunidades de revival de catálogo").catch(() => {});
   try {
     steps.catalogRevival = await scanCatalogRevivalOpportunities();
   } catch (err) {
@@ -40,6 +43,7 @@ export async function GET(req: NextRequest) {
   }
 
   if (geminiConfigured()) {
+    await setAgentStatus("preparando_resumen", "Armando el resumen de mercado del día").catch(() => {});
     try {
       const snapshot = await withTimeout(generateMarketSnapshot(null), 60_000);
       steps.marketSnapshot = snapshot
@@ -52,5 +56,6 @@ export async function GET(req: NextRequest) {
     steps.marketSnapshot = { skipped: "GEMINI_API_KEY no configurado" };
   }
 
+  await setAgentStatus("idle", null).catch(() => {});
   return NextResponse.json({ status: "done", steps });
 }

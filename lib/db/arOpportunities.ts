@@ -13,6 +13,13 @@ import type {
   ArTaskStatus,
 } from "@discografica/shared/types/ar";
 
+// @vercel/postgres's sql`` typings only accept Primitive (no arrays), even
+// though the underlying driver happily sends a JS array as a real Postgres
+// array parameter — same workaround as lib/db/booking.ts.
+function arrayParam<T>(items: T[]): string | number | boolean {
+  return items as unknown as string;
+}
+
 let ready: Promise<void> | null = null;
 
 export function ensureArOpportunitiesSchema(): Promise<void> {
@@ -172,6 +179,40 @@ export async function getOpportunity(id: string): Promise<ArOpportunity | null> 
   await ensureArOpportunitiesSchema();
   const { rows } = await sql`SELECT * FROM ar_opportunities WHERE id = ${id}`;
   return rows[0] ? rowToOpportunity(rows[0]) : null;
+}
+
+// Fetch por lote — para resolver un puñado de ids conocidos (ej. las
+// referencias que citó el chat de A&R) sin pagar una consulta por id.
+export async function getOpportunities(ids: string[]): Promise<ArOpportunity[]> {
+  if (ids.length === 0) return [];
+  await ensureArOpportunitiesSchema();
+  const { rows } = await sql`SELECT * FROM ar_opportunities WHERE id = ANY(${arrayParam(ids)}::text[])`;
+  return rows.map(rowToOpportunity);
+}
+
+// Variante acotada de listOpportunitiesFor() para contextos que solo
+// necesitan "lo más reciente" (ej. fundamentar una respuesta de chat) — el
+// LIMIT vive en el SQL en vez de traer la tabla entera y recortarla en JS.
+// listOpportunitiesFor() en sí no se toca: la sigue usando la pantalla de
+// A&R, que necesita la lista completa.
+export async function listRecentOpportunitiesFor(email: string, roles: string[], limit: number): Promise<ArOpportunity[]> {
+  await ensureArOpportunitiesSchema();
+  if (roles.includes("admin") || roles.includes("ar")) {
+    const { rows } = await sql`
+      SELECT * FROM ar_opportunities WHERE archived = false ORDER BY created_at DESC LIMIT ${limit}
+    `;
+    return rows.map(rowToOpportunity);
+  }
+  const { rows } = await sql`
+    SELECT o.* FROM ar_opportunities o
+    WHERE o.archived = false
+      AND EXISTS (
+        SELECT 1 FROM ar_opportunity_assignments a
+        WHERE a.opportunity_id = o.id AND a.pm_email = ${email}
+      )
+    ORDER BY o.created_at DESC LIMIT ${limit}
+  `;
+  return rows.map(rowToOpportunity);
 }
 
 export async function createManualOpportunity(input: ArOpportunityInput, actorEmail: string): Promise<ArOpportunity> {

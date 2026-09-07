@@ -213,6 +213,11 @@ function ArContent() {
               </Link>
             )}
             {canEdit && (
+              <Link href="/panel/ar/configuracion" style={{ ...ghostBtn, textDecoration: "none", display: "inline-block" }}>
+                Configurar agente
+              </Link>
+            )}
+            {canEdit && (
               <button type="button" onClick={handleScan} style={ghostBtn} disabled={scanning}>
                 {scanning ? "Escaneando..." : "Escanear roster propio"}
               </button>

@@ -18,6 +18,7 @@ export type EditorialSplit = {
   musica: SplitPerson[];
   letraUrl: string | null;
   letraNombre: string | null;
+  letraTexto: string | null;
   audioUrl: string | null;
   estado: "Pendiente" | "Enviado";
   createdBy: string;
@@ -91,5 +92,6 @@ export type SplitPersonInput =
 export type SplitAttachments = {
   letraUrl: string | null;
   letraNombre: string | null;
+  letraTexto: string | null;
   audioUrl: string | null;
 };

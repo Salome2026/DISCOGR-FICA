@@ -27,6 +27,7 @@ type EditorialSplit = {
   musica: SplitPerson[];
   letraUrl: string | null;
   letraNombre: string | null;
+  letraTexto: string | null;
   audioUrl: string | null;
   estado: "Pendiente" | "Enviado";
   createdBy: string;
@@ -168,7 +169,7 @@ function SplitDetail({ id }: { id: string }) {
         )}
       </div>
 
-      {(split.letraUrl || split.audioUrl) && (
+      {(split.letraUrl || split.letraTexto || split.audioUrl) && (
         <div className="split-detail-section">
           <div className="split-detail-title">ARCHIVOS</div>
           {split.letraUrl && (
@@ -177,6 +178,14 @@ function SplitDetail({ id }: { id: string }) {
               <a href={split.letraUrl} target="_blank" rel="noopener noreferrer">
                 {split.letraNombre || "Ver documento"}
               </a>
+            </div>
+          )}
+          {split.letraTexto && (
+            <div style={{ marginTop: split.letraUrl ? 10 : 0 }}>
+              <div className="muted" style={{ fontSize: 12, marginBottom: 4 }}>Letra (texto pegado)</div>
+              <div style={{ whiteSpace: "pre-wrap", fontSize: 13.5, lineHeight: 1.5, background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 8, padding: 12 }}>
+                {split.letraTexto}
+              </div>
             </div>
           )}
           {split.audioUrl && (

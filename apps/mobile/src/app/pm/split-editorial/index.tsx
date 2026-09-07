@@ -232,6 +232,7 @@ export default function SplitEditorialScreen() {
   const [track, setTrack] = useState<SplitTrackOption | null>(null);
   const [letra, setLetra] = useState<Row[]>([newRow()]);
   const [musica, setMusica] = useState<Row[]>([newRow()]);
+  const [letraTexto, setLetraTexto] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -239,7 +240,7 @@ export default function SplitEditorialScreen() {
   const letraSum = letra.reduce((s, r) => s + (parsePercent(r.percentRaw) ?? 0), 0);
   const musicaSum = musica.reduce((s, r) => s + (parsePercent(r.percentRaw) ?? 0), 0);
   const rowsReady = (rows: Row[]) => rows.length > 0 && rows.every((r) => r.personName.trim() && (parsePercent(r.percentRaw) ?? 0) > 0);
-  const canSubmit = !!track && letraSum === 5000 && musicaSum === 5000 && rowsReady(letra) && rowsReady(musica);
+  const canSubmit = !!track && letraSum === 5000 && musicaSum === 5000 && rowsReady(letra) && rowsReady(musica) && letraTexto.trim().length > 0;
 
   function toInput(rows: Row[]): SplitPersonInput[] {
     return rows.map((r) =>
@@ -254,7 +255,7 @@ export default function SplitEditorialScreen() {
     setSubmitting(true);
     setError(null);
     try {
-      await createSplit({ catalogTrackId: track.id, letra: toInput(letra), musica: toInput(musica) });
+      await createSplit({ catalogTrackId: track.id, letra: toInput(letra), musica: toInput(musica), letraTexto: letraTexto.trim() });
       setDone(true);
       setTimeout(() => router.push("/pm"), 1500);
     } catch (err) {
@@ -280,6 +281,16 @@ export default function SplitEditorialScreen() {
 
               {track && (
                 <>
+                  <Text style={[styles.fieldLabel, { marginTop: theme.space.xl }]}>Letra de la canción (obligatorio)</Text>
+                  <TextInput
+                    style={[styles.input, styles.letraTextArea]}
+                    placeholder="Pegá el texto de la letra acá"
+                    placeholderTextColor={theme.text3}
+                    value={letraTexto}
+                    onChangeText={setLetraTexto}
+                    multiline
+                    textAlignVertical="top"
+                  />
                   <SplitSection title="LETRA" rows={letra} setRows={setLetra} />
                   <SplitSection title="MÚSICA" rows={musica} setRows={setMusica} />
                 </>
@@ -289,7 +300,7 @@ export default function SplitEditorialScreen() {
 
               {track && (
                 <View style={styles.submitBar}>
-                  {!canSubmit && <Text style={styles.submitHint}>Completá letra y música al 50% para enviar.</Text>}
+                  {!canSubmit && <Text style={styles.submitHint}>Completá la letra, y letra/música al 50%, para enviar.</Text>}
                   <Pressable style={[styles.submitButton, (!canSubmit || submitting) && styles.submitButtonDisabled]} disabled={!canSubmit || submitting} onPress={handleSubmit}>
                     {submitting ? <ActivityIndicator color="#000" /> : <Text style={styles.submitButtonText}>Enviar split</Text>}
                   </Pressable>
@@ -307,6 +318,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: theme.space.xl, paddingBottom: theme.space["4xl"] },
   fieldLabel: { color: theme.text2, ...theme.type.small, fontWeight: "700", marginBottom: theme.space.sm },
   input: { backgroundColor: theme.bg2, borderWidth: 1, borderColor: theme.lineSoft, borderRadius: theme.radiusSm, paddingHorizontal: theme.space.md, paddingVertical: theme.space.sm + 1, color: theme.text1, fontSize: 13.5 },
+  letraTextArea: { minHeight: 100, marginTop: theme.space.sm },
   chip: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: theme.space.md, backgroundColor: theme.bg2, borderWidth: 1, borderColor: theme.lineSoft, borderRadius: theme.radiusSm, padding: theme.space.md },
   chipTitle: { color: theme.text1, ...theme.type.bodyStrong },
   chipMeta: { color: theme.text3, ...theme.type.small, marginTop: 2 },

@@ -42,6 +42,15 @@ function PublishingHomeContent() {
           </h2>
           <p>Splits que cargaron los Project Managers, listos para revisar y enviar.</p>
         </Link>
+        <a
+          href="https://drive.google.com/drive/folders/1EM0_RaIe_T5FXLwQ98zj9l0k41Mx9zjx?usp=drive_link"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="pub-big-btn"
+        >
+          <h2>DD. JJ.</h2>
+          <p>Declaraciones juradas de cada artista.</p>
+        </a>
         <Link href="/panel/publishing/splits/historico" className="pub-big-btn">
           <h2>Histórico de splits</h2>
           <p>Todos los splits ya enviados, con buscador por canción o artista.</p>

@@ -19,6 +19,7 @@ export function createSplit(input: {
   catalogTrackId: string;
   letra: SplitPersonInput[];
   musica: SplitPersonInput[];
+  letraTexto?: string | null;
 }): Promise<{ split: EditorialSplit }> {
   return apiFetch("/api/pm/split-editorial", { method: "POST", body: JSON.stringify(input) });
 }

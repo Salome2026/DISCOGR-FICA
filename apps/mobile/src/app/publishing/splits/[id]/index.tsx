@@ -87,6 +87,13 @@ export default function SplitDetailScreen() {
               {split.estado === "Enviado" && split.sentAt ? `\nEnviado por ${split.sentBy} · ${formatDateTime(split.sentAt)}` : ""}
             </Text>
 
+            {split.letraTexto && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>LETRA (TEXTO PEGADO)</Text>
+                <Text style={styles.letraText}>{split.letraTexto}</Text>
+              </View>
+            )}
+
             <PersonList title="LETRA" people={split.letra} />
             <PersonList title="MÚSICA" people={split.musica} />
 
@@ -119,6 +126,7 @@ const styles = StyleSheet.create({
   meta: { color: theme.text3, ...theme.type.small, marginTop: theme.space.md, lineHeight: 18 },
   section: { marginTop: theme.space.xl },
   sectionTitle: { color: theme.text1, ...theme.type.h3, marginBottom: theme.space.sm },
+  letraText: { color: theme.text1, fontSize: 13.5, lineHeight: 19, backgroundColor: theme.bg2, borderWidth: 1, borderColor: theme.lineSoft, borderRadius: theme.radiusSm, padding: theme.space.md },
   personRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: theme.space.xs + 2, borderBottomWidth: 1, borderBottomColor: theme.lineSoft },
   personName: { color: theme.text1, fontSize: 13.5 },
   personPercent: { color: theme.text1, fontSize: 13.5 },

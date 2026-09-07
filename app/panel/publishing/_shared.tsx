@@ -22,7 +22,7 @@ export const PUBLISHING_STYLES = `
     padding-bottom: 5rem;
   }
   .pub-inner { max-width: 1180px; margin: 0 auto; padding: 2.5rem 2rem 0; }
-  .pub-inner.pub-home { max-width: 980px; }
+  .pub-inner.pub-home { max-width: 1320px; }
   .pub-topbar { display:flex; justify-content:space-between; align-items:flex-start; gap: 16px; margin-bottom: 1.75rem; flex-wrap: wrap; }
   .pub-back { background: none; border: none; color: var(--text-3); font-size: 12.5px; cursor: pointer; padding: 0; margin-bottom: 10px; display: inline-block; text-decoration: none; }
   .pub-kicker { font-size: 11px; color: var(--pub-accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }

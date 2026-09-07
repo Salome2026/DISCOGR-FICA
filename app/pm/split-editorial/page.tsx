@@ -501,6 +501,7 @@ function SplitEditorialForm() {
   const [letra, setLetra] = useState<Row[]>([newRow()]);
   const [musica, setMusica] = useState<Row[]>([newRow()]);
   const [letraDoc, setLetraDoc] = useState<{ url: string; nombre: string } | null>(null);
+  const [letraTexto, setLetraTexto] = useState("");
   const [uploadingLetra, setUploadingLetra] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -544,7 +545,8 @@ function SplitEditorialForm() {
       }
       return true;
     });
-  const canSubmit = !!track && letraSum === 5000 && musicaSum === 5000 && rowsReady(letra) && rowsReady(musica);
+  const hasLetraContent = !!letraDoc || letraTexto.trim().length > 0;
+  const canSubmit = !!track && letraSum === 5000 && musicaSum === 5000 && rowsReady(letra) && rowsReady(musica) && hasLetraContent;
 
   function toInput(rows: Row[]): SplitPersonInput[] {
     return rows.map((r) =>
@@ -584,6 +586,7 @@ function SplitEditorialForm() {
           musica: toInput(musica),
           letraUrl: letraDoc?.url ?? null,
           letraNombre: letraDoc?.nombre ?? null,
+          letraTexto: letraTexto.trim() || null,
         }),
       });
       const data = await res.json();
@@ -621,7 +624,7 @@ function SplitEditorialForm() {
             <div className="spx-section-title">ARCHIVOS</div>
             <div className="spx-attachments">
               <div>
-                <label className="spx-field-label">Documento de letra (opcional)</label>
+                <label className="spx-field-label">Letra — subí un documento o pegá el texto (obligatorio)</label>
                 <input
                   className="spx-input"
                   type="file"
@@ -631,6 +634,14 @@ function SplitEditorialForm() {
                 />
                 {uploadingLetra && <div className="spx-attachment-hint">Subiendo...</div>}
                 {letraDoc && !uploadingLetra && <div className="spx-attachment-hint ok">✓ {letraDoc.nombre}</div>}
+                <textarea
+                  className="spx-input"
+                  placeholder="...o pegá el texto de la letra acá"
+                  rows={5}
+                  style={{ marginTop: 8, resize: "vertical", fontFamily: "inherit" }}
+                  value={letraTexto}
+                  onChange={(e) => setLetraTexto(e.target.value)}
+                />
               </div>
               <div>
                 <label className="spx-field-label">Audio</label>

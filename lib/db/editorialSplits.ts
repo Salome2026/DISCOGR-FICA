@@ -34,6 +34,10 @@ export function ensureEditorialSplitsSchema(): Promise<void> {
       await sql`ALTER TABLE editorial_splits ADD COLUMN IF NOT EXISTS letra_url TEXT`;
       await sql`ALTER TABLE editorial_splits ADD COLUMN IF NOT EXISTS letra_nombre TEXT`;
       await sql`ALTER TABLE editorial_splits ADD COLUMN IF NOT EXISTS audio_url TEXT`;
+      // Alternativa a subir un documento — el PM puede pegar la letra
+      // directo como texto. Uno de los dos (letra_url o letra_texto) es
+      // obligatorio a partir de ahora, validado en la API, no acá.
+      await sql`ALTER TABLE editorial_splits ADD COLUMN IF NOT EXISTS letra_texto TEXT`;
     })();
   }
   return ready;
@@ -50,6 +54,7 @@ function rowToSplit(r: Record<string, unknown>): EditorialSplit {
     musica: (r.musica as SplitPerson[]) ?? [],
     letraUrl: (r.letra_url as string | null) ?? null,
     letraNombre: (r.letra_nombre as string | null) ?? null,
+    letraTexto: (r.letra_texto as string | null) ?? null,
     audioUrl: (r.audio_url as string | null) ?? null,
     estado: r.estado as "Pendiente" | "Enviado",
     createdBy: r.created_by as string,
@@ -186,6 +191,7 @@ export async function createSplit(input: {
   musica: SplitPersonInput[];
   letraUrl?: string | null;
   letraNombre?: string | null;
+  letraTexto?: string | null;
   audioUrl?: string | null;
   actorEmail: string;
 }): Promise<EditorialSplit> {
@@ -196,6 +202,9 @@ export async function createSplit(input: {
   const musicaSum = input.musica.reduce((s, p) => s + p.percentX100, 0);
   if (letraSum !== 5000 || musicaSum !== 5000) {
     throw new Error("Letra y música tienen que sumar 50% cada una antes de enviar.");
+  }
+  if (!input.letraUrl?.trim() && !input.letraTexto?.trim()) {
+    throw new Error("Subí un documento de letra o pegá el texto — es obligatorio.");
   }
 
   // Sequential, not Promise.all — two rows in the same request can name the
@@ -209,10 +218,10 @@ export async function createSplit(input: {
 
   const id = `spl-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const { rows } = await sql`
-    INSERT INTO editorial_splits (id, catalog_track_id, track_name, artist_display, sello, letra, musica, letra_url, letra_nombre, audio_url, estado, created_by)
+    INSERT INTO editorial_splits (id, catalog_track_id, track_name, artist_display, sello, letra, musica, letra_url, letra_nombre, letra_texto, audio_url, estado, created_by)
     VALUES (${id}, ${input.catalogTrackId}, ${input.trackName}, ${input.artistDisplay}, ${input.sello},
             ${JSON.stringify(letra)}::jsonb, ${JSON.stringify(musica)}::jsonb,
-            ${input.letraUrl ?? null}, ${input.letraNombre ?? null}, ${input.audioUrl ?? null}, 'Pendiente', ${input.actorEmail})
+            ${input.letraUrl ?? null}, ${input.letraNombre ?? null}, ${input.letraTexto ?? null}, ${input.audioUrl ?? null}, 'Pendiente', ${input.actorEmail})
     RETURNING *
   `;
   const split = rowToSplit(rows[0]);

@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { catalogTrackId, trackName, artistDisplay, sello, letra, musica, letraUrl, letraNombre } = body as {
+  const { catalogTrackId, trackName, artistDisplay, sello, letra, musica, letraUrl, letraNombre, letraTexto } = body as {
     catalogTrackId?: string | null;
     trackName?: string;
     artistDisplay?: string;
@@ -34,6 +34,7 @@ export async function POST(req: NextRequest) {
     musica?: unknown[];
     letraUrl?: string | null;
     letraNombre?: string | null;
+    letraTexto?: string | null;
   };
 
   // Sin catalogTrackId: el PM está cargando el split antes de que el
@@ -64,6 +65,9 @@ export async function POST(req: NextRequest) {
   if (!Array.isArray(musica) || !musica.every(isValidPersonInput) || musica.length === 0) {
     return NextResponse.json({ error: "Revisá las personas y porcentajes de música." }, { status: 400 });
   }
+  if (!letraUrl?.trim() && !letraTexto?.trim()) {
+    return NextResponse.json({ error: "Subí un documento de letra o pegá el texto — es obligatorio." }, { status: 400 });
+  }
 
   // El audio nunca lo manda el cliente: si esta canción viene de un
   // fonograma de PM (catalog_tracks.id = "pm-<id>"), ya se subió cuando se
@@ -87,6 +91,7 @@ export async function POST(req: NextRequest) {
       musica: musica as SplitPersonInput[],
       letraUrl: letraUrl?.trim() || null,
       letraNombre: letraNombre?.trim() || null,
+      letraTexto: letraTexto?.trim() || null,
       audioUrl,
       actorEmail: user.email,
     });

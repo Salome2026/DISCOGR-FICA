@@ -24,11 +24,51 @@ function ConfiguracionInner() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [criteria, setCriteria] = useState<string>("");
+  const [criteriaLoaded, setCriteriaLoaded] = useState(false);
+  const [savingCriteria, setSavingCriteria] = useState(false);
+  const [criteriaSaved, setCriteriaSaved] = useState(false);
+  const [criteriaError, setCriteriaError] = useState<string | null>(null);
+
   useEffect(() => {
     fetch("/api/ar/agent-status")
       .then((r) => r.json())
       .then((d) => setPersona(d.persona));
+    fetch("/api/ar/scouting-criteria")
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || "No se pudo cargar el documento de criterios.");
+        setCriteria(d.criteria?.text ?? "");
+        setCriteriaLoaded(true);
+      })
+      .catch((err) => setCriteriaError(err instanceof Error ? err.message : "Error desconocido."));
   }, []);
+
+  async function saveCriteria() {
+    if (!criteria.trim()) {
+      setCriteriaError("El documento no puede quedar vacío.");
+      return;
+    }
+    setSavingCriteria(true);
+    setCriteriaError(null);
+    setCriteriaSaved(false);
+    try {
+      const res = await fetch("/api/ar/scouting-criteria", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: criteria }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || "No se pudo guardar.");
+      setCriteria(d.criteria.text);
+      setCriteriaSaved(true);
+      setTimeout(() => setCriteriaSaved(false), 2500);
+    } catch (err) {
+      setCriteriaError(err instanceof Error ? err.message : "Error desconocido.");
+    } finally {
+      setSavingCriteria(false);
+    }
+  }
 
   async function handleAvatarChange(file: File) {
     setUploading(true);
@@ -135,6 +175,29 @@ function ConfiguracionInner() {
         {saved && <div style={{ color: "var(--good-ink)", fontSize: 13 }}>Guardado.</div>}
         <div>
           <button onClick={save} disabled={saving} style={primaryBtn}>{saving ? "Guardando..." : "Guardar cambios"}</button>
+        </div>
+
+        <div style={{ borderTop: "1px solid var(--line-soft)", paddingTop: 18, marginTop: 6 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, margin: 0 }}>Criterios de scouting</h2>
+          <p style={{ fontSize: 12.5, color: "var(--text-3)", marginTop: 4 }}>
+            Lo que el equipo de A&R busca en un candidato externo — se usa como vara real cada vez que se genera una evaluación de scouting.
+          </p>
+          {criteriaLoaded && (
+            <>
+              <textarea
+                value={criteria}
+                onChange={(e) => setCriteria(e.target.value)}
+                style={{ ...inputStyle, minHeight: 140, fontFamily: "inherit", resize: "vertical", marginTop: 10 }}
+              />
+              {criteriaError && <div style={{ color: "var(--crit-ink)", fontSize: 13, marginTop: 8 }}>{criteriaError}</div>}
+              {criteriaSaved && <div style={{ color: "var(--good-ink)", fontSize: 13, marginTop: 8 }}>Guardado.</div>}
+              <div style={{ marginTop: 10 }}>
+                <button onClick={saveCriteria} disabled={savingCriteria} style={primaryBtn}>
+                  {savingCriteria ? "Guardando..." : "Guardar criterios"}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

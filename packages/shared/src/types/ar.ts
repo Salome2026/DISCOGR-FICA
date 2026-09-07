@@ -95,12 +95,26 @@ export type ArCatalogRevivalNarrative = {
   estrategiaComercial: string;
 };
 
+// Evaluación de un candidato externo (subjectType="artist_external") contra
+// el documento de criterios de scouting vigente y decisiones pasadas reales
+// — memoria institucional, no un descubrimiento automático (no hay API de
+// "artistas similares" en ninguna fuente integrada).
+export type ArScoutingAssessment = {
+  fitConCriterios: string;
+  señalesPositivas: string[];
+  señalesDeAlerta: string[];
+  comparableConDecisionesPasadas: string;
+  recomendacion: string;
+  generatedAt: string;
+};
+
 export type ArNarrative = {
   queEstaPasando?: string;
   porQueImporta?: string;
   impactoArgentina?: string;
   recomendacion?: string;
   catalogRevival?: ArCatalogRevivalNarrative;
+  scoutingAssessment?: ArScoutingAssessment;
   generatedAt: string;
 };
 

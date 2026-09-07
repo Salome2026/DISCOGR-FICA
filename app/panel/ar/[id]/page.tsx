@@ -330,6 +330,55 @@ function ArDetailContent({ id }: { id: string }) {
               </div>
             )}
           </Section>
+        ) : opportunity.subjectType === "artist_external" ? (
+          <Section title="Evaluación de scouting">
+            {opportunity.narrative?.scoutingAssessment ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-3)", marginBottom: 4 }}>FIT CON CRITERIOS</div>
+                  <div style={{ fontSize: 13.5 }}>{opportunity.narrative.scoutingAssessment.fitConCriterios}</div>
+                </div>
+                {opportunity.narrative.scoutingAssessment.señalesPositivas.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-3)", marginBottom: 4 }}>SEÑALES POSITIVAS</div>
+                    <ul style={{ margin: 0, paddingLeft: 18 }}>
+                      {opportunity.narrative.scoutingAssessment.señalesPositivas.map((s, i) => <li key={i} style={{ fontSize: 13 }}>{s}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {opportunity.narrative.scoutingAssessment.señalesDeAlerta.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-3)", marginBottom: 4 }}>SEÑALES DE ALERTA</div>
+                    <ul style={{ margin: 0, paddingLeft: 18 }}>
+                      {opportunity.narrative.scoutingAssessment.señalesDeAlerta.map((s, i) => <li key={i} style={{ fontSize: 13 }}>{s}</li>)}
+                    </ul>
+                  </div>
+                )}
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-3)", marginBottom: 4 }}>COMPARABLE CON DECISIONES PASADAS</div>
+                  <div style={{ fontSize: 13.5 }}>{opportunity.narrative.scoutingAssessment.comparableConDecisionesPasadas}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "var(--text-3)", marginBottom: 4 }}>RECOMENDACIÓN</div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700 }}>{opportunity.narrative.scoutingAssessment.recomendacion}</div>
+                </div>
+                <div>
+                  <GhostButton onClick={handleGenerateNarrative} disabled={generatingNarrative || !canEdit}>
+                    {generatingNarrative ? "Generando..." : "↻ Regenerar evaluación"}
+                  </GhostButton>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-start" }}>
+                <Empty />
+                {canEdit && (
+                  <GhostButton onClick={handleGenerateNarrative} disabled={generatingNarrative}>
+                    {generatingNarrative ? "Generando..." : "✦ Generar evaluación de scouting"}
+                  </GhostButton>
+                )}
+              </div>
+            )}
+          </Section>
         ) : (
           <>
             <Section title="Qué está pasando">

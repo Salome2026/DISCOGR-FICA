@@ -117,6 +117,7 @@ function ArContent() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<ArCategory | "">("");
   const [statusFilter, setStatusFilter] = useState<ArStatus | "">("");
+  const [onlyScouting, setOnlyScouting] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scanMsg, setScanMsg] = useState<string | null>(null);
   const [scanningCatalog, setScanningCatalog] = useState(false);
@@ -179,12 +180,13 @@ function ArContent() {
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     return opportunities.filter((o) => {
+      if (onlyScouting && o.subjectType !== "artist_external") return false;
       if (categoryFilter && o.category !== categoryFilter) return false;
       if (statusFilter && o.status !== statusFilter) return false;
       if (q && !o.title.toLowerCase().includes(q) && !o.subjectName.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [opportunities, search, categoryFilter, statusFilter]);
+  }, [opportunities, search, categoryFilter, statusFilter, onlyScouting]);
 
   return (
     <div className="bg-atmosphere" style={{ minHeight: "100vh", padding: "2.5rem 2rem", fontFamily: "var(--font-display)" }}>
@@ -280,6 +282,13 @@ function ArContent() {
               <option key={s} value={s}>{s}</option>
             ))}
           </select>
+          <button
+            type="button"
+            onClick={() => setOnlyScouting((v) => !v)}
+            style={onlyScouting ? primaryBtn : ghostBtn}
+          >
+            Scouting
+          </button>
         </div>
 
         {!loading && visible.length === 0 && (

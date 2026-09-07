@@ -418,6 +418,27 @@ export async function setOpportunityNarrative(id: string, narrative: ArNarrative
   return rows[0] ? rowToOpportunity(rows[0]) : null;
 }
 
+// Decisiones de scouting reales recientes — candidatos externos ya
+// evaluados (contactados, descartados o incorporados), con su último
+// comentario si hay uno. Sirven de ejemplos few-shot reales para
+// lib/arScouting.ts, nunca inventados. `excludeId` se excluye en el SQL (no
+// filtrando después) para no perder un cupo del límite cuando se está
+// re-evaluando un candidato que él mismo ya tiene una decisión tomada.
+export async function getRecentScoutingDecisions(limit: number, excludeId?: string): Promise<{ opportunity: ArOpportunity; lastComment: string | null }[]> {
+  await ensureArOpportunitiesSchema();
+  const { rows } = await sql`
+    SELECT o.*,
+      (SELECT body FROM ar_opportunity_comments c WHERE c.opportunity_id = o.id ORDER BY c.created_at DESC LIMIT 1) AS last_comment
+    FROM ar_opportunities o
+    WHERE o.subject_type = 'artist_external'
+      AND o.status IN ('CONTACTADO', 'DESCARTADO', 'INCORPORADO')
+      AND (${excludeId ?? null}::text IS NULL OR o.id <> ${excludeId ?? null})
+    ORDER BY o.updated_at DESC NULLS LAST, o.created_at DESC
+    LIMIT ${limit}
+  `;
+  return rows.map((r) => ({ opportunity: rowToOpportunity(r), lastComment: (r.last_comment as string | null) ?? null }));
+}
+
 // Shared visibility check — admin/ar see every opportunity, anyone else
 // (a PM) only sees ones assigned to them. Used by every route under
 // app/api/ar/[id]/**, not just GET, so a PM can't read or write an

@@ -3,16 +3,21 @@ import { getSessionUser } from "@/lib/session";
 import { hasPermission } from "@/lib/permissions";
 import { getOpportunity, canSeeOpportunity } from "@/lib/db/arOpportunities";
 import { generateCatalogRevivalNarrative } from "@/lib/arCatalogRevival";
+import { generateScoutingAssessment } from "@/lib/arScouting";
 import { geminiConfigured } from "@/lib/gemini";
-import { withTimeout } from "@/lib/withTimeout";
+import { raceTimeout, TimeoutError } from "@/lib/withTimeout";
 
 export const maxDuration = 90;
 
-// Generic "generate/regenerate narrative" endpoint, dispatched by category —
-// one route for every Gemini-narrated opportunity type instead of one route
-// per category. Only OPORTUNIDAD DE CATÁLOGO has a real generator today;
-// later fases (market snapshot, scouting, artist profiles) add their own
-// branch here rather than a new top-level route.
+// Generic "generate/regenerate narrative" endpoint, dispatched by subject
+// type / category — one route for every Gemini-narrated opportunity type
+// instead of one route per type. subjectType se chequea antes que category:
+// subjectType describe el hecho real del sujeto (nunca lo edita a mano
+// nadie salvo al cargar el hallazgo), mientras que category es más una
+// etiqueta de flujo — si alguien cargó un hallazgo con
+// category="OPORTUNIDAD DE CATÁLOGO" pero subjectType="artist_external"
+// (posible desde /panel/ar/nuevo, son selects independientes), el sujeto
+// real manda: es un candidato externo, no un track de catálogo.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await getSessionUser(req);
   if (!user || !hasPermission(user, "editar_ar")) {
@@ -31,11 +36,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   try {
+    if (opportunity.subjectType === "artist_external") {
+      const scoutingAssessment = await raceTimeout(generateScoutingAssessment(id), 60_000);
+      return NextResponse.json({ scoutingAssessment });
+    }
     if (opportunity.category === "OPORTUNIDAD DE CATÁLOGO") {
-      const catalogRevival = await withTimeout(generateCatalogRevivalNarrative(id), 60_000);
-      if (!catalogRevival) {
-        return NextResponse.json({ error: "Gemini no respondió a tiempo (60s) — probá de nuevo en un rato." }, { status: 504 });
-      }
+      const catalogRevival = await raceTimeout(generateCatalogRevivalNarrative(id), 60_000);
       return NextResponse.json({ catalogRevival });
     }
     return NextResponse.json(
@@ -43,6 +49,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       { status: 400 }
     );
   } catch (err) {
+    if (err instanceof TimeoutError) {
+      return NextResponse.json({ error: "Gemini no respondió a tiempo (60s) — probá de nuevo en un rato." }, { status: 504 });
+    }
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "No se pudo generar el análisis." },
       { status: 500 }

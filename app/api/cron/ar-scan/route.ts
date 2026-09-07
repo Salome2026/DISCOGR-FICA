@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { scanLabelRosterGrowth } from "@/lib/arSignalScan";
 import { scanCatalogRevivalOpportunities } from "@/lib/arCatalogRevival";
+import { detectProducerRepeats, detectStalledArtists } from "@/lib/arAlertDetectors";
 import { generateMarketSnapshot } from "@/lib/arMarketIntelligence";
 import { geminiConfigured } from "@/lib/gemini";
 import { withTimeout } from "@/lib/withTimeout";
@@ -40,6 +41,18 @@ export async function GET(req: NextRequest) {
     steps.catalogRevival = await scanCatalogRevivalOpportunities();
   } catch (err) {
     steps.catalogRevival = { error: err instanceof Error ? err.message : String(err) };
+  }
+
+  await setAgentStatus("detectando_alertas", "Buscando productores repetidos y artistas estancados").catch(() => {});
+  try {
+    steps.producerRepeats = await detectProducerRepeats();
+  } catch (err) {
+    steps.producerRepeats = { error: err instanceof Error ? err.message : String(err) };
+  }
+  try {
+    steps.stalledArtists = await detectStalledArtists();
+  } catch (err) {
+    steps.stalledArtists = { error: err instanceof Error ? err.message : String(err) };
   }
 
   if (geminiConfigured()) {

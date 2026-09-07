@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSessionUser } from "@/lib/session";
 import { hasPermission } from "@/lib/permissions";
 import { listGenreTrendSignals, createGenreTrendSignal, type ArGenreTrendDirection } from "@/lib/db/arGenreTrends";
+import { createAlertIfNew } from "@/lib/db/arAlerts";
+import { normalizeName } from "@/lib/participants";
 
 const DIRECTIONS: ArGenreTrendDirection[] = ["growing", "declining", "stable"];
 
@@ -46,5 +48,21 @@ export async function POST(req: NextRequest) {
     evidenceUrl: body.evidenceUrl?.trim() || null,
     reportedBy: user.email,
   });
+
+  if (signal.trendDirection === "growing") {
+    // dedupeKey por género normalizado, no por signal.id — cada reporte
+    // inserta una fila nueva en ar_genre_trend_signals (createGenreTrendSignal
+    // nunca hace upsert), así que un id siempre sería único y el dedupe no
+    // serviría de nada. La alerta nunca debe tumbar esta respuesta: el
+    // género ya quedó guardado igual, perder solo la notificación es
+    // aceptable.
+    await createAlertIfNew({
+      alertType: "genre_trending",
+      severity: "info",
+      message: `Se reportó "${signal.genre}" como género en crecimiento (fuente: ${signal.sourceType}).`,
+      dedupeKey: `genre_trending:${normalizeName(signal.genre)}`,
+    }).catch(() => {});
+  }
+
   return NextResponse.json({ signal });
 }

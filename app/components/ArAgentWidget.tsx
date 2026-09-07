@@ -14,6 +14,7 @@ const STATE_LABELS: Record<string, string> = {
   idle: "En línea",
   scanning_roster: "Revisando el roster propio",
   scanning_catalog: "Revisando el catálogo",
+  detectando_alertas: "Buscando alertas nuevas",
   preparando_resumen: "Preparando el resumen del día",
 };
 

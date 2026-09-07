@@ -52,7 +52,7 @@ export async function setAgentPersona(
   return persona;
 }
 
-export type ArAgentState = "idle" | "scanning_roster" | "scanning_catalog" | "preparando_resumen";
+export type ArAgentState = "idle" | "scanning_roster" | "scanning_catalog" | "detectando_alertas" | "preparando_resumen";
 
 export type ArAgentStatus = {
   state: ArAgentState;

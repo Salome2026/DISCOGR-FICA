@@ -5,6 +5,7 @@ import { listActiveGrowingGenreTrends, type ArGenreTrendSignal } from "@/lib/db/
 import { findCompatibleRosterArtistsForGenre } from "@/lib/arCompatibility";
 import { computeScore } from "@/lib/arScoring";
 import { upsertAutoOpportunity, findOpenOpportunityBySubject, getOpportunity, setOpportunityNarrative } from "@/lib/db/arOpportunities";
+import { createAlertIfNew } from "@/lib/db/arAlerts";
 import type { ArCatalogRevivalNarrative } from "@discografica/shared/types/ar";
 
 // Real catalog tracks in this genre that are actually ours (excludes
@@ -55,7 +56,7 @@ export async function scanCatalogRevivalOpportunities(): Promise<{ scanned: numb
       });
 
       const existingBefore = await findOpenOpportunityBySubject("track_label", track.id);
-      await upsertAutoOpportunity({
+      const opportunity = await upsertAutoOpportunity({
         category: "OPORTUNIDAD DE CATÁLOGO",
         title: `"${track.track}" (${track.artist_display}) podría revivir — ${trend.genre} está creciendo`,
         subjectType: "track_label",
@@ -86,8 +87,21 @@ export async function scanCatalogRevivalOpportunities(): Promise<{ scanned: numb
         ],
       });
 
-      if (existingBefore) updated++;
-      else created++;
+      if (existingBefore) {
+        updated++;
+      } else {
+        created++;
+        // Una alerta que falla nunca debe tumbar el escaneo — la
+        // oportunidad de arriba ya se guardó, perder solo la alerta
+        // puntual es aceptable.
+        await createAlertIfNew({
+          opportunityId: opportunity.id,
+          alertType: "catalog_track_relevant",
+          severity: "info",
+          message: `"${track.track}" (${track.artist_display}) es candidato a revival — ${trend.genre} está creciendo.`,
+          dedupeKey: `catalog_track_relevant:${track.id}`,
+        }).catch(() => {});
+      }
     }
   }
 

@@ -121,6 +121,14 @@ function ArContent() {
   const [scanMsg, setScanMsg] = useState<string | null>(null);
   const [scanningCatalog, setScanningCatalog] = useState(false);
   const [scanCatalogMsg, setScanCatalogMsg] = useState<string | null>(null);
+  const [alertCount, setAlertCount] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/ar/alerts")
+      .then((r) => r.json())
+      .then((d: { alerts?: unknown[] }) => setAlertCount(d.alerts?.length ?? 0))
+      .catch(() => {});
+  }, []);
 
   function load() {
     setLoading(true);
@@ -202,6 +210,14 @@ function ArContent() {
             </p>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
+            <Link href="/panel/ar/alertas" style={{ ...ghostBtn, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}>
+              Alertas
+              {alertCount > 0 && (
+                <span style={{ background: "var(--crit-bg)", color: "var(--crit-ink)", borderRadius: 999, fontSize: 11, fontWeight: 700, padding: "1px 7px" }}>
+                  {alertCount}
+                </span>
+              )}
+            </Link>
             {canEdit && (
               <Link href="/panel/ar/nuevo" style={{ ...primaryBtn, textDecoration: "none", display: "inline-block" }}>
                 + Cargar hallazgo

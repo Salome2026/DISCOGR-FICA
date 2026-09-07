@@ -3,6 +3,7 @@ import { upsertAutoOpportunity, findOpenOpportunityBySubject } from "@/lib/db/ar
 import { computeScore } from "@/lib/arScoring";
 import { crossReferenceArtist } from "@/lib/arCompatibility";
 import { assignSello } from "@discografica/shared/sellos";
+import { createAlertIfNew, getAlertThresholds } from "@/lib/db/arAlerts";
 
 // A minimum real move, not noise — an artist has to actually be up at
 // least 8% week-over-week to become a candidate. Below that, nothing gets
@@ -18,6 +19,7 @@ const MIN_GROWTH_PCT = 0.08;
 // growing responsibilities it wasn't built for.
 export async function scanLabelRosterGrowth(): Promise<{ scanned: number; created: number; updated: number }> {
   const ranking = await getRankingLatest();
+  const thresholds = await getAlertThresholds();
   let created = 0;
   let updated = 0;
 
@@ -40,7 +42,7 @@ export async function scanLabelRosterGrowth(): Promise<{ scanned: number; create
     const sello = row.sello ?? assignSello(row.artist_name);
     const existingBefore = await findOpenOpportunityBySubject("artist_label", row.artist_id);
 
-    await upsertAutoOpportunity({
+    const opportunity = await upsertAutoOpportunity({
       category: "ARTISTA EN CRECIMIENTO",
       title: `${row.artist_name} está creciendo ${Math.round(growthPct * 100)}% esta semana`,
       subjectType: "artist_label",
@@ -70,6 +72,21 @@ export async function scanLabelRosterGrowth(): Promise<{ scanned: number; create
         },
       ],
     });
+
+    // Un piso más alto que el que ya crea la oportunidad — "está creciendo"
+    // no es lo mismo que "está explotando", y solo lo segundo merece una
+    // alerta aparte.
+    if (growthPct >= thresholds.explodingGrowthPct) {
+      // Una alerta que falla nunca debe tumbar el escaneo — la oportunidad
+      // de arriba ya se guardó, perder solo la alerta puntual es aceptable.
+      await createAlertIfNew({
+        opportunityId: opportunity.id,
+        alertType: "artist_exploding",
+        severity: "warning",
+        message: `${row.artist_name} está explotando: +${Math.round(growthPct * 100)}% de oyentes mensuales esta semana.`,
+        dedupeKey: `artist_exploding:${row.artist_id}`,
+      }).catch(() => {});
+    }
 
     if (existingBefore) updated++;
     else created++;

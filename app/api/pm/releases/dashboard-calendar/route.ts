@@ -4,6 +4,15 @@ import { getSessionUser } from "@/lib/session";
 import { listAllReleases } from "@/lib/db/releases";
 import { ensureFonogramasSheetSchema } from "@/lib/db/fonogramasSheet";
 import { getArtistImagesByNames } from "@/lib/db/listeners";
+import { normalizeName } from "@/lib/participants";
+
+// Same Date-object gotcha as everywhere else @vercel/postgres is used for a
+// DATE column (see lib/db/op*.ts) — fecha_lanzamiento comes back as a JS
+// Date, not a string, until it's JSON-serialized.
+function toDateKey(v: unknown): string {
+  if (v instanceof Date) return v.toISOString().slice(0, 10);
+  return String(v).slice(0, 10);
+}
 
 // Merges the PM-created pipeline (pm_releases, task-tracked, editable) with
 // the external "Fonogramas MAWZ & INDYANA" sheet (read-only catalog synced
@@ -22,31 +31,54 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const pmReleases = (await listAllReleases()) as { artist_name: string }[];
+  const pmReleases = (await listAllReleases()) as {
+    artist_name: string;
+    fonograma_nombre: string;
+    fecha_lanzamiento: unknown;
+  }[];
 
   await ensureFonogramasSheetSchema();
   const { rows: sheetRows } = await sql`
     SELECT * FROM sheet_fonogramas WHERE release_date IS NOT NULL
   `;
 
-  const sheetAsReleases = sheetRows.map((r) => ({
-    id: 1_000_000_000 + Number(r.seq),
-    artist_name: r.track_artist as string,
-    sello: (r.sello as string | null) ?? null,
-    fonograma_nombre: r.track as string,
-    estado: "Publicado",
-    distribuidora: (r.provider as string | null) ?? null,
-    fecha_lanzamiento: r.release_date,
-    hora_lanzamiento: null,
-    colaboradores: null,
-    group_id: null,
-    group_tipo: null,
-    group_nombre: null,
-    marketing_plan: false,
-    marketing_plan_detalle: null,
-    portada_url: null,
-    source: "sheet" as const,
-  }));
+  // Dedup against pm_releases: the same phonogram loaded via the PM release
+  // form also shows up in the synced "Fonogramas MAWZ & INDYANA" sheet —
+  // without this, every one of those appeared twice on the calendar (same
+  // root cause already fixed for the dashboard's fonogramas total in
+  // /api/catalog/dashboard-tracks and, earlier, for Management's own
+  // calendar in lib/db/managementReleases.ts). Matched by normalized
+  // artist+track+date, same key managementReleases.ts already proved works
+  // across these two sources.
+  const pmKeys = new Set(
+    pmReleases.map(
+      (r) => `${normalizeName(r.artist_name)}|${normalizeName(r.fonograma_nombre)}|${toDateKey(r.fecha_lanzamiento)}`
+    )
+  );
+
+  const sheetAsReleases = sheetRows
+    .filter((r) => {
+      const key = `${normalizeName((r.track_artist as string) ?? "")}|${normalizeName(r.track as string)}|${toDateKey(r.release_date)}`;
+      return !pmKeys.has(key);
+    })
+    .map((r) => ({
+      id: 1_000_000_000 + Number(r.seq),
+      artist_name: r.track_artist as string,
+      sello: (r.sello as string | null) ?? null,
+      fonograma_nombre: r.track as string,
+      estado: "Publicado",
+      distribuidora: (r.provider as string | null) ?? null,
+      fecha_lanzamiento: r.release_date,
+      hora_lanzamiento: null,
+      colaboradores: null,
+      group_id: null,
+      group_tipo: null,
+      group_nombre: null,
+      marketing_plan: false,
+      marketing_plan_detalle: null,
+      portada_url: null,
+      source: "sheet" as const,
+    }));
 
   // Spotify profile photo per artist, for the calendar chip avatar — reuses
   // the same Chartmetric-synced images already shown in "Ranking de

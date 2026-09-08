@@ -20,9 +20,9 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { pmReleaseId, trackName, artistDisplay, sello, fechaLanzamiento, tipo, participants } = body as {
+  const { pmReleaseId, trackName, artistDisplay, sello, fechaLanzamiento, tipo, participants, comentario } = body as {
     pmReleaseId?: number | null; trackName?: string; artistDisplay?: string; sello?: string | null;
-    fechaLanzamiento?: string | null; tipo?: string; participants?: unknown[];
+    fechaLanzamiento?: string | null; tipo?: string; participants?: unknown[]; comentario?: string | null;
   };
 
   if (!trackName?.trim() || !artistDisplay?.trim()) {
@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
       fechaLanzamiento: fechaLanzamiento || null,
       tipo: tipo as (typeof RELEASE_TIPOS)[number],
       participants: participants as ReleaseParticipant[],
+      comentario: comentario?.trim() || null,
       actorEmail: user.email,
     });
     return NextResponse.json({ request });

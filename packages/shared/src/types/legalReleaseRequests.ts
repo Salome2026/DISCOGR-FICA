@@ -30,6 +30,7 @@ export type LegalReleaseRequest = {
   tipo: ReleaseTipo | null;
   participants: ReleaseParticipant[];
   estado: "Pendiente de envío" | "Enviado";
+  comentario: string | null;
   createdBy: string;
   createdAt: string;
   sentBy: string | null;

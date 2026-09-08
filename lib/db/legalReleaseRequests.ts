@@ -49,6 +49,10 @@ export function ensureLegalReleaseRequestsSchema(): Promise<void> {
         SET sent_by = reviewed_by, sent_at = reviewed_at, estado = 'Enviado'
         WHERE estado = 'Revisado'
       `;
+      // Comentario libre y opcional del PM al enviar el Release — nota para
+      // Legal (ej. "falta el DNI de uno de los participantes, lo mando por
+      // separado"). Nullable, nunca obligatorio.
+      await sql`ALTER TABLE legal_release_requests ADD COLUMN IF NOT EXISTS comentario TEXT`;
     })();
   }
   return ready;
@@ -75,6 +79,7 @@ function rowToRequest(r: Record<string, unknown>): LegalReleaseRequest {
       : null,
     participants: (r.participants as ReleaseParticipant[]) ?? [],
     estado: r.estado as "Pendiente de envío" | "Enviado",
+    comentario: (r.comentario as string | null) ?? null,
     createdBy: r.created_by as string,
     createdAt: r.created_at as string,
     sentBy: (r.sent_by as string | null) ?? null,
@@ -120,6 +125,7 @@ export async function createReleaseRequest(input: {
   fechaLanzamiento: string | null;
   tipo: LegalReleaseRequest["tipo"];
   participants: ReleaseParticipant[];
+  comentario: string | null;
   actorEmail: string;
 }): Promise<LegalReleaseRequest> {
   await ensureLegalReleaseRequestsSchema();
@@ -145,10 +151,10 @@ export async function createReleaseRequest(input: {
   const id = `rlr-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const { rows } = await sql`
     INSERT INTO legal_release_requests
-      (id, pm_release_id, track_name, artist_display, sello, fecha_lanzamiento, tipo, participants, estado, created_by)
+      (id, pm_release_id, track_name, artist_display, sello, fecha_lanzamiento, tipo, participants, comentario, estado, created_by)
     VALUES
       (${id}, ${input.pmReleaseId}, ${input.trackName}, ${input.artistDisplay}, ${input.sello}, ${input.fechaLanzamiento}, ${input.tipo},
-       ${JSON.stringify(input.participants)}::jsonb, 'Pendiente de envío', ${input.actorEmail})
+       ${JSON.stringify(input.participants)}::jsonb, ${input.comentario}, 'Pendiente de envío', ${input.actorEmail})
     RETURNING *
   `;
   const request = rowToRequest(rows[0]);

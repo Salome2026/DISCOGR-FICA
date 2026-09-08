@@ -27,6 +27,7 @@ function useDebounced(value: string, delay = 250): string {
 const RLX_STYLES = `
   .rlx-field-label { font-size:12.5px; color:var(--text-2); margin-bottom:6px; display:block; font-weight:600; }
   .rlx-input { width:100%; background:var(--bg-2); border:1px solid var(--line-soft); border-radius:8px; padding:9px 12px; color:var(--text-1); font-size:13.5px; }
+  .rlx-textarea { width:100%; background:var(--bg-2); border:1px solid var(--line-soft); border-radius:8px; padding:9px 12px; color:var(--text-1); font-size:13.5px; font-family:inherit; resize:vertical; min-height:70px; }
   .rlx-row { display:flex; gap:10px; margin-bottom:12px; }
   .rlx-row > div { flex:1; }
 
@@ -182,6 +183,7 @@ export default function ReleaseForm({ pmReleaseId }: { pmReleaseId: number | nul
   const [fecha, setFecha] = useState("");
   const [tipo, setTipo] = useState<ReleaseTipo | "">("");
   const [participants, setParticipants] = useState<ParticipantRow[]>([newParticipant()]);
+  const [comentario, setComentario] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
@@ -241,6 +243,7 @@ export default function ReleaseForm({ pmReleaseId }: { pmReleaseId: number | nul
             email: p.email.trim() || null,
             percentX100: parsePercent(p.percentRaw) ?? 0,
           })),
+          comentario: comentario.trim() || null,
         }),
       });
       const data = await res.json();
@@ -378,6 +381,16 @@ export default function ReleaseForm({ pmReleaseId }: { pmReleaseId: number | nul
         <div className={`rlx-total ${sum === 10000 ? "ok" : "off"}`}>
           {sum === 10000 ? `${formatX100(sum)}% / 100% ✓` : `${formatX100(sum)}% / 100%`}
         </div>
+      </div>
+
+      <div className="rlx-section">
+        <label className="rlx-field-label">Comentario para Legales (opcional)</label>
+        <textarea
+          className="rlx-textarea"
+          placeholder="Alguna aclaración para quien recibe este Release..."
+          value={comentario}
+          onChange={(e) => setComentario(e.target.value)}
+        />
       </div>
 
       {error && <div className="rlx-error">{error}</div>}

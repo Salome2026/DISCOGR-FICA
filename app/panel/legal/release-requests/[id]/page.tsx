@@ -24,6 +24,7 @@ type LegalReleaseRequest = {
   tipo: "Artista" | "Sello" | "PPD" | null;
   participants: ReleaseParticipant[];
   estado: "Pendiente de envío" | "Enviado";
+  comentario: string | null;
   createdBy: string;
   createdAt: string;
   sentBy: string | null;
@@ -125,6 +126,13 @@ function ReleaseRequestDetail({ id }: { id: string }) {
           </>
         )}
       </div>
+
+      {request.comentario && (
+        <div className="rlr-detail-section">
+          <div className="rlr-detail-title">COMENTARIO</div>
+          <div style={{ fontSize: 13.5, whiteSpace: "pre-wrap" }}>{request.comentario}</div>
+        </div>
+      )}
 
       <div className="rlr-detail-section">
         <div className="rlr-detail-title">PARTICIPANTES</div>

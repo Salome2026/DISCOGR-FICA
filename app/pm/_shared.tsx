@@ -7,7 +7,22 @@ import { upload } from "@vercel/blob/client";
 
 export const PM_STYLES = `
   .pmx-root { font-family: var(--font-display); color: var(--text-1); min-height: 100vh; padding-bottom: 5rem; }
-  .pmx-inner { max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem 0; }
+  .pmx-watermark {
+    position: fixed; top: 0; left: 0; z-index: 0;
+    max-width: 50vw;
+    overflow: hidden;
+    font-size: clamp(36px, 4.5vw, 64px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--text-1);
+    opacity: 0.05;
+    transform: translate(-2%, -10%);
+    pointer-events: none;
+    user-select: none;
+  }
+  .pmx-inner { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 2.5rem 2rem 0; }
   .pmx-inner.pmx-home { max-width: 1800px; }
   .pmx-topbar { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:1.75rem; flex-wrap:wrap; }
   .pmx-back { background:none; border:none; color:var(--text-3); font-size:12.5px; cursor:pointer; padding:0; margin-bottom:10px; display:inline-block; text-decoration:none; }
@@ -129,6 +144,7 @@ export function PMShell({
   return (
     <div className="pmx-root bg-atmosphere">
       <style>{PM_STYLES}</style>
+      <div className="pmx-watermark" aria-hidden>PROJECT MANAGER</div>
       <div className={`pmx-inner ${homeMaxWidth ? "pmx-home" : ""}`}>
         <div className="pmx-topbar">
           <div className="pmx-header-left">

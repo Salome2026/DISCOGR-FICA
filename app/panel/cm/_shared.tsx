@@ -6,11 +6,27 @@ import { signOut } from "next-auth/react";
 import { CM_TIPOS_CONTENIDO, CM_ESTADOS, CM_PLATAFORMAS } from "@/lib/cmContentConstants";
 
 // Diseño pedido explícitamente para este módulo: serio, corporativo,
-// minimalista, blanco y negro, sin el efecto "glass"/watermark decorativo
-// que usan otros paneles — cuadros planos, bordes finos, cero blur.
+// minimalista, blanco y negro, cuadros planos, bordes finos, cero blur —
+// la marca de agua de fondo (mismo mecanismo liviano que el resto de los
+// módulos) no rompe ese lenguaje, solo el efecto "glass" queda afuera.
 export const CM_STYLES = `
-  .cm-root { font-family: var(--font-display); color: var(--text-1); min-height: 100vh; padding-bottom: 4rem; background: var(--bg-1); }
-  .cm-inner { max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem 0; }
+  .cm-root { position: relative; font-family: var(--font-display); color: var(--text-1); min-height: 100vh; padding-bottom: 4rem; background: var(--bg-1); }
+  .cm-watermark {
+    position: fixed; top: 0; left: 0; z-index: 0;
+    max-width: 50vw;
+    overflow: hidden;
+    font-size: clamp(36px, 4.5vw, 64px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--text-1);
+    opacity: 0.05;
+    transform: translate(-2%, -10%);
+    pointer-events: none;
+    user-select: none;
+  }
+  .cm-inner { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 2.5rem 2rem 0; }
   .cm-topbar { display:flex; justify-content:space-between; align-items:flex-start; gap: 16px; margin-bottom: 1.75rem; flex-wrap: wrap; }
   .cm-title { font-size: 25px; font-weight: 700; margin: 0; letter-spacing: -.01em; }
   .cm-subtitle { font-size: 14px; font-weight: 500; color: var(--text-2); margin-top: 4px; }
@@ -281,6 +297,7 @@ export function CmShell({
   return (
     <div className="cm-root">
       <style>{CM_STYLES}</style>
+      <div className="cm-watermark" aria-hidden>COMMUNITY MANAGER</div>
       <div className="cm-inner">
         <div className="cm-topbar">
           <div>

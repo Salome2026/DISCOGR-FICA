@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import RequirePermission from "@/app/components/RequirePermission";
+import ModuleWatermark from "@/app/components/ModuleWatermark";
 
 type PendingTrack = {
   id: number;
@@ -121,7 +122,8 @@ function IngestContent() {
 
   return (
     <div className="bg-atmosphere" style={{ minHeight: "100vh", padding: "2.5rem 2rem", fontFamily: "var(--font-display)" }}>
-      <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
+      <ModuleWatermark text="PLAYLISTS" />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", gap: 24 }}>
         <div>
           <h1
             style={{

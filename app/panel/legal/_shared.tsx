@@ -55,7 +55,22 @@ export const LEGAL_STYLES = `
     min-height: 100vh;
     padding-bottom: 5rem;
   }
-  .legal-inner { max-width: 1180px; margin: 0 auto; padding: 2.5rem 2rem 0; }
+  .legal-watermark {
+    position: fixed; top: 0; left: 0; z-index: 0;
+    max-width: 50vw;
+    overflow: hidden;
+    font-size: clamp(48px, 6vw, 84px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--text-1);
+    opacity: 0.05;
+    transform: translate(-2%, -10%);
+    pointer-events: none;
+    user-select: none;
+  }
+  .legal-inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 2.5rem 2rem 0; }
   .legal-inner.legal-home { max-width: 980px; }
   .legal-topbar { display:flex; justify-content:space-between; align-items:flex-start; gap: 16px; margin-bottom: 1.75rem; flex-wrap: wrap; }
   .legal-back { background: none; border: none; color: var(--text-3); font-size: 12.5px; cursor: pointer; padding: 0; margin-bottom: 10px; display: inline-block; text-decoration: none; }
@@ -183,6 +198,7 @@ export function LegalShell({
   return (
     <div className="legal-root bg-atmosphere">
       <style>{LEGAL_STYLES}</style>
+      <div className="legal-watermark" aria-hidden>LEGAL</div>
       <div className={`legal-inner ${homeMaxWidth ? "legal-home" : ""}`}>
         <div className="legal-topbar">
           <div>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import RequirePermission from "@/app/components/RequirePermission";
+import ModuleWatermark from "@/app/components/ModuleWatermark";
 import { SELLOS } from "@discografica/shared/sellos";
 import { AR_CATEGORIES, AR_SUBJECT_TYPES, type ArCategory, type ArSubjectType, type ArOpportunityInput } from "@discografica/shared/types/ar";
 
@@ -67,7 +68,8 @@ function ArNuevoContent() {
 
   return (
     <div className="bg-atmosphere" style={{ minHeight: "100vh", padding: "2.5rem 2rem", fontFamily: "var(--font-display)" }}>
-      <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
+      <ModuleWatermark text="A&R" />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 560, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
         <Link href="/panel/ar" style={{ color: "var(--text-3)", fontSize: 13, textDecoration: "none" }}>&larr; Volver</Link>
         <h1 style={{ fontSize: 22, fontWeight: 700, margin: 0 }}>Cargar hallazgo</h1>
         <p style={{ fontSize: 13, color: "var(--text-3)", margin: 0 }}>

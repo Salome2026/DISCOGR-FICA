@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { upload } from "@vercel/blob/client";
 import RequirePermission from "@/app/components/RequirePermission";
+import ModuleWatermark from "@/app/components/ModuleWatermark";
 
 type Persona = { name: string; avatarUrl: string | null; tone: string; description: string };
 type Thresholds = {
@@ -171,7 +172,8 @@ function ConfiguracionInner() {
 
   return (
     <div className="bg-atmosphere" style={{ minHeight: "100vh", padding: "2.5rem 2rem", fontFamily: "var(--font-display)" }}>
-      <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", flexDirection: "column", gap: 18 }}>
+      <ModuleWatermark text="A&R" />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 560, margin: "0 auto", display: "flex", flexDirection: "column", gap: 18 }}>
         <div>
           <Link href="/panel/ar" style={{ fontSize: 13, color: "var(--text-3)", textDecoration: "none" }}>← Volver a A&R</Link>
           <h1 style={{ fontSize: 26, fontWeight: 700, margin: "8px 0 0" }}>Configurar el agente de A&R</h1>

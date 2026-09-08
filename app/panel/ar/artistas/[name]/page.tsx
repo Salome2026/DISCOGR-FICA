@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import RequirePermission from "@/app/components/RequirePermission";
+import ModuleWatermark from "@/app/components/ModuleWatermark";
 
 type CreativeProfile = {
   posicionamiento: string;
@@ -150,7 +151,8 @@ function ArtistaDetailInner() {
 
   return (
     <div className="bg-atmosphere" style={{ minHeight: "100vh", padding: "2.5rem 2rem", fontFamily: "var(--font-display)" }}>
-      <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+      <ModuleWatermark text="A&R" />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 820, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
         <div>
           <Link href="/panel/ar/artistas" style={{ fontSize: 13, color: "var(--text-3)", textDecoration: "none" }}>← Volver a artistas</Link>
           <h1 style={{ fontSize: 28, fontWeight: 700, margin: "8px 0 0" }}>{snapshot?.artistName ?? artistName}</h1>

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import RequirePermission from "@/app/components/RequirePermission";
+import ModuleWatermark from "@/app/components/ModuleWatermark";
 import { hasPermission, type SessionUser } from "@/lib/permissions";
 import { AR_CATEGORIES, AR_STATUSES, type ArOpportunity, type ArCategory, type ArStatus, type ArMarketSnapshot } from "@discografica/shared/types/ar";
 
@@ -286,7 +287,8 @@ function ArContent() {
 
   return (
     <div className="bg-atmosphere" style={{ minHeight: "100vh", padding: "2.5rem 2rem", fontFamily: "var(--font-display)" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+      <ModuleWatermark text="A&R" />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 1200, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
           <div>
             <h1

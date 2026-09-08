@@ -4,6 +4,7 @@ import { useEffect, useState, use as usePromise } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import RequirePermission from "@/app/components/RequirePermission";
+import ModuleWatermark from "@/app/components/ModuleWatermark";
 import { hasPermission, type SessionUser } from "@/lib/permissions";
 import { AR_STATUSES, type ArOpportunity, type ArOpportunityComment, type ArOpportunityAssignment, type ArStatus, type ArTaskStatus } from "@discografica/shared/types/ar";
 
@@ -196,7 +197,8 @@ function ArDetailContent({ id }: { id: string }) {
 
   return (
     <div className="bg-atmosphere" style={{ minHeight: "100vh", padding: "2.5rem 2rem", fontFamily: "var(--font-display)" }}>
-      <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
+      <ModuleWatermark text="A&R" />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 900, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
         <Link href="/panel/ar" style={{ color: "var(--text-3)", fontSize: 13, textDecoration: "none" }}>&larr; Volver</Link>
 
         <div>

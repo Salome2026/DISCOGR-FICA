@@ -2,17 +2,18 @@
 
 import { signOut, useSession } from "next-auth/react";
 import RequireRole from "./RequireRole";
+import ModuleWatermark from "./ModuleWatermark";
 import type { Role } from "@/lib/permissions";
 
 export default function PanelPlaceholder({ role, title }: { role: Role; title: string }) {
   return (
     <RequireRole allow={[role]}>
-      <Inner title={title} />
+      <Inner role={role} title={title} />
     </RequireRole>
   );
 }
 
-function Inner({ title }: { title: string }) {
+function Inner({ role, title }: { role: Role; title: string }) {
   const { data: session } = useSession();
   return (
     <div
@@ -30,28 +31,31 @@ function Inner({ title }: { title: string }) {
         textAlign: "center",
       }}
     >
-      <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "-.02em" }}>{title}</h1>
-      <p style={{ fontSize: 13.5, color: "var(--text-2)", maxWidth: 380 }}>
-        {session?.user?.email} — este panel todavía no tiene funcionalidad propia construida.
-        Contactá al administrador si necesitás algo específico acá.
-      </p>
-      <button
-        onClick={() => signOut({ callbackUrl: "/" })}
-        style={{
-          marginTop: 12,
-          background: "var(--glass-bg)",
-          border: "1px solid var(--glass-border)",
-          borderRadius: 8,
-          padding: "8px 16px",
-          color: "var(--text-2)",
-          cursor: "pointer",
-          fontSize: 13,
-          backdropFilter: "blur(20px) saturate(1.7)",
-          WebkitBackdropFilter: "blur(20px) saturate(1.7)",
-        }}
-      >
-        Cerrar sesión
-      </button>
+      <ModuleWatermark text={role.toUpperCase()} />
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0, letterSpacing: "-.02em" }}>{title}</h1>
+        <p style={{ fontSize: 13.5, color: "var(--text-2)", maxWidth: 380 }}>
+          {session?.user?.email} — este panel todavía no tiene funcionalidad propia construida.
+          Contactá al administrador si necesitás algo específico acá.
+        </p>
+        <button
+          onClick={() => signOut({ callbackUrl: "/" })}
+          style={{
+            marginTop: 12,
+            background: "var(--glass-bg)",
+            border: "1px solid var(--glass-border)",
+            borderRadius: 8,
+            padding: "8px 16px",
+            color: "var(--text-2)",
+            cursor: "pointer",
+            fontSize: 13,
+            backdropFilter: "blur(20px) saturate(1.7)",
+            WebkitBackdropFilter: "blur(20px) saturate(1.7)",
+          }}
+        >
+          Cerrar sesión
+        </button>
+      </div>
     </div>
   );
 }

@@ -21,7 +21,22 @@ export const PUBLISHING_STYLES = `
     min-height: 100vh;
     padding-bottom: 5rem;
   }
-  .pub-inner { max-width: 1180px; margin: 0 auto; padding: 2.5rem 2rem 0; }
+  .pub-watermark {
+    position: fixed; top: 0; left: 0; z-index: 0;
+    max-width: 50vw;
+    overflow: hidden;
+    font-size: clamp(48px, 6vw, 84px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--text-1);
+    opacity: 0.05;
+    transform: translate(-2%, -10%);
+    pointer-events: none;
+    user-select: none;
+  }
+  .pub-inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 2.5rem 2rem 0; }
   .pub-inner.pub-home { max-width: 1320px; }
   .pub-topbar { display:flex; justify-content:space-between; align-items:flex-start; gap: 16px; margin-bottom: 1.75rem; flex-wrap: wrap; }
   .pub-back { background: none; border: none; color: var(--text-3); font-size: 12.5px; cursor: pointer; padding: 0; margin-bottom: 10px; display: inline-block; text-decoration: none; }
@@ -129,6 +144,7 @@ export function PublishingShell({
   return (
     <div className="pub-root bg-atmosphere">
       <style>{PUBLISHING_STYLES}</style>
+      <div className="pub-watermark" aria-hidden>PUBLISHING</div>
       <div className={`pub-inner ${homeMaxWidth ? "pub-home" : ""}`}>
         <div className="pub-topbar">
           <div>

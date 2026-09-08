@@ -14,7 +14,22 @@ export const OP_STYLES = `
     min-height: 100vh;
     padding-bottom: 5rem;
   }
-  .op-inner { max-width: 1680px; margin: 0 auto; padding: 2.5rem 2rem 0; }
+  .op-watermark {
+    position: fixed; top: 0; left: 0; z-index: 0;
+    max-width: 50vw;
+    overflow: hidden;
+    font-size: clamp(36px, 4.5vw, 64px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--text-1);
+    opacity: 0.05;
+    transform: translate(-2%, -10%);
+    pointer-events: none;
+    user-select: none;
+  }
+  .op-inner { position: relative; z-index: 1; max-width: 1680px; margin: 0 auto; padding: 2.5rem 2rem 0; }
   .op-topbar { display:flex; justify-content:space-between; align-items:flex-start; gap: 16px; margin-bottom: 1.75rem; flex-wrap: wrap; }
   .op-back { background: none; border: none; color: var(--text-3); font-size: 12.5px; cursor: pointer; padding: 0; margin-bottom: 10px; display: inline-block; text-decoration: none; }
   .op-kicker { font-size: 11px; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }
@@ -55,6 +70,7 @@ export function OpShell({
   return (
     <div className="op-root bg-atmosphere">
       <style>{OP_STYLES}</style>
+      <div className="op-watermark" aria-hidden>OPERACIONES DIGITALES</div>
       <div className={`op-inner${homeMaxWidth ? " op-home" : ""}`}>
         <div className="op-topbar">
           <div>

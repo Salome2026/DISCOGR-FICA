@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import RequirePermission from "@/app/components/RequirePermission";
+import ModuleWatermark from "@/app/components/ModuleWatermark";
 import { hasPermission, type SessionUser } from "@/lib/permissions";
 import type { ArGenreTrendSignal, ArGenreTrendDirection } from "@discografica/shared/types/ar";
 
@@ -86,7 +87,8 @@ function ArTendenciasContent() {
 
   return (
     <div className="bg-atmosphere" style={{ minHeight: "100vh", padding: "2.5rem 2rem", fontFamily: "var(--font-display)" }}>
-      <div style={{ maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
+      <ModuleWatermark text="A&R" />
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 720, margin: "0 auto", display: "flex", flexDirection: "column", gap: 20 }}>
         <Link href="/panel/ar" style={{ color: "var(--text-3)", fontSize: 13, textDecoration: "none" }}>&larr; Volver</Link>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Tendencias de género</h1>

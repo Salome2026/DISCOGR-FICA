@@ -1,6 +1,7 @@
 export type TaskStatus = "Pendiente" | "Completado" | "No corresponde";
 
 export type BoardRow = {
+  estado: string | null;
   tipo_obra: string | null;
   split_override: boolean;
   release_request_id: string | null;
@@ -54,7 +55,18 @@ export function materialesEstado(youtubeUrl: string | null, driveAssetsUrl: stri
 // (anteriores a esta feature) se tratan igual que un Cover: "No corresponde"
 // hasta que alguien los edite u override.
 export function deriveTaskStatuses(row: BoardRow): TaskStatuses {
-  const releaseStatus: TaskStatus = row.release_request_id ? "Completado" : "Pendiente";
+  // "Firmado" es un contrato ya firmado por fuera de la plataforma (el
+  // sistema anterior a esta, o un caso ya cerrado a mano) — no corresponde
+  // pedirle un Release nuevo a Legales por algo que ya está resuelto.
+  // "Contactado"/"Necesito ayuda" sí siguen necesitando el Release real.
+  let releaseStatus: TaskStatus;
+  if (row.release_request_id) {
+    releaseStatus = "Completado";
+  } else if (row.estado === "Firmado") {
+    releaseStatus = "No corresponde";
+  } else {
+    releaseStatus = "Pendiente";
+  }
 
   let splitStatus: TaskStatus;
   if (row.split_id) {

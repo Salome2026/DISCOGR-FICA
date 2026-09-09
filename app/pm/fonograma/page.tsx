@@ -307,7 +307,11 @@ function PMFonogramaInner() {
                           </Link>
                         )
                       )}
-                      <span className={`pmx-badge ${r.releaseStatus === "Pendiente" ? "pendiente" : "completado"}`}>
+                      <span
+                        className={`pmx-badge ${
+                          r.releaseStatus === "Pendiente" ? "pendiente" : r.releaseStatus === "Completado" ? "completado" : "no-corresponde"
+                        }`}
+                      >
                         {r.releaseStatus}
                       </span>
                     </div>

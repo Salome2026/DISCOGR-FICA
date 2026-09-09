@@ -1300,7 +1300,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
 
             {tipo === "single" && (
               <div>
-                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Autores y compositores</label>
+                <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Autores y compositores (nombre y apellido, no nombre artístico)</label>
                 <input
                   value={autores}
                   onChange={(e) => setAutores(e.target.value)}
@@ -1400,7 +1400,11 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
 
             <div>
               <label style={{ fontSize: 12.5, color: "var(--text-2)" }}>Estado del release</label>
-              <select value={estado} onChange={(e) => setEstado(e.target.value as typeof estado)} style={inputStyle}>
+              <select
+                value={estado}
+                onChange={(e) => setEstado(e.target.value as typeof estado)}
+                style={estado === "Firmado" ? { ...inputStyle, color: "var(--good-ink)", borderColor: "var(--good-ink)", fontWeight: 700 } : inputStyle}
+              >
                 {ESTADOS.map((e) => (
                   <option key={e} value={e}>{e}</option>
                 ))}
@@ -1569,7 +1573,7 @@ export default function NuevoLanzamientoForm({ role, assignedArtists, onClose, o
                               )}
                             </div>
                             <div>
-                              <label style={smallLabel}>Autores y compositores</label>
+                              <label style={smallLabel}>Autores y compositores (nombre y apellido, no nombre artístico)</label>
                               <input
                                 value={t.autoresCompositores}
                                 onChange={(e) => updateTrack(t.key, { autoresCompositores: e.target.value })}

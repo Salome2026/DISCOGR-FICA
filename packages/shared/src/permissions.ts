@@ -105,10 +105,13 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   // NOT get editar_acuerdos/aprobar_releases/ver_estadisticas/exportar_datos
   // even though those existed before this module did — legal's read access
   // to release status comes from ver_legal, scoped to its own panel only.
-  legal: ["ver_legal", "editar_legal"],
+  // "ver_asignaciones_pm" (misma excepción puntual que ya tiene community_manager
+  // más abajo): necesita saber a qué PM ponerle un pendiente de un artista.
+  legal: ["ver_legal", "editar_legal", "ver_asignaciones_pm"],
   // Same isolation principle as legal — its own module, own permissions,
-  // nothing shared with Label/PM/Legal/Distribución/Marketing.
-  editorial: ["ver_publishing", "editar_publishing"],
+  // nothing shared with Label/PM/Legal/Distribución/Marketing, salvo la
+  // misma excepción de "ver_asignaciones_pm" que legal de arriba.
+  editorial: ["ver_publishing", "editar_publishing", "ver_asignaciones_pm"],
   // Same isolation principle again — its own module, own permissions, plus
   // the one narrow cross-module capability of administering which PM owns
   // which artist (deliberately not administrar_usuarios, which would also
@@ -123,11 +126,12 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   tourmanager: ["ver_tourmanager", "editar_tourmanager"],
   // Same isolation principle again — its own module, own permissions.
   ar: ["ver_ar", "editar_ar"],
-  // "ver_asignaciones_pm" es la única excepción a "own module, own
-  // permissions": la CM necesita saber a qué PM reclamarle materiales de
-  // cada lanzamiento, así que lee (nunca edita) la tabla de asignaciones de
-  // PM que Management administra — mismo criterio asimétrico que
-  // "ver_cm" de Management arriba, en el sentido opuesto.
+  // "ver_asignaciones_pm" es la excepción a "own module, own permissions"
+  // compartida con legal/editorial de arriba: la CM necesita saber a qué PM
+  // ponerle un pendiente sobre cada lanzamiento, así que lee (nunca edita)
+  // la tabla de asignaciones de PM que Management administra — mismo
+  // criterio asimétrico que "ver_cm" de Management arriba, en el sentido
+  // opuesto.
   community_manager: ["ver_cm", "editar_cm", "ver_asignaciones_pm"],
   // Módulo OP: de una sola persona, aislado del resto — mismo criterio que
   // legal/editorial/booking/tourmanager/ar ("own module, own permissions"),

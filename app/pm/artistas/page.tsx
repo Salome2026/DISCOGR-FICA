@@ -37,13 +37,25 @@ function ArtistasInner() {
         else setArtists(d.artists);
       })
       .catch((e) => setError(String(e)));
-    fetch("/api/pm/material-requests?status=Pendiente")
-      .then((r) => r.json())
-      .then((d) => {
-        const counts: Record<string, number> = {};
-        for (const r of d.requests ?? []) counts[r.artistId] = (counts[r.artistId] ?? 0) + 1;
-        setPendingByArtist(counts);
-      });
+    // 4 fuentes de "pendientes" hoy (CM + Legales + Publishing + Management)
+    // — se suman en un único contador por artista; el detalle de cada uno
+    // se ve recién al entrar a la ficha del artista.
+    Promise.all([
+      fetch("/api/pm/material-requests?status=Pendiente").then((r) => r.json()),
+      fetch("/api/pm/legal-tasks?status=Pendiente").then((r) => r.json()),
+      fetch("/api/pm/publishing-tasks?status=Pendiente").then((r) => r.json()),
+      fetch("/api/pm/management-tasks?status=Pendiente").then((r) => r.json()),
+    ]).then(([cm, legal, publishing, management]) => {
+      const counts: Record<string, number> = {};
+      const add = (items: { artistId: string }[]) => {
+        for (const r of items ?? []) counts[r.artistId] = (counts[r.artistId] ?? 0) + 1;
+      };
+      add(cm.requests);
+      add(legal.tasks);
+      add(publishing.tasks);
+      add(management.tasks);
+      setPendingByArtist(counts);
+    });
   }
 
   useEffect(() => {

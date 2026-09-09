@@ -28,6 +28,10 @@ export default function LegalHomePage() {
               <h2>Releases Externos</h2>
               <p>Lanzamientos de nuestros artistas que salieron por fuera de la plataforma.</p>
             </Link>
+            <Link href="/panel/legal/pms" className="legal-big-btn">
+              <h2>Project Managers</h2>
+              <p>Poné un pendiente sobre el artista de cualquier PM.</p>
+            </Link>
           </div>
         </div>
       </LegalShell>

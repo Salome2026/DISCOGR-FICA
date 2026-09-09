@@ -81,6 +81,9 @@ export const LEGAL_STYLES = `
   .legal-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 1.5rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); box-shadow: var(--shadow-glass); }
   .legal-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
   .legal-search { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 9px 12px; color: var(--text-1); font-size: 13px; min-width: 240px; }
+  .legal-filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .legal-filter-row select { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 7px 10px; color: var(--text-1); font-size: 13px; font-weight: 500; }
+  .legal-pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
   .legal-btn-primary { background: var(--accent-gradient); border: none; border-radius: 8px; padding: 10px 18px; color: var(--legal-accent-ink); font-weight: 700; cursor: pointer; font-size: 13.5px; }
   .legal-btn-ghost { background: transparent; border: 1px solid var(--line-soft); border-radius: 8px; padding: 6px 12px; color: var(--text-2); cursor: pointer; font-size: 12px; }
   table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
@@ -99,8 +102,9 @@ export const LEGAL_STYLES = `
   .legal-home-grid { display: flex; flex-direction: column; gap: 1.5rem; align-items: stretch; }
   .legal-home-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
   @media (max-width: 640px) { .legal-home-buttons { grid-template-columns: 1fr; } }
-  .legal-ficha-buttons { grid-template-columns: repeat(3, 1fr); }
-  @media (max-width: 720px) { .legal-ficha-buttons { grid-template-columns: 1fr; } }
+  .legal-ficha-buttons { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 1100px) { .legal-ficha-buttons { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px) { .legal-ficha-buttons { grid-template-columns: 1fr; } }
   .legal-big-btn {
     display: flex; flex-direction: column; gap: 8px; align-items: flex-start; text-align: left;
     background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);

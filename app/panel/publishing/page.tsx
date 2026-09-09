@@ -55,6 +55,10 @@ function PublishingHomeContent() {
           <h2>Histórico de splits</h2>
           <p>Todos los splits ya enviados, con buscador por canción o artista.</p>
         </Link>
+        <Link href="/panel/publishing/pms" className="pub-big-btn">
+          <h2>Project Managers</h2>
+          <p>Poné un pendiente sobre el artista de cualquier PM.</p>
+        </Link>
       </div>
 
       <ReleaseCalendar readOnly apiUrl="/api/pm/releases/dashboard-calendar" />

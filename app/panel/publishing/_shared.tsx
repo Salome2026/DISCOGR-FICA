@@ -47,6 +47,9 @@ export const PUBLISHING_STYLES = `
   .pub-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); padding: 1.5rem; backdrop-filter: blur(var(--glass-blur)) saturate(1.7); -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.7); box-shadow: var(--shadow-glass); }
   .pub-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
   .pub-search { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 9px 12px; color: var(--text-1); font-size: 13px; min-width: 240px; }
+  .pub-filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .pub-filter-row select { background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 7px 10px; color: var(--text-1); font-size: 13px; font-weight: 500; }
+  .pub-pm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
   .pub-btn-primary { background: var(--accent-gradient); border: none; border-radius: 8px; padding: 10px 18px; color: var(--pub-accent-ink); font-weight: 700; cursor: pointer; font-size: 13.5px; }
   .pub-btn-ghost { background: transparent; border: 1px solid var(--line-soft); border-radius: 8px; padding: 6px 12px; color: var(--text-2); cursor: pointer; font-size: 12px; }
   table { width: 100%; border-collapse: collapse; font-size: 12.5px; }

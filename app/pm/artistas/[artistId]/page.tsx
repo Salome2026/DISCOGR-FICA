@@ -29,6 +29,118 @@ const MATERIAL_NEEDS_LABELS: Record<keyof MaterialNeeds, string> = {
   videosVerticales: "Videos verticales", audio: "Audio", copy: "Copy", fechaHorario: "Fecha/horario",
 };
 
+// Pendientes genéricos de Legales/Publishing/Management — misma forma en
+// las 3 tablas (legal_pending_tasks/publishing_pending_tasks/
+// management_pending_tasks), un componente único parametrizado por título
+// y ruta de API en vez de triplicar este bloque.
+type PendingTask = {
+  id: string; artistId: string; targetPms: string[]; requestedBy: string;
+  titulo: string; descripcion: string | null; status: "Pendiente" | "Resuelto";
+  pmResponse: string | null; respondedBy: string | null; respondedAt: string | null; createdAt: string;
+};
+
+function PendingTasksSection({ title, apiBase, artistId }: { title: string; apiBase: string; artistId: string }) {
+  const [tasks, setTasks] = useState<PendingTask[]>([]);
+  const [respondingId, setRespondingId] = useState<string | null>(null);
+  const [responseText, setResponseText] = useState("");
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  function load() {
+    fetch(apiBase)
+      .then((r) => r.json())
+      .then((d) => setTasks((d.tasks ?? []).filter((t: PendingTask) => t.artistId === artistId)));
+  }
+
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, 30000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [artistId, apiBase]);
+
+  async function sendResponse(id: string) {
+    if (!responseText.trim()) {
+      setError("Escribí una respuesta.");
+      return;
+    }
+    setSending(true);
+    setError(null);
+    try {
+      const res = await fetch(`${apiBase}/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ response: responseText.trim() }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || "No se pudo enviar la respuesta.");
+      setRespondingId(null);
+      setResponseText("");
+      load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido.");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div className="pmx-card" style={sectionStyle}>
+      <div style={sectionLabelStyle}>{title}</div>
+      {tasks.length === 0 && <p style={{ color: "var(--text-3)", fontSize: 15 }}>Todavía no hay pendientes acá para este artista.</p>}
+      {tasks.map((t) => (
+        <div key={t.id} style={{ fontSize: 15.5, borderTop: "1px solid var(--line-soft)", paddingTop: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <span style={{ fontWeight: 700, fontSize: 16, color: t.status === "Resuelto" ? "var(--good-ink)" : "var(--warn-ink)" }}>
+              {t.titulo} · {t.status}
+            </span>
+            <span style={{ color: "var(--text-3)", fontSize: 13 }}>
+              {t.requestedBy} · {new Date(t.createdAt).toLocaleDateString("es-AR")}
+            </span>
+          </div>
+          {t.descripcion && <div style={{ marginTop: 6 }}>{t.descripcion}</div>}
+          {t.pmResponse && <div style={{ color: "var(--good-ink)", marginTop: 6 }}>Tu respuesta: {t.pmResponse}</div>}
+          {t.status === "Pendiente" && (
+            respondingId === t.id ? (
+              <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
+                <textarea
+                  value={responseText}
+                  onChange={(e) => setResponseText(e.target.value)}
+                  style={{ ...textareaStyle, minHeight: 80 }}
+                  placeholder="Escribí tu respuesta..."
+                />
+                {error && <div style={{ color: "var(--crit-ink)", fontSize: 13 }}>{error}</div>}
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button style={smallBtn} disabled={sending} onClick={() => sendResponse(t.id)}>
+                    {sending ? "..." : "Enviar respuesta"}
+                  </button>
+                  <button
+                    style={{ ...smallBtn, background: "transparent" }}
+                    onClick={() => { setRespondingId(null); setResponseText(""); setError(null); }}
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button style={{ ...smallBtn, marginTop: 8 }} onClick={() => { setRespondingId(t.id); setResponseText(""); setError(null); }}>
+                Responder
+              </button>
+            )
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 type Bundle = {
   artist: Artist;
   profile: Profile;
@@ -434,6 +546,10 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
           </div>
         ))}
       </div>
+
+      <PendingTasksSection title="Pendientes de Legales" apiBase="/api/pm/legal-tasks" artistId={artistId} />
+      <PendingTasksSection title="Pendientes de Publishing" apiBase="/api/pm/publishing-tasks" artistId={artistId} />
+      <PendingTasksSection title="Pendientes de Management" apiBase="/api/pm/management-tasks" artistId={artistId} />
 
       <div className="pmx-card" style={sectionStyle}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>

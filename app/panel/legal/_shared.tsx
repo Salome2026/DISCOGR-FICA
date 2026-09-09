@@ -71,7 +71,7 @@ export const LEGAL_STYLES = `
     user-select: none;
   }
   .legal-inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 2.5rem 2rem 0; }
-  .legal-inner.legal-home { max-width: 980px; }
+  .legal-inner.legal-home { max-width: 1680px; }
   .legal-topbar { display:flex; justify-content:space-between; align-items:flex-start; gap: 16px; margin-bottom: 1.75rem; flex-wrap: wrap; }
   .legal-back { background: none; border: none; color: var(--text-3); font-size: 12.5px; cursor: pointer; padding: 0; margin-bottom: 10px; display: inline-block; text-decoration: none; }
   .legal-kicker { font-size: 11px; color: var(--legal-accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; font-weight: 600; }

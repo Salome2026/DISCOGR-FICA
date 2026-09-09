@@ -13,8 +13,6 @@ export default function LegalHomePage() {
         <div className="legal-home-grid">
           <ReleaseRequestsPending limit={5} />
 
-          <ReleaseCalendar readOnly apiUrl="/api/pm/releases/dashboard-calendar" />
-
           <div className="legal-home-buttons legal-ficha-buttons">
             <Link href="/panel/legal/contratos" className="legal-big-btn">
               <h2>Contratos de Artistas</h2>
@@ -33,6 +31,8 @@ export default function LegalHomePage() {
               <p>Poné un pendiente sobre el artista de cualquier PM.</p>
             </Link>
           </div>
+
+          <ReleaseCalendar readOnly apiUrl="/api/pm/releases/dashboard-calendar" />
         </div>
       </LegalShell>
     </RequireRole>

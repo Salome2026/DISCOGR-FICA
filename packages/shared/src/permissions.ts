@@ -124,8 +124,10 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   booking: ["ver_booking", "editar_booking"],
   // Same isolation principle again — its own module, own permissions.
   tourmanager: ["ver_tourmanager", "editar_tourmanager"],
-  // Same isolation principle again — its own module, own permissions.
-  ar: ["ver_ar", "editar_ar"],
+  // Same isolation principle again — its own module, own permissions, salvo
+  // la misma excepción de "ver_asignaciones_pm" que legal/editorial arriba:
+  // necesita saber a qué PM ponerle un pendiente de un artista.
+  ar: ["ver_ar", "editar_ar", "ver_asignaciones_pm"],
   // "ver_asignaciones_pm" es la excepción a "own module, own permissions"
   // compartida con legal/editorial de arriba: la CM necesita saber a qué PM
   // ponerle un pendiente sobre cada lanzamiento, así que lee (nunca edita)

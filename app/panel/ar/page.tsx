@@ -326,6 +326,9 @@ function ArContent() {
             <Link href="/panel/ar/artistas" style={{ ...ghostBtn, textDecoration: "none", display: "inline-block" }}>
               Análisis por artista
             </Link>
+            <Link href="/panel/ar/pms" style={{ ...ghostBtn, textDecoration: "none", display: "inline-block" }}>
+              Project Managers
+            </Link>
             {canEdit && (
               <Link href="/panel/ar/tendencias" style={{ ...ghostBtn, textDecoration: "none", display: "inline-block" }}>
                 Tendencias

@@ -550,6 +550,7 @@ function ArtistProfileInner({ artistId }: { artistId: string }) {
       <PendingTasksSection title="Pendientes de Legales" apiBase="/api/pm/legal-tasks" artistId={artistId} />
       <PendingTasksSection title="Pendientes de Publishing" apiBase="/api/pm/publishing-tasks" artistId={artistId} />
       <PendingTasksSection title="Pendientes de Management" apiBase="/api/pm/management-tasks" artistId={artistId} />
+      <PendingTasksSection title="Pendientes de A&R" apiBase="/api/pm/ar-tasks" artistId={artistId} />
 
       <div className="pmx-card" style={sectionStyle}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>

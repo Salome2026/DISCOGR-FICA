@@ -514,7 +514,7 @@ function SplitEditorialForm() {
   const anyTrack = selectedTracks.length > 0;
   const canSubmit =
     tracks.length > 0 &&
-    tracks.every((t) => t !== null) &&
+    tracks.every((t) => t !== null && t.track.trim() && t.artistDisplay.trim()) &&
     letraSum === 5000 &&
     musicaSum === 5000 &&
     rowsReady(letra) &&

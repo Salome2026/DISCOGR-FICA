@@ -18,7 +18,11 @@ export const TRACK_PICKER_STYLES = `
   .tpk-dropdown-item:last-child { border-bottom:none; }
   .tpk-dropdown-item:hover, .tpk-dropdown-item.active { background:var(--accent-glass-bg); }
   .tpk-dropdown-item .meta { font-size:11.5px; color:var(--text-3); margin-top:2px; }
-  .tpk-new-person-fields { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px; }
+  .tpk-dropdown-create { color:var(--accent-color); font-weight:600; }
+  .tpk-manual-fields { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px; background:var(--bg-2); border:1px solid var(--line-soft); border-radius:10px; padding:12px; }
+  .tpk-manual-fields .tpk-dropdown { grid-column: span 1; }
+  .tpk-manual-badge { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:2px 7px; border-radius:100px; background:var(--accent-glass-bg); color:var(--accent-color); }
+  .tpk-manual-header { grid-column: 1 / -1; display:flex; align-items:center; justify-content:space-between; margin-bottom:2px; }
   .tpk-change-link { background:none; border:none; color:var(--text-3); font-size:11.5px; cursor:pointer; text-decoration:underline; flex-shrink:0; }
   .tpk-new-badge { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:2px 7px; border-radius:100px; background:var(--accent-glass-bg); color:var(--accent-color); flex-shrink:0; }
 `;
@@ -32,36 +36,87 @@ export function useDebounced(value: string, delay = 250): string {
   return debounced;
 }
 
-// Cuando el PM todavía no cargó el fonograma, permite tipear canción/
-// artista/sello a mano en vez de buscarlos en el catálogo — produce un
-// SplitTrackOption con id:null.
-export function ManualTrackEntry({ onConfirm, onCancel }: { onConfirm: (t: SplitTrackOption) => void; onCancel: () => void }) {
-  const [track, setTrack] = useState("");
-  const [artistDisplay, setArtistDisplay] = useState("");
-  const [sello, setSello] = useState("");
-  const ready = track.trim() && artistDisplay.trim();
+type ArtistMatch = { id: string; name: string; sello: string | null };
+
+// Autocompletar contra el roster real (mismo endpoint que ya usa el plan de
+// marketing/Tour Manager) en vez de un input libre — así "TH" no queda
+// como texto suelto si el artista real ya está cargado como "mamiyosoyelth".
+// Si no hay ningún match, ofrece registrar el artista nuevo (ensureArtistExists),
+// mismo criterio que "+ Crear a ..." ya usa para autores/compositores.
+function ArtistField({ value, onChange, placeholder = "Artista" }: { value: string; onChange: (name: string) => void; placeholder?: string }) {
+  const [results, setResults] = useState<ArtistMatch[]>([]);
+  const [open, setOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const debounced = useDebounced(value);
+
+  useEffect(() => {
+    if (debounced.trim().length < 2) {
+      setResults([]);
+      return;
+    }
+    fetch(`/api/artists/search?q=${encodeURIComponent(debounced)}`)
+      .then((r) => r.json())
+      .then((d) => setResults(d.results ?? []));
+  }, [debounced]);
+
+  async function createArtist(name: string) {
+    setCreating(true);
+    try {
+      await fetch("/api/pm/split-editorial/artists", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  const trimmed = value.trim();
+  const exactMatch = results.some((a) => a.name.trim().toLowerCase() === trimmed.toLowerCase());
 
   return (
-    <div style={{ background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: 12 }}>
-      <div className="tpk-new-person-fields" style={{ marginTop: 0, marginBottom: 8 }}>
-        <input className="tpk-input" placeholder="Nombre del fonograma" value={track} onChange={(e) => setTrack(e.target.value)} />
-        <input className="tpk-input" placeholder="Artista" value={artistDisplay} onChange={(e) => setArtistDisplay(e.target.value)} />
-        <input className="tpk-input" placeholder="Sello (opcional)" value={sello} onChange={(e) => setSello(e.target.value)} />
-      </div>
-      <div style={{ display: "flex", gap: 8 }}>
-        <button
-          type="button"
-          className="tpk-change-link"
-          style={{ textDecoration: "none", border: "1px solid var(--line-soft)", borderRadius: 8, padding: "8px 14px" }}
-          disabled={!ready}
-          onClick={() => onConfirm({ id: null, track: track.trim(), artistDisplay: artistDisplay.trim(), sello: sello.trim() || null, audioUrl: null })}
-        >
-          Confirmar
-        </button>
-        <button type="button" className="tpk-change-link" onClick={onCancel}>
-          Cancelar
-        </button>
-      </div>
+    <div className="tpk-dropdown">
+      <input
+        className="tpk-input"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+      />
+      {open && trimmed.length >= 2 && (results.length > 0 || !exactMatch) && (
+        <div className="tpk-dropdown-list">
+          {results.map((a) => (
+            <div
+              key={a.id}
+              className="tpk-dropdown-item"
+              onMouseDown={() => {
+                onChange(a.name);
+                setOpen(false);
+              }}
+            >
+              {a.name}
+              {a.sello && <div className="meta">{a.sello}</div>}
+            </div>
+          ))}
+          {!exactMatch && (
+            <div
+              className="tpk-dropdown-item tpk-dropdown-create"
+              onMouseDown={() => {
+                onChange(trimmed);
+                createArtist(trimmed);
+                setOpen(false);
+              }}
+            >
+              {creating ? "Creando..." : `+ Crear artista nuevo: "${trimmed}"`}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -79,7 +134,6 @@ export function TrackPicker({
   const debounced = useDebounced(query);
   const [results, setResults] = useState<SplitTrackOption[]>([]);
   const [open, setOpen] = useState(false);
-  const [manual, setManual] = useState(false);
 
   useEffect(() => {
     if (!debounced.trim()) {
@@ -91,14 +145,15 @@ export function TrackPicker({
       .then((d) => setResults(d.tracks ?? []));
   }, [debounced]);
 
-  if (selected) {
+  // Fonograma real del catálogo (id != null) — chip fijo, ya no se edita
+  // acá, exactamente igual que cuando llega precargado desde el board.
+  if (selected && selected.id !== null) {
     return (
       <>
         <style>{TRACK_PICKER_STYLES}</style>
         <div className="tpk-track-chip">
           <div>
             <strong>{selected.track}</strong>
-            {selected.id === null && <span className="tpk-new-badge" style={{ marginLeft: 8 }}>Sin fonograma todavía</span>}
             <br />
             <span>
               {selected.artistDisplay}
@@ -113,11 +168,36 @@ export function TrackPicker({
     );
   }
 
-  if (manual) {
+  // Carga a mano (sin fonograma en el catálogo todavía): los 3 campos
+  // quedan siempre visibles y editables desde el primer momento — sin un
+  // paso de "Confirmar" aparte — es el mismo mecanismo que ya se usa
+  // cuando el Release/Split viene precargado, solo que acá se completa
+  // desde cero en vez de ya venir con los datos puestos.
+  if (selected && selected.id === null) {
     return (
       <>
         <style>{TRACK_PICKER_STYLES}</style>
-        <ManualTrackEntry onConfirm={onSelect} onCancel={() => setManual(false)} />
+        <div className="tpk-manual-fields">
+          <div className="tpk-manual-header">
+            <span className="tpk-manual-badge">Sin fonograma todavía</span>
+            <button type="button" className="tpk-change-link" onClick={() => onSelect(null)}>
+              Buscar en el catálogo en cambio
+            </button>
+          </div>
+          <input
+            className="tpk-input"
+            placeholder="Nombre del fonograma"
+            value={selected.track}
+            onChange={(e) => onSelect({ ...selected, track: e.target.value })}
+          />
+          <ArtistField value={selected.artistDisplay} onChange={(name) => onSelect({ ...selected, artistDisplay: name })} />
+          <input
+            className="tpk-input"
+            placeholder="Sello (opcional)"
+            value={selected.sello ?? ""}
+            onChange={(e) => onSelect({ ...selected, sello: e.target.value || null })}
+          />
+        </div>
       </>
     );
   }
@@ -167,7 +247,7 @@ export function TrackPicker({
         type="button"
         className="tpk-change-link"
         style={{ marginTop: 10, fontSize: 15, color: "#fff", fontWeight: 600 }}
-        onClick={() => setManual(true)}
+        onClick={() => onSelect({ id: null, track: "", artistDisplay: "", sello: null, audioUrl: null })}
       >
         Todavía no tengo el fonograma cargado — cargar los datos a mano
       </button>

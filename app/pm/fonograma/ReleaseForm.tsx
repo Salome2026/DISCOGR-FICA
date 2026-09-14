@@ -224,7 +224,8 @@ export default function ReleaseForm({ pmReleaseId }: { pmReleaseId: number | nul
 
   const sum = participants.reduce((s, p) => s + (parsePercent(p.percentRaw) ?? 0), 0);
   const rowsReady = participants.length > 0 && participants.every((p) => p.nombre.trim() && (parsePercent(p.percentRaw) ?? 0) > 0);
-  const fonogramaReady = pmReleaseId != null ? !!fonograma : tracks.length > 0 && tracks.every((t) => t !== null);
+  const fonogramaReady =
+    pmReleaseId != null ? !!fonograma : tracks.length > 0 && tracks.every((t) => t !== null && t.track.trim() && t.artistDisplay.trim());
   const canSubmit = fonogramaReady && !!tipo && (loose || (trackName.trim() && artistDisplay.trim())) && sum === 10000 && rowsReady;
 
   function participantsPayload() {

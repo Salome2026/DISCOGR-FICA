@@ -6,13 +6,12 @@ import RequireRole from "@/app/components/RequireRole";
 import { PMShell } from "../_shared";
 import { upload } from "@vercel/blob/client";
 import type { SplitPersonInput, SplitPersonOption, SplitTrackOption } from "@discografica/shared/types/editorialSplits";
+import { TrackPicker, useDebounced } from "../TrackPicker";
+import { TrackGroupPicker, type CargaTipo } from "../TrackGroupPicker";
 
 const SPX_STYLES = `
   .spx-field-label { font-size:12.5px; color:var(--text-2); margin-bottom:6px; display:block; font-weight:600; }
   .spx-input { width:100%; background:var(--bg-2); border:1px solid var(--line-soft); border-radius:8px; padding:9px 12px; color:var(--text-1); font-size:13.5px; }
-  .spx-track-chip { display:flex; align-items:center; justify-content:space-between; gap:12px; background:var(--bg-2); border:1px solid var(--line-soft); border-radius:8px; padding:10px 14px; }
-  .spx-track-chip strong { font-size:14px; }
-  .spx-track-chip span { font-size:12px; color:var(--text-3); }
   .spx-dropdown { position:relative; }
   .spx-dropdown-list { position:absolute; z-index:20; top:calc(100% + 4px); left:0; right:0; background:var(--bg-2); border:1px solid var(--glass-border); border-radius:10px; box-shadow:var(--shadow-glass-lg); max-height:240px; overflow-y:auto; }
   .spx-dropdown-item { padding:9px 14px; cursor:pointer; font-size:13px; border-bottom:1px solid var(--line-soft); color:var(--text-1); }
@@ -101,6 +100,11 @@ type Row = {
   percentRaw: string;
 };
 
+type LetraEntry = { url: string | null; nombre: string | null; texto: string };
+function emptyLetraEntry(): LetraEntry {
+  return { url: null, nombre: null, texto: "" };
+}
+
 function newRow(): Row {
   return {
     key: Math.random().toString(36).slice(2),
@@ -128,139 +132,6 @@ function splitEvenly(n: number): number[] {
   const base = Math.floor(5000 / n);
   const remainder = 5000 % n;
   return Array.from({ length: n }, (_, i) => base + (i < remainder ? 1 : 0));
-}
-
-function useDebounced(value: string, delay = 250): string {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(t);
-  }, [value, delay]);
-  return debounced;
-}
-
-// Cuando el PM todavía no cargó el fonograma, permite tipear canción/
-// artista/sello a mano en vez de buscarlos en el catálogo — produce un
-// SplitTrackOption con id:null, que el submit manda como "sin ancla".
-function ManualTrackEntry({ onConfirm, onCancel }: { onConfirm: (t: SplitTrackOption) => void; onCancel: () => void }) {
-  const [track, setTrack] = useState("");
-  const [artistDisplay, setArtistDisplay] = useState("");
-  const [sello, setSello] = useState("");
-  const ready = track.trim() && artistDisplay.trim();
-
-  return (
-    <div className="spx-participant" style={{ background: "var(--bg-2)", border: "1px solid var(--line-soft)", borderRadius: 10, padding: 12 }}>
-      <div className="spx-new-person-fields" style={{ marginTop: 0, marginBottom: 8 }}>
-        <input className="spx-input" placeholder="Nombre del fonograma" value={track} onChange={(e) => setTrack(e.target.value)} />
-        <input className="spx-input" placeholder="Artista" value={artistDisplay} onChange={(e) => setArtistDisplay(e.target.value)} />
-        <input className="spx-input" placeholder="Sello (opcional)" value={sello} onChange={(e) => setSello(e.target.value)} />
-      </div>
-      <div style={{ display: "flex", gap: 8 }}>
-        <button
-          type="button"
-          className="spx-calc-btn"
-          disabled={!ready}
-          onClick={() => onConfirm({ id: null, track: track.trim(), artistDisplay: artistDisplay.trim(), sello: sello.trim() || null, audioUrl: null })}
-        >
-          Confirmar
-        </button>
-        <button type="button" className="spx-change-link" onClick={onCancel}>
-          Cancelar
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function TrackPicker({ selected, onSelect }: { selected: SplitTrackOption | null; onSelect: (t: SplitTrackOption | null) => void }) {
-  const [query, setQuery] = useState("");
-  const debounced = useDebounced(query);
-  const [results, setResults] = useState<SplitTrackOption[]>([]);
-  const [open, setOpen] = useState(false);
-  const [manual, setManual] = useState(false);
-
-  useEffect(() => {
-    if (!debounced.trim()) {
-      setResults([]);
-      return;
-    }
-    fetch(`/api/pm/split-editorial/tracks?q=${encodeURIComponent(debounced)}`)
-      .then((r) => r.json())
-      .then((d) => setResults(d.tracks ?? []));
-  }, [debounced]);
-
-  if (selected) {
-    return (
-      <div className="spx-track-chip">
-        <div>
-          <strong>{selected.track}</strong>
-          {selected.id === null && <span className="spx-new-badge" style={{ marginLeft: 8 }}>Sin fonograma todavía</span>}
-          <br />
-          <span>
-            {selected.artistDisplay}
-            {selected.sello ? ` · ${selected.sello}` : ""}
-          </span>
-        </div>
-        <button type="button" className="spx-change-link" onClick={() => onSelect(null)}>
-          Cambiar
-        </button>
-      </div>
-    );
-  }
-
-  if (manual) {
-    return <ManualTrackEntry onConfirm={onSelect} onCancel={() => setManual(false)} />;
-  }
-
-  return (
-    <div className="spx-dropdown">
-      <input
-        className="spx-input"
-        placeholder="Buscá por canción o artista..."
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
-      />
-      {open && results.length > 0 && (
-        <div className="spx-dropdown-list">
-          {results.map((t) => (
-            <div
-              key={t.id}
-              className="spx-dropdown-item"
-              onMouseDown={() => {
-                onSelect(t);
-                setQuery("");
-                setOpen(false);
-              }}
-            >
-              {t.track}
-              <div className="meta">
-                {t.artistDisplay}
-                {t.sello ? ` · ${t.sello}` : ""}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      {open && debounced.trim() && results.length === 0 && (
-        <div className="spx-dropdown-list">
-          <div className="spx-dropdown-item">No encontramos ninguna canción con ese nombre.</div>
-        </div>
-      )}
-      <button
-        type="button"
-        className="spx-change-link"
-        style={{ marginTop: 10, fontSize: 15, color: "#fff", fontWeight: 600 }}
-        onClick={() => setManual(true)}
-      >
-        Todavía no tengo el fonograma cargado — cargar los datos a mano
-      </button>
-    </div>
-  );
 }
 
 function PersonSlot({ row, onChange, onRemove }: { row: Row; onChange: (patch: Partial<Row>) => void; onRemove: () => void }) {
@@ -497,16 +368,56 @@ function SplitEditorialForm() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  const [track, setTrack] = useState<SplitTrackOption | null>(prefill);
+  // Con prefill (llegó desde una tarjeta del board de /pm/fonograma) queda
+  // fijo en un solo fonograma, igual que siempre — el selector de EP/Álbum
+  // es solo para cuando el PM arranca el flujo suelto, sin un fonograma
+  // puntual en mente todavía.
+  const [tipo, setTipo] = useState<CargaTipo>("fonograma");
+  const [tracks, setTracks] = useState<(SplitTrackOption | null)[]>([prefill]);
   const [letra, setLetra] = useState<Row[]>([newRow()]);
   const [musica, setMusica] = useState<Row[]>([newRow()]);
+  // Letra singular: usada en modo Fonograma (un solo track, con o sin
+  // prefill). En EP/Álbum cada canción tiene su propia letra — distinto
+  // texto/documento por canción, ver letraEntries — mientras que autores y
+  // % (letra/musica de arriba) sí se comparten entre todas.
   const [letraDoc, setLetraDoc] = useState<{ url: string; nombre: string } | null>(null);
   const [letraTexto, setLetraTexto] = useState("");
   const [uploadingLetra, setUploadingLetra] = useState(false);
+  const [letraEntries, setLetraEntries] = useState<LetraEntry[]>([emptyLetraEntry()]);
+  const [uploadingLetraAt, setUploadingLetraAt] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function selectTrackAt(i: number, t: SplitTrackOption | null) {
+    setTracks((prev) => prev.map((p, idx) => (idx === i ? t : p)));
+  }
+  function addTrackRow() {
+    setTracks((prev) => [...prev, null]);
+    setLetraEntries((prev) => [...prev, emptyLetraEntry()]);
+  }
+  function removeTrackRow(i: number) {
+    setTracks((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== i) : [null]));
+    setLetraEntries((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== i) : [emptyLetraEntry()]));
+  }
+  function changeTipo(next: CargaTipo) {
+    setTipo(next);
+    // Fonograma siempre tiene exactamente una fila — al volver de EP/Álbum
+    // se conserva solo la primera canción ya elegida, igual que antes.
+    if (next === "fonograma") setTracks((prev) => [prev[0] ?? null]);
+  }
+  function updateLetraEntry(i: number, patch: Partial<LetraEntry>) {
+    setLetraEntries((prev) => {
+      const next = [...prev];
+      while (next.length <= i) next.push(emptyLetraEntry());
+      next[i] = { ...next[i], ...patch };
+      return next;
+    });
+  }
+  function letraForIndex(i: number): LetraEntry {
+    return tipo === "fonograma" ? { url: letraDoc?.url ?? null, nombre: letraDoc?.nombre ?? null, texto: letraTexto } : letraEntries[i] ?? emptyLetraEntry();
+  }
 
   async function handleLetraFile(file: File) {
     setUploadingLetra(true);
@@ -523,6 +434,56 @@ function SplitEditorialForm() {
     } finally {
       setUploadingLetra(false);
     }
+  }
+
+  async function handleLetraFileAt(i: number, file: File) {
+    setUploadingLetraAt(i);
+    setError(null);
+    try {
+      const blob = await upload(file.name, file, {
+        access: "public",
+        handleUploadUrl: "/api/pm/upload",
+        clientPayload: "letra",
+      });
+      updateLetraEntry(i, { url: blob.url, nombre: file.name });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo subir el documento de letra.");
+    } finally {
+      setUploadingLetraAt(null);
+    }
+  }
+
+  function renderLetraExtra(i: number) {
+    const entry = letraEntries[i] ?? emptyLetraEntry();
+    return (
+      <div style={{ marginTop: 8 }}>
+        <label className="spx-field-label" style={{ marginBottom: 4 }}>
+          Letra de esta canción — documento o texto (obligatorio)
+        </label>
+        <input
+          className="spx-input"
+          type="file"
+          accept="application/pdf,.doc,.docx,text/plain"
+          disabled={uploadingLetraAt === i}
+          onChange={(e) => e.target.files?.[0] && handleLetraFileAt(i, e.target.files[0])}
+        />
+        {uploadingLetraAt === i && <div className="spx-attachment-hint">Subiendo...</div>}
+        {entry.url && uploadingLetraAt !== i && <div className="spx-attachment-hint ok">✓ {entry.nombre}</div>}
+        <textarea
+          className="spx-input"
+          placeholder="...o pegá el texto de la letra acá"
+          rows={3}
+          style={{ marginTop: 6, resize: "vertical", fontFamily: "inherit" }}
+          value={entry.texto}
+          onChange={(e) => updateLetraEntry(i, { texto: e.target.value })}
+        />
+        {tracks[i]?.audioUrl && (
+          <div className="spx-attachment-hint ok" style={{ marginTop: 4 }}>
+            ✓ Audio ya cargado con el fonograma.
+          </div>
+        )}
+      </div>
+    );
   }
 
   const letraSum = letra.reduce((s, r) => s + (parsePercent(r.percentRaw) ?? 0), 0);
@@ -545,8 +506,20 @@ function SplitEditorialForm() {
       }
       return true;
     });
-  const hasLetraContent = !!letraDoc || letraTexto.trim().length > 0;
-  const canSubmit = !!track && letraSum === 5000 && musicaSum === 5000 && rowsReady(letra) && rowsReady(musica) && hasLetraContent;
+  const hasLetraContent =
+    tipo === "fonograma"
+      ? !!letraDoc || letraTexto.trim().length > 0
+      : tracks.length > 0 && tracks.every((_, i) => !!letraEntries[i]?.url || !!letraEntries[i]?.texto.trim());
+  const selectedTracks = tracks.filter((t): t is SplitTrackOption => t !== null);
+  const anyTrack = selectedTracks.length > 0;
+  const canSubmit =
+    tracks.length > 0 &&
+    tracks.every((t) => t !== null) &&
+    letraSum === 5000 &&
+    musicaSum === 5000 &&
+    rowsReady(letra) &&
+    rowsReady(musica) &&
+    hasLetraContent;
 
   function toInput(rows: Row[]): SplitPersonInput[] {
     return rows.map((r) =>
@@ -570,31 +543,50 @@ function SplitEditorialForm() {
   }
 
   async function handleSubmit() {
-    if (!canSubmit || !track) return;
+    if (!canSubmit || selectedTracks.length === 0) return;
     setSubmitting(true);
     setError(null);
+    let sentCount = 0;
     try {
-      const res = await fetch("/api/pm/split-editorial", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          catalogTrackId: track.id,
-          trackName: track.track,
-          artistDisplay: track.artistDisplay,
-          sello: track.sello,
-          letra: toInput(letra),
-          musica: toInput(musica),
-          letraUrl: letraDoc?.url ?? null,
-          letraNombre: letraDoc?.nombre ?? null,
-          letraTexto: letraTexto.trim() || null,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "No se pudo enviar el split.");
+      // Un POST por canción, en secuencia (nunca Promise.all) — cada una es
+      // un split independiente en editorial_splits, y así una falla puntual
+      // (ej. esa canción ya tiene un split enviado) no deja indeterminado
+      // el estado de las demás.
+      for (const [i, t] of selectedTracks.entries()) {
+        const l = letraForIndex(i);
+        const res = await fetch("/api/pm/split-editorial", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            catalogTrackId: t.id,
+            trackName: t.track,
+            artistDisplay: t.artistDisplay,
+            sello: t.sello,
+            letra: toInput(letra),
+            musica: toInput(musica),
+            letraUrl: l.url,
+            letraNombre: l.nombre,
+            letraTexto: l.texto.trim() || null,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(`"${t.track}": ${data.error || "no se pudo enviar."}`);
+        sentCount++;
+      }
       setDone(true);
       resetTimer.current = setTimeout(() => router.push("/pm"), 1800);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido.");
+      // Lo que ya se envió no hay que reenviarlo — se saca de la lista (y su
+      // letra correspondiente) para que el reintento solo cubra las
+      // canciones que efectivamente fallaron.
+      const stillPending = selectedTracks.slice(sentCount);
+      setTracks(stillPending.length > 0 ? stillPending : [null]);
+      setLetraEntries((prev) => {
+        const rest = prev.slice(sentCount);
+        return rest.length > 0 ? rest : [emptyLetraEntry()];
+      });
+      const msg = err instanceof Error ? err.message : "Error desconocido.";
+      setError(sentCount > 0 ? `Se enviaron ${sentCount} de ${selectedTracks.length}. ${msg}` : msg);
     } finally {
       setSubmitting(false);
     }
@@ -607,52 +599,79 @@ function SplitEditorialForm() {
   if (done) {
     return (
       <div className="pmx-card">
-        <div className="spx-success">✓ Listo. El split ya está en Publishing.</div>
+        <div className="spx-success">
+          {selectedTracks.length > 1 ? `✓ Listo. Los ${selectedTracks.length} splits ya están en Publishing.` : "✓ Listo. El split ya está en Publishing."}
+        </div>
       </div>
     );
   }
 
+  const allHaveAudio = anyTrack && selectedTracks.every((t) => !!t.audioUrl);
+
   return (
     <div className="pmx-card">
       <style>{SPX_STYLES}</style>
-      <label className="spx-field-label">Elegí la canción</label>
-      <TrackPicker selected={track} onSelect={setTrack} />
-
-      {track && (
+      {prefill ? (
         <>
-          <div className="spx-section">
-            <div className="spx-section-title">ARCHIVOS</div>
-            <div className="spx-attachments">
-              <div>
-                <label className="spx-field-label">Letra — subí un documento o pegá el texto (obligatorio)</label>
-                <input
-                  className="spx-input"
-                  type="file"
-                  accept="application/pdf,.doc,.docx,text/plain"
-                  disabled={uploadingLetra}
-                  onChange={(e) => e.target.files?.[0] && handleLetraFile(e.target.files[0])}
-                />
-                {uploadingLetra && <div className="spx-attachment-hint">Subiendo...</div>}
-                {letraDoc && !uploadingLetra && <div className="spx-attachment-hint ok">✓ {letraDoc.nombre}</div>}
-                <textarea
-                  className="spx-input"
-                  placeholder="...o pegá el texto de la letra acá"
-                  rows={5}
-                  style={{ marginTop: 8, resize: "vertical", fontFamily: "inherit" }}
-                  value={letraTexto}
-                  onChange={(e) => setLetraTexto(e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="spx-field-label">Audio</label>
-                {track.audioUrl ? (
-                  <div className="spx-attachment-hint ok">✓ Ya cargado con el fonograma — no hace falta subirlo de nuevo.</div>
-                ) : (
-                  <div className="spx-attachment-hint">Se toma automáticamente del fonograma cuando corresponde.</div>
-                )}
+          <label className="spx-field-label">Elegí la canción</label>
+          <TrackPicker selected={tracks[0] ?? null} onSelect={(t) => setTracks([t])} />
+        </>
+      ) : (
+        <>
+          <label className="spx-field-label">¿Qué estás cargando?</label>
+          <TrackGroupPicker
+            tipo={tipo}
+            onTipoChange={changeTipo}
+            tracks={tracks}
+            onSelectTrack={selectTrackAt}
+            onAddTrack={addTrackRow}
+            onRemoveTrack={removeTrackRow}
+            renderExtra={tipo !== "fonograma" ? renderLetraExtra : undefined}
+          />
+        </>
+      )}
+
+      {anyTrack && (
+        <>
+          {tipo === "fonograma" ? (
+            <div className="spx-section">
+              <div className="spx-section-title">ARCHIVOS</div>
+              <div className="spx-attachments">
+                <div>
+                  <label className="spx-field-label">Letra — subí un documento o pegá el texto (obligatorio)</label>
+                  <input
+                    className="spx-input"
+                    type="file"
+                    accept="application/pdf,.doc,.docx,text/plain"
+                    disabled={uploadingLetra}
+                    onChange={(e) => e.target.files?.[0] && handleLetraFile(e.target.files[0])}
+                  />
+                  {uploadingLetra && <div className="spx-attachment-hint">Subiendo...</div>}
+                  {letraDoc && !uploadingLetra && <div className="spx-attachment-hint ok">✓ {letraDoc.nombre}</div>}
+                  <textarea
+                    className="spx-input"
+                    placeholder="...o pegá el texto de la letra acá"
+                    rows={5}
+                    style={{ marginTop: 8, resize: "vertical", fontFamily: "inherit" }}
+                    value={letraTexto}
+                    onChange={(e) => setLetraTexto(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="spx-field-label">Audio</label>
+                  {allHaveAudio ? (
+                    <div className="spx-attachment-hint ok">✓ Ya cargado con el fonograma — no hace falta subirlo de nuevo.</div>
+                  ) : (
+                    <div className="spx-attachment-hint">Se toma automáticamente del fonograma cuando corresponde.</div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <p className="spx-attachment-hint" style={{ marginTop: 4, marginBottom: 4 }}>
+              La letra de cada canción se carga arriba, junto a cada una. Los autores/compositores y el % de abajo se aplican a las {tracks.length} canciones elegidas.
+            </p>
+          )}
           <SplitSection title="LETRA" rows={letra} setRows={setLetra} />
           <SplitSection title="MÚSICA" rows={musica} setRows={setMusica} />
         </>
@@ -661,9 +680,9 @@ function SplitEditorialForm() {
       {error && <div className="spx-error">{error}</div>}
 
       <div className="spx-submit-bar">
-        {!canSubmit && track && <span className="spx-submit-hint">Completá letra y música al 50%, con los datos obligatorios de cada persona nueva, para enviar.</span>}
+        {!canSubmit && anyTrack && <span className="spx-submit-hint">Completá letra y música al 50%, con los datos obligatorios de cada persona nueva, para enviar.</span>}
         <button type="button" className="spx-submit-btn" disabled={!canSubmit || submitting} onClick={handleSubmit}>
-          {submitting ? "Enviando..." : "Enviar split"}
+          {submitting ? "Enviando..." : tracks.length > 1 ? `Enviar ${tracks.length} splits` : "Enviar split"}
         </button>
       </div>
     </div>

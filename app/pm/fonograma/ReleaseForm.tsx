@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { RELEASE_TIPOS, type ReleaseTipo } from "@discografica/shared/types/legalReleaseRequests";
+import type { SplitTrackOption } from "@discografica/shared/types/editorialSplits";
+import { TrackGroupPicker, type CargaTipo } from "../TrackGroupPicker";
 
 type PublishingMatch = {
   id: string;
@@ -182,11 +184,17 @@ export default function ReleaseForm({ pmReleaseId }: { pmReleaseId: number | nul
   const [sello, setSello] = useState("");
   const [fecha, setFecha] = useState("");
   const [tipo, setTipo] = useState<ReleaseTipo | "">("");
+  // Solo aplica cuando pmReleaseId es null (carga suelta, sin un fonograma
+  // puntual todavía) — con un fonograma real ya se sabe que es uno solo.
+  const [cargaTipo, setCargaTipo] = useState<CargaTipo>("fonograma");
+  const [tracks, setTracks] = useState<(SplitTrackOption | null)[]>([null]);
   const [participants, setParticipants] = useState<ParticipantRow[]>([newParticipant()]);
   const [comentario, setComentario] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
+  const selectedTracks = tracks.filter((t): t is SplitTrackOption => t !== null);
+  const loose = pmReleaseId == null;
 
   useEffect(() => {
     if (pmReleaseId == null) return;
@@ -216,42 +224,84 @@ export default function ReleaseForm({ pmReleaseId }: { pmReleaseId: number | nul
 
   const sum = participants.reduce((s, p) => s + (parsePercent(p.percentRaw) ?? 0), 0);
   const rowsReady = participants.length > 0 && participants.every((p) => p.nombre.trim() && (parsePercent(p.percentRaw) ?? 0) > 0);
-  const fonogramaReady = pmReleaseId == null || !!fonograma;
-  const canSubmit = fonogramaReady && !!tipo && trackName.trim() && artistDisplay.trim() && sum === 10000 && rowsReady;
+  const fonogramaReady = pmReleaseId != null ? !!fonograma : tracks.length > 0 && tracks.every((t) => t !== null);
+  const canSubmit = fonogramaReady && !!tipo && (loose || (trackName.trim() && artistDisplay.trim())) && sum === 10000 && rowsReady;
+
+  function participantsPayload() {
+    return participants.map((p) => ({
+      nombre: p.nombre.trim(),
+      apellido: p.apellido.trim() || null,
+      dni: p.dni.trim() || null,
+      fechaNacimiento: p.fechaNacimiento.trim() || null,
+      domicilio: p.domicilio.trim() || null,
+      email: p.email.trim() || null,
+      percentX100: parsePercent(p.percentRaw) ?? 0,
+    }));
+  }
+
+  async function postRelease(body: Record<string, unknown>) {
+    const res = await fetch("/api/pm/release-requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "No se pudo guardar el Release.");
+  }
 
   async function handleSubmit() {
     if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
+    let sentCount = 0;
     try {
-      const res = await fetch("/api/pm/release-requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      if (loose) {
+        // Un POST por canción, en secuencia — igual criterio que Split
+        // editorial: cada Release es una fila independiente en
+        // legal_release_requests, así que una falla puntual no deja
+        // indeterminado el estado de las demás.
+        for (const t of selectedTracks) {
+          try {
+            await postRelease({
+              catalogTrackId: t.id,
+              trackName: t.track,
+              artistDisplay: t.artistDisplay,
+              sello: t.sello,
+              fechaLanzamiento: fecha || null,
+              tipo,
+              participants: participantsPayload(),
+              comentario: comentario.trim() || null,
+            });
+          } catch (err) {
+            throw new Error(`"${t.track}": ${err instanceof Error ? err.message : "no se pudo enviar."}`);
+          }
+          sentCount++;
+        }
+      } else {
+        await postRelease({
           pmReleaseId,
           trackName: trackName.trim(),
           artistDisplay: artistDisplay.trim(),
           sello: sello || null,
           fechaLanzamiento: fecha || null,
           tipo,
-          participants: participants.map((p) => ({
-            nombre: p.nombre.trim(),
-            apellido: p.apellido.trim() || null,
-            dni: p.dni.trim() || null,
-            fechaNacimiento: p.fechaNacimiento.trim() || null,
-            domicilio: p.domicilio.trim() || null,
-            email: p.email.trim() || null,
-            percentX100: parsePercent(p.percentRaw) ?? 0,
-          })),
+          participants: participantsPayload(),
           comentario: comentario.trim() || null,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "No se pudo guardar el Release.");
+        });
+      }
       setDone(true);
       setTimeout(() => router.push("/pm/fonograma"), 1800);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido.");
+      const msg = err instanceof Error ? err.message : "Error desconocido.";
+      if (loose && sentCount > 0) {
+        // Lo ya enviado no hay que reenviarlo — se saca de la lista para que
+        // el reintento solo cubra las canciones que efectivamente fallaron.
+        const stillPending = selectedTracks.slice(sentCount);
+        setTracks(stillPending.length > 0 ? stillPending : [null]);
+        setError(`Se enviaron ${sentCount} de ${selectedTracks.length}. ${msg}`);
+      } else {
+        setError(msg);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -275,7 +325,11 @@ export default function ReleaseForm({ pmReleaseId }: { pmReleaseId: number | nul
     return (
       <div className="pmx-card">
         <style>{RLX_STYLES}</style>
-        <div className="rlx-success">✓ Listo. El Release ya está en Legales.</div>
+        <div className="rlx-success">
+          {loose && selectedTracks.length > 1
+            ? `✓ Listo. Los ${selectedTracks.length} Releases ya están en Legales.`
+            : "✓ Listo. El Release ya está en Legales."}
+        </div>
       </div>
     );
   }
@@ -284,33 +338,51 @@ export default function ReleaseForm({ pmReleaseId }: { pmReleaseId: number | nul
     <div className="pmx-card">
       <style>{RLX_STYLES}</style>
 
-      {pmReleaseId == null && (
-        <p style={{ fontSize: 13, color: "var(--text-3)", marginTop: 0, marginBottom: 16 }}>
-          Todavía no tenés el fonograma cargado — completá los datos a mano. Cuando cargues el
-          lanzamiento, no hace falta repetir este Release.
-        </p>
+      {loose ? (
+        <>
+          <label className="rlx-field-label">¿Qué estás cargando?</label>
+          <TrackGroupPicker
+            tipo={cargaTipo}
+            onTipoChange={(t) => {
+              setCargaTipo(t);
+              if (t === "fonograma") setTracks([tracks[0] ?? null]);
+            }}
+            tracks={tracks}
+            onSelectTrack={(i, t) => setTracks((prev) => prev.map((p, idx) => (idx === i ? t : p)))}
+            onAddTrack={() => setTracks((prev) => [...prev, null])}
+            onRemoveTrack={(i) => setTracks((prev) => (prev.length > 1 ? prev.filter((_, idx) => idx !== i) : [null]))}
+          />
+          <div className="rlx-row" style={{ marginTop: 12 }}>
+            <div>
+              <label className="rlx-field-label">Fecha de lanzamiento</label>
+              <input className="rlx-input" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="rlx-row">
+            <div>
+              <label className="rlx-field-label">Fonograma</label>
+              <input className="rlx-input" value={trackName} onChange={(e) => setTrackName(e.target.value)} />
+            </div>
+            <div>
+              <label className="rlx-field-label">Artista</label>
+              <input className="rlx-input" value={artistDisplay} onChange={(e) => setArtistDisplay(e.target.value)} />
+            </div>
+          </div>
+          <div className="rlx-row">
+            <div>
+              <label className="rlx-field-label">Sello</label>
+              <input className="rlx-input" value={sello} onChange={(e) => setSello(e.target.value)} />
+            </div>
+            <div>
+              <label className="rlx-field-label">Fecha de lanzamiento</label>
+              <input className="rlx-input" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+            </div>
+          </div>
+        </>
       )}
-
-      <div className="rlx-row">
-        <div>
-          <label className="rlx-field-label">Fonograma</label>
-          <input className="rlx-input" value={trackName} onChange={(e) => setTrackName(e.target.value)} />
-        </div>
-        <div>
-          <label className="rlx-field-label">Artista</label>
-          <input className="rlx-input" value={artistDisplay} onChange={(e) => setArtistDisplay(e.target.value)} />
-        </div>
-      </div>
-      <div className="rlx-row">
-        <div>
-          <label className="rlx-field-label">Sello</label>
-          <input className="rlx-input" value={sello} onChange={(e) => setSello(e.target.value)} />
-        </div>
-        <div>
-          <label className="rlx-field-label">Fecha de lanzamiento</label>
-          <input className="rlx-input" type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
-        </div>
-      </div>
       <div className="rlx-row">
         <div>
           <label className="rlx-field-label">Este Release es de la parte de:</label>
@@ -331,6 +403,11 @@ export default function ReleaseForm({ pmReleaseId }: { pmReleaseId: number | nul
 
       <div className="rlx-section">
         <div className="rlx-section-title">Participantes (derechos de máster)</div>
+        {loose && selectedTracks.length > 1 && (
+          <p style={{ fontSize: 12.5, color: "var(--text-3)", marginTop: -4, marginBottom: 10 }}>
+            Estos participantes y porcentajes se aplican a las {selectedTracks.length} canciones elegidas arriba.
+          </p>
+        )}
         {participants.map((p) => (
           <div key={p.key} className="rlx-participant">
             <div className="rlx-participant-grid">
@@ -398,7 +475,7 @@ export default function ReleaseForm({ pmReleaseId }: { pmReleaseId: number | nul
       <div className="rlx-submit-bar">
         {!canSubmit && <span className="rlx-submit-hint">Elegí de qué parte es y completá los participantes hasta sumar 100% para enviar.</span>}
         <button type="button" className="rlx-submit-btn" disabled={!canSubmit || submitting} onClick={handleSubmit}>
-          {submitting ? "Enviando..." : "Enviar Release"}
+          {submitting ? "Enviando..." : loose && selectedTracks.length > 1 ? `Enviar ${selectedTracks.length} Releases` : "Enviar Release"}
         </button>
       </div>
     </div>

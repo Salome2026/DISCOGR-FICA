@@ -669,7 +669,8 @@ function SplitEditorialForm() {
             </div>
           ) : (
             <p className="spx-attachment-hint" style={{ marginTop: 4, marginBottom: 4 }}>
-              La letra de cada canción se carga arriba, junto a cada una. Los autores/compositores y el % de abajo se aplican a las {tracks.length} canciones elegidas.
+              La letra de cada canción se carga arriba, junto a cada una. Los autores/compositores y el % de abajo se aplican a{" "}
+              {tracks.length === 1 ? "la canción elegida" : `las ${tracks.length} canciones elegidas`}.
             </p>
           )}
           <SplitSection title="LETRA" rows={letra} setRows={setLetra} />

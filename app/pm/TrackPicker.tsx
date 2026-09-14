@@ -93,28 +93,38 @@ export function TrackPicker({
 
   if (selected) {
     return (
-      <div className="tpk-track-chip">
-        <div>
-          <strong>{selected.track}</strong>
-          {selected.id === null && <span className="tpk-new-badge" style={{ marginLeft: 8 }}>Sin fonograma todavía</span>}
-          <br />
-          <span>
-            {selected.artistDisplay}
-            {selected.sello ? ` · ${selected.sello}` : ""}
-          </span>
+      <>
+        <style>{TRACK_PICKER_STYLES}</style>
+        <div className="tpk-track-chip">
+          <div>
+            <strong>{selected.track}</strong>
+            {selected.id === null && <span className="tpk-new-badge" style={{ marginLeft: 8 }}>Sin fonograma todavía</span>}
+            <br />
+            <span>
+              {selected.artistDisplay}
+              {selected.sello ? ` · ${selected.sello}` : ""}
+            </span>
+          </div>
+          <button type="button" className="tpk-change-link" onClick={() => onSelect(null)}>
+            Cambiar
+          </button>
         </div>
-        <button type="button" className="tpk-change-link" onClick={() => onSelect(null)}>
-          Cambiar
-        </button>
-      </div>
+      </>
     );
   }
 
   if (manual) {
-    return <ManualTrackEntry onConfirm={onSelect} onCancel={() => setManual(false)} />;
+    return (
+      <>
+        <style>{TRACK_PICKER_STYLES}</style>
+        <ManualTrackEntry onConfirm={onSelect} onCancel={() => setManual(false)} />
+      </>
+    );
   }
 
   return (
+    <>
+    <style>{TRACK_PICKER_STYLES}</style>
     <div className="tpk-dropdown">
       <input
         className="tpk-input"
@@ -162,5 +172,6 @@ export function TrackPicker({
         Todavía no tengo el fonograma cargado — cargar los datos a mano
       </button>
     </div>
+    </>
   );
 }

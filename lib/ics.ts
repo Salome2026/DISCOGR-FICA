@@ -122,7 +122,11 @@ export function buildMeetingVEvent(m: IcsMeeting): string {
     lines.push(`DTSTART;VALUE=DATE:${formatDateOnly(date)}`);
   }
 
-  lines.push(line("SUMMARY", escapeIcsText(`Reunión de Management — ${m.artistName}`)));
+  // Directo el nombre del artista/proyecto, sin el prefijo "Reunión de
+  // Management —" — la clienta pidió explícitamente que una reunión sobre
+  // CAPIF (u otro proyecto/trámite) se vea en el calendario como "CAPIF",
+  // no genérica.
+  lines.push(line("SUMMARY", escapeIcsText(m.artistName)));
 
   const descriptionParts = [
     `Artista/proyecto: ${m.artistName}`,
@@ -160,6 +164,13 @@ export function buildIcsCalendar(vevents: string[], calendarName: string): strin
     "METHOD:PUBLISH",
     line("X-WR-CALNAME", escapeIcsText(calendarName)),
     line("X-WR-TIMEZONE", TZID),
+    // Pedido best-effort de refresco cada 15 minutos — algunos clientes
+    // (Google Calendar, Outlook, Thunderbird) lo respetan; Apple Calendar en
+    // iOS/macOS decide el intervalo real por su cuenta y puede tardar horas
+    // en volver a consultar el feed pase lo que pase acá, sin forma de
+    // forzarlo desde el servidor.
+    line("X-PUBLISHED-TTL", "PT15M"),
+    line("REFRESH-INTERVAL;VALUE=DURATION", "PT15M"),
     ...vevents.filter(Boolean),
     "END:VCALENDAR",
   ].join(CRLF);

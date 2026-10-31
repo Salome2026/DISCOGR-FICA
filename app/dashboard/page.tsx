@@ -401,6 +401,7 @@ function DashboardInner() {
           </div>
           <div className="nav-pills">
             <span className="nav-pill active">Dashboard</span>
+            <Link href="/seguimiento" className="nav-pill">Seguimiento</Link>
             <Link href="/catalogo" className="nav-pill">Catálogo</Link>
             <Link href="/nuevo" className="nav-pill">+ Nuevo acuerdo</Link>
             <Link href="/admin/usuarios" className="nav-pill">Usuarios y permisos</Link>
